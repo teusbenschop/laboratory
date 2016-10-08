@@ -1,3 +1,7 @@
-gcc vfork.c
-./a.out
-rm -f a.out
+# g++ vfork1.cpp
+# ./a.out
+# rm -f a.out
+g++ -o parent parent.cpp
+g++ -o child child.cpp
+./parent
+rm parent child

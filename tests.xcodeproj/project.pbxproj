@@ -32,9 +32,9 @@
 		CA98E2261DA8D14000F43F4B /* config.sub */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = config.sub; sourceTree = "<group>"; };
 		CA98E2271DA8D14000F43F4B /* configure */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = configure; sourceTree = "<group>"; };
 		CA98E2281DA8D14000F43F4B /* configure.ac */ = {isa = PBXFileReference; lastKnownFileType = text; path = configure.ac; sourceTree = "<group>"; };
-		CA98E2291DA8D14000F43F4B /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = file; path = COPYING; sourceTree = "<group>"; };
+		CA98E2291DA8D14000F43F4B /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		CA98E22A1DA8D14000F43F4B /* depcomp */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = depcomp; sourceTree = "<group>"; };
-		CA98E22B1DA8D14000F43F4B /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = file; path = INSTALL; sourceTree = "<group>"; };
+		CA98E22B1DA8D14000F43F4B /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
 		CA98E22C1DA8D14000F43F4B /* install-sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "install-sh"; sourceTree = "<group>"; };
 		CA98E22D1DA8D14000F43F4B /* libraries.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libraries.h; sourceTree = "<group>"; };
 		CA98E22E1DA8D14000F43F4B /* library.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = library.cpp; sourceTree = "<group>"; };
@@ -56,7 +56,9 @@
 		CA98E2411DA8D16900F43F4B /* socket */ = {isa = PBXFileReference; lastKnownFileType = text; path = socket; sourceTree = "<group>"; };
 		CA98E2421DA8D16900F43F4B /* socket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = socket.cpp; sourceTree = "<group>"; };
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
-		CA98E2451DA8D17000F43F4B /* vfork.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vfork.c; sourceTree = "<group>"; };
+		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
+		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
+		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -161,8 +163,10 @@
 		CA98E2431DA8D17000F43F4B /* vfork */ = {
 			isa = PBXGroup;
 			children = (
+				CAEE92021DA8EE1C00DB5A5A /* child.cpp */,
+				CAEE92031DA8EE1C00DB5A5A /* parent.cpp */,
 				CA98E2441DA8D17000F43F4B /* vfork */,
-				CA98E2451DA8D17000F43F4B /* vfork.c */,
+				CA98E2451DA8D17000F43F4B /* vfork1.cpp */,
 			);
 			path = vfork;
 			sourceTree = "<group>";
