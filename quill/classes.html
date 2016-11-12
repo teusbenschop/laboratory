@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Classes in Quill</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="classes.css" />
+</head>
+<body>
+<div id="toolbar-container">
+  <span class="ql-formats">
+    <select class="ql-size">
+      <option value="10px">Small</option>
+      <option selected>Normal</option>
+      <option value="18px">Large</option>
+      <option value="32px">Huge</option>
+    </select>
+  </span>
+  <span class="ql-formats">
+    <select class="ql-color">
+      <option selected></option>
+      <option value="red"></option>
+      <option value="orange"></option>
+      <option value="yellow"></option>
+      <option value="green"></option>
+      <option value="blue"></option>
+      <option value="purple"></option>
+    </select>
+    <select class="ql-background">
+      <option selected></option>
+      <option value="red"></option>
+      <option value="orange"></option>
+      <option value="yellow"></option>
+      <option value="green"></option>
+      <option value="blue"></option>
+      <option value="purple"></option>
+      <option value="add">add</option>
+    </select>
+  </span>
+</div>
+<div id="editor-container">
+  <p>Quill uses classes for most inline styles.</p>
+  <p><br></p>
+  <p>The exception is <span class="ql-bg-yellow">background</span> and <span class="ql-color-purple">color</span>,</p>
+  <p>where it uses inline styles.</p>
+  <p><br></p>
+  <p>This <span style="font-size: 18px">demo</span> shows how to <span style="font-size: 32px">change</span> this.</p>
+  <p><br></p>
+  <p>Here are Bibledit classes: <span class="ql-bg-add">add</span>.</p>
+</div>
+<br>
+<select id="selector">
+  <option value="add" selected>add</option>
+  <option value="two">em</option>
+</select>
+<script type="text/javascript" src="../jquery/jquery.min.js"></script>
+<script type="text/javascript" src="quill.min.js"></script>
+<script type="text/javascript" src="classes.js"></script>
+</body>
+</html>

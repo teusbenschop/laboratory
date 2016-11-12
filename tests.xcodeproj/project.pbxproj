@@ -55,6 +55,9 @@
 		CABEE7831DD5F653006D8D75 /* quill.min.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = quill.min.js.map; sourceTree = "<group>"; };
 		CABEE7841DD5F653006D8D75 /* quill.snow.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = quill.snow.css; sourceTree = "<group>"; };
 		CABEE7851DD5F653006D8D75 /* snow.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = snow.html; sourceTree = "<group>"; };
+		CABEE7861DD5F9EE006D8D75 /* classes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = classes.html; sourceTree = "<group>"; };
+		CABEE7871DD60337006D8D75 /* classes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = classes.css; sourceTree = "<group>"; };
+		CABEE7881DD6052E006D8D75 /* classes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = classes.js; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -175,6 +178,9 @@
 			isa = PBXGroup;
 			children = (
 				CABEE77C1DD5F653006D8D75 /* bubble.html */,
+				CABEE7871DD60337006D8D75 /* classes.css */,
+				CABEE7861DD5F9EE006D8D75 /* classes.html */,
+				CABEE7881DD6052E006D8D75 /* classes.js */,
 				CABEE77D1DD5F653006D8D75 /* full.html */,
 				CABEE77E1DD5F653006D8D75 /* quill.bubble.css */,
 				CABEE77F1DD5F653006D8D75 /* quill.core.css */,
