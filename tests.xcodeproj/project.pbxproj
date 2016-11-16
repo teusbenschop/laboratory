@@ -17,6 +17,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		CA7BA6951DDCEA3C00719C36 /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
 		CA98E20D1DA8D14000F43F4B /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA98E20E1DA8D14000F43F4B /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA98E20F1DA8D14000F43F4B /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -63,6 +66,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		CA7BA6901DDCEA3C00719C36 /* quill-mini */ = {
+			isa = PBXGroup;
+			children = (
+				CA7BA6911DDCEA3C00719C36 /* index.html */,
+				CA7BA6921DDCEA3C00719C36 /* index.js */,
+				CA7BA6951DDCEA3C00719C36 /* styles.css */,
+			);
+			path = "quill-mini";
+			sourceTree = "<group>";
+		};
 		CA98E20C1DA8D14000F43F4B /* chrome */ = {
 			isa = PBXGroup;
 			children = (
@@ -132,6 +145,7 @@
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
 				CABEE77B1DD5F653006D8D75 /* quill */,
+				CA7BA6901DDCEA3C00719C36 /* quill-mini */,
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
 				CA98E2401DA8D16900F43F4B /* socket */,
