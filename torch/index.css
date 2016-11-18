@@ -1,0 +1,5 @@
+.splash {
+  background: radial-gradient(#FDD, #FFD, #FFF);
+  background-size: 50px 50px;
+  background-repeat: no-repeat;
+}

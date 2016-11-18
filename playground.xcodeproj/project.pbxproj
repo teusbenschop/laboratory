@@ -17,6 +17,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
+		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA7BA6951DDCEA3C00719C36 /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
@@ -66,6 +69,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		CA5EB3111DDF5B0000565FA2 /* torch */ = {
+			isa = PBXGroup;
+			children = (
+				CA5EB3121DDF5B0000565FA2 /* index.css */,
+				CA5EB3131DDF5B0000565FA2 /* index.html */,
+				CA5EB3141DDF5B0000565FA2 /* index.js */,
+			);
+			path = torch;
+			sourceTree = "<group>";
+		};
 		CA7BA6901DDCEA3C00719C36 /* quill-mini */ = {
 			isa = PBXGroup;
 			children = (
@@ -149,6 +162,7 @@
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
 				CA98E2401DA8D16900F43F4B /* socket */,
+				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
 			);
 			indentWidth = 2;
@@ -239,7 +253,7 @@
 					};
 				};
 			};
-			buildConfigurationList = CAB29AC41A4480CC00139BD7 /* Build configuration list for PBXProject "tests" */;
+			buildConfigurationList = CAB29AC41A4480CC00139BD7 /* Build configuration list for PBXProject "playground" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -391,7 +405,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CAB29AC41A4480CC00139BD7 /* Build configuration list for PBXProject "tests" */ = {
+		CAB29AC41A4480CC00139BD7 /* Build configuration list for PBXProject "playground" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CAB29AC61A4480CC00139BD7 /* Debug */,
