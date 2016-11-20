@@ -1,0 +1,14 @@
+.i-add {
+  font-style: italic;
+}
+.b-p {
+  font-size: 100%;
+}
+.b-f {
+  font-size: 90%;
+}
+[class^='i-note'] {
+  position: relative;
+  top: -0.5em;
+  font-size: 80%;
+}

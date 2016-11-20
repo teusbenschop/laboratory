@@ -59,6 +59,9 @@
 		CABEE7861DD5F9EE006D8D75 /* classes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = classes.html; sourceTree = "<group>"; };
 		CABEE7871DD60337006D8D75 /* classes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = classes.css; sourceTree = "<group>"; };
 		CABEE7881DD6052E006D8D75 /* classes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = classes.js; sourceTree = "<group>"; };
+		CAE44BB91DE1D23C001F29D1 /* footnotes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = footnotes.css; sourceTree = "<group>"; };
+		CAE44BBA1DE1D23C001F29D1 /* footnotes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = footnotes.html; sourceTree = "<group>"; };
+		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -204,6 +207,9 @@
 				CABEE7871DD60337006D8D75 /* classes.css */,
 				CABEE7861DD5F9EE006D8D75 /* classes.html */,
 				CABEE7881DD6052E006D8D75 /* classes.js */,
+				CAE44BB91DE1D23C001F29D1 /* footnotes.css */,
+				CAE44BBA1DE1D23C001F29D1 /* footnotes.html */,
+				CAE44BBB1DE1D23C001F29D1 /* footnotes.js */,
 				CABEE77D1DD5F653006D8D75 /* full.html */,
 				CABEE77E1DD5F653006D8D75 /* quill.bubble.css */,
 				CABEE7841DD5F653006D8D75 /* quill.snow.css */,
