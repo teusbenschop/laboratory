@@ -4,6 +4,6 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.tabs.executeScript({
     code: 'chrome.power.requestKeepAwake ("display")'
   });
-  //chrome.power.requestKeepAwake ("system");
+  chrome.power.requestKeepAwake ("system");
   chrome.power.requestKeepAwake ("display");
 });
