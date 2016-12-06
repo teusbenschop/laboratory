@@ -67,6 +67,8 @@
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
+		CAF70CC11DF7229F0037890D /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
+		CAF70CC31DF7229F0037890D /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -164,6 +166,7 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
+				CAF70CC01DF7229F0037890D /* chrome-native */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA3792DD1DF6F861008F8164 /* chrome-page-redder */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
@@ -230,6 +233,15 @@
 				CABEE7851DD5F653006D8D75 /* snow.html */,
 			);
 			path = quill;
+			sourceTree = "<group>";
+		};
+		CAF70CC01DF7229F0037890D /* chrome-native */ = {
+			isa = PBXGroup;
+			children = (
+				CAF70CC11DF7229F0037890D /* background.js */,
+				CAF70CC31DF7229F0037890D /* manifest.json */,
+			);
+			path = "chrome-native";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
