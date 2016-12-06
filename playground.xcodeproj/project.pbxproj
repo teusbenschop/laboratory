@@ -17,15 +17,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA3792DE1DF6F861008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
+		CA3792DF1DF6F861008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA3792E01DF6F861008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
+		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA3792E41DF6FA5A008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA7BA6951DDCEA3C00719C36 /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
-		CA98E20D1DA8D14000F43F4B /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
-		CA98E20E1DA8D14000F43F4B /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		CA98E20F1DA8D14000F43F4B /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
 		CA98E2121DA8D14000F43F4B /* client6.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client6.c; sourceTree = "<group>"; };
 		CA98E2131DA8D14000F43F4B /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -67,6 +70,26 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		CA3792DD1DF6F861008F8164 /* chrome-page-redder */ = {
+			isa = PBXGroup;
+			children = (
+				CA3792DE1DF6F861008F8164 /* background.js */,
+				CA3792DF1DF6F861008F8164 /* index.html */,
+				CA3792E01DF6F861008F8164 /* manifest.json */,
+			);
+			path = "chrome-page-redder";
+			sourceTree = "<group>";
+		};
+		CA3792E11DF6FA5A008F8164 /* chrome-wakelock */ = {
+			isa = PBXGroup;
+			children = (
+				CA3792E21DF6FA5A008F8164 /* background.js */,
+				CA3792E31DF6FA5A008F8164 /* index.html */,
+				CA3792E41DF6FA5A008F8164 /* manifest.json */,
+			);
+			path = "chrome-wakelock";
+			sourceTree = "<group>";
+		};
 		CA5EB3111DDF5B0000565FA2 /* torch */ = {
 			isa = PBXGroup;
 			children = (
@@ -85,16 +108,6 @@
 				CA7BA6951DDCEA3C00719C36 /* styles.css */,
 			);
 			path = "quill-mini";
-			sourceTree = "<group>";
-		};
-		CA98E20C1DA8D14000F43F4B /* chrome */ = {
-			isa = PBXGroup;
-			children = (
-				CA98E20D1DA8D14000F43F4B /* background.js */,
-				CA98E20E1DA8D14000F43F4B /* index.html */,
-				CA98E20F1DA8D14000F43F4B /* manifest.json */,
-			);
-			path = chrome;
 			sourceTree = "<group>";
 		};
 		CA98E2101DA8D14000F43F4B /* ipv6 */ = {
@@ -151,7 +164,8 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
-				CA98E20C1DA8D14000F43F4B /* chrome */,
+				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
+				CA3792DD1DF6F861008F8164 /* chrome-page-redder */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
