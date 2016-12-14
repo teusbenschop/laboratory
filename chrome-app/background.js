@@ -3,8 +3,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
   //console.log ("Requesting a wake lock");
   //chrome.power.requestKeepAwake ("system");
   //chrome.power.requestKeepAwake ("display");
-  //var url = "http://bibledit.org:8080";
-  //chrome.tabs.create ({ url: url });
+  var url = "http://bibledit.org:8080";
+  window.open (url);
 });
 
-
+chrome.runtime.onSuspend.addListener(function() {
+  console.log ("this is never called");
+});
