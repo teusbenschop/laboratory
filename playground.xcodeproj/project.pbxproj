@@ -23,6 +23,8 @@
 		CA3C9E4A1E000DF1007990B5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		CA3D6B1A1E229683005D2596 /* demo.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = "<group>"; };
+		CA3D6B1C1E229683005D2596 /* run */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -92,6 +94,15 @@
 				CA741F801E017182004EA723 /* index.css */,
 			);
 			path = "chrome-app";
+			sourceTree = "<group>";
+		};
+		CA3D6B191E229683005D2596 /* libwebkit2gtk */ = {
+			isa = PBXGroup;
+			children = (
+				CA3D6B1A1E229683005D2596 /* demo.cpp */,
+				CA3D6B1C1E229683005D2596 /* run */,
+			);
+			path = libwebkit2gtk;
 			sourceTree = "<group>";
 		};
 		CA5EB3111DDF5B0000565FA2 /* torch */ = {
@@ -171,6 +182,7 @@
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
+				CA3D6B191E229683005D2596 /* libwebkit2gtk */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
 				CABEE77B1DD5F653006D8D75 /* quill */,
