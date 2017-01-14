@@ -1,0 +1,13 @@
+.p, .b-p {
+  text-indent: 3.2mm;
+}
+.v, .i-v {
+  font-size: x-small;
+  vertical-align: super;
+}
+.add, .i-add {
+  font-style: italic;
+}
+.nd, .i-nd {
+  font-variant: small-caps;
+}

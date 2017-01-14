@@ -65,6 +65,9 @@
 		CABEE7861DD5F9EE006D8D75 /* classes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = classes.html; sourceTree = "<group>"; };
 		CABEE7871DD60337006D8D75 /* classes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = classes.css; sourceTree = "<group>"; };
 		CABEE7881DD6052E006D8D75 /* classes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = classes.js; sourceTree = "<group>"; };
+		CAD686A01E290470007CA7FC /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CAD686A11E290470007CA7FC /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		CAD686A41E290470007CA7FC /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
 		CAE44BB91DE1D23C001F29D1 /* footnotes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = footnotes.css; sourceTree = "<group>"; };
 		CAE44BBA1DE1D23C001F29D1 /* footnotes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = footnotes.html; sourceTree = "<group>"; };
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
@@ -192,6 +195,7 @@
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
 				CA98E2401DA8D16900F43F4B /* socket */,
+				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
 			);
@@ -248,6 +252,16 @@
 				CABEE7851DD5F653006D8D75 /* snow.html */,
 			);
 			path = quill;
+			sourceTree = "<group>";
+		};
+		CAD6869F1E290470007CA7FC /* stylesheet */ = {
+			isa = PBXGroup;
+			children = (
+				CAD686A01E290470007CA7FC /* index.html */,
+				CAD686A11E290470007CA7FC /* index.js */,
+				CAD686A41E290470007CA7FC /* styles.css */,
+			);
+			path = stylesheet;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
