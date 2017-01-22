@@ -74,7 +74,6 @@
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 		CAFC8D301E23AAFD00F0EF0E /* bibledit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bibledit.cpp; sourceTree = "<group>"; };
-		CAFC8D311E23AAFE00F0EF0E /* bibledit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bibledit.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -104,7 +103,6 @@
 			isa = PBXGroup;
 			children = (
 				CAFC8D301E23AAFD00F0EF0E /* bibledit.cpp */,
-				CAFC8D311E23AAFE00F0EF0E /* bibledit.h */,
 				CA3D6B1C1E229683005D2596 /* run */,
 			);
 			path = libwebkit2gtk;
