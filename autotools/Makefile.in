@@ -95,7 +95,7 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps) $(dist_pkgdata_DATA) $(am__DIST_COMMON)
+	$(am__configure_deps) $(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
@@ -103,8 +103,7 @@ CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
-	"$(DESTDIR)$(appicondir)" "$(DESTDIR)$(applicationdir)" \
-	"$(DESTDIR)$(pkgdatadir)"
+	"$(DESTDIR)$(appicondir)" "$(DESTDIR)$(applicationdir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_bibledit_OBJECTS = src/bibledit.$(OBJEXT)
@@ -176,7 +175,7 @@ am__uninstall_files_from_dir = { \
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
-DATA = $(appicon_DATA) $(application_DATA) $(dist_pkgdata_DATA)
+DATA = $(appicon_DATA) $(application_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -332,7 +331,6 @@ applicationdir = $(datadir)/applications
 application_DATA = bibledit.desktop
 appicondir = $(datadir)/pixmaps
 appicon_DATA = bibledit.xpm
-dist_pkgdata_DATA = pkgdata.txt
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -550,27 +548,6 @@ uninstall-applicationDATA:
 	@list='$(application_DATA)'; test -n "$(applicationdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(applicationdir)'; $(am__uninstall_files_from_dir)
-install-dist_pkgdataDATA: $(dist_pkgdata_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgdatadir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(pkgdatadir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pkgdatadir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pkgdatadir)" || exit $$?; \
-	done
-
-uninstall-dist_pkgdataDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(pkgdatadir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -801,7 +778,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(MANS) $(DATA) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(appicondir)" "$(DESTDIR)$(applicationdir)" "$(DESTDIR)$(pkgdatadir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(appicondir)" "$(DESTDIR)$(applicationdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -861,8 +838,9 @@ info: info-am
 info-am:
 
 install-data-am: install-appiconDATA install-applicationDATA \
-	install-dist_pkgdataDATA install-man
-
+	install-man
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
@@ -909,11 +887,11 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-appiconDATA uninstall-applicationDATA \
-	uninstall-binPROGRAMS uninstall-dist_pkgdataDATA uninstall-man
+	uninstall-binPROGRAMS uninstall-local uninstall-man
 
 uninstall-man: uninstall-man1
 
-.MAKE: all install-am install-strip
+.MAKE: all install-am install-data-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--refresh check check-am clean \
 	clean-binPROGRAMS clean-cscope clean-generic cscope \
@@ -924,17 +902,16 @@ uninstall-man: uninstall-man1
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-appiconDATA \
 	install-applicationDATA install-binPROGRAMS install-data \
-	install-data-am install-dist_pkgdataDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-man1 install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
-	ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-appiconDATA uninstall-applicationDATA \
-	uninstall-binPROGRAMS uninstall-dist_pkgdataDATA uninstall-man \
-	uninstall-man1
+	install-data-am install-data-hook install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-man1 \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-appiconDATA \
+	uninstall-applicationDATA uninstall-binPROGRAMS \
+	uninstall-local uninstall-man uninstall-man1
 
 .PRECIOUS: Makefile
 
@@ -946,7 +923,12 @@ dist-hook:
 	rm -f $(distdir)/server
 	rm -rf `find $(distdir) -name .dirstamp`
 	rm -rf `find $(distdir) -name .deps`
-	find $(distdir) -type f ! -name '*.h' ! -name '*.cpp' ! -name '*.c' ! -name '*.o' ! -name '.DS_Store' ! -path '*xcode*' ! -path '*.deps*' ! -path '*unittests*' ! -name '*.tgz' ! -path '*autom4te*' -print > $(distdir)/pkgdata.txt
+
+install-data-hook:
+	rsync --archive --delete $(srcdir) $(DESTDIR)$(pkgdatadir)
+
+uninstall-local:
+	rm -rf $(DESTDIR)$(pkgdatadir)/*
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

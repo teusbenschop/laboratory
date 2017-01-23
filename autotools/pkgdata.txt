@@ -1,2 +1,0 @@
-This is a place holder.
-It is needed for creating a distribution.

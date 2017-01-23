@@ -1,0 +1,8 @@
+./configure
+make clean
+make distclean
+./configure
+# find . -type f ! -name '*.h' ! -name '*.cpp' ! -name '*.c' ! -name '.DS_Store' ! -path '*xcode*' ! -path '*unittests*' ! -path '*autom4te*' ! -name 'pkgdata.txt' ! -path '*.deps*' -print > pkgdata.txt
+# make dist
+make
+# sudo make install

@@ -40,6 +40,7 @@
 		CA8853591E363444009D60AC /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		CA88535B1E3643BB009D60AC /* bibledit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bibledit.cpp; sourceTree = "<group>"; };
 		CA88535C1E3643BB009D60AC /* bibledit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bibledit.h; sourceTree = "<group>"; };
+		CA88535E1E3681B9009D60AC /* test */ = {isa = PBXFileReference; lastKnownFileType = text; path = test; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
 		CA98E2121DA8D14000F43F4B /* client6.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client6.c; sourceTree = "<group>"; };
 		CA98E2131DA8D14000F43F4B /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -146,6 +147,7 @@
 				CA8853541E36328C009D60AC /* license.txt */,
 				CA8853591E363444009D60AC /* Makefile.am */,
 				CA88535A1E3643BB009D60AC /* src */,
+				CA88535E1E3681B9009D60AC /* test */,
 			);
 			path = autotools;
 			sourceTree = "<group>";

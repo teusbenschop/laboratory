@@ -14,6 +14,8 @@ LIBS += $(WEBKIT2GTK_LIBS)
 
 EXTRA_DIST = s* *.desktop *.xpm *.1
 
+CLEANFILES = bibledit*.gz *~
+
 dist-hook:
 	rm -rf `find $(distdir) -name *.o`
 	rm -rf `find $(distdir) -name *.a`
@@ -21,9 +23,6 @@ dist-hook:
 	rm -f $(distdir)/server
 	rm -rf `find $(distdir) -name .dirstamp`
 	rm -rf `find $(distdir) -name .deps`
-	find $(distdir) -type f ! -name '*.h' ! -name '*.cpp' ! -name '*.c' ! -name '*.o' ! -name '.DS_Store' ! -path '*xcode*' ! -path '*.deps*' ! -path '*unittests*' ! -name '*.tgz' ! -path '*autom4te*' -print > $(distdir)/pkgdata.txt
-
-CLEANFILES = bibledit*.gz *~
 
 man_MANS = *.1
 
@@ -33,4 +32,9 @@ application_DATA = bibledit.desktop
 appicondir = $(datadir)/pixmaps
 appicon_DATA = bibledit.xpm
 
-dist_pkgdata_DATA = pkgdata.txt
+install-data-hook:
+	rsync --archive --delete $(srcdir) $(DESTDIR)$(pkgdatadir)
+
+uninstall-local:
+	rm -rf $(DESTDIR)$(pkgdatadir)/*
+
