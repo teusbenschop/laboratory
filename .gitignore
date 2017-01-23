@@ -6,3 +6,19 @@ a.out
 *.Po
 
 *.xcuserstate
+
+autotools/autom4te.cache/output.0
+
+autotools/autom4te.cache/output.1
+
+autotools/autom4te.cache/requests
+
+autotools/autom4te.cache/traces.0
+
+autotools/autom4te.cache/traces.1
+
+autotools/bibledit
+
+*.o
+
+*.xcscmblueprint
