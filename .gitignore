@@ -22,3 +22,7 @@ autotools/bibledit
 *.o
 
 *.xcscmblueprint
+
+autotools/config.log
+
+autotools/config.log
