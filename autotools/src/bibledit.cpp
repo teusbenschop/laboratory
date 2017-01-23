@@ -18,7 +18,7 @@
 */
 
 
-#include <bibledit.h>
+#include <src/bibledit.h>
 #include <libgen.h>
 #include <iostream>
 #include <webkit2/webkit2.h>

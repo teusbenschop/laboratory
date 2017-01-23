@@ -1,23 +1,2 @@
-./aclocal.m4
-./AUTHORS
-./bibledit
-./bibledit.1
-./bibledit.desktop
-./bibledit.xpm
-./ChangeLog
-./config.h.in
-./config.log
-./config.status
-./configure
-./configure.ac
-./COPYING
-./license.txt
-./Makefile
-./Makefile.am
-./Makefile.in
-./NEWS
-./pkgdata.txt
-./README
-./README.md
-./reconfigure
-./stamp-h1
+This is a place holder.
+It is needed for creating a distribution.

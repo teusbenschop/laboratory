@@ -1,6 +1,6 @@
 bin_PROGRAMS = bibledit
 
-bibledit_SOURCES = bibledit.cpp
+bibledit_SOURCES = src/bibledit.cpp
 
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 
@@ -12,10 +12,7 @@ LIBS = -Wall -lpthread -L. -g -rdynamic -ldl
 LIBS += $(GTK_LIBS)
 LIBS += $(WEBKIT2GTK_LIBS)
 
-EXTRA_DIST = *.h *.desktop *.xpm *.1
-
-all-local:
-	find . -type f ! -name '*.h' ! -name '*.cpp' ! -name '*.c' ! -name '*.o' ! -name '.DS_Store' ! -path '*xcode*' ! -path '*.deps*' ! -path '*unittests*' ! -name '*.tgz' ! -path '*autom4te*' -print > pkgdata.txt
+EXTRA_DIST = s* *.desktop *.xpm *.1
 
 dist-hook:
 	rm -rf `find $(distdir) -name *.o`
@@ -24,6 +21,7 @@ dist-hook:
 	rm -f $(distdir)/server
 	rm -rf `find $(distdir) -name .dirstamp`
 	rm -rf `find $(distdir) -name .deps`
+	find $(distdir) -type f ! -name '*.h' ! -name '*.cpp' ! -name '*.c' ! -name '*.o' ! -name '.DS_Store' ! -path '*xcode*' ! -path '*.deps*' ! -path '*unittests*' ! -name '*.tgz' ! -path '*autom4te*' -print > $(distdir)/pkgdata.txt
 
 CLEANFILES = bibledit*.gz *~
 

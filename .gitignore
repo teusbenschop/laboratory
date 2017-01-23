@@ -26,3 +26,7 @@ autotools/bibledit
 autotools/config.log
 
 autotools/config.log
+
+autotools/src/.deps/.dirstamp
+
+autotools/src/.dirstamp
