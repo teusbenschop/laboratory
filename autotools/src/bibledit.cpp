@@ -18,6 +18,7 @@
 */
 
 
+#include <config.h>
 #include <src/bibledit.h>
 #include <libgen.h>
 #include <iostream>
@@ -30,11 +31,15 @@ int main (int argc, char *argv[])
 
   g_signal_connect (application, "activate", G_CALLBACK (activate), NULL);
 
-  // Get the executable path and base the document root on it.
-  char *linkname = (char *) malloc (256);
-  if (readlink ("/proc/self/exe", linkname, 256)) {};
-  string webroot = dirname (linkname);
-  free (linkname);
+  // Derive the webroot from the $HOME environment variable.
+  string webroot;
+  const char * home = g_getenv ("HOME");
+  if (home) webroot = home;
+  if (!webroot.empty ()) webroot.append ("/");
+  webroot.append ("bibledit");
+  
+  // Read the package directory from config.h.
+  string package (PACKAGE_DATA_DIR);
 
   status = g_application_run (G_APPLICATION (application), argc, argv);
 
