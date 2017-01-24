@@ -68,6 +68,9 @@ void activate (GtkApplication *app)
 
   // The icon.
   gchar * iconfile = g_build_filename ("bibledit.xpm", NULL);
+  if (!g_file_test (iconfile, G_FILE_TEST_EXISTS)) {
+    iconfile = g_build_filename (PACKAGE_DATA_DIR, "bibledit.xpm", NULL);
+  }
   gtk_window_set_default_icon_from_file (iconfile, NULL);
   g_free (iconfile);
 
