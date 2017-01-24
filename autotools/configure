@@ -5190,7 +5190,6 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
 	if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
@@ -5640,6 +5639,20 @@ $as_echo "yes" >&6; }
 fi
 
 
+
+if test "x${prefix}" = "xNONE"; then
+
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE_DATA_DIR "${ac_default_prefix}/share/bibledit"
+_ACEOF
+
+else
+
+cat >>confdefs.h <<_ACEOF
+#define PACKAGE_DATA_DIR "${prefix}/share/bibledit"
+_ACEOF
+
+fi
 
 ac_config_files="$ac_config_files Makefile"
 
@@ -7118,3 +7131,10 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+echo "
+Bibledit-Gtk $VERSION configuration summary:
+
+Host operating system  : ${host_os}
+Version                : ${PACKAGE_VERSION}
+Installation prefix    : ${prefix}
+"

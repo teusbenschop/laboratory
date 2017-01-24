@@ -11,7 +11,6 @@ AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
 AC_PROG_RANLIB
 AC_CONFIG_HEADER(config.h)
 
-
 PKG_PROG_PKG_CONFIG
 AC_PATH_PROG(PKG_CONFIG_PATH, pkg-config, no)
 if test x$PKG_CONFIG_PATH = xno; then
@@ -28,5 +27,18 @@ PKG_CHECK_MODULES([WEBKIT2GTK], [webkit2gtk-4.0],, [
 AC_SUBST(WEBKIT2GTK_LIBS)
 AC_SUBST(WEBKIT2GTK_CFLAGS)
 
+if test "x${prefix}" = "xNONE"; then
+  AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${ac_default_prefix}/share/bibledit", [Package data directory])
+else
+  AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${prefix}/share/bibledit", [Package data directory])
+fi
+
 AC_OUTPUT(Makefile)
 
+echo "
+Bibledit-Gtk $VERSION configuration summary:
+
+Host operating system  : ${host_os}
+Version                : ${PACKAGE_VERSION}
+Installation prefix    : ${prefix}
+"

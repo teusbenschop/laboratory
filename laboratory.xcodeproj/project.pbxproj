@@ -55,6 +55,8 @@
 		CA98E2421DA8D16900F43F4B /* socket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = socket.cpp; sourceTree = "<group>"; };
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
+		CAA2B2CB1E374E27000F266B /* reconfigure */ = {isa = PBXFileReference; lastKnownFileType = text; path = reconfigure; sourceTree = "<group>"; };
+		CAA2B2CD1E3752A8000F266B /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		CABEE7691DD5F633006D8D75 /* Bibledit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Bibledit.xcodeproj; sourceTree = "<group>"; };
 		CABEE76D1DD5F633006D8D75 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		CABEE76E1DD5F633006D8D75 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -143,9 +145,11 @@
 				CA88534F1E36328C009D60AC /* bibledit.1 */,
 				CA8853511E36328C009D60AC /* bibledit.desktop */,
 				CA8853531E36328C009D60AC /* bibledit.xpm */,
+				CAA2B2CD1E3752A8000F266B /* config.h */,
 				CA8853581E3633CE009D60AC /* configure.ac */,
 				CA8853541E36328C009D60AC /* license.txt */,
 				CA8853591E363444009D60AC /* Makefile.am */,
+				CAA2B2CB1E374E27000F266B /* reconfigure */,
 				CA88535A1E3643BB009D60AC /* src */,
 				CA88535E1E3681B9009D60AC /* test */,
 			);

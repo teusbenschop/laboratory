@@ -87,7 +87,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = x86_64-apple-darwin16.3.0
+build_triplet = x86_64-apple-darwin16.4.0
 bin_PROGRAMS = bibledit$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -285,10 +285,10 @@ am__quote =
 am__tar = tar --format=ustar -chf - "$$tardir"
 am__untar = tar -xf -
 bindir = ${exec_prefix}/bin
-build = x86_64-apple-darwin16.3.0
+build = x86_64-apple-darwin16.4.0
 build_alias = 
 build_cpu = x86_64
-build_os = darwin16.3.0
+build_os = darwin16.4.0
 build_vendor = apple
 builddir = .
 datadir = ${datarootdir}
@@ -925,7 +925,7 @@ dist-hook:
 	rm -rf `find $(distdir) -name .deps`
 
 install-data-hook:
-	rsync --archive --delete $(srcdir) $(DESTDIR)$(pkgdatadir)
+	rsync --archive -v --delete --exclude "*.h" --exclude "*.c" --exclude "*.cpp" --exclude "*.o" --exclude "*.deps*" --exclude "*autom4te.cache*" --exclude ".dirstamp" --exclude ".DS_Store"  $(srcdir) $(DESTDIR)$(pkgdatadir)
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(pkgdatadir)/*
