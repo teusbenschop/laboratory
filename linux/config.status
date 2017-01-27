@@ -437,7 +437,7 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Users/teus/dev/laboratory/autotools'
+ac_pwd='/Users/teus/dev/laboratory/linux'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 MKDIR_P='./install-sh -c -d'
@@ -681,12 +681,12 @@ S["mkdir_p"]="$(MKDIR_P)"
 S["MKDIR_P"]="./install-sh -c -d"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]=""
-S["install_sh"]="${SHELL} /Users/teus/dev/laboratory/autotools/install-sh"
-S["MAKEINFO"]="${SHELL} /Users/teus/dev/laboratory/autotools/missing makeinfo"
-S["AUTOHEADER"]="${SHELL} /Users/teus/dev/laboratory/autotools/missing autoheader"
-S["AUTOMAKE"]="${SHELL} /Users/teus/dev/laboratory/autotools/missing automake-1.15"
-S["AUTOCONF"]="${SHELL} /Users/teus/dev/laboratory/autotools/missing autoconf"
-S["ACLOCAL"]="${SHELL} /Users/teus/dev/laboratory/autotools/missing aclocal-1.15"
+S["install_sh"]="${SHELL} /Users/teus/dev/laboratory/linux/install-sh"
+S["MAKEINFO"]="${SHELL} /Users/teus/dev/laboratory/linux/missing makeinfo"
+S["AUTOHEADER"]="${SHELL} /Users/teus/dev/laboratory/linux/missing autoheader"
+S["AUTOMAKE"]="${SHELL} /Users/teus/dev/laboratory/linux/missing automake-1.15"
+S["AUTOCONF"]="${SHELL} /Users/teus/dev/laboratory/linux/missing autoconf"
+S["ACLOCAL"]="${SHELL} /Users/teus/dev/laboratory/linux/missing aclocal-1.15"
 S["VERSION"]="1.0"
 S["PACKAGE"]="bibledit"
 S["CYGPATH_W"]="echo"
