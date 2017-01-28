@@ -29,6 +29,12 @@ int bibledit_window_width = 0;
 int bibledit_window_height = 0;
 bool bibledit_window_maximized = false;
 bool bibledit_window_fullscreen = false;
+const char * bibledit_window_state = "WindowState";
+const char * bibledit_window_width_key = "Width";
+const char * bibledit_window_height_key = "Height";
+const char * bibledit_window_maximized_key = "Maximized";
+const char * bibledit_window_fullscreen_key = "Fullscreen";
+const char * bibledit_window_state_ini = "state.ini";
 
 
 int main (int argc, char *argv[])
@@ -92,6 +98,22 @@ void activate (GtkApplication *app)
   // Ensure it will get mouse and keyboard events.
   gtk_widget_grab_focus (GTK_WIDGET (webview));
 
+  // Set window state and size.
+  const char *appid = g_application_get_application_id (g_application_get_default ());
+  char *file = g_build_filename (g_get_user_cache_dir (), appid, bibledit_window_state_ini, NULL);
+  GKeyFile *keyfile = g_key_file_new ();
+  if (g_key_file_load_from_file (keyfile, file, G_KEY_FILE_NONE, NULL)) {
+    bibledit_window_width = g_key_file_get_integer (keyfile, bibledit_window_state, bibledit_window_width_key, NULL);
+    bibledit_window_height = g_key_file_get_integer (keyfile, bibledit_window_state, bibledit_window_height_key, NULL);
+    bibledit_window_maximized = g_key_file_get_boolean (keyfile, bibledit_window_state, bibledit_window_maximized_key, NULL);
+    bibledit_window_fullscreen = g_key_file_get_boolean (keyfile, bibledit_window_state, bibledit_window_fullscreen_key, NULL);
+    gtk_window_set_default_size (GTK_WINDOW (window), bibledit_window_width, bibledit_window_height);
+    if (bibledit_window_maximized) gtk_window_maximize (GTK_WINDOW (window));
+    if (bibledit_window_fullscreen) gtk_window_fullscreen (GTK_WINDOW (window));
+  }
+  g_key_file_unref (keyfile);
+  g_free (file);
+  
   // Signal handlers.
   g_signal_connect (window, "size-allocate", G_CALLBACK (on_window_size_allocate), NULL);
   g_signal_connect (window, "window-state-event", G_CALLBACK (on_window_state_event), NULL);
@@ -110,18 +132,22 @@ void on_signal_destroy (gpointer user_data)
 {
   (void) user_data;
 
-  try {
-    GSettings *settings = g_settings_new ("org.bibledit.linux.window-state");
-  } catch (...) {
-    
-  }
+  GKeyFile *keyfile = g_key_file_new ();
   
-  /*
-  g_settings_set_int (settings, "width", bibledit_window_width);
-  g_settings_set_int (settings, "height", bibledit_window_height);
-  g_settings_set_boolean (settings, "maximized", bibledit_window_maximized);
-  g_settings_set_boolean (settings, "fullscreen", bibledit_window_fullscreen);
-   */
+  g_key_file_set_integer (keyfile, bibledit_window_state, bibledit_window_width_key, bibledit_window_width);
+  g_key_file_set_integer (keyfile, bibledit_window_state, bibledit_window_height_key, bibledit_window_height);
+  g_key_file_set_boolean (keyfile, bibledit_window_state, bibledit_window_maximized_key, bibledit_window_maximized);
+  g_key_file_set_boolean (keyfile, bibledit_window_state, bibledit_window_fullscreen_key, bibledit_window_fullscreen);
+
+  const char *appid = g_application_get_application_id (g_application_get_default ());
+  char *path = g_build_filename (g_get_user_cache_dir (), appid, NULL);
+  g_mkdir_with_parents (path, 0700);
+  char *file = g_build_filename (path, bibledit_window_state_ini, NULL);
+  g_key_file_save_to_file (keyfile, file, NULL);
+  
+  g_free (file);
+  g_key_file_unref (keyfile);
+  g_free (path);
   
   gtk_main_quit ();
 }
