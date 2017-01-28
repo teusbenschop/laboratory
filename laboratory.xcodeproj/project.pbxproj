@@ -23,6 +23,7 @@
 		CA3C9E4A1E000DF1007990B5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		CA44B2221E3C96F20085B761 /* org.bibledit.linux.gschema.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = org.bibledit.linux.gschema.xml; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -128,6 +129,7 @@
 				CA7B7A491E3BE1DB00019CA6 /* config.h */,
 				CA7B7A4F1E3BE1DB00019CA6 /* configure.ac */,
 				CA7B7A561E3BE1DB00019CA6 /* Makefile.am */,
+				CA44B2221E3C96F20085B761 /* org.bibledit.linux.gschema.xml */,
 				CA7B7A5A1E3BE1DB00019CA6 /* README */,
 				CA7B7A5B1E3BE1DB00019CA6 /* reconfigure */,
 				CA7B7A5C1E3BE1DB00019CA6 /* src */,

@@ -239,6 +239,8 @@ ECHO_C = \c
 ECHO_N = 
 ECHO_T = 
 EXEEXT = 
+GLIB_COMPILE_SCHEMAS = glib-compile-schemas
+GSETTINGS_DISABLE_SCHEMAS_COMPILE = 
 GTK_CFLAGS = -D_REENTRANT -I/opt/local/include/gtk-3.0 -I/opt/local/include/at-spi2-atk/2.0 -I/opt/local/include/at-spi-2.0 -I/opt/local/include/dbus-1.0 -I/opt/local/lib/dbus-1.0/include -I/opt/local/include/gtk-3.0 -I/opt/local/include/gio-unix-2.0/ -I/opt/local/include -I/opt/local/include/cairo -I/opt/local/include -I/opt/local/include/pango-1.0 -I/opt/local/include/harfbuzz -I/opt/local/include -I/opt/local/include/pango-1.0 -I/opt/local/include/atk-1.0 -I/opt/local/include/cairo -I/opt/local/include/pixman-1 -I/opt/local/include -I/opt/local/include/freetype2 -I/opt/local/include -I/opt/local/include/freetype2 -I/opt/local/include/libpng16 -I/opt/local/include -I/opt/local/include/gdk-pixbuf-2.0 -I/opt/local/include/libpng16 -I/opt/local/include/glib-2.0 -I/opt/local/lib/glib-2.0/include -I/opt/local/include
 GTK_LIBS = -L/opt/local/lib -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -latk-1.0 -lcairo-gobject -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lintl
 HAVE_CXX11 = 1
@@ -296,6 +298,7 @@ datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
+gsettingsschemadir = ${datarootdir}/glib-2.0/schemas
 host_alias = 
 htmldir = ${docdir}
 includedir = ${prefix}/include
@@ -324,13 +327,16 @@ bibledit_SOURCES = src/bibledit.cpp
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 AM_CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -fno-var-tracking -g \
 	$(GTK_CFLAGS) $(WEBKIT2GTK_CFLAGS)
-EXTRA_DIST = s* *.desktop *.xpm *.1
+EXTRA_DIST = s* *.desktop *.xpm *.1 *.xml
 CLEANFILES = bibledit*.gz *~
 man_MANS = *.1
 applicationdir = $(datadir)/applications
 application_DATA = bibledit.desktop
 appicondir = $(datadir)/pixmaps
 appicon_DATA = bibledit.xpm
+
+# https://wiki.gnome.org/HowDoI/GSettings
+gsettings_SCHEMAS = org.bibledit.linux.gschema.xml
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -929,6 +935,47 @@ install-data-hook:
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(pkgdatadir)/*
+
+.PHONY : uninstall-gsettings-schemas install-gsettings-schemas clean-gsettings-schemas
+
+mostlyclean-am: clean-gsettings-schemas
+
+gsettings__enum_file = $(addsuffix .enums.xml,$(gsettings_ENUM_NAMESPACE))
+
+%.gschema.valid: %.gschema.xml $(gsettings__enum_file)
+	$(AM_V_GEN) $(GLIB_COMPILE_SCHEMAS) --strict --dry-run $(addprefix --schema-file=,$(gsettings__enum_file)) --schema-file=$< && mkdir -p $(@D) && touch $@
+
+all-am: $(gsettings_SCHEMAS:.xml=.valid)
+uninstall-am: uninstall-gsettings-schemas
+install-data-am: install-gsettings-schemas
+
+.SECONDARY: $(gsettings_SCHEMAS)
+
+install-gsettings-schemas: $(gsettings_SCHEMAS) $(gsettings__enum_file)
+	@$(NORMAL_INSTALL)
+	if test -n "$^"; then \
+		test -z "$(gsettingsschemadir)" || $(MKDIR_P) "$(DESTDIR)$(gsettingsschemadir)"; \
+		$(INSTALL_DATA) $^ "$(DESTDIR)$(gsettingsschemadir)"; \
+		test -n "$(GSETTINGS_DISABLE_SCHEMAS_COMPILE)$(DESTDIR)" || $(GLIB_COMPILE_SCHEMAS) $(gsettingsschemadir); \
+	fi
+
+uninstall-gsettings-schemas:
+	@$(NORMAL_UNINSTALL)
+	@list='$(gsettings_SCHEMAS) $(gsettings__enum_file)'; test -n "$(gsettingsschemadir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(gsettingsschemadir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(gsettingsschemadir)" && rm -f $$files
+	test -n "$(GSETTINGS_DISABLE_SCHEMAS_COMPILE)$(DESTDIR)" || $(GLIB_COMPILE_SCHEMAS) $(gsettingsschemadir)
+
+clean-gsettings-schemas:
+	rm -f $(gsettings_SCHEMAS:.xml=.valid) $(gsettings__enum_file)
+
+ifdef gsettings_ENUM_NAMESPACE
+$(gsettings__enum_file): $(gsettings_ENUM_FILES)
+	$(AM_V_GEN) glib-mkenums --comments '<!-- @comment@ -->' --fhead "<schemalist>" --vhead "  <@type@ id='$(gsettings_ENUM_NAMESPACE).@EnumName@'>" --vprod "    <value nick='@valuenick@' value='@valuenum@'/>" --vtail "  </@type@>" --ftail "</schemalist>" $^ > $@.tmp && mv $@.tmp $@
+endif
+
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

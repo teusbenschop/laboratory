@@ -239,6 +239,8 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EXEEXT = @EXEEXT@
+GLIB_COMPILE_SCHEMAS = @GLIB_COMPILE_SCHEMAS@
+GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_LIBS = @GTK_LIBS@
 HAVE_CXX11 = @HAVE_CXX11@
@@ -296,6 +298,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gsettingsschemadir = @gsettingsschemadir@
 host_alias = @host_alias@
 htmldir = @htmldir@
 includedir = @includedir@
@@ -324,13 +327,16 @@ bibledit_SOURCES = src/bibledit.cpp
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 AM_CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -fno-var-tracking -g \
 	$(GTK_CFLAGS) $(WEBKIT2GTK_CFLAGS)
-EXTRA_DIST = s* *.desktop *.xpm *.1
+EXTRA_DIST = s* *.desktop *.xpm *.1 *.xml
 CLEANFILES = bibledit*.gz *~
 man_MANS = *.1
 applicationdir = $(datadir)/applications
 application_DATA = bibledit.desktop
 appicondir = $(datadir)/pixmaps
 appicon_DATA = bibledit.xpm
+
+# https://wiki.gnome.org/HowDoI/GSettings
+gsettings_SCHEMAS = org.bibledit.linux.gschema.xml
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -929,6 +935,7 @@ install-data-hook:
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(pkgdatadir)/*
+@GSETTINGS_RULES@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

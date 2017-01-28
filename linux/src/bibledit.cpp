@@ -25,6 +25,12 @@
 #include <webkit2/webkit2.h>
 
 
+int bibledit_window_width = 0;
+int bibledit_window_height = 0;
+bool bibledit_window_maximized = false;
+bool bibledit_window_fullscreen = false;
+
+
 int main (int argc, char *argv[])
 {
   application = gtk_application_new ("org.bibledit.linux", G_APPLICATION_FLAGS_NONE);
@@ -74,24 +80,24 @@ void activate (GtkApplication *app)
   gtk_window_set_default_icon_from_file (iconfile, NULL);
   g_free (iconfile);
 
-  // Prepare for program quit.
-  g_signal_connect (window, "destroy", G_CALLBACK (on_signal_destroy), NULL);
-
   // Create a browser instance.
   WebKitWebView * webview = WEBKIT_WEB_VIEW (webkit_web_view_new ());
-  
-  // Signal handlers.
-  g_signal_connect (webview, "key-press-event", G_CALLBACK (on_key_press), NULL);
   
   // Put the browser area into the main window.
   gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (webview));
   
   // Load a web page into the browser instance
-  // webkit_web_view_load_uri (webview, "http://localhost:8080");
+  webkit_web_view_load_uri (webview, "http://bibledit.org:8080");
   
   // Ensure it will get mouse and keyboard events.
   gtk_widget_grab_focus (GTK_WIDGET (webview));
-  
+
+  // Signal handlers.
+  g_signal_connect (window, "size-allocate", G_CALLBACK (on_window_size_allocate), NULL);
+  g_signal_connect (window, "window-state-event", G_CALLBACK (on_window_state_event), NULL);
+  g_signal_connect (window, "destroy", G_CALLBACK (on_signal_destroy), NULL);
+  g_signal_connect (webview, "key-press-event", G_CALLBACK (on_key_press), NULL);
+
   // Make sure the main window and all its contents are visible
   gtk_widget_show_all (window);
 
@@ -103,6 +109,20 @@ void activate (GtkApplication *app)
 void on_signal_destroy (gpointer user_data)
 {
   (void) user_data;
+
+  try {
+    GSettings *settings = g_settings_new ("org.bibledit.linux.window-state");
+  } catch (...) {
+    
+  }
+  
+  /*
+  g_settings_set_int (settings, "width", bibledit_window_width);
+  g_settings_set_int (settings, "height", bibledit_window_height);
+  g_settings_set_boolean (settings, "maximized", bibledit_window_maximized);
+  g_settings_set_boolean (settings, "fullscreen", bibledit_window_fullscreen);
+   */
+  
   gtk_main_quit ();
 }
 
@@ -127,4 +147,22 @@ gboolean on_key_press (GtkWidget *widget, GdkEvent *event, gpointer data)
   }
   (void) data;
   return false;
+}
+
+
+void on_window_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+{
+  // Save the window geometry only if the window is not maximized or fullscreen.
+  if (!(bibledit_window_maximized || bibledit_window_fullscreen)) {
+    gtk_window_get_size (GTK_WINDOW (widget), &bibledit_window_width, &bibledit_window_height);
+  }
+}
+
+
+gboolean on_window_state_event (GtkWidget *widget, GdkEventWindowState *event)
+{
+  (void) widget;
+  bibledit_window_maximized = (event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED) != 0;
+  bibledit_window_fullscreen = (event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN) != 0;
+  return true;
 }
