@@ -31,7 +31,6 @@
 		CA7B7A431E3BE1DB00019CA6 /* bibledit.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = bibledit.1; sourceTree = "<group>"; };
 		CA7B7A441E3BE1DB00019CA6 /* bibledit.desktop */ = {isa = PBXFileReference; lastKnownFileType = text; path = bibledit.desktop; sourceTree = "<group>"; };
 		CA7B7A451E3BE1DB00019CA6 /* bibledit.xpm */ = {isa = PBXFileReference; lastKnownFileType = text; path = bibledit.xpm; sourceTree = "<group>"; };
-		CA7B7A491E3BE1DB00019CA6 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		CA7B7A4F1E3BE1DB00019CA6 /* configure.ac */ = {isa = PBXFileReference; lastKnownFileType = text; path = configure.ac; sourceTree = "<group>"; };
 		CA7B7A561E3BE1DB00019CA6 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
 		CA7B7A5A1E3BE1DB00019CA6 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -125,7 +124,6 @@
 				CA7B7A431E3BE1DB00019CA6 /* bibledit.1 */,
 				CA7B7A441E3BE1DB00019CA6 /* bibledit.desktop */,
 				CA7B7A451E3BE1DB00019CA6 /* bibledit.xpm */,
-				CA7B7A491E3BE1DB00019CA6 /* config.h */,
 				CA7B7A4F1E3BE1DB00019CA6 /* configure.ac */,
 				CA7B7A561E3BE1DB00019CA6 /* Makefile.am */,
 				CA7B7A5A1E3BE1DB00019CA6 /* README */,
