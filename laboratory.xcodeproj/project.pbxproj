@@ -17,6 +17,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA0B56651E3E55A800347FD0 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install.sh; sourceTree = "<group>"; };
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3792E41DF6FA5A008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -86,6 +87,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		CA0B56641E3E55A800347FD0 /* sh */ = {
+			isa = PBXGroup;
+			children = (
+				CA0B56651E3E55A800347FD0 /* install.sh */,
+			);
+			path = sh;
+			sourceTree = "<group>";
+		};
 		CA3792E11DF6FA5A008F8164 /* chrome-wakelock */ = {
 			isa = PBXGroup;
 			children = (
@@ -208,16 +217,17 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
-				CA7B7A3A1E3BE1DB00019CA6 /* linux */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
+				CA7B7A3A1E3BE1DB00019CA6 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
 				CABEE77B1DD5F653006D8D75 /* quill */,
 				CA7BA6901DDCEA3C00719C36 /* quill-mini */,
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
+				CA0B56641E3E55A800347FD0 /* sh */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
