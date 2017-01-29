@@ -1,9 +1,7 @@
 #!/bin/bash
 
 
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
-popd > /dev/null
+SCRIPTPATH=`readlink -f "$0"`
 
 
 # Some distro's cannot run $ su.
