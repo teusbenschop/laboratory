@@ -46,3 +46,4 @@ linux/autom4te.cache/traces.2
 linux/bibledit
 
 linux/bibledit-1.0.tar.gz
+*.suo
