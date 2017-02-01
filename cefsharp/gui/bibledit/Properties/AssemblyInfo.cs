@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Bibledit")]
 [assembly: AssemblyProduct("Bibledit")]
-[assembly: AssemblyCopyright("Copyright © Teus Benschop 2014")]
+[assembly: AssemblyCopyright("Copyright © Teus Benschop 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
