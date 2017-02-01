@@ -9,7 +9,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Net;
-
+using CefSharp;
+using CefSharp.WinForms;
 
 namespace Bibledit
 {
@@ -17,11 +18,20 @@ namespace Bibledit
   public partial class Form1 : Form
   {
 
-    
+    public ChromiumWebBrowser browser;
+    public void InitBrowser()
+    {
+      Cef.Initialize(new CefSettings());
+      browser = new ChromiumWebBrowser("http://bibledit.org:8080");
+      this.Controls.Add(browser);
+      browser.Dock = DockStyle.Fill;
+    }
+
 
     public Form1()
     {
       InitializeComponent();
+      InitBrowser();
     }
 
 
