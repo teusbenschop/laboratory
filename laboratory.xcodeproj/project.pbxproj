@@ -43,6 +43,18 @@
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA7BA6951DDCEA3C00719C36 /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
+		CA7BF10B1E41E2F4008FF558 /* ReadMe.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
+		CA7BF10C1E41E2F4008FF558 /* stdafx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		CA7BF10D1E41E2F4008FF558 /* stdafx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		CA7BF10E1E41E2F4008FF558 /* targetver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = targetver.h; sourceTree = "<group>"; };
+		CA7BF10F1E41E2F4008FF558 /* winsockclient.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = winsockclient.cpp; sourceTree = "<group>"; };
+		CA7BF1101E41E2F4008FF558 /* winsockclient.vcxproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockclient.vcxproj; sourceTree = "<group>"; };
+		CA7BF1111E41E2F4008FF558 /* winsockclient.vcxproj.filters */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockclient.vcxproj.filters; sourceTree = "<group>"; };
+		CA7BF1121E41E2F4008FF558 /* winsockclient.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockclient.sln; sourceTree = "<group>"; };
+		CA7BF1151E41E2F4008FF558 /* winsockserver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = winsockserver.cpp; sourceTree = "<group>"; };
+		CA7BF1161E41E2F4008FF558 /* winsockserver.vcxproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj; sourceTree = "<group>"; };
+		CA7BF1171E41E2F4008FF558 /* winsockserver.vcxproj.filters */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj.filters; sourceTree = "<group>"; };
+		CA7BF1181E41E2F4008FF558 /* winsockserver.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockserver.sln; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
 		CA98E2121DA8D14000F43F4B /* client6.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client6.c; sourceTree = "<group>"; };
 		CA98E2131DA8D14000F43F4B /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -163,6 +175,57 @@
 			path = "quill-mini";
 			sourceTree = "<group>";
 		};
+		CA7BF1081E41E2F4008FF558 /* winsock */ = {
+			isa = PBXGroup;
+			children = (
+				CA7BF1091E41E2F4008FF558 /* winsockclient */,
+				CA7BF1131E41E2F4008FF558 /* winsockserver */,
+			);
+			path = winsock;
+			sourceTree = "<group>";
+		};
+		CA7BF1091E41E2F4008FF558 /* winsockclient */ = {
+			isa = PBXGroup;
+			children = (
+				CA7BF10A1E41E2F4008FF558 /* winsockclient */,
+				CA7BF1121E41E2F4008FF558 /* winsockclient.sln */,
+			);
+			path = winsockclient;
+			sourceTree = "<group>";
+		};
+		CA7BF10A1E41E2F4008FF558 /* winsockclient */ = {
+			isa = PBXGroup;
+			children = (
+				CA7BF10B1E41E2F4008FF558 /* ReadMe.txt */,
+				CA7BF10C1E41E2F4008FF558 /* stdafx.cpp */,
+				CA7BF10D1E41E2F4008FF558 /* stdafx.h */,
+				CA7BF10E1E41E2F4008FF558 /* targetver.h */,
+				CA7BF10F1E41E2F4008FF558 /* winsockclient.cpp */,
+				CA7BF1101E41E2F4008FF558 /* winsockclient.vcxproj */,
+				CA7BF1111E41E2F4008FF558 /* winsockclient.vcxproj.filters */,
+			);
+			path = winsockclient;
+			sourceTree = "<group>";
+		};
+		CA7BF1131E41E2F4008FF558 /* winsockserver */ = {
+			isa = PBXGroup;
+			children = (
+				CA7BF1141E41E2F4008FF558 /* winsockserver */,
+				CA7BF1181E41E2F4008FF558 /* winsockserver.sln */,
+			);
+			path = winsockserver;
+			sourceTree = "<group>";
+		};
+		CA7BF1141E41E2F4008FF558 /* winsockserver */ = {
+			isa = PBXGroup;
+			children = (
+				CA7BF1151E41E2F4008FF558 /* winsockserver.cpp */,
+				CA7BF1161E41E2F4008FF558 /* winsockserver.vcxproj */,
+				CA7BF1171E41E2F4008FF558 /* winsockserver.vcxproj.filters */,
+			);
+			path = winsockserver;
+			sourceTree = "<group>";
+		};
 		CA98E2101DA8D14000F43F4B /* ipv6 */ = {
 			isa = PBXGroup;
 			children = (
@@ -232,6 +295,7 @@
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
+				CA7BF1081E41E2F4008FF558 /* winsock */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
