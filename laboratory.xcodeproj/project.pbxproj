@@ -18,6 +18,10 @@
 
 /* Begin PBXFileReference section */
 		CA0B56651E3E55A800347FD0 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install.sh; sourceTree = "<group>"; };
+		CA21FCB21E48870500A5E09C /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA21FCB31E48870500A5E09C /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		CA21FCB61E4889C000A5E09C /* editone.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = editone.html; sourceTree = "<group>"; };
+		CA21FCB71E488C7000A5E09C /* resource.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = resource.html; sourceTree = "<group>"; };
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3792E41DF6FA5A008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -105,6 +109,17 @@
 				CA0B56651E3E55A800347FD0 /* install.sh */,
 			);
 			path = sh;
+			sourceTree = "<group>";
+		};
+		CA21FCB11E48870500A5E09C /* edge */ = {
+			isa = PBXGroup;
+			children = (
+				CA21FCB61E4889C000A5E09C /* editone.html */,
+				CA21FCB21E48870500A5E09C /* index.html */,
+				CA21FCB31E48870500A5E09C /* index.js */,
+				CA21FCB71E488C7000A5E09C /* resource.html */,
+			);
+			path = edge;
 			sourceTree = "<group>";
 		};
 		CA3792E11DF6FA5A008F8164 /* chrome-wakelock */ = {
@@ -282,6 +297,7 @@
 			children = (
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
+				CA21FCB11E48870500A5E09C /* edge */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CA7B7A3A1E3BE1DB00019CA6 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
