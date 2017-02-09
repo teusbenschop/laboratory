@@ -12,7 +12,7 @@ LIBS = -Wall -lpthread -L. -g -rdynamic -ldl
 LIBS += $(GTK_LIBS)
 LIBS += $(WEBKIT2GTK_LIBS)
 
-EXTRA_DIST = s* *.desktop *.xpm *.1
+EXTRA_DIST = debian src *.desktop *.xpm *.1
 
 CLEANFILES = bibledit*.gz *~
 

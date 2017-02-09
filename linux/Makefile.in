@@ -324,7 +324,7 @@ bibledit_SOURCES = src/bibledit.cpp
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 AM_CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -fno-var-tracking -g \
 	$(GTK_CFLAGS) $(WEBKIT2GTK_CFLAGS)
-EXTRA_DIST = s* *.desktop *.xpm *.1
+EXTRA_DIST = debian src *.desktop *.xpm *.1
 CLEANFILES = bibledit*.gz *~
 man_MANS = *.1
 applicationdir = $(datadir)/applications
