@@ -31,19 +31,30 @@
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		CA72AE7A1E4C8E1000A514F3 /* bibledit.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = bibledit.1; sourceTree = "<group>"; };
+		CA72AE7B1E4C8E1000A514F3 /* bibledit.desktop */ = {isa = PBXFileReference; lastKnownFileType = text; path = bibledit.desktop; sourceTree = "<group>"; };
+		CA72AE7C1E4C8E1000A514F3 /* bibledit.xpm */ = {isa = PBXFileReference; lastKnownFileType = text; path = bibledit.xpm; sourceTree = "<group>"; };
+		CA72AE7D1E4C8E1000A514F3 /* ChangeLog */ = {isa = PBXFileReference; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
+		CA72AE821E4C8E1000A514F3 /* configure */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = configure; sourceTree = "<group>"; };
+		CA72AE831E4C8E1000A514F3 /* configure.ac */ = {isa = PBXFileReference; lastKnownFileType = text; path = configure.ac; sourceTree = "<group>"; };
+		CA72AE851E4C8E1000A514F3 /* changelog */ = {isa = PBXFileReference; lastKnownFileType = text; path = changelog; sourceTree = "<group>"; };
+		CA72AE861E4C8E1000A514F3 /* compat */ = {isa = PBXFileReference; lastKnownFileType = text; path = compat; sourceTree = "<group>"; };
+		CA72AE871E4C8E1000A514F3 /* control */ = {isa = PBXFileReference; lastKnownFileType = text; path = control; sourceTree = "<group>"; };
+		CA72AE881E4C8E1000A514F3 /* copyright */ = {isa = PBXFileReference; lastKnownFileType = text; path = copyright; sourceTree = "<group>"; };
+		CA72AE891E4C8E1000A514F3 /* dirs */ = {isa = PBXFileReference; lastKnownFileType = text; path = dirs; sourceTree = "<group>"; };
+		CA72AE8A1E4C8E1000A514F3 /* install */ = {isa = PBXFileReference; lastKnownFileType = text; path = install; sourceTree = "<group>"; };
+		CA72AE8B1E4C8E1000A514F3 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		CA72AE8C1E4C8E1000A514F3 /* rules */ = {isa = PBXFileReference; lastKnownFileType = text; path = rules; sourceTree = "<group>"; };
+		CA72AE8E1E4C8E1000A514F3 /* format */ = {isa = PBXFileReference; lastKnownFileType = text; path = format; sourceTree = "<group>"; };
+		CA72AE921E4C8E1000A514F3 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
+		CA72AE931E4C8E1000A514F3 /* Makefile.in */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.in; sourceTree = "<group>"; };
+		CA72AE971E4C8E1000A514F3 /* reconfigure */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = reconfigure; sourceTree = "<group>"; };
+		CA72AE991E4C8E1000A514F3 /* bibledit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bibledit.cpp; sourceTree = "<group>"; };
+		CA72AE9A1E4C8E1000A514F3 /* bibledit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bibledit.h; sourceTree = "<group>"; };
+		CA72AE9B1E4C8E1000A514F3 /* bibledit.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bibledit.html; sourceTree = "<group>"; };
+		CA72AE9C1E4C8E1000A514F3 /* test */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = test; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
-		CA7B7A431E3BE1DB00019CA6 /* bibledit.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = bibledit.1; sourceTree = "<group>"; };
-		CA7B7A441E3BE1DB00019CA6 /* bibledit.desktop */ = {isa = PBXFileReference; lastKnownFileType = text; path = bibledit.desktop; sourceTree = "<group>"; };
-		CA7B7A451E3BE1DB00019CA6 /* bibledit.xpm */ = {isa = PBXFileReference; lastKnownFileType = text; path = bibledit.xpm; sourceTree = "<group>"; };
-		CA7B7A4F1E3BE1DB00019CA6 /* configure.ac */ = {isa = PBXFileReference; lastKnownFileType = text; path = configure.ac; sourceTree = "<group>"; };
-		CA7B7A561E3BE1DB00019CA6 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
-		CA7B7A5A1E3BE1DB00019CA6 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		CA7B7A5B1E3BE1DB00019CA6 /* reconfigure */ = {isa = PBXFileReference; lastKnownFileType = text; path = reconfigure; sourceTree = "<group>"; };
-		CA7B7A611E3BE1DB00019CA6 /* bibledit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bibledit.cpp; sourceTree = "<group>"; };
-		CA7B7A621E3BE1DB00019CA6 /* bibledit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bibledit.h; sourceTree = "<group>"; };
-		CA7B7A631E3BE1DB00019CA6 /* bibledit.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bibledit.html; sourceTree = "<group>"; };
-		CA7B7A651E3BE1DB00019CA6 /* test */ = {isa = PBXFileReference; lastKnownFileType = text; path = test; sourceTree = "<group>"; };
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA7BA6951DDCEA3C00719C36 /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
@@ -154,28 +165,55 @@
 			path = torch;
 			sourceTree = "<group>";
 		};
-		CA7B7A3A1E3BE1DB00019CA6 /* linux */ = {
+		CA72AE761E4C8E1000A514F3 /* linux */ = {
 			isa = PBXGroup;
 			children = (
-				CA7B7A431E3BE1DB00019CA6 /* bibledit.1 */,
-				CA7B7A441E3BE1DB00019CA6 /* bibledit.desktop */,
-				CA7B7A451E3BE1DB00019CA6 /* bibledit.xpm */,
-				CA7B7A4F1E3BE1DB00019CA6 /* configure.ac */,
-				CA7B7A561E3BE1DB00019CA6 /* Makefile.am */,
-				CA7B7A5A1E3BE1DB00019CA6 /* README */,
-				CA7B7A5B1E3BE1DB00019CA6 /* reconfigure */,
-				CA7B7A5C1E3BE1DB00019CA6 /* src */,
-				CA7B7A651E3BE1DB00019CA6 /* test */,
+				CA72AE7A1E4C8E1000A514F3 /* bibledit.1 */,
+				CA72AE7B1E4C8E1000A514F3 /* bibledit.desktop */,
+				CA72AE7C1E4C8E1000A514F3 /* bibledit.xpm */,
+				CA72AE7D1E4C8E1000A514F3 /* ChangeLog */,
+				CA72AE821E4C8E1000A514F3 /* configure */,
+				CA72AE831E4C8E1000A514F3 /* configure.ac */,
+				CA72AE841E4C8E1000A514F3 /* debian */,
+				CA72AE921E4C8E1000A514F3 /* Makefile.am */,
+				CA72AE931E4C8E1000A514F3 /* Makefile.in */,
+				CA72AE971E4C8E1000A514F3 /* reconfigure */,
+				CA72AE981E4C8E1000A514F3 /* src */,
+				CA72AE9C1E4C8E1000A514F3 /* test */,
 			);
 			path = linux;
 			sourceTree = "<group>";
 		};
-		CA7B7A5C1E3BE1DB00019CA6 /* src */ = {
+		CA72AE841E4C8E1000A514F3 /* debian */ = {
 			isa = PBXGroup;
 			children = (
-				CA7B7A611E3BE1DB00019CA6 /* bibledit.cpp */,
-				CA7B7A621E3BE1DB00019CA6 /* bibledit.h */,
-				CA7B7A631E3BE1DB00019CA6 /* bibledit.html */,
+				CA72AE851E4C8E1000A514F3 /* changelog */,
+				CA72AE861E4C8E1000A514F3 /* compat */,
+				CA72AE871E4C8E1000A514F3 /* control */,
+				CA72AE881E4C8E1000A514F3 /* copyright */,
+				CA72AE891E4C8E1000A514F3 /* dirs */,
+				CA72AE8A1E4C8E1000A514F3 /* install */,
+				CA72AE8B1E4C8E1000A514F3 /* README */,
+				CA72AE8C1E4C8E1000A514F3 /* rules */,
+				CA72AE8D1E4C8E1000A514F3 /* source */,
+			);
+			path = debian;
+			sourceTree = "<group>";
+		};
+		CA72AE8D1E4C8E1000A514F3 /* source */ = {
+			isa = PBXGroup;
+			children = (
+				CA72AE8E1E4C8E1000A514F3 /* format */,
+			);
+			path = source;
+			sourceTree = "<group>";
+		};
+		CA72AE981E4C8E1000A514F3 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				CA72AE991E4C8E1000A514F3 /* bibledit.cpp */,
+				CA72AE9A1E4C8E1000A514F3 /* bibledit.h */,
+				CA72AE9B1E4C8E1000A514F3 /* bibledit.html */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -299,7 +337,7 @@
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA21FCB11E48870500A5E09C /* edge */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
-				CA7B7A3A1E3BE1DB00019CA6 /* linux */,
+				CA72AE761E4C8E1000A514F3 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
 				CABEE77B1DD5F653006D8D75 /* quill */,

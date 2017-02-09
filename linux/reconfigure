@@ -1,6 +1,8 @@
+#!/bin/sh
 aclocal
 autoconf
 touch AUTHORS NEWS README ChangeLog
 automake --add-missing
 autoreconf
+autoreconf -f
 autoheader

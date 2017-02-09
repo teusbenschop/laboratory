@@ -1,12 +1,12 @@
 Format: http://dep.debian.net/deps/dep5
-Upstream-Name: hello-world
+Upstream-Name: bibledit
 
 Files: *
-Copyright: 2012 Hélder Silva <hsilva@keep.pt> 
+Copyright: 2012 Teus Benschop <teusjannette@gmail.com> 
 License: LGPL-2.0+
 
 Files: debian/*
-Copyright: 2012 Hélder Silva <hsilva@keep.pt>
+Copyright: 2012 Teus Benschop <teusjannette@gmail.com>
 License: LGPL-2.0+
 
 License: LGPL-2.0+
