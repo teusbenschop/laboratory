@@ -24,6 +24,8 @@ dist-hook:
 	rm -rf `find $(distdir) -name .dirstamp`
 	rm -rf `find $(distdir) -name .deps`
 	rm -rf `find $(distdir) -name *~`
+	rm -rf `find $(distdir) -name ._*`
+	rm -rf `find $(distdir) -name .DS_Store`
 
 man_MANS = *.1
 
@@ -34,7 +36,7 @@ appicondir = $(datadir)/pixmaps
 appicon_DATA = bibledit.xpm
 
 install-data-hook:
-	rsync --archive -v --delete --exclude "*.h" --exclude "*.c" --exclude "*.cpp" --exclude "*.o" --exclude "*.deps*" --exclude "*autom4te.cache*" --exclude ".dirstamp" --exclude ".DS_Store" --exclude "bibledit" --exclude "*~" --exclude "COPYING"  $(srcdir) $(DESTDIR)$(pkgdatadir)
+	rsync --archive -v --delete --exclude "*.h" --exclude "*.c" --exclude "*.cpp" --exclude "*.o" --exclude "*.deps*" --exclude "*autom4te.cache*" --exclude ".dirstamp" --exclude "bibledit" --exclude "*~" --exclude "COPYING" --exclude "debian/*"  $(srcdir) $(DESTDIR)$(pkgdatadir)
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(pkgdatadir)/*

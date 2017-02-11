@@ -1,16 +1,29 @@
 #!/bin/sh
 
-# ./configure
-# make clean
-# make distclean
-# ./configure
-# make dist
-# make
-# sudo make install
-# sudo make uninstall
 
-DEBIAN=192.168.2.106
-FOLDER=bibledit-1.0.100
+# The IP address of the Debian machine.
+source ~/scr/sid-ip
 
-rsync -av --delete ../linux/ $DEBIAN:$FOLDER/
-ssh $DEBIAN "cd $FOLDER; debuild -us -uc"
+
+# Remove macOS extended attributes, create a tarball, and copy it to Debian.
+./configure
+if [ $? -ne 0 ]; then exit; fi
+xattr -r -c *
+if [ $? -ne 0 ]; then exit; fi
+make dist
+if [ $? -ne 0 ]; then exit; fi
+ssh $DEBIANSID "rm -rf bibledit*"
+if [ $? -ne 0 ]; then exit; fi
+scp *.gz $DEBIANSID:.
+if [ $? -ne 0 ]; then exit; fi
+make distclean
+if [ $? -ne 0 ]; then exit; fi
+
+
+# Unpack and remove the tarball in Debian.
+ssh $DEBIANSID "tar xf bibledit*gz"
+ssh $DEBIANSID "rm bibledit*gz"
+
+
+# Build the Debian packages.
+ssh $DEBIANSID "cd bibledit*; debuild -us -uc"
