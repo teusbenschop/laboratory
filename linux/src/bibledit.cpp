@@ -1,5 +1,5 @@
 /*
-** Copyright (©) 2003-2015 Teus Benschop.
+** Copyright (©) 2003-2017 Teus Benschop.
 **  
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -58,6 +58,8 @@ int main (int argc, char *argv[])
   // Read the package directory from config.h.
   string package (PACKAGE_DATA_DIR);
 
+  cout << webkit_get_major_version () << "." << webkit_get_minor_version () << endl;
+  
   status = g_application_run (G_APPLICATION (application), argc, argv);
 
   g_object_unref (application);
