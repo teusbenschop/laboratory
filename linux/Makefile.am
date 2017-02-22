@@ -1,6 +1,6 @@
 bin_PROGRAMS = bibledit
 
-bibledit_SOURCES = src/bibledit.cpp
+bibledit_SOURCES = src/bibledit.cpp changes/bibledit.cpp
 
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 
@@ -12,7 +12,7 @@ LIBS = -Wall -lpthread -L. -g -rdynamic -ldl
 LIBS += $(GTK_LIBS)
 LIBS += $(WEBKIT2GTK_LIBS)
 
-EXTRA_DIST = debian src *.desktop *.xpm *.1
+EXTRA_DIST = debian src changes bibledit.desktop bibledit.xpm bibledit.1
 
 CLEANFILES = bibledit*.gz *~
 

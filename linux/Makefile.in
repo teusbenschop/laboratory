@@ -106,7 +106,8 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(appicondir)" "$(DESTDIR)$(applicationdir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_bibledit_OBJECTS = src/bibledit.$(OBJEXT)
+am_bibledit_OBJECTS = src/bibledit.$(OBJEXT) \
+	changes/bibledit.$(OBJEXT)
 bibledit_OBJECTS = $(am_bibledit_OBJECTS)
 bibledit_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -320,11 +321,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-bibledit_SOURCES = src/bibledit.cpp
+bibledit_SOURCES = src/bibledit.cpp changes/bibledit.cpp
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 AM_CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -fno-var-tracking -g \
 	$(GTK_CFLAGS) $(WEBKIT2GTK_CFLAGS)
-EXTRA_DIST = debian src *.desktop *.xpm *.1
+EXTRA_DIST = debian src changes bibledit.desktop bibledit.xpm bibledit.1
 CLEANFILES = bibledit*.gz *~
 man_MANS = *.1
 applicationdir = $(datadir)/applications
@@ -434,6 +435,14 @@ src/$(DEPDIR)/$(am__dirstamp):
 	@: > src/$(DEPDIR)/$(am__dirstamp)
 src/bibledit.$(OBJEXT): src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+changes/$(am__dirstamp):
+	@$(MKDIR_P) changes
+	@: > changes/$(am__dirstamp)
+changes/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) changes/$(DEPDIR)
+	@: > changes/$(DEPDIR)/$(am__dirstamp)
+changes/bibledit.$(OBJEXT): changes/$(am__dirstamp) \
+	changes/$(DEPDIR)/$(am__dirstamp)
 
 bibledit$(EXEEXT): $(bibledit_OBJECTS) $(bibledit_DEPENDENCIES) $(EXTRA_bibledit_DEPENDENCIES) 
 	@rm -f bibledit$(EXEEXT)
@@ -441,11 +450,13 @@ bibledit$(EXEEXT): $(bibledit_OBJECTS) $(bibledit_DEPENDENCIES) $(EXTRA_bibledit
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f changes/*.$(OBJEXT)
 	-rm -f src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@changes/$(DEPDIR)/bibledit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/bibledit.Po@am__quote@
 
 .cpp.o:
@@ -808,6 +819,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f changes/$(DEPDIR)/$(am__dirstamp)
+	-rm -f changes/$(am__dirstamp)
 	-rm -f src/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/$(am__dirstamp)
 
@@ -820,7 +833,7 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/$(DEPDIR)
+	-rm -rf changes/$(DEPDIR) src/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -870,7 +883,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/$(DEPDIR)
+	-rm -rf changes/$(DEPDIR) src/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

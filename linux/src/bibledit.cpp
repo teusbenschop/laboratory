@@ -23,6 +23,7 @@
 #include <libgen.h>
 #include <iostream>
 #include <webkit2/webkit2.h>
+#include <changes/bibledit.h>
 
 
 gint bibledit_window_root_x = 0;
@@ -58,6 +59,7 @@ int main (int argc, char *argv[])
   // Read the package directory from config.h.
   string package (PACKAGE_DATA_DIR);
 
+  changes_bibledit ();
   cout << webkit_get_major_version () << "." << webkit_get_minor_version () << endl;
   
   status = g_application_run (G_APPLICATION (application), argc, argv);
