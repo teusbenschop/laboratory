@@ -18,10 +18,17 @@
 
 /* Begin PBXFileReference section */
 		CA0B56651E3E55A800347FD0 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install.sh; sourceTree = "<group>"; };
-		CA21FCB21E48870500A5E09C /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		CA21FCB31E48870500A5E09C /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		CA21FCB61E4889C000A5E09C /* editone.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = editone.html; sourceTree = "<group>"; };
-		CA21FCB71E488C7000A5E09C /* resource.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = resource.html; sourceTree = "<group>"; };
+		CA0F08D31E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA0F08D41E5DFE30008F91C3 /* players.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = players.html; sourceTree = "<group>"; };
+		CA0F08D51E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
+		CA0F08D71E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA0F08D81E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
+		CA0F08DA1E5DFE30008F91C3 /* editone.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = editone.html; sourceTree = "<group>"; };
+		CA0F08DB1E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		CA0F08DC1E5DFE30008F91C3 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		CA0F08DD1E5DFE30008F91C3 /* jquery.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = jquery.min.js; sourceTree = "<group>"; };
+		CA0F08DE1E5DFE30008F91C3 /* resource.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = resource.html; sourceTree = "<group>"; };
+		CA0F08DF1E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3792E41DF6FA5A008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -124,15 +131,46 @@
 			path = sh;
 			sourceTree = "<group>";
 		};
-		CA21FCB11E48870500A5E09C /* edge */ = {
+		CA0F08D11E5DFE30008F91C3 /* flexbox */ = {
 			isa = PBXGroup;
 			children = (
-				CA21FCB61E4889C000A5E09C /* editone.html */,
-				CA21FCB21E48870500A5E09C /* index.html */,
-				CA21FCB31E48870500A5E09C /* index.js */,
-				CA21FCB71E488C7000A5E09C /* resource.html */,
+				CA0F08D21E5DFE30008F91C3 /* stackoverflow1 */,
+				CA0F08D61E5DFE30008F91C3 /* stackoverflow2 */,
+				CA0F08D91E5DFE30008F91C3 /* workspace */,
 			);
-			path = edge;
+			path = flexbox;
+			sourceTree = "<group>";
+		};
+		CA0F08D21E5DFE30008F91C3 /* stackoverflow1 */ = {
+			isa = PBXGroup;
+			children = (
+				CA0F08D31E5DFE30008F91C3 /* index.html */,
+				CA0F08D41E5DFE30008F91C3 /* players.html */,
+				CA0F08D51E5DFE30008F91C3 /* stylesheet.css */,
+			);
+			path = stackoverflow1;
+			sourceTree = "<group>";
+		};
+		CA0F08D61E5DFE30008F91C3 /* stackoverflow2 */ = {
+			isa = PBXGroup;
+			children = (
+				CA0F08D71E5DFE30008F91C3 /* index.html */,
+				CA0F08D81E5DFE30008F91C3 /* stylesheet.css */,
+			);
+			path = stackoverflow2;
+			sourceTree = "<group>";
+		};
+		CA0F08D91E5DFE30008F91C3 /* workspace */ = {
+			isa = PBXGroup;
+			children = (
+				CA0F08DA1E5DFE30008F91C3 /* editone.html */,
+				CA0F08DB1E5DFE30008F91C3 /* index.html */,
+				CA0F08DC1E5DFE30008F91C3 /* index.js */,
+				CA0F08DD1E5DFE30008F91C3 /* jquery.min.js */,
+				CA0F08DE1E5DFE30008F91C3 /* resource.html */,
+				CA0F08DF1E5DFE30008F91C3 /* stylesheet.css */,
+			);
+			path = workspace;
 			sourceTree = "<group>";
 		};
 		CA3792E11DF6FA5A008F8164 /* chrome-wakelock */ = {
@@ -338,7 +376,7 @@
 			children = (
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
-				CA21FCB11E48870500A5E09C /* edge */,
+				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CA72AE761E4C8E1000A514F3 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,

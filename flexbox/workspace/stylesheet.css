@@ -463,6 +463,7 @@ textarea {
           flex-shrink: 1;
   width: 1em;
   border: none;
+  display:         flex;
 }
 .iframewrapper iframe + iframe {
   border-left: 2px inset;
