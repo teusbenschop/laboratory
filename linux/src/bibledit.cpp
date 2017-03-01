@@ -43,6 +43,11 @@ const char * bibledit_window_fullscreen_key = "Fullscreen";
 bool bibledit_window_configured = false;
 
 
+static void on_download_started (WebKitWebContext *context, WebKitDownload *download, gpointer user_data);
+static gboolean on_decide_policy (WebKitWebView *web_view, WebKitPolicyDecision *decision, WebKitPolicyDecisionType decision_type, gpointer user_data);
+static void on_download_finished (WebKitDownload *download, gpointer user_data);
+
+
 int main (int argc, char *argv[])
 {
   application = gtk_application_new ("org.bibledit.linux", G_APPLICATION_FLAGS_NONE);
@@ -123,12 +128,17 @@ void activate (GtkApplication *app)
   g_key_file_unref (keyfile);
   g_free (file);
 
+  WebKitWebContext * context = webkit_web_context_get_default ();
+  webkit_web_context_clear_cache (context);
+  
   // Signal handlers.
   g_signal_connect (window, "configure-event", G_CALLBACK (on_configure), NULL);
   g_signal_connect (window, "size-allocate", G_CALLBACK (on_window_size_allocate), NULL);
   g_signal_connect (window, "window-state-event", G_CALLBACK (on_window_state_event), NULL);
   g_signal_connect (window, "destroy", G_CALLBACK (on_signal_destroy), NULL);
   g_signal_connect (webview, "key-press-event", G_CALLBACK (on_key_press), NULL);
+  g_signal_connect (context, "download-started", G_CALLBACK (on_download_started), NULL);
+  g_signal_connect (webview, "decide-policy",  G_CALLBACK (on_decide_policy), NULL);
 
   // Set window size and state before it shows.
   if (geometry_loaded) {
@@ -243,4 +253,50 @@ static gboolean on_configure (GtkWidget *widget, GdkEvent *event, gpointer user_
   }
   
   return false;
+}
+
+
+static void on_download_started (WebKitWebContext *context, WebKitDownload *download, gpointer user_data)
+{
+  // Listen for download finished.
+  g_signal_connect (download, "finished", G_CALLBACK (on_download_finished), NULL);
+  // Suppress unused parameter compiler warnings.
+  (void) context;
+  (void) user_data;
+}
+
+
+static gboolean on_decide_policy (WebKitWebView *web_view, WebKitPolicyDecision *decision, WebKitPolicyDecisionType decision_type, gpointer user_data)
+{
+  // Handle the type of decision that may lead to file download.
+  if (decision_type == WEBKIT_POLICY_DECISION_TYPE_RESPONSE) {
+    WebKitResponsePolicyDecision * response_decision = WEBKIT_RESPONSE_POLICY_DECISION (decision);
+    //WebKitURIRequest * uri_request = webkit_response_policy_decision_get_request (response_decision);
+    //const gchar * uri = webkit_uri_request_get_uri (uri_request);
+    // Check whether the webkit can display the mime type.
+    gboolean mime_supported = webkit_response_policy_decision_is_mime_type_supported (response_decision);
+    if (!mime_supported) {
+      // Cannot display the mime type: Download the file.
+      webkit_policy_decision_download (decision);
+      return TRUE;
+    }
+  }
+  // Suppress unused parameter compiler warnings.
+  (void) web_view;
+  (void) user_data;
+  // Making no decision results in webkit_policy_decision_use().
+  return FALSE;
+}
+
+
+static void on_download_finished (WebKitDownload *download, gpointer user_data)
+{
+  // After download complete, open the file.
+  const gchar * destination = webkit_download_get_destination (download);
+  string command = "xdg-open \"";
+  command.append (destination);
+  command.append ("\"");
+  system (command.c_str ());
+  // Suppress unused parameter compiler warning.
+  (void) user_data;
 }
