@@ -35,6 +35,8 @@
 		CA3C9E4A1E000DF1007990B5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		CA58CA801E71807B00E9C4FF /* bibledit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bibledit.cpp; sourceTree = "<group>"; };
+		CA58CA811E71807B00E9C4FF /* bibledit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bibledit.h; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -118,8 +120,6 @@
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
-		CAF17AA31E5D85DF00FB894E /* bibledit.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bibledit.cpp; sourceTree = "<group>"; };
-		CAF17AA41E5D85DF00FB894E /* bibledit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bibledit.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -195,6 +195,15 @@
 			path = "chrome-app";
 			sourceTree = "<group>";
 		};
+		CA58CA7B1E71807B00E9C4FF /* changes */ = {
+			isa = PBXGroup;
+			children = (
+				CA58CA801E71807B00E9C4FF /* bibledit.cpp */,
+				CA58CA811E71807B00E9C4FF /* bibledit.h */,
+			);
+			path = changes;
+			sourceTree = "<group>";
+		};
 		CA5EB3111DDF5B0000565FA2 /* torch */ = {
 			isa = PBXGroup;
 			children = (
@@ -212,7 +221,7 @@
 				CA72AE7B1E4C8E1000A514F3 /* bibledit.desktop */,
 				CA72AE7C1E4C8E1000A514F3 /* bibledit.xpm */,
 				CA72AE7D1E4C8E1000A514F3 /* ChangeLog */,
-				CAF17AA21E5D85DF00FB894E /* changes */,
+				CA58CA7B1E71807B00E9C4FF /* changes */,
 				CA72AE821E4C8E1000A514F3 /* configure */,
 				CA72AE831E4C8E1000A514F3 /* configure.ac */,
 				CA72AE841E4C8E1000A514F3 /* debian */,
@@ -455,15 +464,6 @@
 				CAD686A41E290470007CA7FC /* styles.css */,
 			);
 			path = stylesheet;
-			sourceTree = "<group>";
-		};
-		CAF17AA21E5D85DF00FB894E /* changes */ = {
-			isa = PBXGroup;
-			children = (
-				CAF17AA31E5D85DF00FB894E /* bibledit.cpp */,
-				CAF17AA41E5D85DF00FB894E /* bibledit.h */,
-			);
-			path = changes;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
