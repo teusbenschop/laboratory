@@ -11,6 +11,9 @@
 
 @property (weak) IBOutlet WebView *webview;
 @property (weak) IBOutlet NSWindow *window;
+@property (weak) IBOutlet NSMenu *menu;
+@property (weak) IBOutlet NSMenuItem *viewmenu;
+- (IBAction)Safari:(id)sender;
 
 @end
 
@@ -25,12 +28,6 @@
 }
 
 
-- (void) windowKeyPressed:(NSNotification *) notification
-{
-    NSLog (@"key pressed");
-}
-
-
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     NSURL *url = [NSURL URLWithString:@"https://google.com"];
@@ -39,7 +36,6 @@
     [self.window setContentView:self.webview];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResize:) name:NSWindowDidResizeNotification object:self.window];
-    // [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyPressed:) name:NSEventTypeKeyDown object:self.webview];
 }
 
 
@@ -52,6 +48,14 @@
 -(BOOL) applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)app
 {
     return YES;
+}
+
+
+- (IBAction)Safari:(id)sender {
+    WebFrame *frame = [self.webview mainFrame];
+    NSString * url = [[[[frame dataSource] request] URL] absoluteString];
+    NSLog (@"%@", url);
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: url]];
 }
 
 
