@@ -25,15 +25,21 @@
 }
 
 
+- (void) windowKeyPressed:(NSNotification *) notification
+{
+    NSLog (@"key pressed");
+}
+
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    NSURL *url = [NSURL URLWithString:@"http://bibledit.org:8080"];
+    NSURL *url = [NSURL URLWithString:@"https://google.com"];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
     [[[self webview] mainFrame] loadRequest:urlRequest];
     [self.window setContentView:self.webview];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResize:) name:NSWindowDidResizeNotification object:self.window];
-    // [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowkeypressed:) name:NSEventTypeKeyDown object:self.window];
+    // [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyPressed:) name:NSEventTypeKeyDown object:self.webview];
 }
 
 
@@ -47,5 +53,6 @@
 {
     return YES;
 }
+
 
 @end
