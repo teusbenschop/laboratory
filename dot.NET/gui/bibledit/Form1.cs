@@ -1,19 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
-using System.Net;
-using CefSharp;
-using CefSharp.WinForms;
 using System.IO;
 using System.IO.IsolatedStorage;
-using System.Windows;
 
 
 namespace Bibledit
@@ -22,58 +10,15 @@ namespace Bibledit
   public partial class Form1 : Form
   {
 
-    string windowstate = "windowstate.txt";
-    public ChromiumWebBrowser browser;
-    public void InitBrowser()
-    {
-      Cef.Initialize(new CefSettings());
-      browser = new ChromiumWebBrowser("http://bibledit.org:8080");
-      this.Controls.Add(browser);
-      browser.Dock = DockStyle.Fill;
-    }
-
 
     public Form1()
     {
       InitializeComponent();
-      //InitBrowser();
     }
 
 
     private void Form1_Load(object sender, EventArgs e)
     {
-      // Refresh restore bounds from previous window opening
-      IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForAssembly();
-      try
-      {
-        using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(this.windowstate, FileMode.Open, storage))
-        using (StreamReader reader = new StreamReader(stream))
-        {
-
-          // Read restore bounds value from file
-          string value;
-          value = reader.ReadLine();
-          if (value == "Maximized") {
-            this.WindowState = FormWindowState.Maximized;
-          } else {
-            value = reader.ReadLine();
-            if (value != "") this.Left = Int32.Parse(value);
-            value = reader.ReadLine();
-            if (value != "") this.Top = Int32.Parse(value);
-            value = reader.ReadLine();
-            if (value != "") this.Width = Int32.Parse(value);
-            value = reader.ReadLine();
-            if (value != "") this.Height = Int32.Parse(value);
-          }
-        }
-      }
-      catch (FileNotFoundException)
-      {
-        // Handle when file is not found in isolated storage, which is when:
-        // * This is the first application session.
-        // * The file has been deleted.
-      }
-
     }
 
 
@@ -81,29 +26,55 @@ namespace Bibledit
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
-      // Save window state for the next time this window is opened.
-      IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForAssembly();
-      using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(this.windowstate, FileMode.Create, storage))
-      using (StreamWriter writer = new StreamWriter(stream))
+    }
+
+    private void Form1_KeyDown_1(object sender, KeyEventArgs e)
+    {
+      if ((e.Control) && (e.KeyCode == Keys.F))
       {
-        // Write window state to file.
-        writer.WriteLine(this.WindowState.ToString());
-        writer.WriteLine(this.Location.X.ToString ());
-        writer.WriteLine(this.Location.Y.ToString());
-        writer.WriteLine(this.Size.Width.ToString());
-        writer.WriteLine(this.Size.Height.ToString());
+        Console.WriteLine("Ctrl-F");
+
+        System.Drawing.Size size = new System.Drawing.Size(200, 70);
+        Form inputBox = new Form();
+
+        inputBox.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+        inputBox.ClientSize = size;
+        inputBox.Text = "Search";
+
+        System.Windows.Forms.TextBox textBox = new TextBox();
+        textBox.Size = new System.Drawing.Size(size.Width - 10, 23);
+        textBox.Location = new System.Drawing.Point(5, 5);
+        textBox.Text = "search for, guys!";
+        inputBox.Controls.Add(textBox);
+
+        Button okButton = new Button();
+        okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+        okButton.Name = "okButton";
+        okButton.Size = new System.Drawing.Size(75, 23);
+        okButton.Text = "&OK";
+        okButton.Location = new System.Drawing.Point(size.Width - 80 - 80, 39);
+        inputBox.Controls.Add(okButton);
+
+        Button cancelButton = new Button();
+        cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+        cancelButton.Name = "cancelButton";
+        cancelButton.Size = new System.Drawing.Size(75, 23);
+        cancelButton.Text = "&Cancel";
+        cancelButton.Location = new System.Drawing.Point(size.Width - 80, 39);
+        inputBox.Controls.Add(cancelButton);
+
+        inputBox.FormBorderStyle = FormBorderStyle.FixedDialog;
+        inputBox.MinimizeBox = false;
+        inputBox.MaximizeBox = false;
+
+        inputBox.AcceptButton = okButton;
+        inputBox.CancelButton = cancelButton;
+
+        inputBox.StartPosition = FormStartPosition.CenterParent;
+        DialogResult result = inputBox.ShowDialog();
+        Console.WriteLine (textBox.Text);
+
       }
-    }
-
-    private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
-    {
-
-    }
-
-    private void Form1_KeyPress(object sender, KeyPressEventArgs e)
-    {
-      Console.WriteLine("key pressed");
-      if (e.)
     }
   }
 }

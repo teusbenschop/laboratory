@@ -34,9 +34,9 @@
       // 
       // statusStrip1
       // 
-      this.statusStrip1.Location = new System.Drawing.Point(0, 539);
+      this.statusStrip1.Location = new System.Drawing.Point(0, 578);
       this.statusStrip1.Name = "statusStrip1";
-      this.statusStrip1.Size = new System.Drawing.Size(784, 22);
+      this.statusStrip1.Size = new System.Drawing.Size(800, 22);
       this.statusStrip1.TabIndex = 2;
       this.statusStrip1.Text = "statusStrip1";
       // 
@@ -47,12 +47,13 @@
       this.ClientSize = new System.Drawing.Size(784, 561);
       this.Controls.Add(this.statusStrip1);
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+      this.KeyPreview = true;
       this.MinimumSize = new System.Drawing.Size(800, 600);
       this.Name = "Form1";
       this.Text = "Bibledit";
       this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
       this.Load += new System.EventHandler(this.Form1_Load);
-      this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.Form1_KeyPress);
+      this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown_1);
       this.ResumeLayout(false);
       this.PerformLayout();
 
