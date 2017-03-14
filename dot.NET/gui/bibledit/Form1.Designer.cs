@@ -51,7 +51,8 @@
       this.MinimumSize = new System.Drawing.Size(800, 600);
       this.Name = "Form1";
       this.Text = "Bibledit";
-      this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown_1);
+      this.Activated += new System.EventHandler(this.Form1_Activated);
+      this.Deactivate += new System.EventHandler(this.Form1_Deactivate);
       this.ResumeLayout(false);
       this.PerformLayout();
 

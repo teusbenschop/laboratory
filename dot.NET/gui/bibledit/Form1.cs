@@ -1,6 +1,8 @@
 using System;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 
 namespace Bibledit
 {
@@ -8,11 +10,78 @@ namespace Bibledit
   public partial class Form1 : Form
   {
 
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+    private static IntPtr MyHookID = IntPtr.Zero;
+    private const int WH_KEYBOARD_LL = 13;
+    private const int WM_KEYDOWN = 0x0100;
+    private const int WM_KEYUP = 0x0101;
+    private static LowLevelKeyboardProc MyKeyboardProcessor = HookCallback;
+    private static Boolean HasFocus = false;
+    private static Boolean ControlPressed = false;
+
+    private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    private static IntPtr SetHook(LowLevelKeyboardProc proc)
+    {
+      using (Process curProcess = Process.GetCurrentProcess())
+      using (ProcessModule curModule = curProcess.MainModule)
+      {
+        return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
+      }
+    }
+
+    private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+      if (HasFocus)
+      {
+        if (nCode >= 0)
+        {
+          int vkCode = Marshal.ReadInt32(lParam);
+          Keys keys = (Keys)vkCode;
+          String key = keys.ToString();
+          if (wParam == (IntPtr)WM_KEYDOWN)
+          {
+            if (key.Contains("Control")) ControlPressed = true;
+          }
+          if (wParam == (IntPtr)WM_KEYUP)
+          {
+            if (key.Contains("Control")) ControlPressed = false;
+          }
+          if (ControlPressed && key.Equals ("F") && (wParam == (IntPtr)WM_KEYDOWN))
+          {
+            Console.WriteLine("Bingo");
+          }
+        }
+      }
+      return CallNextHookEx(MyHookID, nCode, wParam, lParam);
+    }
+
+
     public Form1()
     {
       InitializeComponent();
       Console.WriteLine("Hello World.");
+      MyHookID = SetHook(MyKeyboardProcessor);
+
     }
+
+    ~Form1()
+    {
+      UnhookWindowsHookEx(MyHookID);
+    }
+
 
     private void Form1_KeyDown_1(object sender, KeyEventArgs e)
     {
@@ -57,5 +126,16 @@ namespace Bibledit
         Console.WriteLine (textBox.Text);
       }
     }
+
+    private void Form1_Activated(object sender, EventArgs e)
+    {
+      HasFocus = true;
+    }
+
+    private void Form1_Deactivate(object sender, EventArgs e)
+    {
+      HasFocus = false;
+    }
+
   }
 }
