@@ -30,6 +30,7 @@ namespace Bibledit
     private static LowLevelKeyboardProc MyKeyboardProcessor = HookCallback;
     private static Boolean HasFocus = false;
     private static Boolean ControlPressed = false;
+    private static Boolean SearchDialogOpen = false;
 
     private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
@@ -59,9 +60,11 @@ namespace Bibledit
           {
             if (key.Contains("Control")) ControlPressed = false;
           }
-          if (ControlPressed && key.Equals ("F") && (wParam == (IntPtr)WM_KEYDOWN))
+          if (ControlPressed && key.Equals ("F") && (wParam == (IntPtr)WM_KEYDOWN) && !SearchDialogOpen)
           {
+            SearchDialogOpen = true;
             Console.WriteLine("Bingo");
+            SearchDialogOpen = false;
           }
         }
       }
