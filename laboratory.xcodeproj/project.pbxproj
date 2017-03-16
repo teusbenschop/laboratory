@@ -32,6 +32,8 @@
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3792E41DF6FA5A008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		CA386E9A1E7B1873006AE4BA /* git.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = git.cpp; sourceTree = "<group>"; };
+		CA386E9B1E7B1873006AE4BA /* run */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run; sourceTree = "<group>"; };
 		CA3C9E4A1E000DF1007990B5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -181,6 +183,15 @@
 				CA3792E41DF6FA5A008F8164 /* manifest.json */,
 			);
 			path = "chrome-wakelock";
+			sourceTree = "<group>";
+		};
+		CA386E991E7B1873006AE4BA /* git */ = {
+			isa = PBXGroup;
+			children = (
+				CA386E9A1E7B1873006AE4BA /* git.cpp */,
+				CA386E9B1E7B1873006AE4BA /* run */,
+			);
+			path = git;
 			sourceTree = "<group>";
 		};
 		CA3C9E491E000DF1007990B5 /* chrome-app */ = {
@@ -386,6 +397,7 @@
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
+				CA386E991E7B1873006AE4BA /* git */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CA72AE761E4C8E1000A514F3 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
