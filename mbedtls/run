@@ -1,0 +1,4 @@
+#!/bin/bash
+rm -f a.out
+g++ -Wall -Wextra -pedantic -std=c++11 -lmbedtls -lmbedcrypto -lmbedx509 main.cpp
+./a.out
