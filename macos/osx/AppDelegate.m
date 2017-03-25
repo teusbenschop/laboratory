@@ -70,8 +70,6 @@
 - (void) webView:(WebView *)webView decidePolicyForMIMEType:(NSString *)type request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id < WebPolicyDecisionListener >)listener
 {
     if (![[webView class] canShowMIMEType:type]) [listener download];
-    //NSString * url = [[request URL] absoluteString];
-    //[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: url]];
 }
 
 
@@ -88,6 +86,26 @@
     alert.informativeText = [NSString stringWithFormat:@"Will be saved to: %@", destinationPath];
     [alert runModal];
     [download setDestination:destinationPath allowOverwrite:YES];
+}
+
+
+- (void)webView:(WebView *)sender runOpenPanelForFileButtonWithResultListener:(id < WebOpenPanelResultListener >)resultListener
+{
+    // Create the File Open Dialog class.
+    NSOpenPanel* openDlg = [NSOpenPanel openPanel];
+    
+    // Enable the selection of files in the dialog.
+    [openDlg setCanChooseFiles:YES];
+    
+    // Enable the selection of directories in the dialog.
+    [openDlg setCanChooseDirectories:NO];
+    
+    
+    if ( [openDlg runModal] == NSModalResponseOK )
+    {
+        NSArray* files = [[openDlg URLs]valueForKey:@"relativePath"];
+        [resultListener chooseFilenames:files];
+    }
 }
 
 
