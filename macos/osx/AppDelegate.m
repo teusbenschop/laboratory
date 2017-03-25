@@ -30,12 +30,14 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    NSURL *url = [NSURL URLWithString:@"https://google.com"];
+    NSURL *url = [NSURL URLWithString:@"https://bibledit.org:8081"];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
     [[[self webview] mainFrame] loadRequest:urlRequest];
     [self.window setContentView:self.webview];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidResize:) name:NSWindowDidResizeNotification object:self.window];
+    
+    [self.webview setPolicyDelegate:self];
 }
 
 
@@ -57,6 +59,46 @@
     NSLog (@"%@", url);
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: url]];
 }
+
+
+/*
+- (void) webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation
+         request:(NSURLRequest *)request
+           frame:(WebFrame *)frame
+decisionListener:(id < WebPolicyDecisionListener >)listener
+{
+    NSLog(@"navigating from %@ to: %@", [webView mainFrameURL], [[request URL] absoluteString]);
+    int actionKey = [[actionInformation objectForKey: WebActionNavigationTypeKey] intValue];
+    if (actionKey == WebNavigationTypeOther)
+    {
+        [listener use];
+        //[listener download];
+    }
+    else
+    {
+        [listener use];
+    }
+    NSLog (@"can handle %d", [NSURLConnection canHandleRequest:request]);
+}
+*/
+
+- (void)        webView:(WebView *)webView
+decidePolicyForMIMEType:(NSString *)type
+                request:(NSURLRequest *)request
+                  frame:(WebFrame *)frame
+       decisionListener:(id < WebPolicyDecisionListener >)listener
+{
+    NSLog (@"can view %d", [[webView class] canShowMIMEType:type]);
+    if (![[webView class] canShowMIMEType:type])
+    {
+        [listener download];
+        NSString * url = [[request URL] absoluteString];
+        [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: url]];
+    }
+    
+    
+}
+
 
 
 @end
