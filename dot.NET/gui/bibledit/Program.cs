@@ -16,13 +16,6 @@ namespace Bibledit
         [STAThread]
         static void Main()
         {
-            bool onlyInstance = false;
-            Mutex mutex = new Mutex (true, "BibleditForWindows", out onlyInstance);
-            if (!onlyInstance) {
-                MessageBox.Show ("Bibledit is already running.");
-                return;
-            }
-            GC.KeepAlive(mutex);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
