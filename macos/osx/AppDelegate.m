@@ -42,11 +42,13 @@
     return YES;
 }
 
+
 /*
     WebFrame *frame = [self.webview mainFrame];
     NSString * url = [[[[frame dataSource] request] URL] absoluteString];
     NSLog (@"%@", url);
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: url]];
 */
+
 
 @end

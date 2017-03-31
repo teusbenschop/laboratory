@@ -693,8 +693,5 @@
                 </subviews>
             </view>
         </window>
-        <menuItem title="Open in Safari" id="hE9-E5-Z7m">
-            <modifierMask key="keyEquivalentModifierMask"/>
-        </menuItem>
     </objects>
 </document>
