@@ -28,6 +28,7 @@
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
     [[[self webview] mainFrame] loadRequest:urlRequest];
     [self.window setContentView:self.webview];
+    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(timerTimeout) userInfo:nil repeats:YES];
 }
 
 
@@ -43,12 +44,10 @@
 }
 
 
-/*
-    WebFrame *frame = [self.webview mainFrame];
-    NSString * url = [[[[frame dataSource] request] URL] absoluteString];
-    NSLog (@"%@", url);
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString: url]];
-*/
+- (void)timerTimeout
+{
+    NSLog (@"timer");
+}
 
 
 @end
