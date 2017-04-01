@@ -22,6 +22,7 @@
 #include <src/bibledit.h>
 #include <libgen.h>
 #include <iostream>
+#include <thread>
 #include <webkit2/webkit2.h>
 #include <changes/bibledit.h>
 
@@ -46,6 +47,7 @@ bool bibledit_window_configured = false;
 static void on_download_started (WebKitWebContext *context, WebKitDownload *download, gpointer user_data);
 static gboolean on_decide_policy (WebKitWebView *web_view, WebKitPolicyDecision *decision, WebKitPolicyDecisionType decision_type, gpointer user_data);
 static void on_download_finished (WebKitDownload *download, gpointer user_data);
+void timer_thread ();
 
 
 int main (int argc, char *argv[])
@@ -66,6 +68,8 @@ int main (int argc, char *argv[])
 
   changes_bibledit ();
   cout << webkit_get_major_version () << "." << webkit_get_minor_version () << endl;
+  
+  new thread (timer_thread);
   
   status = g_application_run (G_APPLICATION (application), argc, argv);
 
@@ -351,4 +355,16 @@ void webkit_search (GtkWidget *widget)
     }
   }
   gtk_widget_destroy (dialog);
+}
+
+
+void timer_thread ()
+{
+  while (true) {
+    this_thread::sleep_for (chrono::seconds (1));
+    string url = "";
+    if (!url.empty ()) {
+      g_app_info_launch_default_for_uri (url.c_str (), NULL, NULL);
+    }
+  }
 }
