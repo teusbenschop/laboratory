@@ -18,9 +18,8 @@
 
 
 #import "ViewController.h"
-#import "BibleditPaths.h"
-#import "BibleditInstallation.h"
-#import "BibleditController.h"
+#import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 
 @interface ViewController ()
@@ -29,11 +28,24 @@
 
 @implementation ViewController
 
+UIView * mainUIView = NULL;
+WKWebView *webview;
+NSString * homeUrl = @"http://bibledit.org:8080";
+
 
 - (void)viewDidLoad
 {
   [super viewDidLoad];
-  [BibleditController bibleditViewHasLoaded:self.view];
+  mainUIView = self.view;
+  WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
+  webview = [[WKWebView alloc] initWithFrame:mainUIView.frame configuration:configuration];
+  [mainUIView addSubview:webview];
+  NSLog(@"To URL %@", homeUrl);
+  NSURL *url = [NSURL URLWithString:homeUrl];
+  NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
+  [webview loadRequest:urlRequest];
+  [webview setNavigationDelegate:self];
+  [webview setUIDelegate:self];
 }
 
 
@@ -42,5 +54,41 @@
   return YES;
 }
 
+
+/*
+ -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+ {
+ NSLog(@"decidePolicyForNavigationAction");
+ // decisionHandler(WKNavigationActionPolicyCancel);
+ // decisionHandler(WKNavigationActionPolicyAllow);
+ }
+ */
+
+
+// https://github.com/dfmuir/KINWebBrowser/blob/master/KINWebBrowser/KINWebBrowserViewController.m
+
+
+/*
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
+  NSLog(@"didStartProvisionalNavigation");
+}
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+  NSLog(@"didFinishNavigation");
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+  NSLog(@"didFailProvisionalNavigation");
+}
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
+  NSLog(@"didFailNavigation");
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+  NSLog(@"decidePolicyForNavigationAction");
+}
+*/
+ 
 
 @end

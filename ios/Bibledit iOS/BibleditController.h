@@ -10,7 +10,6 @@
 
 @interface BibleditController : NSObject
 
-+ (void) bibleditViewHasLoaded:(UIView *)uiview;
 
 
 @end
