@@ -39,20 +39,33 @@ import android.view.WindowManager;
 import android.webkit.DownloadListener;
 import android.app.DownloadManager;
 import android.widget.Toast;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.graphics.Bitmap;
 
 
 public class MainActivity extends Activity
 {
-    
     WebView webview;
     
+    private ValueCallback<Uri> myUploadMessage;
+    private final static int FILECHOOSER_RESULTCODE = 1;
     
-    // Function is called when the app gets launched.
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == FILECHOOSER_RESULTCODE) {
+            if (null == myUploadMessage) return;
+            Uri result = intent == null || resultCode != RESULT_OK ? null : intent.getData();
+            myUploadMessage.onReceiveValue (result);
+            myUploadMessage = null;
+        }
+    }
+    
     @Override
     public void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
-        // Log.d ("Bibledit", "onCreate");
+        Log.d ("Bibledit", "onCreate");
         
         webview = new WebView (this);
         setContentView (webview);
@@ -78,81 +91,34 @@ public class MainActivity extends Activity
                 Toast.makeText(getApplicationContext(), "Downloading file", Toast.LENGTH_LONG).show();
             }
         });
+        webview.setWebChromeClient(new WebChromeClient() {
+            // The undocumented method overrides.
+            // The compiler fails if you try to put @Override here.
+            // It needs three interfaces to handle the various versions of Android.
+            public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+                myUploadMessage = uploadMsg;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                MainActivity.this.startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILECHOOSER_RESULTCODE);
+            }
+            public void openFileChooser( ValueCallback uploadMsg, String acceptType) {
+                myUploadMessage = uploadMsg;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                MainActivity.this.startActivityForResult(Intent.createChooser(intent, "File Browser"), FILECHOOSER_RESULTCODE);
+            }
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+                myUploadMessage = uploadMsg;
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                MainActivity.this.startActivityForResult (Intent.createChooser (intent, "File Chooser"), MainActivity.FILECHOOSER_RESULTCODE);
+            }
+        });
     }
-    
-    
-    @Override
-    public boolean onCreateOptionsMenu (Menu menu)
-    {
-        return false;
-    }
-    
-    
-    // Function is called when the user starts the app.
-    @Override
-    protected void onStart ()
-    {
-        // Log.d ("Bibledit", "onStart");
-        super.onStart();
-    }
-    
-    
-    // Function is called when the user returns to the activity.
-    @Override
-    protected void onRestart ()
-    {
-        // Log.d ("Bibledit", "onRestart");
-        super.onRestart();
-    }
-    
-    
-    // Function is called when the app is moved to the foreground again.
-    @Override
-    public void onResume ()
-    {
-        // Log.d ("Bibledit", "onResume");
-        super.onResume();
-    }
-    
-    
-    // Function is called when the app is obscured.
-    @Override
-    public void onPause ()
-    {
-        // Log.d ("Bibledit", "onPause");
-        super.onPause ();
-    }
-    
-    
-    // Function is called when the user completely leaves the activity.
-    @Override
-    protected void onStop ()
-    {
-        // Log.d ("Bibledit", "onStop");
-        super.onStop();
-    }
-    
-    
-    // Function is called when the app gets completely destroyed.
-    @Override
-    public void onDestroy ()
-    {
-        // Log.d ("Bibledit", "onDestroy");
-        super.onDestroy ();
-    }
-    
-    
-    @Override
-    public void onBackPressed() {
-        // The Android back button navigates back in the web view.
-        // That is the behaviour people expect.
-        if (webview.canGoBack()) {
-            webview.goBack();
-            return;
-        }
-        
-        // Otherwise defer to system default behavior.
-        super.onBackPressed();
-    }
-    
+
 }
+
+
