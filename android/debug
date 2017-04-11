@@ -1,0 +1,23 @@
+#!/bin/bash
+export ANDROID_HOME=~/scr/android-sdk-macosx
+export PATH=$PATH:~/scr/android-sdk-macosx/platform-tools:~/scr/android-sdk-macosx/tools:~/scr/android-ndk-r10e
+ant clean
+EXIT_CODE=$?
+if [ $EXIT_CODE != 0 ]; then
+exit
+fi
+ant debug
+EXIT_CODE=$?
+if [ $EXIT_CODE != 0 ]; then
+  exit
+fi
+adb install -r bin/Bibledit-debug.apk
+EXIT_CODE=$?
+if [ $EXIT_CODE != 0 ]; then
+  exit
+fi
+adb shell am start -a android.intent.action.MAIN -n org.bibledit.lab/.MainActivity
+EXIT_CODE=$?
+if [ $EXIT_CODE != 0 ]; then
+  exit
+fi
