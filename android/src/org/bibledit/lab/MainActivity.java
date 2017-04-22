@@ -42,25 +42,108 @@ import android.widget.Toast;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.graphics.Bitmap;
+import android.widget.TabHost;
 
 
 public class MainActivity extends Activity
 {
     WebView webview;
+    TabHost tabhost;
+    Timer timer;
+    TimerTask timerTask;
+
     
     @Override
     public void onCreate (Bundle savedInstanceState)
     {
         super.onCreate (savedInstanceState);
         Log.d ("Bibledit", "onCreate");
+        setWebView ();
+        //startTimer ();
+    }
+
+    
+    private void startTimer ()
+    {
+        stopTimer ();
+        timer = new Timer();
+        initializeTimerTask();
+        timer.schedule (timerTask, 2000);
+    }
+    
+    
+    private void stopTimer ()
+    {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
+    
+    private void initializeTimerTask() {
+        timerTask = new TimerTask() {
+            public void run() {
+                Log.d ("Bibledit syncing", "one");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setWebView();
+                    }
+                });
+                /*
+                String syncState = IsSynchronizing ();
+                if (syncState.equals ("true")) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        }
+                    });
+                    // Log.d ("Bibledit", "keep screen on");
+                }
+                if (syncState.equals ("false")) {
+                    if (syncState.equals (previousSyncState)) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                            }
+                        });
+                        // Log.d ("Bibledit", "do not keep screen on");
+                    }
+                }
+                previousSyncState = syncState;
+                String externalUrl = GetExternalUrl ();
+                if (externalUrl != null && !externalUrl.isEmpty ()) {
+                    Log.d ("Bibledit start Browser", externalUrl);
+                    Intent browserIntent = new Intent (Intent.ACTION_VIEW, Uri.parse (externalUrl));
+                    startActivity(browserIntent);
+                }
+                 */
+                startTimer ();
+            }
+        };
+    }
+    
+    
+    private void setWebView ()
+    {
+        /*
+        tabhost = null;
+        tabhost = new TabHost (this);
+        tabhost.setup ();
+        */
+        webview = null;
         webview = new WebView (this);
-        setContentView (webview);
         webview.getSettings().setJavaScriptEnabled (true);
         webview.getSettings().setBuiltInZoomControls (true);
         webview.getSettings().setSupportZoom (true);
         webview.setWebViewClient(new WebViewClient());
         webview.loadUrl ("http://bibledit.org:8080");
+        setContentView (webview);
     }
+
 
 }
 
