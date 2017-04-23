@@ -8,35 +8,16 @@
 
 /* Begin PBXFileReference section */
 		CA51D8CE1E9CD600006CEBDD /* MainActivity.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; name = MainActivity.java; path = src/org/bibledit/lab/MainActivity.java; sourceTree = "<group>"; };
+		CA6F5EF41EACDEE8001C9B64 /* main.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = main.xml; path = res/layout/main.xml; sourceTree = "<group>"; };
 		CA97BC101B0F7DF400877437 /* AndroidManifest.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AndroidManifest.xml; sourceTree = "<group>"; };
 		CA97BC111B0F7DFC00877437 /* ant.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = ant.properties; sourceTree = "<group>"; };
 		CA97BC121B0F7E0400877437 /* build.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
 		CA97BC131B0F7E0C00877437 /* debug */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = debug; sourceTree = "<group>"; };
 		CA97BC141B0F7E1500877437 /* local.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = local.properties; sourceTree = "<group>"; };
 		CA97BC161B0F7E1E00877437 /* project.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = project.properties; sourceTree = "<group>"; };
-		CA97BC201B0F7EE300877437 /* main.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = main.xml; sourceTree = "<group>"; };
-		CA97BC221B0F7EE300877437 /* strings.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = strings.xml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		CA97BC1F1B0F7EE300877437 /* layout */ = {
-			isa = PBXGroup;
-			children = (
-				CA97BC201B0F7EE300877437 /* main.xml */,
-			);
-			name = layout;
-			path = res/layout;
-			sourceTree = "<group>";
-		};
-		CA97BC211B0F7EE300877437 /* values */ = {
-			isa = PBXGroup;
-			children = (
-				CA97BC221B0F7EE300877437 /* strings.xml */,
-			);
-			name = values;
-			path = res/values;
-			sourceTree = "<group>";
-		};
 		CAADF4D71B0F7CD9002F0910 = {
 			isa = PBXGroup;
 			children = (
@@ -44,11 +25,10 @@
 				CA97BC111B0F7DFC00877437 /* ant.properties */,
 				CA97BC121B0F7E0400877437 /* build.xml */,
 				CA97BC131B0F7E0C00877437 /* debug */,
-				CA97BC1F1B0F7EE300877437 /* layout */,
 				CA97BC141B0F7E1500877437 /* local.properties */,
+				CA6F5EF41EACDEE8001C9B64 /* main.xml */,
 				CA51D8CE1E9CD600006CEBDD /* MainActivity.java */,
 				CA97BC161B0F7E1E00877437 /* project.properties */,
-				CA97BC211B0F7EE300877437 /* values */,
 			);
 			sourceTree = "<group>";
 		};

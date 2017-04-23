@@ -58,8 +58,7 @@ public class MainActivity extends Activity
     {
         super.onCreate (savedInstanceState);
         Log.d ("Bibledit", "onCreate");
-        setWebView ();
-        //startTimer ();
+        startTimer ();
     }
 
     
@@ -91,36 +90,6 @@ public class MainActivity extends Activity
                         setWebView();
                     }
                 });
-                /*
-                String syncState = IsSynchronizing ();
-                if (syncState.equals ("true")) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                        }
-                    });
-                    // Log.d ("Bibledit", "keep screen on");
-                }
-                if (syncState.equals ("false")) {
-                    if (syncState.equals (previousSyncState)) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                            }
-                        });
-                        // Log.d ("Bibledit", "do not keep screen on");
-                    }
-                }
-                previousSyncState = syncState;
-                String externalUrl = GetExternalUrl ();
-                if (externalUrl != null && !externalUrl.isEmpty ()) {
-                    Log.d ("Bibledit start Browser", externalUrl);
-                    Intent browserIntent = new Intent (Intent.ACTION_VIEW, Uri.parse (externalUrl));
-                    startActivity(browserIntent);
-                }
-                 */
                 startTimer ();
             }
         };
@@ -129,11 +98,6 @@ public class MainActivity extends Activity
     
     private void setWebView ()
     {
-        /*
-        tabhost = null;
-        tabhost = new TabHost (this);
-        tabhost.setup ();
-        */
         webview = null;
         webview = new WebView (this);
         webview.getSettings().setJavaScriptEnabled (true);
