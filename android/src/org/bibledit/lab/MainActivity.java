@@ -49,7 +49,7 @@ import android.widget.LinearLayout.LayoutParams;
 
 public class MainActivity extends Activity
 {
-    WebView webview;
+    WebView webview = null;
     TabHost tabhost;
     Timer timer;
     TimerTask timerTask;
@@ -60,9 +60,9 @@ public class MainActivity extends Activity
     {
         super.onCreate (savedInstanceState);
         Log.d ("Bibledit", "onCreate");
-        //startTimer ();
-        //setWebView ();
-        setTabHost ();
+        startTimer ();
+        setWebView ();
+        //setTabHost ();
     }
 
     
@@ -91,7 +91,14 @@ public class MainActivity extends Activity
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        setWebView();
+                        if (webview == null) {
+                            Log.d ("Bibledit", "set webview");
+                            setWebView();
+                        } else {
+                            webview = null;
+                            Log.d ("Bibledit", "set tabhost");
+                            setTabHost ();
+                        }
                     }
                 });
                 startTimer ();
@@ -130,7 +137,7 @@ public class MainActivity extends Activity
         factory = new TabHost.TabContentFactory () {
             @Override
             public View createTabContent (String tag) {
-                webview = new WebView (getApplicationContext ());
+                WebView webview = new WebView (getApplicationContext ());
                 webview.getSettings().setJavaScriptEnabled (true);
                 webview.setWebViewClient (new WebViewClient());
                 webview.loadUrl ("https://bibledit.org:8081/editone/index");
@@ -145,7 +152,7 @@ public class MainActivity extends Activity
         factory = new TabHost.TabContentFactory () {
             @Override
             public View createTabContent (String tag) {
-                webview = new WebView (getApplicationContext ());
+                WebView webview = new WebView (getApplicationContext ());
                 webview.getSettings().setJavaScriptEnabled (true);
                 webview.setWebViewClient (new WebViewClient());
                 webview.loadUrl ("https://bibledit.org:8081/resource/index");
@@ -160,7 +167,7 @@ public class MainActivity extends Activity
         factory = new TabHost.TabContentFactory () {
             @Override
             public View createTabContent (String tag) {
-                webview = new WebView (getApplicationContext ());
+                WebView webview = new WebView (getApplicationContext ());
                 webview.getSettings().setJavaScriptEnabled (true);
                 webview.setWebViewClient (new WebViewClient());
                 webview.loadUrl ("https://bibledit.org:8081/notes/index");
