@@ -45,25 +45,12 @@ NSString * homeUrl = @"http://bibledit.org:8080";
   NSURL *url = [NSURL URLWithString:homeUrl];
   NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
   [webview loadRequest:urlRequest];
-  [webview setNavigationDelegate:self];
-  //[webview setUIDelegate:self];
 }
 
 
 - (BOOL) prefersStatusBarHidden
 {
   return YES;
-}
-
-
-- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler
-{
-  if (navigationResponse.canShowMIMEType) {
-    decisionHandler(WKNavigationResponsePolicyAllow);
-  } else {
-    [[UIApplication sharedApplication] openURL:navigationResponse.response.URL];
-    decisionHandler(WKNavigationResponsePolicyCancel);
-  }
 }
 
 
