@@ -18,33 +18,22 @@
 
 
 #import "ViewController.h"
-#import <UIKit/UIKit.h>
-#import <WebKit/WebKit.h>
-#import <Foundation/Foundation.h>
+#import "BibleditController.h"
 
 
 @interface ViewController ()
 
+
 @end
 
-@implementation ViewController
 
-UIView * mainUIView = NULL;
-WKWebView *webview;
-NSString * homeUrl = @"http://bibledit.org:8080";
+@implementation ViewController
 
 
 - (void)viewDidLoad
 {
   [super viewDidLoad];
-  mainUIView = self.view;
-  WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-  webview = [[WKWebView alloc] initWithFrame:mainUIView.frame configuration:configuration];
-  [mainUIView addSubview:webview];
-  NSLog(@"To URL %@", homeUrl);
-  NSURL *url = [NSURL URLWithString:homeUrl];
-  NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
-  [webview loadRequest:urlRequest];
+  [BibleditController viewControllerViewDidLoad:self.view];
 }
 
 

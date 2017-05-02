@@ -7,8 +7,19 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
+
+
+extern WKWebView *webview;
+extern NSString * homeUrl;
+
 
 @interface BibleditController : NSObject
+
+
++ (void) appDelegateDidFinishLaunchingWithOptions;
++ (void) viewControllerViewDidLoad:(UIView *)view;
 
 
 
