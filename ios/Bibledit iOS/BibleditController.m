@@ -72,66 +72,53 @@ NSString * homeUrl = @"https://bibledit.org:8081/";
 
 + (void) startTabbedView:(NSArray *)urls labels:(NSArray *)labels active:(NSInteger)active
 {
-    // https://developer.apple.com/library/content/documentation/WindowsViews/Conceptual/ViewControllerCatalog/Chapters/TabBarControllers.html
 
     [[uiview subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
     UITabBarController * tabBarController = [[UITabBarController alloc] init];
-    
-    UIViewController* viewController1 = [[UIViewController alloc] init];
-    {
-        UIImage* image = [UIImage imageNamed:@"home.png"];
-        UITabBarItem* tarBarItem = [[UITabBarItem alloc] initWithTitle:@"Resources" image:image tag:0];
-        viewController1.tabBarItem = tarBarItem;
 
-        WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-        WKWebView * webview = [[WKWebView alloc] initWithFrame:viewController1.view.frame configuration:configuration];
-        [viewController1.view addSubview:webview];
+    NSMutableArray * controllers = [[NSMutableArray alloc] init];
+
+    for (int i = 0; i < [urls count]; i++) {
         
-        NSMutableString* url = [[NSMutableString alloc] init];
-        [url appendString:homeUrl];
-        [url appendString:@"resource/index"];
-        NSURL *nsurl = [NSURL URLWithString:url];
-        NSURLRequest *urlRequest = [NSURLRequest requestWithURL:nsurl];
-        [webview loadRequest:urlRequest];
-    }
-    
-    UIViewController* viewController2 = [[UIViewController alloc] init];
-    {
-        UIImage* image = [UIImage imageNamed:@"briefcase.png"];
-        UITabBarItem* tarBarItem = [[UITabBarItem alloc] initWithTitle:@"Translate" image:image tag:0];
-        viewController2.tabBarItem = tarBarItem;
+        NSString * url = [urls objectAtIndex:i];
+        NSString * label = [labels objectAtIndex:i];
+        
+        UIViewController* viewController = [[UIViewController alloc] init];
+        UIImage* image = [UIImage imageNamed:@"home.png"];
+        UITabBarItem* tarBarItem = [[UITabBarItem alloc] initWithTitle:label image:image tag:0];
+        viewController.tabBarItem = tarBarItem;
         
         WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
-        WKWebView * webview = [[WKWebView alloc] initWithFrame:viewController2.view.frame configuration:configuration];
-        [viewController2.view addSubview:webview];
+        WKWebView * webview = [[WKWebView alloc] initWithFrame:viewController.view.frame configuration:configuration];
+        [viewController.view addSubview:webview];
         
-        NSMutableString* url = [[NSMutableString alloc] init];
-        [url appendString:homeUrl];
-        [url appendString:@"editone/index"];
-        NSURL *nsurl = [NSURL URLWithString:url];
+        NSMutableString* fullUrl = [[NSMutableString alloc] init];
+        [fullUrl appendString:homeUrl];
+        [fullUrl appendString:url];
+        NSURL *nsurl = [NSURL URLWithString:fullUrl];
         NSURLRequest *urlRequest = [NSURLRequest requestWithURL:nsurl];
         [webview loadRequest:urlRequest];
+        
+        [controllers addObject:viewController];
     }
     
-    NSArray * controllers = [[NSArray alloc] init];
-    controllers = [NSArray arrayWithObjects:viewController1, viewController2, nil];
     tabBarController.viewControllers = controllers;
     
     [uiview addSubview:tabBarController.view];
     
     tabBarController.selectedIndex = 1;
     
-    tabBarController.delegate = self;
+    //[tabBarController setDelegate:self];
 }
 
 
--(void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
++ (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
     NSLog(@"tabBarController");
 }
 
 
-- (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item
++ (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item
 {
     NSLog(@"tabBar");
 }
