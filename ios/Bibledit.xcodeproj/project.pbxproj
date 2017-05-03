@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CA27CFA01EBA0A9000B608BB /* home.png in Resources */ = {isa = PBXBuildFile; fileRef = CA27CF9F1EBA0A9000B608BB /* home.png */; };
+		CA27CFA21EBA0AE100B608BB /* briefcase.png in Resources */ = {isa = PBXBuildFile; fileRef = CA27CFA11EBA0AE100B608BB /* briefcase.png */; };
 		CA6B9C191A9906C800FAB064 /* BibleditController.m in Sources */ = {isa = PBXBuildFile; fileRef = CA6B9C181A9906C800FAB064 /* BibleditController.m */; };
 		CAB519B61A8A6A7F00F4ED36 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CAB519B51A8A6A7F00F4ED36 /* libc++.dylib */; };
 		CAB519BA1A8A6BDD00F4ED36 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAB519B91A8A6BDD00F4ED36 /* Security.framework */; };
@@ -25,8 +27,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CA27CF9F1EBA0A9000B608BB /* home.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = home.png; path = "Bibledit iOS/home.png"; sourceTree = "<group>"; };
+		CA27CFA11EBA0AE100B608BB /* briefcase.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = briefcase.png; path = "Bibledit iOS/briefcase.png"; sourceTree = "<group>"; };
 		CA6B9C171A9906C800FAB064 /* BibleditController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BibleditController.h; sourceTree = "<group>"; };
 		CA6B9C181A9906C800FAB064 /* BibleditController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BibleditController.m; sourceTree = "<group>"; };
+		CA6E8A971EB9E11C000F5510 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "Bibledit iOS/Images.xcassets"; sourceTree = "<group>"; };
 		CA8C8A291B937AB400E9BA18 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
 		CAB519B31A8A658F00F4ED36 /* libbibledit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libbibledit.a; path = lib/libbibledit.a; sourceTree = "<group>"; };
 		CAB519B51A8A6A7F00F4ED36 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
@@ -82,6 +87,9 @@
 		CEA9295B19B06C9600DA3766 = {
 			isa = PBXGroup;
 			children = (
+				CA27CFA11EBA0AE100B608BB /* briefcase.png */,
+				CA27CF9F1EBA0A9000B608BB /* home.png */,
+				CA6E8A971EB9E11C000F5510 /* Images.xcassets */,
 				CEA9296D19B06C9600DA3766 /* Bibledit iOS */,
 				CEA9296619B06C9600DA3766 /* Frameworks */,
 				CEA9296519B06C9600DA3766 /* Products */,
@@ -212,9 +220,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA27CFA01EBA0A9000B608BB /* home.png in Resources */,
 				CEA9298319B06C9700DA3766 /* Images.xcassets in Resources */,
 				CEA9297219B06C9600DA3766 /* InfoPlist.strings in Resources */,
 				CE02135019E03F9B006EE62F /* Storyboard.storyboard in Resources */,
+				CA27CFA21EBA0AE100B608BB /* briefcase.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
