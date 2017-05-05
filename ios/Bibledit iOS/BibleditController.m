@@ -14,6 +14,7 @@
 UIView * uiview;
 WKWebView *webview;
 NSString * homeUrl = @"https://bibledit.org:8081/";
+Boolean plainViewActive = false;
 
 
 @implementation BibleditController
@@ -32,7 +33,7 @@ NSString * homeUrl = @"https://bibledit.org:8081/";
 
 + (void) viewControllerViewDidLoad:(UIView *)view
 {
-    NSLog(@"viewControllerViewDidLoad");
+    NSLog(@"plain view loaded");
     uiview = view;
     [self startPlainView:homeUrl];
 }
@@ -40,18 +41,17 @@ NSString * homeUrl = @"https://bibledit.org:8081/";
 
 + (void) runRepetitiveTimer:(NSTimer *)timer
 {
-    if (webview != nil) {
+    if (plainViewActive) {
         NSLog(@"Tabbed view");
         webview = nil;
         NSArray * urls = @[@"", @"editone/index", @"notes/index", @"resource/index"];
         NSArray * labels = @[@"Home", @"Translate", @"Notes", @"Resources"];
         NSInteger active = 1;
-        [self startTabbedView:urls
-                       labels:labels
-                       active:active];
+        [self startTabbedView:urls labels:labels active:active];
     } else {
-        //NSLog(@"Plain view");
-        //[self startPlainView:homeUrl];
+        UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:@"Plain" bundle:nil];
+        UIViewController *initViewController = [storyBoard instantiateInitialViewController];
+        [uiview.window setRootViewController:initViewController];
     }
 }
 
@@ -67,12 +67,13 @@ NSString * homeUrl = @"https://bibledit.org:8081/";
     NSURL *nsurl = [NSURL URLWithString:url];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:nsurl];
     [webview loadRequest:urlRequest];
+    
+    plainViewActive = true;
 }
 
 
 + (void) startTabbedView:(NSArray *)urls labels:(NSArray *)labels active:(NSInteger)active
 {
-
     [[uiview subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
     UITabBarController * tabBarController = [[UITabBarController alloc] init];
@@ -109,7 +110,7 @@ NSString * homeUrl = @"https://bibledit.org:8081/";
     
     tabBarController.selectedIndex = 1;
     
-    //[tabBarController setDelegate:self];
+    plainViewActive = false;
 }
 
 

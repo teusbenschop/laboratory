@@ -30,7 +30,7 @@
 		<true/>
 	</dict>
 	<key>UIMainStoryboardFile</key>
-	<string>Storyboard</string>
+	<string>Plain</string>
 	<key>UIMainStoryboardFile~ipad</key>
 	<string>Storyboard</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -54,6 +54,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<true/>
+	<false/>
 </dict>
 </plist>

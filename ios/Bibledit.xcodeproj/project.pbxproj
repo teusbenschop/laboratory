@@ -15,7 +15,7 @@
 		CAB519BC1A8A6BE800F4ED36 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CAB519BB1A8A6BE800F4ED36 /* libz.dylib */; };
 		CAB519BE1A8A6BF900F4ED36 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAB519BD1A8A6BF900F4ED36 /* CFNetwork.framework */; };
 		CAB519C01A8A6C0D00F4ED36 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CAB519BF1A8A6C0D00F4ED36 /* libsqlite3.dylib */; };
-		CE02135019E03F9B006EE62F /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE02134F19E03F9B006EE62F /* Storyboard.storyboard */; };
+		CE02135019E03F9B006EE62F /* Plain.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CE02134F19E03F9B006EE62F /* Plain.storyboard */; };
 		CEA9296819B06C9600DA3766 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA9296719B06C9600DA3766 /* Foundation.framework */; };
 		CEA9296A19B06C9600DA3766 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA9296919B06C9600DA3766 /* CoreGraphics.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		CEA9296C19B06C9600DA3766 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA9296B19B06C9600DA3766 /* UIKit.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -46,7 +46,7 @@
 		CAC4C8871B94944E00FB6700 /* libiculx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libiculx.a; path = lib/libiculx.a; sourceTree = "<group>"; };
 		CAC4C8881B94944E00FB6700 /* libicutu.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicutu.a; path = lib/libicutu.a; sourceTree = "<group>"; };
 		CAC4C8891B94944E00FB6700 /* libicuuc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicuuc.a; path = lib/libicuuc.a; sourceTree = "<group>"; };
-		CE02134F19E03F9B006EE62F /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
+		CE02134F19E03F9B006EE62F /* Plain.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Plain.storyboard; sourceTree = "<group>"; };
 		CE2F911919DC8ACA0091157F /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		CE2F911B19DC8B4C0091157F /* libresolv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libresolv.dylib; path = usr/lib/libresolv.dylib; sourceTree = SDKROOT; };
 		CE2F911D19DC8B980091157F /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
@@ -57,7 +57,6 @@
 		CEA9296F19B06C9600DA3766 /* bibledit-ios-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "bibledit-ios-Info.plist"; sourceTree = "<group>"; };
 		CEA9297119B06C9600DA3766 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		CEA9297319B06C9600DA3766 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		CEA9297519B06C9600DA3766 /* bibledit-ios-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bibledit-ios-Prefix.pch"; sourceTree = "<group>"; };
 		CEA9297619B06C9600DA3766 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		CEA9297719B06C9600DA3766 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		CEA9297F19B06C9600DA3766 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
@@ -148,12 +147,11 @@
 		CEA9296E19B06C9600DA3766 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				CE02134F19E03F9B006EE62F /* Storyboard.storyboard */,
+				CE02134F19E03F9B006EE62F /* Plain.storyboard */,
 				CEA9298219B06C9700DA3766 /* Images.xcassets */,
 				CEA9296F19B06C9600DA3766 /* bibledit-ios-Info.plist */,
 				CEA9297019B06C9600DA3766 /* InfoPlist.strings */,
 				CEA9297319B06C9600DA3766 /* main.m */,
-				CEA9297519B06C9600DA3766 /* bibledit-ios-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -223,7 +221,7 @@
 				CA27CFA01EBA0A9000B608BB /* home.png in Resources */,
 				CEA9298319B06C9700DA3766 /* Images.xcassets in Resources */,
 				CEA9297219B06C9600DA3766 /* InfoPlist.strings in Resources */,
-				CE02135019E03F9B006EE62F /* Storyboard.storyboard in Resources */,
+				CE02135019E03F9B006EE62F /* Plain.storyboard in Resources */,
 				CA27CFA21EBA0AE100B608BB /* briefcase.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

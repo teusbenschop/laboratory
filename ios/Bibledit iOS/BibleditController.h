@@ -22,7 +22,7 @@ extern NSString * homeUrl;
 + (void) viewControllerViewDidLoad:(UIView *)view;
 + (void) runRepetitiveTimer:(NSTimer *)timer;
 + (void) startPlainView:(NSString *)url;
-+ (void) startTabbedView:(NSArray *)urls :(NSArray *)labels :(NSInteger)active;
++ (void) startTabbedView:(NSArray *)urls labels:(NSArray *)labels active:(NSInteger)active;
 
 
 @end
