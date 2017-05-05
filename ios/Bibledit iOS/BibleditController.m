@@ -113,17 +113,6 @@ NSString * homeUrl = @"https://bibledit.org:8081/";
 }
 
 
-+ (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
-    NSLog(@"tabBarController");
-}
-
-
-+ (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item
-{
-    NSLog(@"tabBar");
-}
-
-
 @end
 
 
