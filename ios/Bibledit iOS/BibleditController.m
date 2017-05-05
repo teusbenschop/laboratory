@@ -1,17 +1,12 @@
-//
-//  BibleditPaths.m
-//  Bibledit
-//
-//  Created by Mini on 13-09-14.
-//  Copyright (c) 2014 Teus Benshop. All rights reserved.
-//
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 #import "BibleditController.h"
+#import "AppDelegate.h"
 
 
 UIView * uiview;
+UITabBarController * uitabbarcontroller;
 WKWebView *webview;
 NSString * homeUrl = @"https://bibledit.org:8081/";
 Boolean plainViewActive = false;
@@ -22,7 +17,6 @@ Boolean plainViewActive = false;
 
 + (void) appDelegateDidFinishLaunchingWithOptions
 {
-    NSLog(@"appDelegateDidFinishLaunchingWithOptions");
     [NSTimer scheduledTimerWithTimeInterval:4.0
                                      target:self
                                    selector:@selector(runRepetitiveTimer:)
@@ -33,16 +27,14 @@ Boolean plainViewActive = false;
 
 + (void) viewControllerViewDidLoad:(UIView *)view
 {
-    NSLog(@"plain view loaded");
     uiview = view;
     [self startPlainView:homeUrl];
 }
 
 
-+ (void) tabBarControllerViewDidLoad:(UIView *)view
++ (void) tabBarControllerViewDidLoad:(UITabBarController *)tabbarcontroller
 {
-    NSLog(@"tabbed view loaded");
-    uiview = view;
+    uitabbarcontroller = tabbarcontroller;
     NSArray * urls = @[@"", @"editone/index", @"notes/index", @"resource/index"];
     NSArray * labels = @[@"Home", @"Translate", @"Notes", @"Resources"];
     NSInteger active = 1;
@@ -52,23 +44,19 @@ Boolean plainViewActive = false;
 
 + (void) runRepetitiveTimer:(NSTimer *)timer
 {
-    return; // Todo
-    NSString * boardName;
-    if (plainViewActive) {
-        boardName = @"Tabbed";
-    } else {
-        boardName = @"Plain";
-    }
-    UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:boardName bundle:nil];
-    UIViewController *initViewController = [storyBoard instantiateInitialViewController];
-    [uiview.window setRootViewController:initViewController];
+    NSString * storyBoardName;
+    if (plainViewActive) storyBoardName = @"Tabbed";
+    else storyBoardName = @"Plain";
+    UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:storyBoardName bundle:nil];
+    UIViewController *initialViewController = [storyBoard instantiateInitialViewController];
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    appDelegate.window.rootViewController = initialViewController;
+    [appDelegate.window makeKeyAndVisible];
 }
 
 
 + (void) startPlainView:(NSString *)url
 {
-    [[uiview subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     webview = [[WKWebView alloc] initWithFrame:uiview.frame configuration:configuration];
     [uiview addSubview:webview];
@@ -83,10 +71,6 @@ Boolean plainViewActive = false;
 
 + (void) startTabbedView:(NSArray *)urls labels:(NSArray *)labels active:(NSInteger)active
 {
-    [[uiview subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-
-    UITabBarController * tabBarController = [[UITabBarController alloc] init];
-
     NSMutableArray * controllers = [[NSMutableArray alloc] init];
 
     for (int i = 0; i < [urls count]; i++) {
@@ -113,11 +97,9 @@ Boolean plainViewActive = false;
         [controllers addObject:viewController];
     }
     
-    tabBarController.viewControllers = controllers;
-    
-    [uiview addSubview:tabBarController.view];
-    
-    tabBarController.selectedIndex = 1;
+    uitabbarcontroller.viewControllers = controllers;
+   
+    uitabbarcontroller.selectedIndex = active;
     
     plainViewActive = false;
 }

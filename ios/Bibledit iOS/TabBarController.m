@@ -19,7 +19,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [BibleditController tabBarControllerViewDidLoad:self.view];
+    [BibleditController tabBarControllerViewDidLoad:self];
 }
 
 
