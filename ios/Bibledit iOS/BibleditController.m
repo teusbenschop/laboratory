@@ -39,20 +39,29 @@ Boolean plainViewActive = false;
 }
 
 
++ (void) tabBarControllerViewDidLoad:(UIView *)view
+{
+    NSLog(@"tabbed view loaded");
+    uiview = view;
+    NSArray * urls = @[@"", @"editone/index", @"notes/index", @"resource/index"];
+    NSArray * labels = @[@"Home", @"Translate", @"Notes", @"Resources"];
+    NSInteger active = 1;
+    [self startTabbedView:urls labels:labels active:active];
+}
+
+
 + (void) runRepetitiveTimer:(NSTimer *)timer
 {
+    return; // Todo
+    NSString * boardName;
     if (plainViewActive) {
-        NSLog(@"Tabbed view");
-        webview = nil;
-        NSArray * urls = @[@"", @"editone/index", @"notes/index", @"resource/index"];
-        NSArray * labels = @[@"Home", @"Translate", @"Notes", @"Resources"];
-        NSInteger active = 1;
-        [self startTabbedView:urls labels:labels active:active];
+        boardName = @"Tabbed";
     } else {
-        UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:@"Plain" bundle:nil];
-        UIViewController *initViewController = [storyBoard instantiateInitialViewController];
-        [uiview.window setRootViewController:initViewController];
+        boardName = @"Plain";
     }
+    UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:boardName bundle:nil];
+    UIViewController *initViewController = [storyBoard instantiateInitialViewController];
+    [uiview.window setRootViewController:initViewController];
 }
 
 

@@ -20,6 +20,7 @@ extern NSString * homeUrl;
 
 + (void) appDelegateDidFinishLaunchingWithOptions;
 + (void) viewControllerViewDidLoad:(UIView *)view;
++ (void) tabBarControllerViewDidLoad:(UIView *)view;
 + (void) runRepetitiveTimer:(NSTimer *)timer;
 + (void) startPlainView:(NSString *)url;
 + (void) startTabbedView:(NSArray *)urls labels:(NSArray *)labels active:(NSInteger)active;
