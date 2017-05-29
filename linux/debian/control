@@ -2,7 +2,7 @@ Source: bibledit-cloud
 Section: editors
 Priority: extra
 Maintainer: Teus Benschop <teusjannette@gmail.com>
-Build-Depends: debhelper (>= 9), autotools-dev, patchutils (>= 0.2.25), rcs, dh-autoreconf, autoconf, autoconf-archive, make (>= 3), dpkg-dev (>= 1.10)
+Build-Depends: debhelper (>= 9), autotools-dev, patchutils (>= 0.2.25), rcs, dh-autoreconf, autoconf, autoconf-archive, make (>= 3), dpkg-dev (>= 1.10), dh-systemd
 Standards-Version: 3.9.8
 Homepage: http://bibledit.org/
 

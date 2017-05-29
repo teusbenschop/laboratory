@@ -38,7 +38,7 @@
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA5D606D1EDC25730072D36C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		CA5D60701EDC44160072D36C /* bibledit-cloud.init */ = {isa = PBXFileReference; lastKnownFileType = text; path = "bibledit-cloud.init"; sourceTree = "<group>"; };
+		CA5D60701EDC44160072D36C /* bibledit-cloud.service */ = {isa = PBXFileReference; lastKnownFileType = text; path = "bibledit-cloud.service"; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -223,7 +223,7 @@
 		CA72AE841E4C8E1000A514F3 /* debian */ = {
 			isa = PBXGroup;
 			children = (
-				CA5D60701EDC44160072D36C /* bibledit-cloud.init */,
+				CA5D60701EDC44160072D36C /* bibledit-cloud.service */,
 				CA72AE851E4C8E1000A514F3 /* changelog */,
 				CA72AE861E4C8E1000A514F3 /* compat */,
 				CA72AE871E4C8E1000A514F3 /* control */,
