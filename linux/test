@@ -40,7 +40,7 @@ if [ $? -ne 0 ]; then exit; fi
 
 
 echo Rename the source tarball to the non-native scheme.
-ssh $DEBIANSID "rename 's/-/_/g' bibledit*gz"
+ssh $DEBIANSID "rename 's/cloud-/cloud_/g' bibledit*gz"
 if [ $? -ne 0 ]; then exit; fi
 ssh $DEBIANSID "rename 's/tar/orig.tar/g' bibledit*gz"
 if [ $? -ne 0 ]; then exit; fi
@@ -51,20 +51,10 @@ ssh $DEBIANSID "tar xf bibledit*gz"
 if [ $? -ne 0 ]; then exit; fi
 
 
-echo Do a license check.
-ssh $DEBIANSID "cd bibledit*[0-9]; licensecheck --recursive --ignore debian --deb-machine *"
-if [ $? -ne 0 ]; then exit; fi
-
-
 echo Build the Debian packages.
 ssh $DEBIANSID "cd bibledit*[0-9]; debuild -us -uc"
 if [ $? -ne 0 ]; then exit; fi
-
-
-echo Build the Debian package in a chroot.
-ssh -tt $DEBIANSID "cd bibledit*[0-9]; sbuild"
-if [ $? -ne 0 ]; then exit; fi
-
+exit
 
 echo Removing any previous build artifacts.
 ssh $DEBIANSID "rm bibledit*" 2>/dev/null
@@ -75,6 +65,3 @@ ssh -tt $DEBIANSID "cd bibledit*[0-9]; debuild -S -sa"
 if [ $? -ne 0 ]; then exit; fi
 
 
-echo Upload the Debian source package.
-ssh -tt $DEBIANSID "dput mentors *source.changes"
-if [ $? -ne 0 ]; then exit; fi
