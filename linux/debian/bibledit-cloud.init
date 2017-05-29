@@ -14,7 +14,7 @@
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/usr/bin/bibledit-cloud
-PIDFILE=/var/run/bibledit-cloud
+PIDFILE=/var/run/bibledit-cloud.pid
 
 test -x $DAEMON || exit 0
 
@@ -36,7 +36,7 @@ case "$1" in
     $0 start
     ;;
   status)
-    status_of_proc -p $PIDFILE $DAEMON atd && exit 0 || exit $?
+    status_of_proc -p $PIDFILE $DAEMON && exit 0 || exit $?
     ;;
   *)
     echo "Usage: /etc/init.d/bibledit-cloud {start|stop|restart|force-reload|status}"
