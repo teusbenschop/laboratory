@@ -53,7 +53,7 @@
 		CA72AE8C1E4C8E1000A514F3 /* rules */ = {isa = PBXFileReference; lastKnownFileType = text; path = rules; sourceTree = "<group>"; };
 		CA72AE8E1E4C8E1000A514F3 /* format */ = {isa = PBXFileReference; lastKnownFileType = text; path = format; sourceTree = "<group>"; };
 		CA72AE921E4C8E1000A514F3 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
-		CA72AE9C1E4C8E1000A514F3 /* test */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = test; sourceTree = "<group>"; };
+		CA72AE9C1E4C8E1000A514F3 /* package */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = package; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -214,7 +214,7 @@
 				CA72AE841E4C8E1000A514F3 /* debian */,
 				CA5D606D1EDC25730072D36C /* main.cpp */,
 				CA72AE921E4C8E1000A514F3 /* Makefile.am */,
-				CA72AE9C1E4C8E1000A514F3 /* test */,
+				CA72AE9C1E4C8E1000A514F3 /* package */,
 			);
 			path = linux;
 			sourceTree = "<group>";
