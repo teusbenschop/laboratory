@@ -113,6 +113,7 @@
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
+		CAF8E8881EDCB26200CBA31A /* bibledit-cloud.postinst */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "bibledit-cloud.postinst"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -223,6 +224,7 @@
 		CA72AE841E4C8E1000A514F3 /* debian */ = {
 			isa = PBXGroup;
 			children = (
+				CAF8E8881EDCB26200CBA31A /* bibledit-cloud.postinst */,
 				CA5D60701EDC44160072D36C /* bibledit-cloud.service */,
 				CA72AE851E4C8E1000A514F3 /* changelog */,
 				CA72AE861E4C8E1000A514F3 /* compat */,

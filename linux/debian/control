@@ -8,6 +8,6 @@ Homepage: http://bibledit.org/
 
 Package: bibledit-cloud
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.0-6)
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Description: Online Bible editor
  An online tool for the Bible translator.
