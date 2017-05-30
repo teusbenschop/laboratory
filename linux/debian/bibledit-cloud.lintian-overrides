@@ -1,0 +1,2 @@
+bibledit-cloud: init.d-script-not-marked-as-conffile etc/init.d/bibledit-cloud
+bibledit-cloud: init.d-script-not-included-in-package etc/init.d/bibledit-cloud
