@@ -20,3 +20,7 @@ linux/bibledit
 *.resources
 *.dll
 *csproj.FileListAbsolute.txt
+*.ipch
+*.winmd
+*.pri
+*.xbf
