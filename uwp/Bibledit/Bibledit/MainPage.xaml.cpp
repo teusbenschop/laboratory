@@ -3,10 +3,12 @@
 // Implementation of the MainPage class.
 //
 
-#include "pch.h"
+#include "App.xaml.h"
 #include "MainPage.xaml.h"
+#include "utilities.h"
 
-using namespace HelloWorld;
+
+using namespace Bibledit;
 
 using namespace Platform;
 using namespace Windows::Foundation;
@@ -24,22 +26,6 @@ using namespace Windows::UI::Xaml::Navigation;
 MainPage::MainPage()
 {
 	InitializeComponent();
-}
-
-
-void HelloWorld::MainPage::TextBlock_SelectionChanged (Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
-{
-
-}
-
-
-void HelloWorld::MainPage::nameInput_TextChanged (Platform::Object^ sender, Windows::UI::Xaml::Controls::TextChangedEventArgs^ e)
-{
-
-}
-
-
-void HelloWorld::MainPage::inputButton_Click (Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
-{
-	greetingOutput->Text = "Hello, " + nameInput->Text + "!";
+	auto uri = ref new Uri (L"http://bibledit.org:8080");
+	webview->Navigate (uri);
 }

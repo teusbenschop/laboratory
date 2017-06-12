@@ -1,12 +1,9 @@
-﻿	//
-// App.xaml.cpp
-// Implementation of the App class.
-//
-
-#include "pch.h"
+﻿#include "App.xaml.h"
 #include "MainPage.xaml.h"
+#include "utilities.h"
 
-using namespace HelloWorld;
+
+using namespace Bibledit;
 
 using namespace Platform;
 using namespace Windows::ApplicationModel;

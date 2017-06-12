@@ -7,7 +7,7 @@
 
 #include "App.g.h"
 
-namespace HelloWorld
+namespace Bibledit
 {
 	/// <summary>
 	/// Provides application-specific behavior to supplement the default Application class.
