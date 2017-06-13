@@ -1,0 +1,8 @@
+Bibledit for Universal Windows Platform
+
+The app name "Bibledit" was reserved in the Windows Store.
+
+Examples demonstrating how to write for UWP:
+https://github.com/Microsoft/Windows-universal-samples
+
+
