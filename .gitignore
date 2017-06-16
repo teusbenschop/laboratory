@@ -24,3 +24,5 @@ linux/bibledit
 *.winmd
 *.pri
 *.xbf
+uwp/Bibledit/Bibledit/Debug*
+uwp/Bibledit/Debug*

@@ -19,13 +19,7 @@ using namespace Windows::Networking;
 using namespace Windows::Networking::Connectivity;
 using namespace Windows::Networking::Sockets;
 using namespace Windows::Storage::Streams;
-using namespace Windows::UI::Xaml;
-using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Controls::Primitives;
-using namespace Windows::UI::Xaml::Data;
-using namespace Windows::UI::Xaml::Input;
-using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Navigation;
+
 
 using namespace std;
 
