@@ -20,7 +20,6 @@ using namespace Windows::Networking::Connectivity;
 using namespace Windows::Networking::Sockets;
 using namespace Windows::Storage::Streams;
 
-
 using namespace std;
 
 
