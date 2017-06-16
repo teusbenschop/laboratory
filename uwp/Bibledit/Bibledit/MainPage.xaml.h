@@ -7,15 +7,35 @@
 
 #include "MainPage.g.h"
 
+using namespace Windows::Networking;
+using namespace Windows::Networking::Connectivity;
+using namespace Windows::Networking::Sockets;
+using namespace Windows::Storage::Streams;
+
 namespace Bibledit
 {
-	/// <summary>
-	/// An empty page that can be used on its own or navigated to within a Frame.
-	/// </summary>
 	public ref class MainPage sealed
 	{
 	public:
 		MainPage();
+	private:
+		~MainPage ();
+		MainPage^ rootPage;
+	};
 
+	public ref class ListenerContext sealed
+	{
+	public:
+		ListenerContext (MainPage^ rootPage, StreamSocketListener^ listener);
+		ListenerContext (StreamSocketListener^ listener);
+		ListenerContext ();
+		void OnConnection (StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object);
+
+	private:
+		MainPage^ rootPage;
+		StreamSocketListener^ listener;
+
+		~ListenerContext ();
+		void ReceiveStringLoop (DataReader^ reader, StreamSocket^ socket);
 	};
 }
