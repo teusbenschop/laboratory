@@ -1,22 +1,3 @@
-/*
-Copyright (©) 2003-2017 Teus Benschop.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*/
-
-
 #include "utilities.h"
 #include <string>
 #include <windows.h>
@@ -59,7 +40,7 @@ void listener_thread ()
 
 	listener = ref new StreamSocketListener ();
 
-	listenerContext = ref new ListenerContext ();
+	listenerContext = ref new ListenerContext (listener);
 
 	listener->ConnectionReceived += ref new TypedEventHandler<StreamSocketListener^, StreamSocketListenerConnectionReceivedEventArgs^> (listenerContext, &ListenerContext::OnConnection);
 
@@ -75,7 +56,7 @@ void listener_thread ()
 		try {
 			// Try getting an exception.
 			previousTask.get ();
-			//UtilityLogMessage ("Listening on " + localhost->CanonicalName);
+			UtilityLogMessage ("Listening on " + localhost->CanonicalName);
 			new thread (connector_thread);
 		}
 		catch (Exception^ exception) {
@@ -87,7 +68,6 @@ void listener_thread ()
 
 void connector_thread ()
 {
-	return;
 	HostName^ hostName;
 	try
 	{
@@ -107,7 +87,7 @@ void connector_thread ()
 
 	// Keep the socket alive, so subsequent steps can use it.
 
-	//UtilityLogMessage ("Connecting to localhost.");
+	UtilityLogMessage ("Connecting to localhost.");
 
 	// Connect to the server at the localhost.
 	auto connectTask = create_task (socket->ConnectAsync (hostName, "9876", SocketProtectionLevel::PlainSocket));
@@ -117,7 +97,7 @@ void connector_thread ()
 		{
 			// Try getting all exceptions from the continuation chain above this point.
 			previousTask.get ();
-			//UtilityLogMessage ("Connected to localhost");
+			UtilityLogMessage ("Connected to localhost");
 
 			DataWriter^ writer = ref new DataWriter (socket->OutputStream);
 
@@ -134,7 +114,7 @@ void connector_thread ()
 				{
 					// Try getting an exception.
 					writeTask.get ();
-					//UtilityLogMessage ("Sent successfully: " + stringToSend);
+					UtilityLogMessage ("Sent successfully: " + stringToSend);
 
 					// To reuse the socket with another data writer, 
 					// the application must detach the stream from the current writer before deleting it. 
@@ -150,7 +130,7 @@ void connector_thread ()
 
 					// StreamSocketListener.Close() is exposed through the 'delete' keyword in C++/CX.
 					// The line below explicitly closes the listener.
-					//delete listener;
+					delete listener;
 					//listener = nullptr;
 
 
@@ -170,76 +150,9 @@ void connector_thread ()
 			return;
 		}
 	});
+
+
+
 }
 
 
-ListenerContext::ListenerContext ()
-{
-}
-
-
-void ListenerContext::OnConnection (StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object)
-{
-	UtilityLogMessage ("OnConnection event started");
-
-	DataReader^ reader = ref new DataReader (object->Socket->InputStream);
-
-	// Start a receive loop.
-	ReceiveStringLoop (reader, object->Socket);
-
-	UtilityLogMessage ("OnConnection event ready");
-}
-
-
-void ListenerContext::ReceiveStringLoop (DataReader^ reader, StreamSocket^ socket)
-{
-	// Read first 4 bytes (length of the subsequent string).
-	create_task (reader->LoadAsync (sizeof (UINT32))).then ([this, reader, socket](unsigned int size)
-	{
-		if (size < sizeof (UINT32))
-		{
-			// The underlying socket was closed before we were able to read the whole data.
-			cancel_current_task ();
-		}
-
-		unsigned int stringLength = reader->ReadUInt32 ();
-		return create_task (reader->LoadAsync (stringLength)).then (
-			[this, reader, stringLength](unsigned int actualStringLength)
-		{
-			if (actualStringLength != stringLength)
-			{
-				// The underlying socket was closed before we were able to read the whole data.
-				cancel_current_task ();
-			}
-
-			// Display the string on the screen. This thread is invoked on non-UI thread, so we need to marshal the 
-			// call back to the UI thread.
-			UtilityLogMessage ("Received data: \"" + reader->ReadString (actualStringLength) + "\"");
-		});
-	}).then ([this, reader, socket](task<void> previousTask)
-	{
-		try
-		{
-			// Try getting all exceptions from the continuation chain above this point.
-			previousTask.get ();
-
-			// Everything went ok, so try to receive another string. The receive will continue until the stream is
-			// broken (i.e. peer closed the socket).
-			ReceiveStringLoop (reader, socket);
-		}
-		catch (Exception^ exception)
-		{
-			UtilityLogMessage ("Read stream failed with error: " + exception->Message);
-
-			// Explicitly close the socket.
-			delete socket;
-		}
-		catch (task_canceled&)
-		{
-			// Do not print anything here - this will usually happen because user closed the client socket.
-
-			// Explicitly close the socket.
-			delete socket;
-		}
-	});
-}
