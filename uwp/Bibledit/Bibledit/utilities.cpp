@@ -91,13 +91,58 @@ void connector_thread ()
 
 	// Connect to the server at the localhost.
 	auto connectTask = create_task (socket->ConnectAsync (hostName, "9876", SocketProtectionLevel::PlainSocket));
-	connectTask.then ([](task<void> previousTask)
+	connectTask.then ([socket](task<void> previousTask)
 	{
 		try
 		{
 			// Try getting all exceptions from the continuation chain above this point.
 			previousTask.get ();
 			UtilityLogMessage ("Connected to localhost");
+
+			DataWriter^ writer = ref new DataWriter (socket->OutputStream);
+
+			// Write first the length of the string a UINT32 value followed up by the string. The operation will just store the data locally.
+			String^ stringToSend ("Hello: Jesus Saves. Trust Him.");
+			writer->WriteUInt32 (writer->MeasureString (stringToSend));
+			writer->WriteString (stringToSend);
+
+			// Write the locally buffered data to the network.
+			auto writeTask = create_task (writer->StoreAsync ());
+			writeTask.then ([socket, stringToSend](task<unsigned int> writeTask)
+			{
+				try
+				{
+					// Try getting an exception.
+					writeTask.get ();
+					UtilityLogMessage ("Sent successfully: " + stringToSend);
+
+					// To reuse the socket with another data writer, 
+					// the application must detach the stream from the current writer before deleting it. 
+					// This is added for completeness, as this closes the socket in the very next block.
+					//writer->DetachStream ();
+					//delete writer;
+					//writer = nullptr;
+
+					// StreamSocket.Close() is exposed through the 'delete' keyword in C++/CX.
+					// The line below explicitly closes the socket.
+					delete socket;
+					//socket = nullptr;
+
+					// StreamSocketListener.Close() is exposed through the 'delete' keyword in C++/CX.
+					// The line below explicitly closes the listener.
+					delete listener;
+					//listener = nullptr;
+
+
+				}
+				catch (Exception^ exception)
+				{
+					UtilityLogMessage ("Send failed with error: " + exception->Message);
+					return;
+				}
+			});
+
+
 		}
 		catch (Exception^ exception)
 		{
@@ -105,6 +150,9 @@ void connector_thread ()
 			return;
 		}
 	});
+
+
+
 }
 
 
