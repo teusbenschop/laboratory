@@ -1,7 +1,4 @@
-﻿//
-// MainPage.xaml.cpp
-// Implementation of the MainPage class.
-//
+﻿
 
 #include "App.xaml.h"
 #include "MainPage.xaml.h"
@@ -71,12 +68,14 @@ ListenerContext::~ListenerContext ()
 
 void ListenerContext::OnConnection (StreamSocketListener^ listener,	StreamSocketListenerConnectionReceivedEventArgs^ object)
 {
-	UtilityLogMessage ("ListenerContext::OnConnection started");
+	UtilityLogMessage ("OnConnection event started");
 
 	DataReader^ reader = ref new DataReader (object->Socket->InputStream);
 
 	// Start a receive loop.
 	ReceiveStringLoop (reader, object->Socket);
+	
+	UtilityLogMessage ("OnConnection event ready");
 }
 
 

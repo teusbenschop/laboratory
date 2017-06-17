@@ -36,13 +36,9 @@ StreamSocketListener^ listener;
 
 void listener_thread ()
 {
-	UtilityLogMessage ("Listener thread started");
-
 	HostName^ localhost = ref new HostName ("localhost");
 
 	listener = ref new StreamSocketListener ();
-
-	UtilityLogMessage (localhost->CanonicalName);
 
 	listenerContext = ref new ListenerContext (listener);
 
@@ -54,87 +50,61 @@ void listener_thread ()
 	// Refer to the StreamSocketListenerControl class' MSDN documentation for the full list of control options.
 	listener->Control->KeepAlive = false;
 
-	auto bindTask = create_task (listener->BindEndpointAsync (localhost, "8080"));
+	auto bindTask = create_task (listener->BindEndpointAsync (localhost, "9876"));
 
 	bindTask.then ([localhost](task<void> previousTask) {
 		try {
 			// Try getting an exception.
 			previousTask.get ();
 			UtilityLogMessage ("Listening on " + localhost->CanonicalName);
+			new thread (connector_thread);
 		}
 		catch (Exception^ exception) {
 			UtilityLogMessage ("Start listening failed with error: " + exception->Message);
 		}
 	});
-
-
-	UtilityLogMessage ("Listener thread stopped");
 }
 
 
-/*
-void listenerOnConnection (StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object)
+void connector_thread ()
 {
-
-	//DataReader^ reader = ref new DataReader (object->Socket->InputStream);
-
-	// Start a receive loop.
-	//ReceiveStringLoop (reader, object->Socket);
-}
-
-
-void ListenerContext::ReceiveStringLoop (DataReader^ reader, StreamSocket^ socket)
-{
-	// Read first 4 bytes (length of the subsequent string).
-	create_task (reader->LoadAsync (sizeof (UINT32))).then ([this, reader, socket](unsigned int size)
+	HostName^ hostName;
+	try
 	{
-		if (size < sizeof (UINT32))
-		{
-			// The underlying socket was closed before we were able to read the whole data.
-			cancel_current_task ();
-		}
+		hostName = ref new HostName ("localhost");
+	}
+	catch (InvalidArgumentException^ e)
+	{
+		UtilityLogMessage ("Failure connecting to invalid host name : " + e->Message);
+		return;
+	}
 
-		unsigned int stringLength = reader->ReadUInt32 ();
-		return create_task (reader->LoadAsync (stringLength)).then (
-			[this, reader, stringLength](unsigned int actualStringLength)
-		{
-			if (actualStringLength != stringLength)
-			{
-				// The underlying socket was closed before we were able to read the whole data.
-				cancel_current_task ();
-			}
+	StreamSocket^ socket = ref new StreamSocket ();
 
-			// Display the string on the screen. This thread is invoked on non-UI thread, so we need to marshal the 
-			// call back to the UI thread.
-			NotifyUserFromAsyncThread ("Received data: \"" + reader->ReadString (actualStringLength) + "\"", NotifyType::StatusMessage);
-		});
-	}).then ([this, reader, socket](task<void> previousTask)
+	// If necessary, tweak the socket's control options before carrying out the connect operation.
+	// Refer to the StreamSocketControl class' MSDN documentation for the full list of control options.
+	socket->Control->KeepAlive = false;
+
+	// Keep the socket alive, so subsequent steps can use it.
+
+	UtilityLogMessage ("Connecting to localhost.");
+
+	// Connect to the server at the localhost.
+	auto connectTask = create_task (socket->ConnectAsync (hostName, "9876", SocketProtectionLevel::PlainSocket));
+	connectTask.then ([](task<void> previousTask)
 	{
 		try
 		{
 			// Try getting all exceptions from the continuation chain above this point.
 			previousTask.get ();
-
-			// Everything went ok, so try to receive another string. The receive will continue until the stream is
-			// broken (i.e. peer closed the socket).
-			ReceiveStringLoop (reader, socket);
+			UtilityLogMessage ("Connected to localhost");
 		}
 		catch (Exception^ exception)
 		{
-			NotifyUserFromAsyncThread (
-				"Read stream failed with error: " + exception->Message,
-				NotifyType::ErrorMessage);
-
-			// Explicitly close the socket.
-			delete socket;
-		}
-		catch (task_canceled&)
-		{
-			// Do not print anything here - this will usually happen because user closed the client socket.
-
-			// Explicitly close the socket.
-			delete socket;
+			UtilityLogMessage ("Connect failed with error: " + exception->Message);
+			return;
 		}
 	});
 }
-*/
+
+

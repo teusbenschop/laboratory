@@ -98,6 +98,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <PackageCertificateKeyFile>Bibledit_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>E3F1359BB03CDC8A7D51997806CD98B9D1EB3B4B</PackageCertificateThumbprint>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
