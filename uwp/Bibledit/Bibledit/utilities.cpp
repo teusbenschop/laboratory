@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include <string>
 #include <windows.h>
 #include <ppltasks.h>
+#include <sstream>
 
 
 #include "App.xaml.h"
@@ -180,14 +181,9 @@ ListenerContext::ListenerContext (StreamSocketListener^ listener)
 
 void ListenerContext::OnConnection (StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object)
 {
-	UtilityLogMessage ("OnConnection event started");
-
+	UtilityLogMessage ("OnConnection");
 	DataReader^ reader = ref new DataReader (object->Socket->InputStream);
-
-	// Start a receive loop.
-	ReceiveStringLoop (reader, object->Socket);
-
-	UtilityLogMessage ("OnConnection event ready");
+	ReceiveStringLoop2 (reader, object->Socket);
 }
 
 
@@ -242,4 +238,22 @@ void ListenerContext::ReceiveStringLoop (DataReader^ reader, StreamSocket^ socke
 			delete socket;
 		}
 	});
+}
+
+
+void ListenerContext::ReceiveStringLoop2 (DataReader^ reader, StreamSocket^ socket)
+{
+	// Read one byte.
+	auto oneByteTask = create_task (reader->LoadAsync (1));
+	oneByteTask.then ([reader, socket](unsigned int size)
+	{
+		byte byte = reader->ReadByte ();
+		stringstream s;
+		s << byte;
+		string s2 = s.str ();
+		wstring s3 = wstring (s2.begin (), s2.end ());
+		String ^ s4 = ref new String (s3.c_str ());
+		UtilityLogMessage (s4);
+	});
+	delete socket;
 }
