@@ -182,8 +182,35 @@ ListenerContext::ListenerContext (StreamSocketListener^ listener)
 void ListenerContext::OnConnection (StreamSocketListener^ listener, StreamSocketListenerConnectionReceivedEventArgs^ object)
 {
 	UtilityLogMessage ("OnConnection");
-	DataReader^ reader = ref new DataReader (object->Socket->InputStream);
-	ReceiveStringLoop2 (reader, object->Socket);
+
+	StreamSocket^ socket = object->Socket;
+	DataReader^ reader = ref new DataReader (socket->InputStream);
+
+	ReceiveLine (reader, socket);
+
+
+	DataWriter^ writer = ref new DataWriter (socket->OutputStream);
+	// Write data. The operation will just store the data locally.
+	String^ stringToSend ("<!DOCTYPE html><html><head><meta charset = \"utf-8\"></head><body><h1>Bibledit</h3></body></html>");
+	writer->WriteString (stringToSend);
+	// Write the locally buffered data to the network.
+	auto writeTask = create_task (writer->StoreAsync ());
+	writeTask.then ([socket] (task<unsigned int> writeTask)	{
+		try	{
+			// Try getting an exception.
+			writeTask.get ();
+			UtilityLogMessage ("Response sent successfully");
+			delete socket;
+		}
+		catch (Exception^ exception) {
+			UtilityLogMessage ("Send failed with error: " + exception->Message);
+		}
+	});
+
+
+	
+	// Explicitly close the socket.
+	//delete socket;
 }
 
 
@@ -243,17 +270,33 @@ void ListenerContext::ReceiveStringLoop (DataReader^ reader, StreamSocket^ socke
 
 void ListenerContext::ReceiveStringLoop2 (DataReader^ reader, StreamSocket^ socket)
 {
-	// Read one byte.
-	auto oneByteTask = create_task (reader->LoadAsync (1));
-	oneByteTask.then ([reader, socket](unsigned int size)
-	{
-		byte byte = reader->ReadByte ();
-		stringstream s;
-		s << byte;
-		string s2 = s.str ();
-		wstring s3 = wstring (s2.begin (), s2.end ());
-		String ^ s4 = ref new String (s3.c_str ());
-		UtilityLogMessage (s4);
-	});
-	delete socket;
+}
+
+
+void ListenerContext::ReceiveLine (DataReader^ reader, StreamSocket^ socket)
+{
+	// The line to read.
+	string line;
+	//  Keep reading till the end of the line.
+	bool endline = false;
+	while (!endline) {
+		// Read one byte at a time.
+		auto oneByteTask = create_task (reader->LoadAsync (1));
+		oneByteTask.then ([reader, &line, &endline](unsigned int size)
+		{
+			byte byte = reader->ReadByte ();
+			// The WebView sends a carriage return and then a new line in the request headers.
+			if (byte == '\r');
+			else if (byte == '\n') endline = true;
+			else {
+				// Append this character to the line.
+				line += byte;
+			}
+		});
+	}
+
+	wstring ws = wstring (line.begin (), line.end ());
+	String ^ S = ref new String (ws.c_str ());
+	UtilityLogMessage (S);
+
 }

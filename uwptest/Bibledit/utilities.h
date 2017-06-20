@@ -47,5 +47,6 @@ namespace Bibledit
 		StreamSocketListener^ listener;
 		void ReceiveStringLoop (DataReader^ reader, StreamSocket^ socket);
 		void ReceiveStringLoop2 (DataReader^ reader, StreamSocket^ socket);
+		void ReceiveLine (DataReader^ reader, StreamSocket^ socket);
 	};
 }
