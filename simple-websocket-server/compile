@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -f bitfinex
+g++ -std=c++11 -Wall -Wextra -pedantic -Wno-unused-local-typedefs -Wno-deprecated-declarations -g -I. -I/opt/local/include -g -O2 -L/opt/local/lib -lboost_system-mt -lcrypto -lssl -o bitfinex bitfinex.cpp

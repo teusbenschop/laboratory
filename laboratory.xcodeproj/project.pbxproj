@@ -17,7 +17,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		CA0B56651E3E55A800347FD0 /* install.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install.sh; sourceTree = "<group>"; };
 		CA0F08D31E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA0F08D41E5DFE30008F91C3 /* players.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = players.html; sourceTree = "<group>"; };
 		CA0F08D51E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
@@ -29,6 +28,8 @@
 		CA0F08DD1E5DFE30008F91C3 /* jquery.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = jquery.min.js; sourceTree = "<group>"; };
 		CA0F08DE1E5DFE30008F91C3 /* resource.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = resource.html; sourceTree = "<group>"; };
 		CA0F08DF1E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
+		CA23F7C51F9CC1770030A2AE /* curl-websocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "curl-websocket"; sourceTree = SOURCE_ROOT; };
+		CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "simple-websocket-server"; sourceTree = "<group>"; };
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3792E41DF6FA5A008F8164 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -107,14 +108,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		CA0B56641E3E55A800347FD0 /* sh */ = {
-			isa = PBXGroup;
-			children = (
-				CA0B56651E3E55A800347FD0 /* install.sh */,
-			);
-			path = sh;
-			sourceTree = "<group>";
-		};
 		CA0F08D11E5DFE30008F91C3 /* flexbox */ = {
 			isa = PBXGroup;
 			children = (
@@ -328,6 +321,7 @@
 			children = (
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
+				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
@@ -338,7 +332,7 @@
 				CA7BA6901DDCEA3C00719C36 /* quill-mini */,
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
-				CA0B56641E3E55A800347FD0 /* sh */,
+				CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
