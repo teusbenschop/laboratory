@@ -13,18 +13,19 @@ int main() {
   {
     auto message_str = message->string();
     
-    cout << "Client: Message received: \"" << message_str << "\"" << endl;
+    cout << "Message received: \"" << message_str << "\"" << endl;
     
-    cout << "Client: Sending close connection" << endl;
-    connection->send_close(1000);
+    //cout << "Client: Sending close connection" << endl;
+    //connection->send_close(1000);
+    (void) connection;
   };
   
   client.on_open = [](shared_ptr<WssClient::Connection> connection)
   {
-    cout << "Client: Opened connection" << endl;
+    cout << "Opened connection" << endl;
     
-    string message = "Hello";
-    cout << "Client: Sending message: \"" << message << "\"" << endl;
+    string message = "{ \"event\": \"subscribe\", \"channel\": \"ticker\", \"symbol\": \"tBTCUSD\" }";
+    cout << "Sending message: \"" << message << "\"" << endl;
     
     auto send_stream = make_shared<WssClient::SendStream>();
     *send_stream << message;
@@ -33,13 +34,13 @@ int main() {
   
   client.on_close = [](shared_ptr<WssClient::Connection>, int status, const string &)
   {
-    cout << "Client: Closed connection with status code " << status << endl;
+    cout << "Closed connection with status code " << status << endl;
   };
   
   // See http://www.boost.org/doc/libs/1_55_0/doc/html/boost_asio/reference.html, Error Codes for error code meanings
   client.on_error = [](shared_ptr<WssClient::Connection> /*connection*/, const SimpleWeb::error_code &ec)
   {
-    cout << "Client: Error: " << ec << ", error message: " << ec.message() << endl;
+    cout << "Error: " << ec << ", error message: " << ec.message() << endl;
   };
   
   client.start();
