@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+g++ -Wall -Wextra -pedantic -Wno-deprecated -std=c++11 -O3 main.cpp miniz.c -o main
+./main
+

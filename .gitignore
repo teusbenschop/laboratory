@@ -26,3 +26,5 @@ linux/bibledit
 *.xbf
 uwp/Bibledit/Bibledit/Debug*
 uwp/Bibledit/Debug*
+
+miniz/main
