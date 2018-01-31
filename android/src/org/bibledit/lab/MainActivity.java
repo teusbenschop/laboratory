@@ -53,6 +53,7 @@ public class MainActivity extends Activity
     TabHost tabhost;
     Timer timer;
     TimerTask timerTask;
+  static Context context;
 
     
     @Override
@@ -62,7 +63,10 @@ public class MainActivity extends Activity
         Log.d ("Bibledit", "onCreate");
         startTimer ();
         setWebView ();
-        //setTabHost ();
+      //MainActivity.context = Activity.getApplicationContext ();
+      MainActivity.context = this;
+      //setTabHost ();
+      
     }
 
     
@@ -99,6 +103,7 @@ public class MainActivity extends Activity
                             Log.d ("Bibledit", "set tabhost");
                             setTabHost ();
                         }
+                      Log.d ("Bibledit", Boolean.toString (context.getPackageManager().hasSystemFeature("org.chromium.arc.device_management")));
                     }
                 });
                 startTimer ();
