@@ -17,6 +17,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CA0B46F82023498A00966B19 /* linux */ = {isa = PBXFileReference; lastKnownFileType = folder; path = linux; sourceTree = "<group>"; };
 		CA0F08D31E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA0F08D41E5DFE30008F91C3 /* players.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = players.html; sourceTree = "<group>"; };
 		CA0F08D51E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
@@ -38,14 +39,9 @@
 		CA3C9E4A1E000DF1007990B5 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
-		CA5D606D1EDC25730072D36C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		CA72AE821E4C8E1000A514F3 /* configure */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = configure; sourceTree = "<group>"; };
-		CA72AE831E4C8E1000A514F3 /* configure.ac */ = {isa = PBXFileReference; lastKnownFileType = text; path = configure.ac; sourceTree = "<group>"; };
-		CA72AE921E4C8E1000A514F3 /* Makefile.am */ = {isa = PBXFileReference; lastKnownFileType = text; path = Makefile.am; sourceTree = "<group>"; };
-		CA72AE9C1E4C8E1000A514F3 /* package */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = package; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA76BE992019FA6A00B16C72 /* miniz */ = {isa = PBXFileReference; lastKnownFileType = folder; path = miniz; sourceTree = "<group>"; };
@@ -64,7 +60,6 @@
 		CA7BF1161E41E2F4008FF558 /* winsockserver.vcxproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj; sourceTree = "<group>"; };
 		CA7BF1171E41E2F4008FF558 /* winsockserver.vcxproj.filters */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj.filters; sourceTree = "<group>"; };
 		CA7BF1181E41E2F4008FF558 /* winsockserver.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockserver.sln; sourceTree = "<group>"; };
-		CA8DE8171EDD710400CB30DF /* debian */ = {isa = PBXFileReference; lastKnownFileType = folder; path = debian; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
 		CA98E2121DA8D14000F43F4B /* client6.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client6.c; sourceTree = "<group>"; };
 		CA98E2131DA8D14000F43F4B /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -192,19 +187,6 @@
 			path = torch;
 			sourceTree = "<group>";
 		};
-		CA72AE761E4C8E1000A514F3 /* linux */ = {
-			isa = PBXGroup;
-			children = (
-				CA72AE821E4C8E1000A514F3 /* configure */,
-				CA72AE831E4C8E1000A514F3 /* configure.ac */,
-				CA8DE8171EDD710400CB30DF /* debian */,
-				CA5D606D1EDC25730072D36C /* main.cpp */,
-				CA72AE921E4C8E1000A514F3 /* Makefile.am */,
-				CA72AE9C1E4C8E1000A514F3 /* package */,
-			);
-			path = linux;
-			sourceTree = "<group>";
-		};
 		CA7BA6901DDCEA3C00719C36 /* quill-mini */ = {
 			isa = PBXGroup;
 			children = (
@@ -326,7 +308,7 @@
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
-				CA72AE761E4C8E1000A514F3 /* linux */,
+				CA0B46F82023498A00966B19 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
 				CA76BE992019FA6A00B16C72 /* miniz */,
