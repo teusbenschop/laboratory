@@ -62,12 +62,6 @@ public class MainActivity extends Activity
     Log.d ("Bibledit", "onCreate");
     startTimer ();
     setWebView ();
-    if ((this.getPackageManager().hasSystemFeature("org.chromium.arc.device_management"))) {
-      Intent browserIntent = new Intent (Intent.ACTION_VIEW, Uri.parse ("http://bibledit.org"));
-      startActivity(browserIntent);
-    }
-    //setTabHost ();
-    
   }
   
   
