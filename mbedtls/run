@@ -1,4 +1,9 @@
 #!/bin/bash
 rm -f a.out
-g++ -Wall -Wextra -pedantic -std=c++11 -lmbedtls -lmbedcrypto -lmbedx509 main.cpp
+if [ $? -ne 0 ]; then exit; fi
+g++ -Wall -Wextra -pedantic -std=c++11 -lpthread -lmbedtls -lmbedcrypto -lmbedx509 main.cpp
+if [ $? -ne 0 ]; then exit; fi
 ./a.out
+if [ $? -ne 0 ]; then exit; fi
+rm a.out
+if [ $? -ne 0 ]; then exit; fi

@@ -99,6 +99,7 @@
 		CAE44BB91DE1D23C001F29D1 /* footnotes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = footnotes.css; sourceTree = "<group>"; };
 		CAE44BBA1DE1D23C001F29D1 /* footnotes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = footnotes.html; sourceTree = "<group>"; };
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
+		CAE92415203B04F900D84B09 /* mbedtls */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mbedtls; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -311,6 +312,7 @@
 				CA0B46F82023498A00966B19 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CABEE7681DD5F633006D8D75 /* macos */,
+				CAE92415203B04F900D84B09 /* mbedtls */,
 				CA76BE992019FA6A00B16C72 /* miniz */,
 				CABEE77B1DD5F653006D8D75 /* quill */,
 				CA7BA6901DDCEA3C00719C36 /* quill-mini */,
