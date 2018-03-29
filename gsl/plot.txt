@@ -1,0 +1,4 @@
+set terminal pngcairo size 800,600 enhanced font 'Verdana,10'
+set output '~/Desktop/plot.png'
+plot 'data.txt' title 'plot' with linespoints
+

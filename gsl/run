@@ -1,0 +1,7 @@
+#!/bin/sh
+
+gcc -Wall `pkg-config gsl --cflags --libs` -o nlfit nlfit.c
+gcc -Wall `pkg-config gsl --cflags --libs` -o nlfit2 nlfit2.c
+gcc -Wall `pkg-config gsl --cflags --libs` -o nlfit3 nlfit3.c
+gcc -Wall `pkg-config gsl --cflags --libs` -o nlfit4 nlfit4.c
+g++ -Wall `pkg-config gsl --cflags --libs` -o bsplines bsplines.cpp

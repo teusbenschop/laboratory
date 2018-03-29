@@ -74,6 +74,7 @@
 		CA98E2421DA8D16900F43F4B /* socket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = socket.cpp; sourceTree = "<group>"; };
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
+		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
 		CABEE7691DD5F633006D8D75 /* Bibledit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Bibledit.xcodeproj; sourceTree = "<group>"; };
 		CABEE76D1DD5F633006D8D75 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		CABEE76E1DD5F633006D8D75 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -308,6 +309,7 @@
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
+				CA9F72C2206D4ECD00250182 /* gsl */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CA0B46F82023498A00966B19 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
