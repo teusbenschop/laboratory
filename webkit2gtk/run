@@ -1,0 +1,4 @@
+# apt install gcc pkg-config libwebkit2gtk-4.0-dev
+gcc main.c `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0`
+./a.out
+rm a.out

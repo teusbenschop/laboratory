@@ -18,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		CA0B46F82023498A00966B19 /* linux */ = {isa = PBXFileReference; lastKnownFileType = folder; path = linux; sourceTree = "<group>"; };
+		CA0E92A2220F1D92007A52C3 /* webkit2gtk */ = {isa = PBXFileReference; lastKnownFileType = folder; path = webkit2gtk; sourceTree = "<group>"; };
 		CA0F08D31E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA0F08D41E5DFE30008F91C3 /* players.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = players.html; sourceTree = "<group>"; };
 		CA0F08D51E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
@@ -327,6 +328,7 @@
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
+				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
 			);
 			indentWidth = 2;
