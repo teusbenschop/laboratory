@@ -30,6 +30,7 @@
 		CA0F08DD1E5DFE30008F91C3 /* jquery.min.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = jquery.min.js; sourceTree = "<group>"; };
 		CA0F08DE1E5DFE30008F91C3 /* resource.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = resource.html; sourceTree = "<group>"; };
 		CA0F08DF1E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
+		CA0F615022342BA500BE6EEF /* fill-image */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "fill-image"; sourceTree = "<group>"; };
 		CA23F7C51F9CC1770030A2AE /* curl-websocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "curl-websocket"; sourceTree = SOURCE_ROOT; };
 		CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "simple-websocket-server"; sourceTree = "<group>"; };
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
@@ -309,6 +310,7 @@
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
+				CA0F615022342BA500BE6EEF /* fill-image */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
