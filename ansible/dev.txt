@@ -1,2 +1,26 @@
-Ansible crash course.
+Ansible crash course
+====================
 
+$ sudo port install py36-ansible
+$ sudo port select --set ansible py36-ansible
+
+How to Install and Configure Ansible on Ubuntu 18.04
+https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-ubuntu-18-04
+
+Specify hosts file amd user to connect as.
+$ ansible --inventory=hosts --user=root --module-name=ping all
+
+$ ansible --inventory=hosts --user=root --module-name=shell -a "free -m" all
+
+
+Introduction to Playbooks
+=========================
+
+Configuration Management 101: Writing Ansible Playbooks
+https://www.digitalocean.com/community/tutorials/configuration-management-101-writing-ansible-playbooks
+
+
+
+Ansible documentation
+=====================
+https://docs.ansible.com/ansible/latest/index.html
