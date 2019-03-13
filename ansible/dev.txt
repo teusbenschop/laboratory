@@ -12,13 +12,15 @@ $ ansible --inventory=hosts --user=root --module-name=ping all
 
 $ ansible --inventory=hosts --user=root --module-name=shell -a "free -m" all
 
+Instead store permanent parameters in ~/.ansible.cfg
+
+$ ansible-playbook install-vim.yaml 
 
 Introduction to Playbooks
 =========================
 
 Configuration Management 101: Writing Ansible Playbooks
 https://www.digitalocean.com/community/tutorials/configuration-management-101-writing-ansible-playbooks
-
 
 
 Ansible documentation
