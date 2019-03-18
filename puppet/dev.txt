@@ -1,1 +1,7 @@
-Puppet crash course.
+Puppet crash course
+===================
+
+
+https://puppet.com/docs/puppet/5.4/quick_start_helloworld.html
+
+https://computingforgeeks.com/how-to-setup-puppet-master-and-agent-ubuntu-18-04-bionic-beaver/
