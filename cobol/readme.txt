@@ -21,4 +21,7 @@ end of program, please press a key to exit
 Various programs in Cobol including exam paper models
 http://www.csis.ul.ie/cobol/examples/default.htm
 
+Description of Cobol
+https://en.wikipedia.org/wiki/COBOL
+
 
