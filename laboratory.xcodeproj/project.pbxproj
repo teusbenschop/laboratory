@@ -65,6 +65,7 @@
 		CA7BF1161E41E2F4008FF558 /* winsockserver.vcxproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj; sourceTree = "<group>"; };
 		CA7BF1171E41E2F4008FF558 /* winsockserver.vcxproj.filters */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj.filters; sourceTree = "<group>"; };
 		CA7BF1181E41E2F4008FF558 /* winsockserver.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockserver.sln; sourceTree = "<group>"; };
+		CA84FC412240074E00734EFE /* cobol */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cobol; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
 		CA98E2121DA8D14000F43F4B /* client6.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client6.c; sourceTree = "<group>"; };
 		CA98E2131DA8D14000F43F4B /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -313,6 +314,7 @@
 				CA33964B223675260007893D /* angular-getting-started */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
+				CA84FC412240074E00734EFE /* cobol */,
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
 				CA0F615022342BA500BE6EEF /* fill-image */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
