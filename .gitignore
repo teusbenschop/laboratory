@@ -40,3 +40,4 @@ gsl/nlfit3
 gsl/nlfit4
 leastsquares/lq
 *.pyc
+*.pyc
