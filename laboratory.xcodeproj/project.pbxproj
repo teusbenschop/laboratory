@@ -110,6 +110,7 @@
 		CAE92415203B04F900D84B09 /* mbedtls */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mbedtls; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
+		CAF2844122676BD50052535E /* django */ = {isa = PBXFileReference; lastKnownFileType = folder; path = django; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -317,6 +318,7 @@
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA84FC412240074E00734EFE /* cobol */,
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
+				CAF2844122676BD50052535E /* django */,
 				CA0F615022342BA500BE6EEF /* fill-image */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
