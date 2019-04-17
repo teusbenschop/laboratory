@@ -16,4 +16,6 @@ Tutorial at https://scotch.io/tutorials/build-your-first-python-and-django-appli
 
 $ pip install django
 $ django-admin startproject helloapp
+$ python manage.py createsuperuser
+
 
