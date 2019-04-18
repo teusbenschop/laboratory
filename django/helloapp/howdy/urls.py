@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from howdy import views
-from django.urls import path
+# from django.urls import path
 
 urlpatterns = [
   url(r'^about/$', views.AboutPageView.as_view()),
