@@ -1,0 +1,25 @@
+Discovery kit with STM32F051 MCU
+https://www.st.com/en/evaluation-tools/stm32f0discovery.html
+
+Setting up development tools on Linux
+http://www.hertaville.com/stm32f0discovery-part-1-linux.html
+
+$ sudo apt install gcc-arm-none-eabi
+$ sudo apt install lib32z1
+
+$ sudo apt-get install zip unzip
+
+Download STM32F0-Discovery_FW_V1.0.0.zip and unpack to Linux.
+
+$ sudo apt install stlink-tools
+
+Recommended reading: tutorial at https://github.com/texane/stlink doc
+
+$ sudo apt install openocd
+
+# openocd -s ~/usr/share/openocd/scripts/ -f board/stm32f0discovery.cfg
+
+Setting up command line IDE on Linux
+http://www.hertaville.com/stm32f0discovery-command-line-ide.html
+
+$ sudo apt install gdb

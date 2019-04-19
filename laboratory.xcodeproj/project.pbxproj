@@ -48,6 +48,7 @@
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
+		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA76BE992019FA6A00B16C72 /* miniz */ = {isa = PBXFileReference; lastKnownFileType = folder; path = miniz; sourceTree = "<group>"; };
@@ -337,6 +338,7 @@
 				CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CA3DD73520DA64A500CD428E /* sortable */,
+				CA6C8CF72269F1200067F7BE /* stm32fo-discovery */,
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
