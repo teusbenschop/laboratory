@@ -45,6 +45,7 @@ import android.graphics.Bitmap;
 import android.widget.TabHost;
 import android.widget.TabHost.TabContentFactory;
 import android.widget.LinearLayout.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 
 
 public class MainActivity extends Activity
@@ -85,11 +86,10 @@ public class MainActivity extends Activity
   private void initializeTimerTask() {
     timerTask = new TimerTask() {
       public void run() {
-        Log.d ("Bibledit", "timer");
         runOnUiThread(new Runnable() {
           @Override
           public void run() {
-            Log.d ("Bibledit", "set webview");
+            hideKeyboard ();
           }
         });
         startTimer ();
@@ -109,8 +109,26 @@ public class MainActivity extends Activity
     webview.loadUrl ("http://bibledit.org:8080");
     setContentView (webview);
   }
+
   
+  private void hideKeyboard ()
+  {
+    Log.d ("Bibledit", "hide keyboard 1");
+    // Get the input manager that has the keyboard.
+    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+    Log.d ("Bibledit", "hide keyboard 2");
+    
+    // If no view currently has focus, then there's no keyboard to hide.
+    if (webview == null) return;
+
+    Log.d ("Bibledit", "hide keyboard 3");
+
+    // Hide the soft keyboard.
+    imm.hideSoftInputFromWindow (webview.getWindowToken(), 0);
+    
+    Log.d ("Bibledit", "hide keyboard 4");
+    
+  }
   
 }
-
-
