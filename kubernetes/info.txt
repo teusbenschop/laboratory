@@ -9,8 +9,8 @@ https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes
 Set up four virtual machines with Ubuntu 19.04 server, and automatic login via ssh.
 $ sudo hostnamectl set-hostname master
 1. master 192.168.2.14
-2. node1 192.168.2.10
-3. node2 192.168.2.11
+2. node1 192.168.2.15
+3. node2 192.168.2.16
 4. node3 192.168.2.12
 
 

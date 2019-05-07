@@ -1,10 +1,10 @@
 [masters]
-master ansible_host=192.168.2.9 ansible_user=root
+master ansible_host=192.168.2.14 ansible_user=root
 
 [workers]
-worker1 ansible_host=192.168.2.10 ansible_user=root
-worker2 ansible_host=192.168.2.11 ansible_user=root
-worker3 ansible_host=192.168.2.12 ansible_user=root
+worker1 ansible_host=192.168.2.15 ansible_user=root
+worker2 ansible_host=192.168.2.16 ansible_user=root
+worker3 ansible_host=192.168.2.17 ansible_user=root
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
