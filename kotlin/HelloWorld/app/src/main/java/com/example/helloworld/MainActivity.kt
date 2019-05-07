@@ -8,6 +8,8 @@ import android.widget.EditText
 
 const val EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE"
 
+// https://developer.android.com/training/basics/firstapp/
+
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
