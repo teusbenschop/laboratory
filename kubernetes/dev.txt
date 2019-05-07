@@ -1,0 +1,20 @@
+Kubernetes crash course
+=======================
+
+
+Introduction to Kubernetes and an overview of its components:
+https://www.digitalocean.com/community/tutorials/an-introduction-to-kubernetes
+
+
+Set up four virtual machines with Ubuntu 19.04 server, and automatic login via ssh.
+$ sudo hostnamectl set-hostname master
+1. master 192.168.2.9
+2. node1 192.168.2.10
+3. node2 192.168.2.11
+4. node3 192.168.2.12
+
+
+Create a Kubernetes cluster through ansible and kubeadm running Nginx
+https://www.digitalocean.com/community/tutorials/how-to-create-a-kubernetes-cluster-using-kubeadm-on-ubuntu-18-04
+
+
