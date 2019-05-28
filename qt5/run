@@ -1,0 +1,5 @@
+#!/bin/bash
+g++ -Wall `pkg-config gsl --cflags --libs` -o app app.cpp
+./app
+rm app
+
