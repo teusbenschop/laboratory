@@ -1,10 +1,18 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QPushButton>
 
-int main (void)
+
+int main (int argc, char **argv)
 {
-  return 0;
+  QApplication app (argc, argv);
+  
+  QPushButton button ("Hello world!", 0);
+  button.resize (100, 30);
+  button.show();
+  
+  int exitcode = app.exec ();
+  
+  return exitcode;
 }
 

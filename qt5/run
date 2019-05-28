@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# apt install gcc g++ gdb cmake make build-essential qtcreator qt5-default qtdeclarative5-dev qt5-doc qt5-doc-html qtbase5-doc-html qtbase5-examples
+
 g++ -Wall `pkg-config gsl --cflags --libs` -o app app.cpp
 ./app
 rm app
