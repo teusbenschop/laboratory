@@ -33,6 +33,7 @@
 		CA0F615022342BA500BE6EEF /* fill-image */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "fill-image"; sourceTree = "<group>"; };
 		CA23F7C51F9CC1770030A2AE /* curl-websocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "curl-websocket"; sourceTree = SOURCE_ROOT; };
 		CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "simple-websocket-server"; sourceTree = "<group>"; };
+		CA2971C122A0438900E373A4 /* intervalmap */ = {isa = PBXFileReference; lastKnownFileType = folder; path = intervalmap; sourceTree = "<group>"; };
 		CA339649223675260007893D /* angular-employees */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "angular-employees"; sourceTree = "<group>"; };
 		CA33964B223675260007893D /* angular-getting-started */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "angular-getting-started"; sourceTree = "<group>"; };
 		CA374CB9226399D600D70B55 /* python */ = {isa = PBXFileReference; lastKnownFileType = folder; path = python; sourceTree = "<group>"; };
@@ -326,6 +327,7 @@
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
+				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
 				CA0B46F82023498A00966B19 /* linux */,
