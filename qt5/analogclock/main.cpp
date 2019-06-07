@@ -55,8 +55,8 @@
 
 int main(int argc, char *argv[])
 {
-  QApplication app(argc, argv);
+  QApplication app (argc, argv);
   AnalogClock clock;
-  clock.show();
-  return app.exec();
+  clock.show ();
+  return app.exec ();
 }

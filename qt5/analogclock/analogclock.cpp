@@ -53,18 +53,18 @@
 
 #include "analogclock.h"
 
-AnalogClock::AnalogClock(QWidget *parent)
-: QWidget(parent)
+AnalogClock::AnalogClock (QWidget *parent)
+: QWidget (parent)
 {
-  QTimer *timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-  timer->start(1000);
+  QTimer *timer = new QTimer (this);
+  connect (timer, SIGNAL (timeout ()), this, SLOT (update ()));
+  timer->start (1000);
   
-  setWindowTitle(tr("Analog Clock"));
-  resize(200, 200);
+  setWindowTitle (tr ("Analog Clock"));
+  resize (500, 500);
 }
 
-void AnalogClock::paintEvent(QPaintEvent *)
+void AnalogClock::paintEvent (QPaintEvent *)
 {
   static const QPoint hourHand[3] = {
     QPoint(7, 8),
@@ -77,30 +77,30 @@ void AnalogClock::paintEvent(QPaintEvent *)
     QPoint(0, -70)
   };
   
-  QColor hourColor(127, 0, 127);
-  QColor minuteColor(0, 127, 127, 191);
+  QColor hourColor (127, 0, 127);
+  QColor minuteColor (0, 127, 127, 191);
   
-  int side = qMin(width(), height());
-  QTime time = QTime::currentTime();
+  int side = qMin (width (), height ());
+  QTime time = QTime::currentTime ();
   
-  QPainter painter(this);
-  painter.setRenderHint(QPainter::Antialiasing);
-  painter.translate(width() / 2, height() / 2);
-  painter.scale(side / 200.0, side / 200.0);
+  QPainter painter (this);
+  painter.setRenderHint (QPainter::Antialiasing);
+  painter.translate (width () / 2, height () / 2);
+  painter.scale (side / 500.0, side / 500.0);
   
-  painter.setPen(Qt::NoPen);
-  painter.setBrush(hourColor);
+  painter.setPen (Qt::NoPen);
+  painter.setBrush (hourColor);
   
   painter.save();
-  painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)));
-  painter.drawConvexPolygon(hourHand, 3);
-  painter.restore();
+  painter.rotate (30.0 * ((time.hour () + time.minute () / 60.0)));
+  painter.drawConvexPolygon (hourHand, 3);
+  painter.restore ();
   
-  painter.setPen(hourColor);
+  painter.setPen (hourColor);
   
   for (int i = 0; i < 12; ++i) {
-    painter.drawLine(88, 0, 96, 0);
-    painter.rotate(30.0);
+    painter.drawLine (88, 0, 96, 0);
+    painter.rotate (30.0);
   }
   
   painter.setPen(Qt::NoPen);

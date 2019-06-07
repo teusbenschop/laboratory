@@ -1,4 +1,3 @@
-
 /****************************************************************************
  **
  ** Copyright (C) 2016 The Qt Company Ltd.
@@ -60,10 +59,10 @@ class AnalogClock : public QWidget
   Q_OBJECT
   
 public:
-  AnalogClock(QWidget *parent = 0);
+  AnalogClock (QWidget *parent = 0);
   
 protected:
-  void paintEvent(QPaintEvent *event) override;
+  void paintEvent (QPaintEvent *event) override;
 };
 
 #endif
