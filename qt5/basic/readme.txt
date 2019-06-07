@@ -14,7 +14,7 @@ Now, the application can be compiled and linked into a binary:
 
 qmake
 make
-./app
+./qt5
 
 It should generate a Makefile, make or compile the source code, and start the binary.
 If everything works out, a new application window with a small button will appear.
