@@ -1,0 +1,7 @@
+#!/bin/bash
+
+clear
+g++ -Wall -Wextra -pedantic -std=c++17 ivm.cpp -o ivm
+./ivm
+rm -f ivm
+
