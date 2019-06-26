@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a6825f02-8e5c-4c8d-bd72-f7dcc4fad2fc" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../puppet/dev.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../puppet/dev.txt" afterDir="false" />
-    </list>
+    <list default="true" id="a6825f02-8e5c-4c8d-bd72-f7dcc4fad2fc" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/../practicum1/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -118,6 +116,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -176,8 +176,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -271,7 +269,7 @@
   <component name="ToolWindowManager">
     <frame x="324" y="87" width="1400" height="1000" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.26804122" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.27172312" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
