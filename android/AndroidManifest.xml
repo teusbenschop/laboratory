@@ -2,24 +2,21 @@
 
 <manifest 
     xmlns:android="http://schemas.android.com/apk/res/android" 
-    package="org.bibledit.lab"
+    package="org.bibleconsultants.lab"
     android:installLocation="auto"
     android:versionCode="1"
-    android:versionName="1.1"
+    android:versionName="1"
   >
 
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-  <!-- A target SDK version of 24 allows free-form resizing of the app making it feel more natural. -->
   <uses-sdk
     android:minSdkVersion="11"
-    android:targetSdkVersion="24"
+    android:targetSdkVersion="26"
   />
 
-  <!-- Some Chromebooks don't support touch. -->
-  <!-- It is not essential but still it's good to explicitly state that it does not require touch. -->
   <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
   <supports-screens
@@ -39,7 +36,7 @@
     <activity
       android:name="MainActivity"
       android:configChanges="orientation|keyboardHidden|keyboard"
-      android:label="Bibledit lab"
+      android:label="Bible Consultants Laboratory"
       android:theme="@android:style/Theme.Light.NoTitleBar"
     >
       <intent-filter>

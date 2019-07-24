@@ -1,4 +1,4 @@
-package org.bibledit.lab;
+package org.bibleconsultants.lab;
 
 
 import android.app.Activity;

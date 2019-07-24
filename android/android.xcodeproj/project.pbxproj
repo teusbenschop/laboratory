@@ -9,6 +9,7 @@
 /* Begin PBXFileReference section */
 		CA51D8CE1E9CD600006CEBDD /* MainActivity.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; name = MainActivity.java; path = src/org/bibledit/lab/MainActivity.java; sourceTree = "<group>"; };
 		CA6F5EF41EACDEE8001C9B64 /* main.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = main.xml; path = res/layout/main.xml; sourceTree = "<group>"; };
+		CA93E23322E88B28005D45BE /* release */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = release; sourceTree = "<group>"; };
 		CA97BC101B0F7DF400877437 /* AndroidManifest.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AndroidManifest.xml; sourceTree = "<group>"; };
 		CA97BC111B0F7DFC00877437 /* ant.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = ant.properties; sourceTree = "<group>"; };
 		CA97BC121B0F7E0400877437 /* build.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = build.xml; sourceTree = "<group>"; };
@@ -29,6 +30,7 @@
 				CA6F5EF41EACDEE8001C9B64 /* main.xml */,
 				CA51D8CE1E9CD600006CEBDD /* MainActivity.java */,
 				CA97BC161B0F7E1E00877437 /* project.properties */,
+				CA93E23322E88B28005D45BE /* release */,
 			);
 			sourceTree = "<group>";
 		};
@@ -45,6 +47,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = CAADF4D71B0F7CD9002F0910;

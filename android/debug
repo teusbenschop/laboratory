@@ -9,8 +9,8 @@ if [ $? != 0 ]; then exit; fi
 ant debug
 if [ $? != 0 ]; then exit; fi
 
-adb install -r bin/Bibledit-debug.apk
+adb install -r bin/Laboratory-debug.apk
 if [ $? != 0 ]; then exit; fi
 
-adb shell am start -a android.intent.action.MAIN -n org.bibledit.lab/.MainActivity
+adb shell am start -a android.intent.action.MAIN -n org.bibleconsultants.lab/.MainActivity
 if [ $? != 0 ]; then exit; fi
