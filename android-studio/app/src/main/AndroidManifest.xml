@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest 
-    xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="org.bibleconsultants.lab"
     android:installLocation="auto"
     android:versionCode="1"
@@ -27,7 +28,9 @@
     android:icon="@drawable/ic_launcher"
     android:theme="@android:style/Theme.Light"
     android:usesCleartextTraffic="true"
-  >
+    android:allowBackup="false"
+    tools:ignore="GoogleAppIndexingWarning"
+    >
 
     <activity
       android:name="MainActivity"
