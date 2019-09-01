@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.15)
+project (display_image)
+find_package (opencv REQUIRED)
+find_package (ade REQUIRED)
+set (CMAKE_CXX_STANDARD 11)
+add_executable (display_image display_image.cpp)
+target_link_libraries (display_image ${OpenCV_LIBS})
