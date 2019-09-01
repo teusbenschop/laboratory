@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.15)
+project (example)
+find_package (opencv REQUIRED)
+find_package (ade REQUIRED)
+set (CMAKE_CXX_STANDARD 11)
+add_executable (example code.cpp)
+target_link_libraries (example ${OpenCV_LIBS})
