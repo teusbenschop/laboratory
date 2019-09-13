@@ -104,7 +104,8 @@ public class MainActivity extends Activity
     webview = new WebView (this);
     webview.getSettings().setJavaScriptEnabled (true);
     webview.getSettings().setBuiltInZoomControls (false);
-    webview.getSettings().setSupportZoom (true);
+    webview.getSettings().setSupportZoom (false);
+    webview.getSettings().setDisplayZoomControls (false);
     webview.setWebViewClient(new WebViewClient());
     webview.loadUrl ("http://bibledit.org:8080");
     setContentView (webview);
