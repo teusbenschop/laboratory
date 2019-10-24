@@ -1,0 +1,26 @@
+{
+  $schema: https://vega.github.io/schema/vega-lite/v2.json
+  title: Vega-Lite
+
+  "data": {
+    "values": [
+      {"week": "1", "omzet": 200, "aantal": 100},
+      {"week": "1", "omzet": 250, "aantal": 110},
+      {"week": "1", "omzet": 200, "aantal": 100},
+      {"week": "2", "omzet": 220, "aantal": 100},
+      {"week": "2", "omzet": 270, "aantal": 120},
+      {"week": "2", "omzet": 220, "aantal": 100},
+      {"week": "3", "omzet": 300, "aantal": 150},
+      {"week": "3", "omzet": 400, "aantal": 170},
+      {"week": "3", "omzet": 500, "aantal": 190}
+    ]
+  },
+  "transform": [
+    {"calculate": "datum.omzet / datum.aantal", "as": "extrafield"},
+  ],
+  "mark": "point",
+  "encoding": {
+    "x": {"field": "week", "type": "ordinal"}
+    "y": {"field": "extrafield", "type": "quantitative"},
+  }
+}
