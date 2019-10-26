@@ -12,6 +12,7 @@
 		CA7B2AA12364B39F00A4F52D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA7B2AA02364B39F00A4F52D /* Assets.xcassets */; };
 		CA7B2AA42364B39F00A4F52D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA7B2AA32364B39F00A4F52D /* Preview Assets.xcassets */; };
 		CA7B2AA72364B39F00A4F52D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CA7B2AA52364B39F00A4F52D /* Main.storyboard */; };
+		CAD1EA6D2364BD0D007AA12A /* GithubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD1EA6C2364BD0D007AA12A /* GithubService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		CA7B2AA62364B39F00A4F52D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CA7B2AA82364B39F00A4F52D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA7B2AA92364B39F00A4F52D /* Laboratory.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Laboratory.entitlements; sourceTree = "<group>"; };
+		CAD1EA6C2364BD0D007AA12A /* GithubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GithubService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 			children = (
 				CA7B2A9C2364B39F00A4F52D /* AppDelegate.swift */,
 				CA7B2A9E2364B39F00A4F52D /* ContentView.swift */,
+				CAD1EA6C2364BD0D007AA12A /* GithubService.swift */,
 				CA7B2AA02364B39F00A4F52D /* Assets.xcassets */,
 				CA7B2AA52364B39F00A4F52D /* Main.storyboard */,
 				CA7B2AA82364B39F00A4F52D /* Info.plist */,
@@ -147,6 +150,7 @@
 			files = (
 				CA7B2A9F2364B39F00A4F52D /* ContentView.swift in Sources */,
 				CA7B2A9D2364B39F00A4F52D /* AppDelegate.swift in Sources */,
+				CAD1EA6D2364BD0D007AA12A /* GithubService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
