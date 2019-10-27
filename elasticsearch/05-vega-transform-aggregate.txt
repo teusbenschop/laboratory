@@ -1,4 +1,10 @@
-This fails to display any visualization on Kibana
+The JSON below works well on Kibana
+
+Notes:
+The first transform / aggregate produces field "sumturnover".
+But this field cannot be visualized.
+
+It looks like when there two aggregates in the transform section, that the second aggregate is taken.
 
 
 {
@@ -22,23 +28,29 @@ This fails to display any visualization on Kibana
   },
 
   "transform": [
-    {"calculate": "datum.turnover / datum.quantity", "as": "price"},
-    {"calculate": "datum.turnover / datum.quantity", "as": "price2"},
     {
       "aggregate": [{
        "op": "sum",
        "field": "turnover",
-       "as": "newfield"
-      }]
+       "as": "sumturnover"
+      }],
+      "groupby": ["week"]
+
+      "aggregate": [{
+       "op": "sum",
+       "field": "quantity",
+       "as": "sumquantity"
+      }],
+      "groupby": ["week"]
     }
     
   ],
 
-  "mark": "point",
+  "mark": "line",
 
   "encoding": {
     "x": {"field": "week", "type": "ordinal"}
-    "y": {"field": "price", "type": "quantitative"},
+    "y": {"field": "sumquantity", "type": "quantitative"},
   }
 
 }
