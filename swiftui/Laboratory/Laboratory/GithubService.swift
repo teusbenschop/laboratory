@@ -79,7 +79,7 @@ struct RepoRow: View {
 }
 
 
-// The ReposStore class should conform ObservableObject protocol.
+// The ReposStore class should conform to the ObservableObject protocol.
 // It makes it possible to use it inside Environment
 // and rebuild the view as soon as any property marked as @Published changes.
 class ReposStore: ObservableObject {
