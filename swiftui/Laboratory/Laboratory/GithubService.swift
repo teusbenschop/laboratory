@@ -83,6 +83,8 @@ struct RepoRow: View {
 // It makes it possible to use it inside Environment
 // and rebuild the view as soon as any property marked as @Published changes.
 class ReposStore: ObservableObject {
+  
+  // Only the setter is private.
   @Published private(set) var repos: [Repo] = []
   
   private let service: GithubService
@@ -145,9 +147,11 @@ struct SearchView : View {
 }
 
 /*
- struct GithubServiceView_Previews: PreviewProvider {
- static var previews: some View {
- //GitRepoRow(repo)
- }
- }
- */
+struct GithubServiceView_Previews: PreviewProvider {
+  let store = ReposStore(service: .init())
+  static var previews: some View {
+    SearchView()
+  }
+}
+*/
+

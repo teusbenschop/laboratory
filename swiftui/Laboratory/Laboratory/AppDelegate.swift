@@ -1,11 +1,3 @@
-//
-//  AppDelegate.swift
-//  Laboratory
-//
-//  Created by Teus Benschop on 26/10/2019.
-//  Copyright © 2019 Free Software Consultants. All rights reserved.
-//
-
 import Cocoa
 import SwiftUI
 
@@ -24,12 +16,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         backing: .buffered, defer: false)
     window.center()
     window.setFrameAutosaveName("SwiftUI Laboratory")
+
     //let contentView = ContentView()
     //window.contentView = NSHostingView(rootView: contentView)
+
     let store = ReposStore(service: .init())
     window.contentView = NSHostingView(
         rootView: SearchView().environmentObject(store)
     )
+
     window.makeKeyAndOrderFront(nil)
   }
 
