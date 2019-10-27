@@ -14,6 +14,7 @@
 		CA7B2AA72364B39F00A4F52D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CA7B2AA52364B39F00A4F52D /* Main.storyboard */; };
 		CAD1EA6D2364BD0D007AA12A /* GithubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD1EA6C2364BD0D007AA12A /* GithubService.swift */; };
 		CADF9B3C236572D300658EBE /* EnvironmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF9B3B236572D300658EBE /* EnvironmentView.swift */; };
+		CADF9B3E2365B2A500658EBE /* ProductView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADF9B3D2365B2A500658EBE /* ProductView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		CA7B2AA92364B39F00A4F52D /* Laboratory.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Laboratory.entitlements; sourceTree = "<group>"; };
 		CAD1EA6C2364BD0D007AA12A /* GithubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GithubService.swift; sourceTree = "<group>"; };
 		CADF9B3B236572D300658EBE /* EnvironmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentView.swift; sourceTree = "<group>"; };
+		CADF9B3D2365B2A500658EBE /* ProductView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				CA7B2A9E2364B39F00A4F52D /* ContentView.swift */,
 				CAD1EA6C2364BD0D007AA12A /* GithubService.swift */,
 				CADF9B3B236572D300658EBE /* EnvironmentView.swift */,
+				CADF9B3D2365B2A500658EBE /* ProductView.swift */,
 				CA7B2AA02364B39F00A4F52D /* Assets.xcassets */,
 				CA7B2AA52364B39F00A4F52D /* Main.storyboard */,
 				CA7B2AA82364B39F00A4F52D /* Info.plist */,
@@ -151,6 +154,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CADF9B3E2365B2A500658EBE /* ProductView.swift in Sources */,
 				CADF9B3C236572D300658EBE /* EnvironmentView.swift in Sources */,
 				CA7B2A9F2364B39F00A4F52D /* ContentView.swift in Sources */,
 				CA7B2A9D2364B39F00A4F52D /* AppDelegate.swift in Sources */,

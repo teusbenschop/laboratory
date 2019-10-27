@@ -27,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     )
     */
 
+    /*
     // Create a new Environment.
     let environmentView = EnvironmentView()
     window.contentView = NSHostingView(
@@ -36,6 +37,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         .environment(\.lineLimit, nil)
         .environment(\.lineSpacing, 8)
     )
+    */
+
+    let productView = ProductView()
+    window.contentView = NSHostingView(rootView: productView)
 
     window.makeKeyAndOrderFront(nil)
   }
