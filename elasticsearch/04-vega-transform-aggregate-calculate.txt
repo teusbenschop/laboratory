@@ -1,4 +1,4 @@
-This Vega-Lite visualization gives the average price per week.
+This Vega-Lite formula visualizes the average item price per week.
 
 
 {
