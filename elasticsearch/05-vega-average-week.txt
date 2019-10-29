@@ -2,7 +2,7 @@
   $schema: https://vega.github.io/schema/vega-lite/v2.json
   data: {
     url: {
-      index: teeltdata_bredefleur
+      index: company_index
       body: {
         query: {
           match_all: {}
