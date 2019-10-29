@@ -1,0 +1,43 @@
+This Vega-Lite formula visualizes the average item price per week.
+
+
+{
+
+  $schema: https://vega.github.io/schema/vega-lite/v2.json
+
+  title: Vega-Lite
+
+  "data": {
+    "values": [
+      {"week": "1", "omzet": 200, "aantalstuks": 100},
+      {"week": "1", "omzet": 250, "aantalstuks": 110},
+      {"week": "1", "omzet": 200, "aantalstuks": 100},
+      {"week": "2", "omzet": 220, "aantalstuks": 100},
+      {"week": "2", "omzet": 270, "aantalstuks": 120},
+      {"week": "2", "omzet": 220, "aantalstuks": 100},
+      {"week": "3", "omzet": 300, "aantalstuks": 150},
+      {"week": "3", "omzet": 400, "aantalstuks": 170},
+      {"week": "3", "omzet": 500, "aantalstuks": 190}
+    ]
+  },
+
+  "transform": [
+    {
+      "aggregate": [
+      { "op": "sum", "field": "omzet", "as": "sumturnover"}
+      { "op": "sum", "field": "aantalstuks", "as": "sumquantity"}
+      ],
+      "groupby": ["week"]
+    },
+    {"calculate": "datum.sumturnover / datum.sumquantity", "as": "averageprice"},
+
+  ],
+
+  "mark": "line",
+
+  "encoding": {
+    "x": {"field": "week", "type": "ordinal"}
+    "y": {"field": "averageprice", "type": "quantitative"},
+  }
+
+}

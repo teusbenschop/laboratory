@@ -1,0 +1,49 @@
+{
+  $schema: https://vega.github.io/schema/vega-lite/v2.json
+  data: {
+    url: {
+      index: teeltdata_bredefleur
+      body: {
+        query: {
+          match_all: {}
+        }
+        aggs: {
+          groupbyweek: {
+            terms: {
+              field: "week"
+              size: 1000
+            }
+            aggs: {
+              avgweek: {
+                avg: {field: "week"}
+              }
+              sumomzet: {
+                sum: {field: "omzet"}
+              }
+              sumaantalstuks: {
+                sum: {field: "aantalstuks"}
+              }
+              gemprijsweek: {
+                bucket_script: {
+                  buckets_path: {
+                    "sumomzet": "sumomzet",
+                    "sumstuks": "sumaantalstuks"
+                  },
+                  script: "params.sumomzet / params.sumstuks"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    format: {property: "aggregations.groupbyweek.buckets"}
+  }
+  
+  mark: line
+  encoding: {
+    x: {field: "avgweek.value", type: "quantitative"}
+    y: {field: "gemprijsweek.value", type: "quantitative"}
+    "color": {"field": "veiling_volledignaam", "type": "nominal"}
+  }
+}

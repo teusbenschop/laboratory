@@ -1,0 +1,51 @@
+GET teeltdata_<company>/_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "histogramjaar": {
+      "histogram": {
+        "field": "jaar",
+        "interval": 1
+      },
+      "aggs": {
+        "histogramweek": {
+          "histogram": {
+            "field": "week",
+            "interval": 1,
+            "min_doc_count": 0
+          },
+          "aggs": {
+            "groupbyveiling": {
+              "terms": {
+                "field": "veiling.keyword"
+              },
+              "aggs": {
+                "somomzet": {
+                  "sum": {
+                    "field": "omzet"
+                  }
+                },
+                "somaantalstuks": {
+                  "sum": {
+                    "field": "aantalstuks"
+                  }
+                },
+                "gemprijsdezeweek": {
+                  "bucket_script": {
+                    "buckets_path": {
+                      "sumomzet": "somomzet",
+                      "sumstuks": "somaantalstuks"
+                    },
+                    "script": "params.sumomzet/params.sumstuks"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
