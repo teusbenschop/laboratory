@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CACAD5FA236C548A00B6FF5C /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = CACAD5F9236C548A00B6FF5C /* View.swift */; };
+		CADB4565236C65E100FD4AEA /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = CADB4564236C65E100FD4AEA /* Globals.swift */; };
 		CAE0AF0E236C0C5600005A58 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE0AF0D236C0C5600005A58 /* AppDelegate.swift */; };
 		CAE0AF10236C0C5600005A58 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE0AF0F236C0C5600005A58 /* ViewController.swift */; };
 		CAE0AF12236C0C5700005A58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAE0AF11236C0C5700005A58 /* Assets.xcassets */; };
@@ -14,6 +16,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CACAD5F9236C548A00B6FF5C /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
+		CADB4564236C65E100FD4AEA /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		CAE0AF0A236C0C5600005A58 /* scrollview-macos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "scrollview-macos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAE0AF0D236C0C5600005A58 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CAE0AF0F236C0C5600005A58 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -57,6 +61,8 @@
 				CAE0AF0F236C0C5600005A58 /* ViewController.swift */,
 				CAE0AF11236C0C5700005A58 /* Assets.xcassets */,
 				CAE0AF13236C0C5700005A58 /* Main.storyboard */,
+				CACAD5F9236C548A00B6FF5C /* View.swift */,
+				CADB4564236C65E100FD4AEA /* Globals.swift */,
 				CAE0AF16236C0C5700005A58 /* Info.plist */,
 				CAE0AF17236C0C5700005A58 /* scrollview_macos.entitlements */,
 			);
@@ -133,8 +139,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CADB4565236C65E100FD4AEA /* Globals.swift in Sources */,
 				CAE0AF10236C0C5600005A58 /* ViewController.swift in Sources */,
 				CAE0AF0E236C0C5600005A58 /* AppDelegate.swift in Sources */,
+				CACAD5FA236C548A00B6FF5C /* View.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,27 +1,39 @@
-//
-//  ViewController.swift
-//  scrollview-macos
-//
-//  Created by Teus Benschop on 01/11/2019.
-//  Copyright © 2019 Free Software Consultants. All rights reserved.
-//
-
 import Cocoa
 
-class ViewController: NSViewController {
+class ViewController: NSViewController, NSWindowDelegate {
+  
+  @IBOutlet var mainView: NSView!
+
+  override func viewDidAppear() {
+    view.window?.delegate = self
+    print(view.window)
+    print(#line)
+  }
+
+  override func viewWillAppear() {
+    //view.window?.delegate = self
+  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-
-    // Do any additional setup after loading the view.
+    Globals.mainView = mainView
+    //view.window?.delegate = self
   }
 
+  func windowWillResize(sender: NSWindow, toSize frameSize: NSSize) -> NSSize {
+    print(#line)
+    return frameSize
+  }
+
+  private func windowDidResize(_ notification: NSNotification) {
+    print(#line)
+    print(notification)
+  }
+  
   override var representedObject: Any? {
     didSet {
-    // Update the view, if already loaded.
     }
   }
-
 
 }
 
