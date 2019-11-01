@@ -1,6 +1,0 @@
-import Cocoa
-
-struct Globals {
-}
-
-
