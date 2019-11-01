@@ -2,22 +2,21 @@ import Cocoa
 
 class ViewController: NSViewController, NSWindowDelegate {
   
-  @IBOutlet var mainView: NSView!
-
   override func viewDidAppear() {
-    view.window?.delegate = self
-    print(view.window)
-    print(#line)
+    print(view.window!)
+    view.window!.delegate = self
   }
 
   override func viewWillAppear() {
-    //view.window?.delegate = self
   }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    Globals.mainView = mainView
-    //view.window?.delegate = self
+  }
+
+  override var representedObject: Any? {
+    didSet {
+    }
   }
 
   func windowWillResize(sender: NSWindow, toSize frameSize: NSSize) -> NSSize {
@@ -28,11 +27,6 @@ class ViewController: NSViewController, NSWindowDelegate {
   private func windowDidResize(_ notification: NSNotification) {
     print(#line)
     print(notification)
-  }
-  
-  override var representedObject: Any? {
-    didSet {
-    }
   }
 
 }
