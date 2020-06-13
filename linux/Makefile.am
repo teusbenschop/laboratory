@@ -1,6 +1,6 @@
-bin_PROGRAMS = bibledit-cloud
+bin_PROGRAMS = bibledit
 
-bibledit_cloud_SOURCES = main.cpp
+bibledit_SOURCES = main.cpp
 
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 

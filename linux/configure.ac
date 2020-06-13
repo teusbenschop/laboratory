@@ -1,4 +1,4 @@
-AC_INIT([bibledit-cloud],[1.2.3],[http://bibledit.org])
+AC_INIT([bibledit],[1.2.3],[http://bibledit.org])
 AM_INIT_AUTOMAKE
 AM_INIT_AUTOMAKE([tar-ustar subdir-objects])
 AC_CANONICAL_BUILD
@@ -20,7 +20,7 @@ fi
 AC_OUTPUT(Makefile)
 
 echo "
-Bibledit-Cloud $VERSION configuration summary:
+Bibledit $VERSION configuration summary:
 
 Host operating system  : ${host_os}
 Version                : ${PACKAGE_VERSION}
