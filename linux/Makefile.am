@@ -1,6 +1,6 @@
-bin_PROGRAMS = bibledit
+bin_PROGRAMS = laboratory
 
-bibledit_SOURCES = main.cpp
+laboratory_SOURCES = main.cpp
 
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 
@@ -10,7 +10,7 @@ LIBS = -Wall -lpthread -L. -g -rdynamic -ldl
 
 EXTRA_DIST = debian
 
-CLEANFILES = bibledit*.gz *~
+CLEANFILES = laboratory*.gz *~
 
 dist-hook:
 	rm -rf `find $(distdir) -name *.o`

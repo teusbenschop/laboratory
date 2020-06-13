@@ -87,7 +87,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-bin_PROGRAMS = bibledit$(EXEEXT)
+bin_PROGRAMS = laboratory$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -103,9 +103,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_bibledit_OBJECTS = main.$(OBJEXT)
-bibledit_OBJECTS = $(am_bibledit_OBJECTS)
-bibledit_LDADD = $(LDADD)
+am_laboratory_OBJECTS = main.$(OBJEXT)
+laboratory_OBJECTS = $(am_laboratory_OBJECTS)
+laboratory_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -136,8 +136,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(bibledit_SOURCES)
-DIST_SOURCES = $(bibledit_SOURCES)
+SOURCES = $(laboratory_SOURCES)
+DIST_SOURCES = $(laboratory_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -279,11 +279,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-bibledit_SOURCES = main.cpp
+laboratory_SOURCES = main.cpp
 AM_CFLAGS = -Wall -Wextra -pedantic -g
 AM_CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -fno-var-tracking -g
 EXTRA_DIST = debian
-CLEANFILES = bibledit*.gz *~
+CLEANFILES = laboratory*.gz *~
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -380,9 +380,9 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-bibledit$(EXEEXT): $(bibledit_OBJECTS) $(bibledit_DEPENDENCIES) $(EXTRA_bibledit_DEPENDENCIES) 
-	@rm -f bibledit$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(bibledit_OBJECTS) $(bibledit_LDADD) $(LIBS)
+laboratory$(EXEEXT): $(laboratory_OBJECTS) $(laboratory_DEPENDENCIES) $(EXTRA_laboratory_DEPENDENCIES) 
+	@rm -f laboratory$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(laboratory_OBJECTS) $(laboratory_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
