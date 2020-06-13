@@ -19,14 +19,8 @@ int main (int argc, char *argv[])
   while (true) {
     auto now = chrono::system_clock::now();
     auto in_time_t = chrono::system_clock::to_time_t(now);
-    stringstream ss;
-    ss << put_time (localtime(&in_time_t), "%Y-%m-%d %X");
-    string s = ss.str();
-    ofstream file;
-    file.open ("/tmp/cloud.txt", ios::app);
-    file << s << endl;
-    file.close ();
-    this_thread::sleep_for (chrono::seconds (10));
+    cout << put_time (localtime(&in_time_t), "%Y-%m-%d %X") << endl;
+    this_thread::sleep_for (chrono::seconds (1));
   }
   return EXIT_SUCCESS;
 }
