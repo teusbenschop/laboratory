@@ -17,13 +17,6 @@ else
   AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${prefix}/share/laboratory", [Package data directory])
 fi
 
-appstreamdir = $(datadir)/metainfo/
-appstream_in_files = gedit.metainfo.xml.in
-appstream_DATA = $(appstream_in_files:.xml.in=.xml)
-@INTLTOOL_XML_RULE@
-EXTRA_DIST = $(metainfo_in_files)
-CLEANFILES = $(appstream_DATA)
-
 AC_OUTPUT(Makefile)
 
 echo "

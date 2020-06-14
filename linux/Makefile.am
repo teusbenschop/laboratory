@@ -8,7 +8,10 @@ AM_CXXFLAGS = -Wall -Wextra -pedantic -std=c++11 -fno-var-tracking -g
 
 LIBS = -Wall -lpthread -L. -g -rdynamic -ldl
 
-EXTRA_DIST = debian
+appstreamdir = $(datadir)/metainfo/
+appstream_DATA = bibledit.appdata.xml
+
+EXTRA_DIST = debian bibledit.appdata.xml
 
 CLEANFILES = laboratory*.gz *~
 
