@@ -1,15 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
-using CefSharp;
-using CefSharp.WinForms;
-using CefSharp.Example;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.InteropServices;
 using System.Timers;
 using System.Net.Sockets;
-
+using Microsoft.Win32;
 
 namespace Bibledit
 {
@@ -43,13 +40,14 @@ namespace Bibledit
 
         string windowstate = "windowstate.txt";
         Process BibleditCore;
-        public static ChromiumWebBrowser browser;
+        public static WebBrowser browser;
 
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
 
-        private System.Timers.Timer aTimer;
+        private System.Timers.Timer externalUrlTimer;
+        private System.Timers.Timer focusedReferenceTimer;
 
 
         private static Boolean PrintDialogOpen = false;
@@ -98,11 +96,12 @@ namespace Bibledit
 
         public void InitBrowser()
         {
-            Cef.Initialize(new CefSettings());
-            browser = new ChromiumWebBrowser("http://localhost:9876");
-            browser.DownloadHandler = new DownloadHandler();
+            //Cef.Initialize(new CefSettings());
+            browser = new WebBrowser();
+            //browser.DownloadHandler = new DownloadHandler();
             Controls.Add(browser);
             browser.Dock = DockStyle.Fill;
+            browser.Navigate("http://localhost:9876");
         }
 
 
@@ -113,19 +112,26 @@ namespace Bibledit
             MyHookID = SetHook(MyKeyboardProcessor);
 
             // Create a timer with a one-second interval.
-            aTimer = new System.Timers.Timer(1000);
+            externalUrlTimer = new System.Timers.Timer(1000);
             // Hook up the Elapsed event for the timer. 
-            aTimer.Elapsed += OnTimedEvent;
-            aTimer.AutoReset = false;
-            aTimer.Start();
+            externalUrlTimer.Elapsed += OnExternalUrlTimedEvent;
+            externalUrlTimer.AutoReset = false;
+            externalUrlTimer.Start();
+
+            // Create a timer for the focused reference.
+            focusedReferenceTimer = new System.Timers.Timer(1000);
+            focusedReferenceTimer.Elapsed += OnFocusedReferenceTimedEvent;
+            focusedReferenceTimer.AutoReset = false;
+            focusedReferenceTimer.Start();
+
         }
 
 
         ~Form1()
         {
             UnhookWindowsHookEx(MyHookID);
-            aTimer.Stop();
-            aTimer.Dispose();
+            externalUrlTimer.Stop();
+            externalUrlTimer.Dispose();
         }
 
 
@@ -193,7 +199,7 @@ namespace Bibledit
             // Kill any previous servers. This frees the port to connect to.
             foreach (var process in Process.GetProcessesByName("server"))
             {
-                process.Kill();
+                //process.Kill();
             }
             BibleditCore = new Process();
             BibleditCore.StartInfo.WorkingDirectory = System.IO.Path.Combine(Application.StartupPath);
@@ -202,8 +208,8 @@ namespace Bibledit
             BibleditCore.StartInfo.CreateNoWindow = true;
             BibleditCore.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             BibleditCore.EnableRaisingEvents = true;
-            BibleditCore.Exited += new EventHandler(ProcessExited);
-            BibleditCore.Start();
+            //BibleditCore.Exited += new EventHandler(ProcessExited);
+            //BibleditCore.Start();
             // Set the server to run on one processor only. 
             // That gives a huge boost to the speed of the Cygwin library.
             // The difference in speed is clear: It runs times faster.
@@ -242,10 +248,10 @@ namespace Bibledit
 
             // Kill the bibledit core.
             BibleditCore.EnableRaisingEvents = false;
-            BibleditCore.CloseMainWindow();
-            BibleditCore.Kill();
-            BibleditCore.WaitForExit();
-            BibleditCore.Close();
+            //BibleditCore.CloseMainWindow();
+            //BibleditCore.Kill();
+            //BibleditCore.WaitForExit();
+            //BibleditCore.Close();
         }
 
 
@@ -314,14 +320,14 @@ namespace Bibledit
                 // If the users enters an empty string, any markup is supposed to be removed from the webview.
                 // This is done by searching for something that is not likely to be found.
                 if (search.Length == 0) search = "b.i.b.l.e.d.i.t";
-                WebBrowserExtensions.Find(browser, 1, search, true, false, false);
+                //WebBrowserExtensions.Find(browser, 1, search, true, false, false);
             }
 
             SearchDialogOpen = false;
         }
 
 
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        private void OnExternalUrlTimedEvent(Object source, ElapsedEventArgs e)
         {
             try
             {
@@ -356,8 +362,41 @@ namespace Bibledit
                 Console.WriteLine(ex.Message);
             }
             // Restart the timeout.
-            aTimer.Stop();
-            aTimer.Start();
+            externalUrlTimer.Stop();
+            externalUrlTimer.Start();
+        }
+
+
+        private void OnFocusedReferenceTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            try
+            {
+                // Read the reference from Paratext from the registry.
+                String SantaFeFocusKey = @"SOFTWARE\SantaFe\Focus\";
+                String ScriptureReferenceKey = "ScriptureReference";
+                //String ScriptureReferenceListKey = "ScriptureReferenceList";
+                using (var hklm = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
+                using (var key = hklm.OpenSubKey(SantaFeFocusKey + ScriptureReferenceKey))
+                {
+                    if (key != null)
+                    {
+                        var value = key?.GetValue("");
+                        if (value != null)
+                        {
+                            String focus = value.ToString();
+                            Console.WriteLine(focus);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            // Restart the timeout.
+            focusedReferenceTimer.Stop();
+            focusedReferenceTimer.Start();
+
         }
 
 
