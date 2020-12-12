@@ -58,3 +58,6 @@ android/bin/classes/org/bibledit/lab/R$string.class
 android/bin/classes/org/bibledit/lab/R$layout.class
 android/bin/classes/org/bibledit/lab/R.class
 kubernetes/kube-cluster/kube-dependencies.retry
+dot.NET/cef-sharp-nuget/gui/bibledit/bin/x64/Debug*
+*.pak
+dot.NET/cef-sharp-nuget/packages/cef*

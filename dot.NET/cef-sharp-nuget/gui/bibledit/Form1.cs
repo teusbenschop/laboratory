@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using System.Timers;
 using System.Net.Sockets;
 using Microsoft.Win32;
+using CefSharp.WinForms;
+
 
 namespace Bibledit
 {
@@ -38,7 +40,8 @@ namespace Bibledit
         private static Boolean SearchDialogOpen = false;
 
 
-        public static WebBrowser browser;
+        //public static WebBrowser browser;
+        public static ChromiumWebBrowser browser;
 
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -94,11 +97,13 @@ namespace Bibledit
         public void InitBrowser()
         {
             //Cef.Initialize(new CefSettings());
-            browser = new WebBrowser();
+            //browser = new WebBrowser();
+            browser = new ChromiumWebBrowser("http://localhost:9876");
             //browser.DownloadHandler = new DownloadHandler();
             Controls.Add(browser);
             browser.Dock = DockStyle.Fill;
-            browser.Navigate("https://bibledit.org");
+            
+            //browser.Navigate("https://bibledit.org");
         }
 
 
@@ -211,7 +216,7 @@ namespace Bibledit
         {
             if (PrintDialogOpen) return;
             PrintDialogOpen = true;
-            browser.Print();
+            //browser.Print();
             PrintDialogOpen = false;
         }
 
