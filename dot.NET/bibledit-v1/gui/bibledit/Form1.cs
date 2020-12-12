@@ -385,6 +385,30 @@ namespace Bibledit
                         {
                             String focus = value.ToString();
                             Console.WriteLine(focus);
+
+                            // Encode the space.
+                            focus = Uri.EscapeUriString(focus);
+                            // Connect to the local Bibledit client server.
+                            TcpClient socket = new TcpClient();
+                            socket.Connect("localhost", 9876);
+                            // Send the Paratext focused reference to the correct link.
+                            NetworkStream ns = socket.GetStream();
+                            StreamWriter sw = new StreamWriter(ns);
+                            sw.WriteLine("GET /navigation/paratext?from=" + focus + " HTTP/1.1");
+                            sw.WriteLine("");
+                            sw.Flush();
+                            // Read the response from the local Bibledit client server.
+                            String response;
+                            StreamReader sr = new StreamReader(ns);
+                            do
+                            {
+                                response = sr.ReadLine();
+                                Console.WriteLine(response);
+                            }
+                            while (response != null);
+                            // Close connection.
+                            socket.Close();
+
                         }
                     }
                 }
