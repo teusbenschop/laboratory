@@ -1,0 +1,4 @@
+gcc synflood.c
+sudo ./a.out
+rm a.out
+
