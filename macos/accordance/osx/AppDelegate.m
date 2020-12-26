@@ -3,7 +3,6 @@
 
 #import "AppDelegate.h"
 #import <WebKit/WebKit.h>
-#import "accordance.h"
 
 
 @interface AppDelegate ()
@@ -59,9 +58,8 @@ NSString * searchText = @"";
                     if ([characters isEqualToString:@"s"]) {
                       //[self.send:"2CO 9:2"];
                       //[self print:nil];
-                      Accordance * accordance = [[Accordance alloc]init];
-                      [accordance send:@"2CO 9:2"];
-
+                      NSString * reference = @"2CO 9:2";
+                      [[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.santafemac.scrolledToVerse" object:reference userInfo:nil deliverImmediately:YES];
                     }
                 }
             }

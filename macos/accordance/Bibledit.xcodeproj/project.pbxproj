@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA0884532595E9AD0090BB21 /* accordance.m in Sources */ = {isa = PBXBuildFile; fileRef = CA0884522595E9AD0090BB21 /* accordance.m */; };
 		CA1599F21B1759A600B26F9C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CA1599F11B1759A600B26F9C /* AppDelegate.m */; };
 		CA1599F41B1759A600B26F9C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CA1599F31B1759A600B26F9C /* main.m */; };
 		CA1599F61B1759A600B26F9C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CA1599F51B1759A600B26F9C /* Images.xcassets */; };
@@ -16,8 +15,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CA0884502595E97D0090BB21 /* accordance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = accordance.h; sourceTree = "<group>"; };
-		CA0884522595E9AD0090BB21 /* accordance.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = accordance.m; sourceTree = "<group>"; };
 		CA1599EB1B1759A600B26F9C /* Bibledit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bibledit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA1599EF1B1759A600B26F9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CA1599F01B1759A600B26F9C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -66,8 +63,6 @@
 				CAFBC78D1B17624E0063BA33 /* osx.entitlements */,
 				CA1599F01B1759A600B26F9C /* AppDelegate.h */,
 				CA1599F11B1759A600B26F9C /* AppDelegate.m */,
-				CA0884502595E97D0090BB21 /* accordance.h */,
-				CA0884522595E9AD0090BB21 /* accordance.m */,
 				CA1599F51B1759A600B26F9C /* Images.xcassets */,
 				CA1599F71B1759A600B26F9C /* MainMenu.xib */,
 				CA1599EE1B1759A600B26F9C /* Supporting Files */,
@@ -162,7 +157,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CA1599F41B1759A600B26F9C /* main.m in Sources */,
-				CA0884532595E9AD0090BB21 /* accordance.m in Sources */,
 				CA1599F21B1759A600B26F9C /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
