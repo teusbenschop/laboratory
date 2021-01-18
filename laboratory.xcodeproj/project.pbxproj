@@ -22,7 +22,6 @@
 		CA0F08DF1E5DFE30008F91C3 /* stylesheet.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = stylesheet.css; sourceTree = "<group>"; };
 		CA0F615022342BA500BE6EEF /* fill-image */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "fill-image"; sourceTree = "<group>"; };
 		CA23F7C51F9CC1770030A2AE /* curl-websocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "curl-websocket"; sourceTree = SOURCE_ROOT; };
-		CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "simple-websocket-server"; sourceTree = "<group>"; };
 		CA2971C122A0438900E373A4 /* intervalmap */ = {isa = PBXFileReference; lastKnownFileType = folder; path = intervalmap; sourceTree = "<group>"; };
 		CA339649223675260007893D /* angular-employees */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "angular-employees"; sourceTree = "<group>"; };
 		CA33964B223675260007893D /* angular-getting-started */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "angular-getting-started"; sourceTree = "<group>"; };
@@ -37,6 +36,8 @@
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
+		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
+		CA53424E25B6115E008E452A /* websocket-client-2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-2"; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -299,7 +300,6 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
-				CA6C24E62595E36D00505E9A /* macos */,
 				CA339649223675260007893D /* angular-employees */,
 				CA33964B223675260007893D /* angular-getting-started */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
@@ -316,6 +316,7 @@
 				CAEF740722945DB900F16631 /* lambdas */,
 				CA0B46F82023498A00966B19 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
+				CA6C24E62595E36D00505E9A /* macos */,
 				CAE92415203B04F900D84B09 /* mbedtls */,
 				CA76BE992019FA6A00B16C72 /* miniz */,
 				CA3BCCB7231C146B00111FBE /* opencv */,
@@ -325,7 +326,6 @@
 				CA7BA6901DDCEA3C00719C36 /* quill-mini */,
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
-				CA23F7C71F9CC19F0030A2AE /* simple-websocket-server */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CA3DD73520DA64A500CD428E /* sortable */,
 				CA6C8CF72269F1200067F7BE /* stm32fo-discovery */,
@@ -334,6 +334,8 @@
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
+				CA53424D25B6115D008E452A /* websocket-client-1 */,
+				CA53424E25B6115E008E452A /* websocket-client-2 */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
 			);
 			indentWidth = 2;
