@@ -37,12 +37,12 @@
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
-		CA53424E25B6115E008E452A /* websocket-client-2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-2"; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA6C24E62595E36D00505E9A /* macos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = macos; sourceTree = "<group>"; };
 		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
+		CA6F20512621C4F5003A1F6D /* flask */ = {isa = PBXFileReference; lastKnownFileType = folder; path = flask; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA76BE992019FA6A00B16C72 /* miniz */ = {isa = PBXFileReference; lastKnownFileType = folder; path = miniz; sourceTree = "<group>"; };
@@ -308,6 +308,7 @@
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
 				CAF2844122676BD50052535E /* django */,
 				CA0F615022342BA500BE6EEF /* fill-image */,
+				CA6F20512621C4F5003A1F6D /* flask */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
@@ -335,7 +336,6 @@
 				CA98E2431DA8D17000F43F4B /* vfork */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA53424D25B6115D008E452A /* websocket-client-1 */,
-				CA53424E25B6115E008E452A /* websocket-client-2 */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
 			);
 			indentWidth = 2;
