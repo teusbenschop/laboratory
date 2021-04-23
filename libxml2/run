@@ -1,0 +1,4 @@
+#!/bin/bash
+g++ -Wall -Wextra -pedantic -std=c++11 -O3 `pkg-config libxml-2.0 --libs --cflags` html.cpp -o html
+./html
+rm -rf html

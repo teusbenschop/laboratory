@@ -61,6 +61,7 @@
 		CA7BF1161E41E2F4008FF558 /* winsockserver.vcxproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj; sourceTree = "<group>"; };
 		CA7BF1171E41E2F4008FF558 /* winsockserver.vcxproj.filters */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj.filters; sourceTree = "<group>"; };
 		CA7BF1181E41E2F4008FF558 /* winsockserver.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockserver.sln; sourceTree = "<group>"; };
+		CA7D459E2631F95D003F2E12 /* libxml2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libxml2; sourceTree = "<group>"; };
 		CA830390229D85310025462E /* qt5 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = qt5; sourceTree = "<group>"; };
 		CA84FC412240074E00734EFE /* cobol */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cobol; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
@@ -315,6 +316,7 @@
 				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
+				CA7D459E2631F95D003F2E12 /* libxml2 */,
 				CA0B46F82023498A00966B19 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CA6C24E62595E36D00505E9A /* macos */,
