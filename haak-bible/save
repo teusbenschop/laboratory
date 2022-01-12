@@ -1,0 +1,70 @@
+#!/bin/bash
+
+cd
+cd work/bibledit/server/exports/haak-bible/usfm/full
+cp "03_Genesis.usfm" ~/dev/haak-bible/usfm/01_Genesis.usfm
+cp "04_Exodus.usfm" ~/dev/haak-bible/usfm/02_Exodus.usfm
+cp "05_Leviticus.usfm" ~/dev/haak-bible/usfm/03_Leviticus.usfm
+cp "06_Numbers.usfm" ~/dev/haak-bible/usfm/04_Numbers.usfm
+cp "07_Deuteronomy.usfm" ~/dev/haak-bible/usfm/05_Deuteronomy.usfm
+cp "08_Joshua.usfm" ~/dev/haak-bible/usfm/06_Joshua.usfm
+cp "09_Judges.usfm" ~/dev/haak-bible/usfm/07_Judges.usfm
+cp "10_Ruth.usfm" ~/dev/haak-bible/usfm/08_Ruth.usfm
+cp "11_1 Samuel.usfm" ~/dev/haak-bible/usfm/09_1_Samuel.usfm
+cp "12_2 Samuel.usfm" ~/dev/haak-bible/usfm/10_2_Samuel.usfm
+cp "13_1 Kings.usfm" ~/dev/haak-bible/usfm/11_1_Kings.usfm
+cp "14_2 Kings.usfm" ~/dev/haak-bible/usfm/12_2_Kings.usfm
+cp "15_1 Chronicles.usfm" ~/dev/haak-bible/usfm/13_1_Chronicles.usfm
+cp "16_2 Chronicles.usfm" ~/dev/haak-bible/usfm/14_2_Chronicles.usfm
+cp "17_Ezra.usfm" ~/dev/haak-bible/usfm/15_Ezra.usfm
+cp "18_Nehemiah.usfm" ~/dev/haak-bible/usfm/16_Nehemiah.usfm
+cp "19_Esther.usfm" ~/dev/haak-bible/usfm/17_Esther.usfm
+cp "20_Job.usfm" ~/dev/haak-bible/usfm/18_Job.usfm
+cp "21_Psalms.usfm" ~/dev/haak-bible/usfm/19_Psalms.usfm
+cp "22_Proverbs.usfm" ~/dev/haak-bible/usfm/20_Proverbs.usfm
+cp "23_Ecclesiastes.usfm" ~/dev/haak-bible/usfm/21_Ecclesiastes.usfm
+cp "24_Song of Solomon.usfm" ~/dev/haak-bible/usfm/22_Song_of_Solomon.usfm
+cp "25_Isaiah.usfm" ~/dev/haak-bible/usfm/23_Isaiah.usfm
+cp "26_Jeremiah.usfm" ~/dev/haak-bible/usfm/24_Jeremiah.usfm
+cp "27_Lamentations.usfm" ~/dev/haak-bible/usfm/25_Lamentations.usfm
+cp "28_Ezekiel.usfm" ~/dev/haak-bible/usfm/26_Ezekiel.usfm
+cp "29_Daniel.usfm" ~/dev/haak-bible/usfm/27_Daniel.usfm
+cp "30_Hosea.usfm" ~/dev/haak-bible/usfm/28_Hosea.usfm
+cp "31_Joel.usfm" ~/dev/haak-bible/usfm/29_Joel.usfm
+cp "32_Amos.usfm" ~/dev/haak-bible/usfm/30_Amos.usfm
+cp "33_Obadiah.usfm" ~/dev/haak-bible/usfm/31_Obadiah.usfm
+cp "34_Jonah.usfm" ~/dev/haak-bible/usfm/32_Jonah.usfm
+cp "35_Micah.usfm" ~/dev/haak-bible/usfm/33_Micah.usfm
+cp "36_Nahum.usfm" ~/dev/haak-bible/usfm/34_Nahum.usfm
+cp "37_Habakkuk.usfm" ~/dev/haak-bible/usfm/35_Habakkuk.usfm
+cp "38_Zephaniah.usfm" ~/dev/haak-bible/usfm/36_Zephaniah.usfm
+cp "39_Haggai.usfm" ~/dev/haak-bible/usfm/37_Haggai.usfm
+cp "40_Zechariah.usfm" ~/dev/haak-bible/usfm/38_Zechariah.usfm
+cp "41_Malachi.usfm" ~/dev/haak-bible/usfm/39_Malachi.usfm
+cp "42_Matthew.usfm" ~/dev/haak-bible/usfm/40_Matthew.usfm
+cp "43_Mark.usfm" ~/dev/haak-bible/usfm/41_Mark.usfm
+cp "44_Luke.usfm" ~/dev/haak-bible/usfm/42_Luke.usfm
+cp "45_John.usfm" ~/dev/haak-bible/usfm/43_John.usfm
+cp "46_Acts.usfm" ~/dev/haak-bible/usfm/44_Acts.usfm
+cp "47_Romans.usfm" ~/dev/haak-bible/usfm/45_Romans.usfm
+cp "48_1 Corinthians.usfm" ~/dev/haak-bible/usfm/46_1_Corinthians.usfm
+cp "49_2 Corinthians.usfm" ~/dev/haak-bible/usfm/47_2_Corinthians.usfm
+cp "50_Galatians.usfm" ~/dev/haak-bible/usfm/48_Galatians.usfm
+cp "51_Ephesians.usfm" ~/dev/haak-bible/usfm/49_Ephesians.usfm
+cp "52_Philippians.usfm" ~/dev/haak-bible/usfm/50_Philippians.usfm
+cp "53_Colossians.usfm" ~/dev/haak-bible/usfm/51_Colossians.usfm
+cp "54_1 Thessalonians.usfm" ~/dev/haak-bible/usfm/52_1_Thessalonians.usfm
+cp "55_2 Thessalonians.usfm" ~/dev/haak-bible/usfm/53_2_Thessalonians.usfm
+cp "56_1 Timothy.usfm" ~/dev/haak-bible/usfm/54_1_Timothy.usfm
+cp "57_2 Timothy.usfm" ~/dev/haak-bible/usfm/55_2_Timothy.usfm
+cp "58_Titus.usfm" ~/dev/haak-bible/usfm/56_Titus.usfm
+cp "59_Philemon.usfm" ~/dev/haak-bible/usfm/57_Philemon.usfm
+cp "60_Hebrews.usfm" ~/dev/haak-bible/usfm/58_Hebrews.usfm
+cp "61_James.usfm" ~/dev/haak-bible/usfm/59_James.usfm
+cp "62_1 Peter.usfm" ~/dev/haak-bible/usfm/60_1_Peter.usfm
+cp "63_2 Peter.usfm" ~/dev/haak-bible/usfm/61_2_Peter.usfm
+cp "64_1 John.usfm" ~/dev/haak-bible/usfm/62_1_John.usfm
+cp "65_2 John.usfm" ~/dev/haak-bible/usfm/63_2_John.usfm
+cp "66_3 John.usfm" ~/dev/haak-bible/usfm/64_3_John.usfm
+cp "67_Jude.usfm" ~/dev/haak-bible/usfm/65_Jude.usfm
+cp "68_Revelation.usfm" ~/dev/haak-bible/usfm/66_Revelation.usfm
