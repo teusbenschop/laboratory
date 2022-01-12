@@ -8,8 +8,8 @@ using namespace std;
 #include "main.h"
 
 
-//#define DIRECTORY_SEPARATOR "/"
-#define DIRECTORY_SEPARATOR "\\"
+#define DIRECTORY_SEPARATOR "/"
+//#define DIRECTORY_SEPARATOR "\\"
 
 // C++ replacement for the dirname function, see http://linux.die.net/man/3/dirname.
 // The BSD dirname is not thread-safe, see the implementation notes on $ man 3 dirname.
@@ -146,10 +146,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   {
     string url = "/var/log/app";
     string dirname = filter_url_dirname (url);
-    //if (dirname != "/var/log") cout << dirname << endl;
+    cout << dirname << endl;
     filesystem::path p (url);
     dirname = p.parent_path().string();
-    //if (dirname != "/var/log") cout << dirname << endl;
+    cout << dirname << endl;
   }
   {
     string url = R"(C:\var\log\app)";
