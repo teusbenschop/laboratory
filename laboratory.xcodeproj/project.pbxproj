@@ -23,8 +23,6 @@
 		CA0F615022342BA500BE6EEF /* fill-image */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "fill-image"; sourceTree = "<group>"; };
 		CA23F7C51F9CC1770030A2AE /* curl-websocket */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "curl-websocket"; sourceTree = SOURCE_ROOT; };
 		CA2971C122A0438900E373A4 /* intervalmap */ = {isa = PBXFileReference; lastKnownFileType = folder; path = intervalmap; sourceTree = "<group>"; };
-		CA339649223675260007893D /* angular-employees */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "angular-employees"; sourceTree = "<group>"; };
-		CA33964B223675260007893D /* angular-getting-started */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "angular-getting-started"; sourceTree = "<group>"; };
 		CA374CB9226399D600D70B55 /* python */ = {isa = PBXFileReference; lastKnownFileType = folder; path = python; sourceTree = "<group>"; };
 		CA3792E21DF6FA5A008F8164 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
 		CA3792E31DF6FA5A008F8164 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -37,11 +35,15 @@
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
+		CA5DD4DC277EF2F000E50FF7 /* run */ = {isa = PBXFileReference; lastKnownFileType = text; path = run; sourceTree = "<group>"; };
+		CA5DD4DD277EF31D00E50FF7 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		CA5DD4DE277EF31D00E50FF7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA6C24E62595E36D00505E9A /* macos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = macos; sourceTree = "<group>"; };
 		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
+		CA6E11BF266D3B8200C5CBBB /* haak-bible */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haak-bible"; sourceTree = "<group>"; };
 		CA6F20512621C4F5003A1F6D /* flask */ = {isa = PBXFileReference; lastKnownFileType = folder; path = flask; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
+		CAB9F09A26B6C57A0058A461 /* usfm */ = {isa = PBXFileReference; lastKnownFileType = folder; path = usfm; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CABEE77C1DD5F653006D8D75 /* bubble.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bubble.html; sourceTree = "<group>"; };
 		CABEE77D1DD5F653006D8D75 /* full.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = full.html; sourceTree = "<group>"; };
@@ -174,6 +177,16 @@
 				CA741F801E017182004EA723 /* index.css */,
 			);
 			path = "chrome-app";
+			sourceTree = "<group>";
+		};
+		CA5DD4DA277EF2F000E50FF7 /* c++17 */ = {
+			isa = PBXGroup;
+			children = (
+				CA5DD4DE277EF31D00E50FF7 /* main.cpp */,
+				CA5DD4DD277EF31D00E50FF7 /* main.h */,
+				CA5DD4DC277EF2F000E50FF7 /* run */,
+			);
+			path = "c++17";
 			sourceTree = "<group>";
 		};
 		CA5EB3111DDF5B0000565FA2 /* torch */ = {
@@ -301,8 +314,7 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
-				CA339649223675260007893D /* angular-employees */,
-				CA33964B223675260007893D /* angular-getting-started */,
+				CA5DD4DA277EF2F000E50FF7 /* c++17 */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA84FC412240074E00734EFE /* cobol */,
@@ -313,6 +325,7 @@
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
+				CA6E11BF266D3B8200C5CBBB /* haak-bible */,
 				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
@@ -335,6 +348,7 @@
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CADBACAF25937907000527CA /* synflood */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
+				CAB9F09A26B6C57A0058A461 /* usfm */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA53424D25B6115D008E452A /* websocket-client-1 */,
