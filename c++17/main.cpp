@@ -143,21 +143,31 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 //    }
 //  }
   
-  {
-    string url = "/var/log/app";
-    string dirname = filter_url_dirname (url);
-    cout << dirname << endl;
-    filesystem::path p (url);
-    dirname = p.parent_path().string();
-    cout << dirname << endl;
-  }
-  {
-    string url = R"(C:\var\log\app)";
-    string dirname = filter_url_dirname (url);
-    filesystem::path p (url);
-    dirname = p.parent_path ().string ();
-    cout << dirname << endl;
+//  {
+//    string url = "/var/log/app";
+//    string dirname = filter_url_dirname (url);
+//    cout << dirname << endl;
+//    filesystem::path p (url);
+//    dirname = p.parent_path().string();
+//    cout << dirname << endl;
+//  }
 
+//  {
+//    string url = R"(C:\var\log\app)";
+//    string dirname = filter_url_dirname (url);
+//    filesystem::path p (url);
+//    dirname = p.parent_path ().string ();
+//    cout << dirname << endl;
+//    cout << filesystem::path::preferred_separator << endl;
+//  }
+  
+  {
+    try {
+      filesystem::path p ("log");
+      filesystem::remove (p);
+    } catch (exception ex) {
+      cout << ex.what() << endl;
+    }
   }
 
   return EXIT_SUCCESS;
