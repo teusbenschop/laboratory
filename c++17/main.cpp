@@ -161,15 +161,26 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 //    cout << filesystem::path::preferred_separator << endl;
 //  }
   
+//  {
+//    try {
+//      filesystem::path p ("log");
+//      filesystem::remove (p);
+//    } catch (exception ex) {
+//      cout << ex.what() << endl;
+//    }
+//  }
+
   {
     try {
-      filesystem::path p ("log");
-      filesystem::remove (p);
+      filesystem::path path ("/tmp/hi.txt");
+      bool exists = filesystem::exists (path);
+      cout << "exists: " << exists << endl;
     } catch (exception ex) {
       cout << ex.what() << endl;
     }
   }
 
+  
   return EXIT_SUCCESS;
 }
 
