@@ -182,7 +182,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
   {
     try {
-      filesystem::path path ("/tmp/bibledit-unittests");
+      filesystem::path path (R"(C:\bibledit)");
       for (auto const & directory_entry : filesystem::directory_iterator {path})
       {
         filesystem::path path = directory_entry.path();
