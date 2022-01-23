@@ -170,16 +170,28 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 //    }
 //  }
 
+//  {
+//    try {
+//      filesystem::path path ("/tmp/hi.txt");
+//      bool exists = filesystem::exists (path);
+//      cout << "exists: " << exists << endl;
+//    } catch (exception ex) {
+//      cout << ex.what() << endl;
+//    }
+//  }
+
   {
     try {
-      filesystem::path path ("/tmp/hi.txt");
-      bool exists = filesystem::exists (path);
-      cout << "exists: " << exists << endl;
+      filesystem::path path ("/tmp/bibledit-unittests");
+      for (auto const & directory_entry : filesystem::directory_iterator {path})
+      {
+        filesystem::path path = directory_entry.path();
+        cout << path.string() << endl;
+      }
     } catch (exception ex) {
       cout << ex.what() << endl;
     }
   }
-
   
   return EXIT_SUCCESS;
 }
