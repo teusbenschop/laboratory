@@ -66,6 +66,7 @@
 		CA7D459E2631F95D003F2E12 /* libxml2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libxml2; sourceTree = "<group>"; };
 		CA830390229D85310025462E /* qt5 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = qt5; sourceTree = "<group>"; };
 		CA84FC412240074E00734EFE /* cobol */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cobol; sourceTree = "<group>"; };
+		CA87D4EF27BBB66700B64CD8 /* udp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = udp; sourceTree = "<group>"; };
 		CA98E2111DA8D14000F43F4B /* client4.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client4.c; sourceTree = "<group>"; };
 		CA98E2121DA8D14000F43F4B /* client6.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client6.c; sourceTree = "<group>"; };
 		CA98E2131DA8D14000F43F4B /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -348,6 +349,7 @@
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CADBACAF25937907000527CA /* synflood */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
+				CA87D4EF27BBB66700B64CD8 /* udp */,
 				CAB9F09A26B6C57A0058A461 /* usfm */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,

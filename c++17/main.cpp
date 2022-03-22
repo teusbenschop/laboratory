@@ -4,6 +4,7 @@
 #include <set>
 #include <iostream>
 #include <filesystem>
+#include <iomanip>
 using namespace std;
 #include "main.h"
 
@@ -180,19 +181,28 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 //    }
 //  }
 
+//  {
+//    try {
+//      filesystem::path path (R"(C:\bibledit)");
+//      for (auto const & directory_entry : filesystem::directory_iterator {path})
+//      {
+//        filesystem::path path = directory_entry.path();
+//        cout << path.string() << endl;
+//      }
+//    } catch (exception ex) {
+//      cout << ex.what() << endl;
+//    }
+//  }
+
   {
-    try {
-      filesystem::path path (R"(C:\bibledit)");
-      for (auto const & directory_entry : filesystem::directory_iterator {path})
-      {
-        filesystem::path path = directory_entry.path();
-        cout << path.string() << endl;
-      }
-    } catch (exception ex) {
-      cout << ex.what() << endl;
-    }
+    // Quotes in ordinary string literal.
+    cout << "'hello world'" << endl;
+    // Quotes in raw string literal. Example: R"(text)".
+    cout << R"("hello world")" << endl;
+    // Clean way to insert quotes.
+    cout << std::quoted ("hello world") << endl;
   }
-  
+
   return EXIT_SUCCESS;
 }
 
