@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		CA06979627E9A86E00D94477 /* ncurses */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ncurses; sourceTree = "<group>"; };
 		CA0B46F82023498A00966B19 /* linux */ = {isa = PBXFileReference; lastKnownFileType = folder; path = linux; sourceTree = "<group>"; };
 		CA0E92A2220F1D92007A52C3 /* webkit2gtk */ = {isa = PBXFileReference; lastKnownFileType = folder; path = webkit2gtk; sourceTree = "<group>"; };
 		CA0F08D31E5DFE30008F91C3 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -315,6 +316,7 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
+				CA06979627E9A86E00D94477 /* ncurses */,
 				CA5DD4DA277EF2F000E50FF7 /* c++17 */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
