@@ -1,0 +1,13 @@
+Modbus info
+===========
+
+Modbus info: https://modbus.org
+Library site: https://libmodbus.org
+Library source and examples: https://github.com/stephane/libmodbus
+
+A client device initiates communication and makes requests of a server device, which process requests and return an appropriate response.
+
+Debian: $ apt install libmodbus-dev
+macOS: $ git clone https://github.com/stephane/libmodbus.git
+
+

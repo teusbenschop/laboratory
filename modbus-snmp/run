@@ -1,0 +1,4 @@
+g++ -std=c++17 main.cpp
+if [ $? -ne 0 ]; then exit; fi
+./a.out
+rm -f a.out
