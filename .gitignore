@@ -62,3 +62,5 @@ dot.NET/cef-sharp-nuget/gui/bibledit/bin/x64/Debug*
 *.pak
 dot.NET/cef-sharp-nuget/packages/cef*
 c++17/x64/Debug/*
+modbus-snmp/modbus-client
+modbus-snmp/modbus-server
