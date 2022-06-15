@@ -48,6 +48,7 @@
 		CA6F20512621C4F5003A1F6D /* flask */ = {isa = PBXFileReference; lastKnownFileType = folder; path = flask; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
+		CA74AB20282041380051E815 /* cpp-core-guidelines */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "cpp-core-guidelines"; sourceTree = "<group>"; };
 		CA76BE992019FA6A00B16C72 /* miniz */ = {isa = PBXFileReference; lastKnownFileType = folder; path = miniz; sourceTree = "<group>"; };
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -83,7 +84,6 @@
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
-		CAB9F09A26B6C57A0058A461 /* usfm */ = {isa = PBXFileReference; lastKnownFileType = folder; path = usfm; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CABEE77C1DD5F653006D8D75 /* bubble.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bubble.html; sourceTree = "<group>"; };
 		CABEE77D1DD5F653006D8D75 /* full.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = full.html; sourceTree = "<group>"; };
@@ -316,11 +316,11 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
-				CA06979627E9A86E00D94477 /* ncurses */,
 				CA5DD4DA277EF2F000E50FF7 /* c++17 */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA84FC412240074E00734EFE /* cobol */,
+				CA74AB20282041380051E815 /* cpp-core-guidelines */,
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
 				CAF2844122676BD50052535E /* django */,
 				CA0F615022342BA500BE6EEF /* fill-image */,
@@ -338,6 +338,7 @@
 				CA6C24E62595E36D00505E9A /* macos */,
 				CAE92415203B04F900D84B09 /* mbedtls */,
 				CA76BE992019FA6A00B16C72 /* miniz */,
+				CA06979627E9A86E00D94477 /* ncurses */,
 				CA3BCCB7231C146B00111FBE /* opencv */,
 				CA374CB9226399D600D70B55 /* python */,
 				CA830390229D85310025462E /* qt5 */,
@@ -352,7 +353,6 @@
 				CADBACAF25937907000527CA /* synflood */,
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA87D4EF27BBB66700B64CD8 /* udp */,
-				CAB9F09A26B6C57A0058A461 /* usfm */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA53424D25B6115D008E452A /* websocket-client-1 */,
