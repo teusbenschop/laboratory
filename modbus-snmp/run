@@ -1,4 +1,4 @@
-g++ -std=c++17 main.cpp
+g++ -std=c++17 -I. -I/usr/local/include -I/usr/local/lib -lmodbus main.cpp
 if [ $? -ne 0 ]; then exit; fi
 ./a.out
 rm -f a.out
