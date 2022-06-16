@@ -66,6 +66,7 @@
 		CA7BF1171E41E2F4008FF558 /* winsockserver.vcxproj.filters */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = winsockserver.vcxproj.filters; sourceTree = "<group>"; };
 		CA7BF1181E41E2F4008FF558 /* winsockserver.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockserver.sln; sourceTree = "<group>"; };
 		CA7CF5FD2859D7BE00BFA358 /* modbus */ = {isa = PBXFileReference; lastKnownFileType = folder; path = modbus; sourceTree = "<group>"; };
+		CA7CF5FE285AF31700BFA358 /* snmp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = snmp; sourceTree = "<group>"; };
 		CA7D459E2631F95D003F2E12 /* libxml2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libxml2; sourceTree = "<group>"; };
 		CA830390229D85310025462E /* qt5 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = qt5; sourceTree = "<group>"; };
 		CA84FC412240074E00734EFE /* cobol */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cobol; sourceTree = "<group>"; };
@@ -348,6 +349,7 @@
 				CA7BA6901DDCEA3C00719C36 /* quill-mini */,
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
+				CA7CF5FE285AF31700BFA358 /* snmp */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CA3DD73520DA64A500CD428E /* sortable */,
 				CA6C8CF72269F1200067F7BE /* stm32fo-discovery */,
