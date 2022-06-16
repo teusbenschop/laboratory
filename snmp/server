@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Version information.
+/opt/local/sbin/snmpd --version
+if [ $? -ne 0 ]; then exit; fi
+
+# Copy the MIB files to the default location to search for MIBs.
+mkdir -p ~/.snmp/mibs
+cp *.my ~/.snmp/mibs
+
+# Translate part of MIB file.
+TOID=ciscoLS1010ChassisFanLed
+echo Translating $TOID
+/opt/local/bin/snmptranslate -m +ALL -IR -On $TOID
+echo
+
+# Man page: http://www.net-snmp.org/docs/man/snmpd.html
+echo Starting SNMP daemon
+/opt/local/sbin/snmpd -f -m +ALL tcp:6000

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+exit
+
+g++ -std=c++17 -I. -I/usr/local/include/modbus -I/usr/local/lib -lmodbus modbus-client.cpp -o modbus-client
+if [ $? -ne 0 ]; then exit; fi
+./modbus-client
