@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Version information.
-/opt/local/sbin/snmpd --version
+/usr/sbin/snmpd --version
 if [ $? -ne 0 ]; then exit; fi
 
 # Copy the MIB files to the default location to search for MIBs.
@@ -11,9 +11,24 @@ cp *.my ~/.snmp/mibs
 # Translate part of MIB file.
 TOID=ciscoLS1010ChassisFanLed
 echo Translating $TOID
-/opt/local/bin/snmptranslate -m +ALL -IR -On $TOID
+snmptranslate -m +ALL -IR -On $TOID
 echo
 
 # Man page: http://www.net-snmp.org/docs/man/snmpd.html
-echo Starting SNMP daemon
-/opt/local/sbin/snmpd -f -m +ALL tcp:6000
+#LISTENER=tcp:6000
+#LISTENER=udp:161
+#echo Starting SNMP daemon
+#/usr/sbin/snmpd -f -m +ALL -a -d -V -DALL $LISTENER
+
+systemctl status snmpd
+
+# sudo nano /etc/snmp/snmpd.conf
+
+# Change:
+# rocommunity  public default -V systemonly
+# rocommunity6 public default -V systemonly
+# To:
+# rocommunity  public default
+# rocommunity6 public default
+
+# sudo systemctl restart snmpd

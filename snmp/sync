@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/opt/local/bin/rsync -av --delete . debian11.local:snmp
+

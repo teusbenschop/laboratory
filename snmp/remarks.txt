@@ -11,3 +11,5 @@ Debian packages: $ apt install libsnmp-dev snmp snmpd
 macOS: $ port install net-snmp
 RedHat: $ yum install net-snmp
 
+Example snmpwalk: https://www.ittsystems.com/snmpwalk-examples/
+
