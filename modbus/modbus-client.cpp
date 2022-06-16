@@ -36,10 +36,6 @@ int main ()
   constexpr bool keep_going {true};
   while (keep_going) {
   
-    static int counter = 0;
-    counter++;
-    cout << counter << endl;
-    
     // This client connects to the server.
     if (modbus_connect(ctx) == -1) {
       cout << "Unable to connect: " << modbus_strerror(errno) << endl;
@@ -61,6 +57,10 @@ int main ()
 
     // Do several requests then be done with this connection.
     for (int i = 0; i < 5; i++) {
+
+      static int counter = 0;
+      counter++;
+      cout << counter << endl;
 
       // Read 5 holding registers starting from address 10.
       int num = modbus_read_registers (ctx, 10, number_of_registers, registers);

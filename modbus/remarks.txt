@@ -3,13 +3,19 @@ Modbus info
 
 Modbus info: https://modbus.org
 Library site: https://libmodbus.org
-Library source and examples: https://github.com/stephane/libmodbus
-Very simple example code: https://stackoverflow.com/questions/29602698/create-a-simple-client-server-using-modbus-in-c
+
+Very simple example code:
+https://stackoverflow.com/questions/29602698/create-a-simple-client-server-using-modbus-in-c
+
+Library source and examples:
+https://github.com/stephane/libmodbus
+In the tests folder there's information about all possible calls and how to use them.
 
 The master initiates all communication transactions. Each slave has a unique id, responding to the master only when addressed by the master.
 A client device initiates communication and makes requests of a server device, which process requests and return an appropriate response.
 
 Debian: $ apt install libmodbus-dev
 macOS: $ git clone https://github.com/stephane/libmodbus.git
+RedHat: $ git clone https://github.com/stephane/libmodbus.git
 
 
