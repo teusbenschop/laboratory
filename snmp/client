@@ -2,4 +2,4 @@
 
 g++ snmpget.cpp -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
 if [ $? -ne 0 ]; then exit; fi
-./snmpget -v 2c -c public 127.0.0.1 .1.3.6.1.2.1.1.3.0
+./snmpget -v 2c -c public 127.0.0.1 .1.3.6.1.2.1.1.3.0 .1.3.6.1.2.1.1.3.0
