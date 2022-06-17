@@ -82,7 +82,6 @@ int main (int argc, char *argv[])
         int current_name { 0 };
         for (; arg < argc; arg++) names[current_name++] = argv[arg];
         
-        int count { 0 };
         
         // Open an SNMP session.
         ss = snmp_open(&session);
@@ -94,13 +93,13 @@ int main (int argc, char *argv[])
 
         // Repeat the request several times.
         for (int repeat = 0; repeat < 5; repeat++) {
-            
+
             // Create PDU for GET request and add object names to request.
             size_t name_length = MAX_OID_LEN;
             oid name[MAX_OID_LEN];
             int failures { 0 };
             netsnmp_pdu * pdu = snmp_pdu_create(SNMP_MSG_GET);
-            for (count = 0; count < current_name; count++) {
+            for (int count = 0; count < current_name; count++) {
                 if (!snmp_parse_oid(names[count], name, &name_length)) {
                     snmp_perror(names[count]);
                     failures++;
@@ -125,6 +124,7 @@ int main (int argc, char *argv[])
                     
                     if (response->errindex != 0) {
                         fprintf(stderr, "Failed object: ");
+                        int count { 0 };
                         for (count = 1, vars = response->variables;
                              vars && count != response->errindex;
                              vars = vars->next_variable, count++)
@@ -154,6 +154,9 @@ int main (int argc, char *argv[])
     }
     catch (const string & msg) {
         cout << "Execution error: " << msg << endl;
+    }
+    catch (...) {
+        cout << "General error" << endl;
     }
 
     // Close the session.
