@@ -1,5 +1,8 @@
 #include <string>
 #include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/utilities.h>
 #include <net-snmp/net-snmp-includes.h>
@@ -8,8 +11,35 @@
 using namespace std;
 
 
-int main (int argc, char *argv[])
+int main ()
 {
+    // Prepare the default directories where the MIB files can be stored.
+    netsnmp_get_mib_directory();
+    // Get the home directory, then build folder where MIB files are.
+    string mib_directory {};
+    {
+        const char *homedir;
+        if ((homedir = getenv("HOME")) == NULL) {
+            homedir = getpwuid(getuid())->pw_dir;
+        }
+        string home_directory = homedir;
+        mib_directory = "+" + home_directory + "/snmp/mibs";
+    }
+    netsnmp_set_mib_directory(mib_directory.c_str());
+    
+    // Specify a colon separated list of MIB modules (not files) to load for this application.
+    // This overrides or augments the environment variable MIBS,
+    // the snmp.conf directive mibs, and the list of MIBs hardcoded into the Net-SNMP library.
+    // If MIBLIST has a leading '-' or '+' character,
+    // then the MIB modules listed are loaded in addition to the default list,
+    // coming before or after this list respectively.
+    // Otherwise, the specified MIBs are loaded instead of this default list.
+    // The special keyword ALL is used
+    // to load all MIB modules in the MIB directory search list.
+    // Every file whose name does not begin with "." will be parsed as if it were a MIB file.
+    // Set (and overwrite) the MIBS list in the environent.
+    setenv("MIBS", "+ALL", 1);
+
     // The session is defined here.
     // Purpose: It's in scope even after an exception in the try...catch block.
     netsnmp_session *ss {nullptr};
@@ -24,27 +54,21 @@ int main (int argc, char *argv[])
         netsnmp_session session {};
         snmp_sess_init (&session);
 
-        // Get the common command line arguments.
-//        int arg { 0 };
-//        switch (arg = snmp_parse_args(argc, argv, &session, NULL, NULL)) {
-//            case NETSNMP_PARSE_ARGS_ERROR:
-//                throw string ("Error parsing arguments");
-//            case NETSNMP_PARSE_ARGS_SUCCESS_EXIT:
-//                throw string ("Ready parsing arguments");
-//            case NETSNMP_PARSE_ARGS_ERROR_USAGE:
-//                throw string ("Error parsing arguments due to incorrect usage");
-//            default:
-//                break;
-//        }
-//        if (arg >= argc) {
-//            throw string ("Missing object name");
-//        }
-//        if ((argc - arg) > SNMP_MAX_CMDLINE_OIDS) {
-//            throw string ("Too many object identifiers specified");
-//        }
+        // Parse the simulated command line arguments.
+        // There's something not yet resolved in this library.
+        // It complains that it cannot resolve the name OID if there's no arguments passed.
+        // So set some fake arguments here, and let the SNMP library parse them.
+        // For some as yet unknown reason, then it goes well.
+        // The fake arguments will be allocated in dynamic memory,
+        // because they can be written to by the parser.
+        constexpr int argc = 3;
+        char * argv [argc] { strdup ("program"), strdup ("host"), strdup ("oid") };
+        snmp_parse_args(argc, argv, &session, NULL, NULL);
+        // Free the temporal arguments allocated in dynamic memory.
+        for (int i = 0; i < argc; i++) free (argv[i]);
 
         // The snmp version, one of SNMP_VERSION_1 / SNMP_VERSION_2c / SNMP_VERSION_3.
-        session.version = SNMP_VERSION_2c;
+        session.version = SNMP_VERSION_3;
 
         // The number of retries before timeout.
         // Note that one retry means it will try 2 times.
@@ -54,21 +78,60 @@ int main (int argc, char *argv[])
         session.timeout = 2000000;
 
         // Name or address of default peer (may include transport specifier and/or port number)
-        session.peername = const_cast <char *> ("udp:127.0.0.1:161");
+        string peername = "tcp:192.168.140.10:161";
+        session.peername = const_cast <char *> (peername.c_str());
 
-        // The community for outgoing requests and the length of the community name.
+        // The default SNMPv3 security name to use when using SNMPv3.
+        string security_name = "lassy";
         {
-            char * char_ptr = const_cast <char *> ("public");
-            session.community = reinterpret_cast <u_char*> (char_ptr);
-            session.community_len = strlen (char_ptr);
+            char * char_ptr = const_cast <char *> (security_name.c_str());
+            session.securityName = char_ptr;
+            session.securityNameLen = strlen (char_ptr);
+        }
+
+        // The default SNMPv3 context name to use.
+        string context_name = "VMS1";
+        {
+            char * char_ptr = const_cast <char *> (context_name.c_str());
+            session.contextName = char_ptr;
+            session.contextNameLen = strlen (char_ptr);
+        }
+
+        // The default SNMPv3 security level to use.
+        // One of: SNMP_SEC_LEVEL_NOAUTH / SNMP_SEC_LEVEL_AUTHNOPRIV / SNMP_SEC_LEVEL_AUTHPRIV
+        session.securityLevel = SNMP_SEC_LEVEL_AUTHNOPRIV;
+
+        // The default SNMPv3 authentication type name to use.
+        {
+            string default_authentication_type {"MD5"};
+            int auth_type = usm_lookup_auth_type(default_authentication_type.c_str());
+            if (auth_type > 0) {
+                session.securityAuthProto = sc_get_auth_oid(auth_type, &session.securityAuthProtoLen);
+            }
+        }
+
+        // The default SNMPv3 authentication pass phrase to use.
+        // Note: It must be at least 8 characters long.
+        string pass_phrase = "Key4Lassy";
+        {
+            char * Apsz = const_cast <char *> (pass_phrase.c_str());
+            if (Apsz) {
+                session.securityAuthKeyLen = USM_AUTH_KU_LEN;
+                if (generate_Ku(session.securityAuthProto,
+                                session.securityAuthProtoLen,
+                                (u_char *) Apsz, strlen(Apsz),
+                                session.securityAuthKey,
+                                &session.securityAuthKeyLen) != SNMPERR_SUCCESS) {
+                    throw string ("Error generating a key (Ku) from the supplied authentication pass phrase.");
+                }
+            }
         }
 
         // Define the object name(s).
         char * names[SNMP_MAX_CMDLINE_OIDS];
         int current_name { 0 };
-        //for (; arg < argc; arg++) names[current_name++] = argv[arg];
-        names [current_name++] = const_cast <char *> ("iso.3.6.1.2.1.1.3.0");
-        
+        names [current_name++] = const_cast <char *> ("shortErrorStatus.0");
+
         // Open an SNMP session.
         // The snmp_open returns a pointer to a newly-formed struct snmp_session object,
         // which the application must use to reference the active SNMP session.
@@ -80,7 +143,7 @@ int main (int argc, char *argv[])
         }
 
         // Repeat the request several times.
-        for (int repeat = 0; repeat < 10; repeat++) {
+        for (int repeat = 0; repeat < 3; repeat++) {
 
             // Create PDU for GET request and add object names to request.
             size_t name_length = MAX_OID_LEN;
