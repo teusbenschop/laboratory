@@ -1,0 +1,3138 @@
+-- 5.0 MIB Comment Header
+--*********************************************************************
+-- Filename:    1204-2005.MIB
+-- Description: This MIB defines the Environmental Sensor Station 
+--              Objects
+--*********************************************************************
+-- 5.1 MIB Header
+NTCIP1204-2007 DEFINITIONS ::= BEGIN
+IMPORTS
+  Counter
+	FROM RFC1155-SMI  
+  DisplayString
+	FROM RFC1213-MIB
+  OBJECT-TYPE
+	FROM RFC-1212
+  ess, OerString
+--	FROM NTCIP8004-A-2004;  
+    FROM NTCIP8004v02;
+
+-- For the purpose of this section, the following OBJECT IDENTIFIERS
+-- are used:
+
+essBufr OBJECT IDENTIFIER ::= {ess 1}
+-- This node contains objects that describe BUFR information based on
+-- the BUFR Standards.
+
+essNtcip OBJECT IDENTIFIER ::= {ess 2}
+-- This node contains objects that describe surface transportation
+-- environmental information which deviate from the BUFR Standards.
+
+
+-- 5.2 Identification Objects
+-- These are objects used to describe the identification of the 
+-- environmental sensor station.
+essNtcipIdentification  OBJECT IDENTIFIER ::= {essNtcip 1 }
+
+-- 5.2.1 Station Category
+essNtcipCategory OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				permanent (2),
+				transportable (3),
+				mobile (4)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the category of station as it relates to mobility.
+<SetConstraint>read-only
+<DescriptiveName>ESS.category:code
+<Valid Value Rule>
+value          description 
+other          of a design not listed in this standard. 
+permanent      not designed to be relocated. 
+transportable  able to be relocated, but does not take readings while moving. 
+mobile         capable of taking readings while moving.
+<Data Concept Type>Data Element"
+::=	{ essNtcipIdentification 1 }
+
+
+-- 5.2.2 Site Description
+essNtcipSiteDescription OBJECT-TYPE
+SYNTAX	DisplayString (SIZE (0..255)) 
+ACCESS	read-write 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A textual description of the station's location.
+<SetConstraint>always
+<Informative>Version 02 of the standard incorrectly defined a SetConstraint of read-only, even though the object has always been defined with an ACCESS of read-write.  This was corrected in version 03.
+<DescriptiveName>ESS.siteDescription:text
+<Data Concept Type>Data Element"
+::=	{ essNtcipIdentification 2 }
+
+
+
+-- 5.3 Data Instrumentation Objects
+-- Contains objects used to describe the type of data and the type of 
+-- instrumentation used to collect the data being received from the 
+-- ess.
+essBufrInstrumentation  OBJECT IDENTIFIER ::= { essBufr 2 }
+essNtcipInstrumentation OBJECT IDENTIFIER ::= { essNtcip 15 }
+
+-- It is also recognized that there would be a great value of an object 
+-- to indicate the quality of data; however, this is a very complex 
+-- topic and thus we have not determined an appropriate 
+-- mechanism.
+
+-- 5.3.1 Type of Station
+essTypeofStation OBJECT-TYPE
+SYNTAX	INTEGER (0..3) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Integer value that indicates the type of station.  If the station is a hybrid station, it shall be defined as two stations, one staffed and one automatic.
+<Informative>The value of 2 has been explicitly defined as being reserved.  In order to be defined as two stations (e.g., for a hybrid), a station needs to have two addresses and two instances of this MIB.
+<SetConstraint>read-only
+<DescriptiveName>ESS.typeOfStation:code
+<Valid Value Rule>	
+value               description 
+0 - automatic      the data is collected electronically/mechanically 
+1 - staffed        the data is collected by humans 
+2 - reserved
+3 - missingValue   the type of station is unknown.
+<Data Concept Type>Data Element"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 02 001"
+::=	{ essBufrInstrumentation 1 }
+
+
+-- 5.3.2 Door Status
+essDoorStatus OBJECT-TYPE
+SYNTAX	INTEGER (0..1) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates whether any of the doors attached to the station are open. If the value is one (1), at least one door is open; if the value is zero (0), all doors associated with the ESS are closed.
+<SetConstraint>read-only
+<DescriptiveName>ESS.doorOpen:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipInstrumentation 1 }
+
+
+-- 5.3.3 Battery Status
+essBatteryStatus OBJECT-TYPE
+SYNTAX	INTEGER (0..101) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the current charge stored in the battery.
+<DescriptiveName>ESS.batteryCharge:quantity
+<Valid Value Rule>
+Values 0 to 100 indicate percent of full charge.  The value 101 indicates an error in determining the percent of charge.
+<Data Concept Type>Data Element
+<Unit>Percent"
+::=	{ essNtcipInstrumentation 2 }
+
+
+-- 5.3.4 Line Volts
+essLineVolts OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the voltage measured on the incoming power line for the controller.  The value reported will indicate one-half of the actual voltage; thus, this object will indicate a value of 55 when the voltage is 110 Vrms.  This object shall only be used to indicate A/C power conditions.  If the line power is DC, this object shall not apply (i.e., will either not be supported or have a value of 255) and the essBatteryStatus object shall indicate the status of the batteries.
+<DescriptiveName>ESS.lineVolts:quantity
+<Valid Value Rule>
+Values 0 through 254 shall indicate valid values.  The value 254 shall mean a voltage of 508 Vrms or greater.  The value of 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>2 Volts Root Mean Squared (Vrms) (i.e., the value reported shall be one-half the actual voltage)."
+::=	{ essNtcipInstrumentation 3 }
+
+
+-- 5.3.5 Station Meta Data Block
+-- This object has been deprecated.  See Clause D.2.8 for more 
+-- information.
+essStationMetaDataBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	deprecated  
+DESCRIPTION "<Definition>An OER encoded string of the EssStationMetaData structure as defined below.  This object is used for uploading configuration data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssStationMetaData ::= SEQUENCE {  
+essNtcipCategory.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essTypeOfStation.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essLatitude.0, 				OPTIONAL,	-- @NTCIP1204-200x
+essLongitude.0, 				OPTIONAL,	-- @NTCIP1204-200x
+essReferenceHeight.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essPressureHeight.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essWindSensorHeight.0, 			OPTIONAL,	-- @NTCIP1204-200x
+temperatureMetaData	SEQUENCE OF TemperatureMetaData	OPTIONAL,
+pavementMetaData		SEQUENCE OF PavementMetaData	OPTIONAL,
+subSurfaceMetaData	SEQUENCE OF SubSurfaceMetaData	OPTIONAL,
+treatmentMetaData		SEQUENCE OF TreatmentMetaData	OPTIONAL
+}
+
+TemperatureMetaData ::= SEQUENCE {
+essTemperatureSensorIndex.0		OPTIONAL,	-- @NTCIP1204-200x
+essTemperatureSensorHeight.0		OPTIONAL	-- @NTCIP1204-200x
+}
+
+PavementMetaData ::= SEQUENCE {
+essPavementSensorIndex.0,		OPTIONAL,	-- @NTCIP1204-200x
+essPavementType.0,			OPTIONAL,	-- @NTCIP1204-200x
+essPavementElevation.0			OPTIONAL,	-- @NTCIP1204-200x
+essPavementExposure.0			OPTIONAL,	-- @NTCIP1204-200x
+essPavementSensorType.0			OPTIONAL	-- @NTCIP1204-200x
+}
+
+SubSurfaceMetaData ::= SEQUENCE {
+essSubSurfaceSensorIndex.0		OPTIONAL,	-- @NTCIP1204-200x
+essSubSurfaceType.0			OPTIONAL,	-- @NTCIP1204-200x
+essSubSurfaceSensorDepth.0		OPTIONAL	-- @NTCIP1204-200x
+}
+
+TreatmentMetaData ::= SEQUENCE {
+essPavementTreatmentIndex.0		OPTIONAL,	-- @NTCIP1204-200x
+essPaveTreatProductType.0		OPTIONAL,	-- @NTCIP1204-200x
+essPaveTreatProductForm.0		OPTIONAL,	-- @NTCIP1204-200x
+essPercentProductMix.0			OPTIONAL	-- @NTCIP1204-200x 
+}
+<Informative>This object has been replaced by essStationMetaDataV3Block (See 5.3.8).
+<SetConstraint>read-only
+<DescriptiveName>ESS.stationMetaDataBlock:frame
+<Data Concept Type>Data Element"
+::=	{ essNtcipInstrumentation 4 }
+
+
+-- 5.3.6 Weather Block
+-- This object has been deprecated.  See Clause D.2.8 for more 
+-- information.
+essWeatherBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	deprecated  
+DESCRIPTION "<Definition>An OER encoded string of the EssWeatherData structure as defined in Section 4.  This object is used for uploading current weather data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssWeatherData ::= SEQUENCE {
+essAtmosphericPressure.0		OPTIONAL,	-- @NTCIP1204-200x
+essWindData					EssWindData			OPTIONAL,
+essTemperatureData			EssTemperatureData	OPTIONAL,
+essPrecipData				EssPrecipData		OPTIONAL,
+essVisibilityData		 		EssVisibilityData		OPTIONAL
+}
+
+EssWindData ::= SEQUENCE {
+essAvgWindDirection.0			OPTIONAL,	-- @NTCIP1204-200x
+essAvgWindSpeed.0				OPTIONAL,	-- @NTCIP1204-200x
+essWindSituation.0			OPTIONAL,	-- @NTCIP1204-200x
+essMaxWindGustSpeed.0			OPTIONAL,	-- @NTCIP1204-200x
+essMaxWindGustDir.0			OPTIONAL,	-- @NTCIP1204-200x
+essSpotWindDirection.0			OPTIONAL,	-- @NTCIP1204-200x
+essSpotWindSpeed.0			OPTIONAL	-- @NTCIP1204-200x
+}
+
+EssTemperatureData ::= SEQUENCE {
+essWetBulbTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essDewpointTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essMaxTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essMinTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essRelativeHumidity.0			OPTIONAL,	-- @NTCIP1204-200x
+	-- for (
+-- 	x = 1; 
+-- 	x < essNumTemperatureSensors.0; 
+-- 	x++)
+temperatureTable			SEQUENCE OF Temperature	OPTIONAL
+}
+
+Temperature ::= SEQUENCE {
+essTemperatureSensorIndex.x		OPTIONAL,	-- @NTCIP1204-200x
+essAirTemperature.x			OPTIONAL	-- @NTCIP1204-200x
+}
+
+EssPrecipData ::= SEQUENCE { 
+essWaterDepth.0				OPTIONAL,	-- @NTCIP1204-200x
+essAdjacentSnowDepth.0			OPTIONAL,	-- @NTCIP1204-200x
+essRoadwaySnowDepth.0			OPTIONAL,	-- @NTCIP1204-200x
+essRoadwaySnowPackDepth.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipYesNo.0				OPTIONAL,	-- @NTCIP1204-200x
+essPrecipRate.0				OPTIONAL,	-- @NTCIP1204-200x
+essSnowfallAccumRate.0			OPTIONAL,	-- @NTCIP1204-200x
+essPrecipSituation.0			OPTIONAL,	-- @NTCIP1204-200x
+essIceThickness.0				OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationStartTime.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationEndTime.0		OPTIONAL	-- @NTCIP1204-200x
+}
+Editor's Note - I think we decided to remove the following yes?
+essPrecipitationOneHour.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationThreeHours.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationSixHours.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationTwelveHours.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitation24Hours.0		OPTIONAL	-- @NTCIP1204-200x
+
+EssVisibilityData ::= SEQUENCE {
+essSolarRadiation.0			OPTIONAL,	-- @NTCIP1204-200x
+essTotalSun.0				OPTIONAL,	-- @NTCIP1204-200x
+essCloudSituation.0			OPTIONAL,	-- @NTCIP1204-200x
+essVisibility.0				OPTIONAL,	-- @NTCIP1204-200x
+essVisibilitySituation.0		OPTIONAL	-- @NTCIP1204-200x
+}
+<Informative>This object has been replaced by essWeatherV3Block (See 5.3.9).
+<SetConstraint>read-only
+<DescriptiveName>ESS.weatherBlock:frame
+<Data Concept Type>Data Element"
+::=	{ essNtcipInstrumentation 5 }
+
+
+-- 5.3.7 Mobile Block
+essMobileBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the EssMobileData structure as defined below.  This object is used for uploading current mobile station data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssMobileData ::= SEQUENCE { 
+	essLatitude.0	 			OPTIONAL, -- @NTCIP1204-200x
+	essLongitude.0 				OPTIONAL, -- @NTCIP1204-200x
+	essReferenceHeight.0			OPTIONAL, -- @NTCIP1204-200x
+	essVehicleSpeed.0				OPTIONAL, -- @NTCIP1204-200x
+	essVehicleBearing.0			OPTIONAL, -- @NTCIP1204-200x
+	essVehicleOdemeter.0			OPTIONAL, -- @NTCIP1204-200x
+	essMobileFriction.0			OPTIONAL, -- @NTCIP1204-200x
+	essMobileObservationGroundState.0	OPTIONAL, -- @NTCIP1204-200x
+	essMobileObservationPavement.0	OPTIONAL, -- @NTCIP1204-200x
+	essPaveTreatmentAmount.0		OPTIONAL, -- @NTCIP1204-200x
+	essPaveTreatmentWidth.0			OPTIONAL  -- @NTCIP1204-200x
+	}
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.mobileBlock:frame
+<Data Concept Type>Data Element"
+::=	{ essNtcipInstrumentation 6 }
+-- 5.3.8 Station Meta Data Block V3
+essStationMetaDataV3Block OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the EssStationMetaDataV3 structure as defined below.  This object is used for uploading configuration data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssStationMetaDataV3 ::= SEQUENCE {  
+essNtcipCategory.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essTypeOfStation.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essLatitude.0, 				OPTIONAL,	-- @NTCIP1204-200x
+essLongitude.0, 				OPTIONAL,	-- @NTCIP1204-200x
+essReferenceHeight.0, 			OPTIONAL,	-- @NTCIP1204-200x
+essPressureHeight.0, 			OPTIONAL,	-- @NTCIP1204-200x
+precipitationSensorModelInformation.0	OPTIONAL -- @NTCIP1204-200x
+windMetaData.0, 		SEQUENCE OF WindMetaData		OPTIONAL,	
+temperatureMetaData	SEQUENCE OF TemperatureMetaData	OPTIONAL,
+pavementMetaData		SEQUENCE OF PavementMetaData		OPTIONAL,
+subSurfaceMetaData	SEQUENCE OF SubSurfaceMetaData	OPTIONAL,
+treatmentMetaData		SEQUENCE OF TreatmentMetaData		OPTIONAL,
+}
+
+WindMetaData ::= SEQUENCE {
+windSensorIndex.x				OPTIONAL,	-- @NTCIP1204-200x
+windSensorHeight.x			OPTIONAL,	-- @NTCIP1204-200x
+}
+
+TemperatureMetaData ::= SEQUENCE {
+essTemperatureSensorIndex.x		OPTIONAL,	-- @NTCIP1204-200x
+essTemperatureSensorHeight.x		OPTIONAL,	-- @NTCIP1204-200x
+}
+
+PavementMetaData ::= SEQUENCE {
+essPavementSensorIndex.x,		OPTIONAL,	-- @NTCIP1204-200x
+essPavementType.x,			OPTIONAL,	-- @NTCIP1204-200x
+essPavementElevation.x			OPTIONAL,	-- @NTCIP1204-200x
+essPavementExposure.x			OPTIONAL,	-- @NTCIP1204-200x
+essPavementSensorType.x			OPTIONAL,	-- @NTCIP1204-200x
+pavementSensorModelInformation.x	OPTIONAL, 	-- @NTCIP1204-200x
+pavementSensorTemperatureDepth.x	OPTIONAL	-- @NTCIP1204-200x
+}
+
+SubSurfaceMetaData ::= SEQUENCE {
+essSubSurfaceSensorIndex.x		OPTIONAL,	-- @NTCIP1204-200x
+essSubSurfaceType.x			OPTIONAL,	-- @NTCIP1204-200x
+essSubSurfaceSensorDepth.x		OPTIONAL,	-- @NTCIP1204-200x
+}
+
+TreatmentMetaData ::= SEQUENCE {
+essPavementTreatmentIndex.x		OPTIONAL,	-- @NTCIP1204-200x
+essPaveTreatProductType.x		OPTIONAL,	-- @NTCIP1204-200x
+essPaveTreatProductForm.x		OPTIONAL,	-- @NTCIP1204-200x
+essPercentProductMix.x			OPTIONAL,	-- @NTCIP1204-200x 
+}
+
+<SetConstraint>read-only
+<DescriptiveName>ESS.stationMetaDataBlock:frame
+<Data Concept Type>Data Element"
+::=	{ essNtcipInstrumentation 7 }
+
+
+
+-- 5.3.9 Weather Block Version 3
+essWeatherV3Block OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the EssWeatherDataV3 structure as defined below.  This object is used for uploading current weather data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssWeatherDataV3 ::= SEQUENCE {
+essAtmosphericPressure.0		OPTIONAL,	-- @NTCIP1204-200x
+essWindData				SEQUENCE OF EssWindDataV3	OPTIONAL,
+essTemperatureData			EssTemperatureData	OPTIONAL,
+essPrecipData				EssPrecipDataV3		OPTIONAL,
+essVisibilityData		 		EssVisibilityDataV3	OPTIONAL, 
+essRadiationData				EssRadiationData		OPTIONAL,
+}
+
+EssWindDataV3 ::= SEQUENCE {
+windSensorIndex.x				OPTIONAL, 	-- @NTCIP1204-200x
+windSensorAvgSpeed.x			OPTIONAL,	-- @NTCIP1204-200x
+windSensorAvgDirection.x		OPTIONAL,	-- @NTCIP1204-200x
+windSensorSpotSpeed.x			OPTIONAL,	-- @NTCIP1204-200x
+windSensorSpotDirection.x		OPTIONAL,	-- @NTCIP1204-200x
+windSensorGustSpeed.x			OPTIONAL,	-- @NTCIP1204-200x
+windSensorGustDirection.x		OPTIONAL,	-- @NTCIP1204-200x
+windSensorSituation.x			OPTIONAL,	-- @NTCIP1204-200x
+}
+
+EssTemperatureData ::= SEQUENCE {
+essWetBulbTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essDewpointTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essMaxTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essMinTemp.0				OPTIONAL,	-- @NTCIP1204-200x
+essRelativeHumidity.0			OPTIONAL,	-- @NTCIP1204-200x
+	-- for (
+-- 	x = 1; 
+-- 	x < essNumTemperatureSensors.0; 
+-- 	x++)
+temperatureTable			SEQUENCE OF Temperature	OPTIONAL, 
+}
+
+Temperature ::= SEQUENCE {
+essTemperatureSensorIndex.x		OPTIONAL,	-- @NTCIP1204-200x
+essAirTemperature.x			OPTIONAL,	-- @NTCIP1204-200x
+}
+
+EssPrecipDataV3 ::= SEQUENCE { 
+waterLevelSensorTable			SEQUENCE OF WaterLevel	OPTIONAL,
+essAdjacentSnowDepth.0			OPTIONAL,	-- @NTCIP1204-200x
+essRoadwaySnowDepth.0			OPTIONAL,	-- @NTCIP1204-200x
+essRoadwaySnowPackDepth.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipYesNo.0				OPTIONAL,	-- @NTCIP1204-200x
+essPrecipRate.0				OPTIONAL,	-- @NTCIP1204-200x
+essSnowfallAccumRate.0			OPTIONAL,	-- @NTCIP1204-200x
+essPrecipSituation.0			OPTIONAL,	-- @NTCIP1204-200x
+essIceThickness.0				OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationStartTime.0		OPTIONAL,	-- @NTCIP1204-200x
+essPrecipitationEndTime.0		OPTIONAL,	-- @NTCIP1204-200x
+}
+
+WaterLevel ::= SEQUENCE {
+waterLevelSensorIndex.x			OPTIONAL,	-- @NTCIP1204-200x
+waterLevelSensorReading.x		OPTIONAL,	-- @NTCIP1204-200x
+}
+
+EssVisibilityDataV3 ::= SEQUENCE {
+essVisibility.0				OPTIONAL,	-- @NTCIP1204-200x
+essVisibilitySituation.0		OPTIONAL,	-- @NTCIP1204-200x
+}
+
+EssRadiationData ::= SEQUENCE {
+essTotalSun.0				OPTIONAL,	-- @NTCIP1204-200x
+essInstantaneousTerrestrialRadiation.0	OPTIONAL, -- @NTCIP1204-200x
+essInstantaneousSolarRadiation.0	OPTIONAL,	-- @NTCIP1204-200x
+essTotalRadiation.0			OPTIONAL,	-- @NTCIP1204-200x
+essTotalRadiationPeriod.0		OPTIONAL,	-- @NTCIP1204-200x
+essCloudSituation.0			OPTIONAL,	-- @NTCIP1204-200x
+}
+<SetConstraint>read-only
+<DescriptiveName>ESS.weatherBlock:frame
+<Data Concept Type>Data Element"
+::=	{ essNtcipInstrumentation 8 }
+
+
+-- 5.4 Location Objects
+-- Contains objects used to describe the location of the ess that is
+-- transmitting the collected data.
+essNtcipLocation OBJECT IDENTIFIER ::= {essNtcip 2 }
+
+-- 5.4.1 Latitude
+essLatitude OBJECT-TYPE
+SYNTAX	INTEGER (-90000000..90000001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The latitude in 10^-6 degrees of the ESS station, per WGS-84 datum.  
+<SetConstraint>read-only
+<DescriptiveName>ESS.latitude:quantity
+<Valid Value Rule>
+The essLatitude at the North Pole is 90,000,000.  The essLatitude at the South Pole is -90,000,000.  The value 90,000,001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>latitude"
+REFERENCE	"Resolution based on on-going location referencing activities;  the WMO Binary Code Form FM 94 BUFR Table B item 0 05 001 can be obtained by dividing this value by 10."
+::=	{ essNtcipLocation 1 }
+
+
+-- 5.4.2 Longitude
+essLongitude OBJECT-TYPE
+SYNTAX	INTEGER (-180000000..180000001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The east longitude in 10^-6 degrees from the Prime Meridian of the ESS location.  
+<SetConstraint>read-only
+<DescriptiveName>ESS.longitude:quantity
+<Valid Value Rule>
+The essLongitude of 180 degrees West shall be -180,000,000.  The essLongitude of 180 degrees East shall be 180,000,000.  The value 180,000,001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>longitude"
+REFERENCE	"Resolution based on on-going location referencing activities;  the WMO Binary Code Form FM 94 BUFR Table B item 0 06 001 can be obtained by dividing this value by 10."
+::=	{ essNtcipLocation 2 }
+
+
+-- 5.4.3 Vehicle Speed
+essVehicleSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the current speed being reported by the vehicle in kilometers per hour. 
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.speed:quantity
+<Valid Value Rule>
+The value 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>kilometers per hour"
+::=	{ essNtcipLocation 3 }
+
+
+-- 5.4.4 Vehicle Bearing
+essVehicleBearing OBJECT-TYPE
+SYNTAX	INTEGER (0..361) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the current bearing of the vehicle in degrees, measured clockwise from True North.  
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.bearing:quantity
+<Valid Value Rule>
+The value 0 shall indicate that the vehicle is stopped.  The value 361 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>degrees"
+::=	{ essNtcipLocation 4 }
+
+
+-- 5.4.5 Odometer
+essOdometer OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the current odometer reading of the vehicle in meters.
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.odometer:quantity
+<Data Concept Type>Data Element
+<Unit>meters"
+::=	{ essNtcipLocation 5 }
+
+
+
+-- 5.5 Station Elevation Objects
+-- Contains objects used to describe the elevation and atmospheric 
+-- pressure at the ess that is transmitting the collected data along 
+-- with the height of various sensors
+essNtcipHeight OBJECT IDENTIFIER ::= {essNtcip 3 }
+essBufrLocationVertical OBJECT IDENTIFIER ::= {essBufr 7 }
+
+-- 5.5.1 Reference Height
+essReferenceHeight OBJECT-TYPE
+SYNTAX	INTEGER (-400..8001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The reference elevation of the ESS in meters above mean sea level. For a permanent station, this height shall be measured to the base of the structure; for transportable stations, this height shall be measured to the ground surface upon which the station resides; and for mobile, this height shall be measured to the surface under the vehicle.  
+<SetConstraint>read-only
+<DescriptiveName>ESS.referenceHeight:quantity
+<Valid Value Rule>
+The value of 8001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+REFERENCE	"Resolution based on WMO Binary Code Form FM 94 BUFR Table B item 0 07 001."
+::=	{ essNtcipHeight 1 }
+
+
+-- 5.5.2 Pressure Height
+essPressureHeight OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The height of the pressure sensor with respect to the essReferenceHeight in meters.  
+<SetConstraint>read-only
+<DescriptiveName>PressureSensor.pressureHeight:quantity
+<Valid Value Rule>
+The value of 1001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+REFERENCE	"essReferenceHeight plus this value equals the WMO Binary Code Form FM 94 BUFR Table B item 0 07 001."
+::=	{ essNtcipHeight 2 }
+
+
+-- 5.5.3 Wind Sensor Height
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essWindSensorHeight OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>The height of the primary wind sensor with respect to the essReferenceHeight in meters.
+<SetConstraint>read-only
+<Valid Value Rule>
+The value of 1001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+::=	{ essNtcipHeight 3 }
+
+
+-- 5.5.4 Atmospheric Pressure
+essAtmosphericPressure OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The force per unit area exerted by the atmosphere in 1/10ths of millibars, a.k.a. tenths of hectoPascals.  
+<SetConstraint>read-only
+<DescriptiveName>PressureSensor.atmosphericPressure:quantity
+<Valid Value Rule>
+A value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>Decapascal"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 07 004."
+::=	{ essBufrLocationVertical 4 }
+
+
+
+-- 5.6 Wind Data Section
+-- Contains objects used to describe the wind data that is collected at
+-- the ess.
+essBufrWind OBJECT IDENTIFIER ::= {essBufr 11 }
+essNtcipWind OBJECT IDENTIFIER ::= {essNtcip 4 }
+
+-- 5.6.1 Average Wind Direction
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essAvgWindDirection OBJECT-TYPE
+SYNTAX	INTEGER (0..361) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>A two minute average of the direction from which the wind is blowing measured clockwise in degrees from true North and measured at a height as indicated by essWindSensorHeight.  A value of 361 shall indicate an error condition or missing value.
+<SetConstraint>read-only
+<Data Concept Type>Data Element
+<Unit>degrees"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 11 001."
+::=	{ essBufrWind 1 }
+
+
+-- 5.6.2 Average Wind Speed
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essAvgWindSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>A two minute average of the wind speed in tenths of meters per second as measured by the primary wind sensor.  
+<SetConstraint>read-only
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of meters per second"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 11 002."
+::=	{ essBufrWind 2 }
+
+
+-- 5.6.3 Spot Wind Direction
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essSpotWindDirection OBJECT-TYPE
+SYNTAX	INTEGER (0..361) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>The direction from which the wind is blowing measured in degrees clockwise from true North and measured at a height as indicated by essWindSensorHeight.  A value of 361 shall indicate an error condition or missing value.  For mobile platforms, the wind direction shall be corrected for vehicle movement.
+<SetConstraint>read-only
+<Data Concept Type>Data Element
+<Unit>degrees"
+::=	{ essNtcipWind 1 }
+
+
+-- 5.6.4 Spot Wind Speed
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essSpotWindSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>The wind speed in tenths of meters per second measured by the primary wind sensor.  For mobile platforms, the wind speed shall be corrected for vehicle movement.
+<SetConstraint>read-only
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of meters per second"
+::=	{ essNtcipWind 2 }
+
+
+-- 5.6.5 Wind Situation
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essWindSituation OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				unknown (2),
+				calm (3),
+				lightBreeze (4),
+				moderateBreeze (5),
+				strongBreeze (6),
+				gale (7),
+				moderateGale (8),
+				strongGale (9),
+				stormWinds (10),
+				hurricaneForceWinds (11),
+				gustyWinds (12)} 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>Describes the weather and travel situation in terms of wind from staffed stations only.  Specific ranges for these values are defined in the Glossary of Meteorology.
+<SetConstraint>read-only
+<Valid Value Rule>
+Range		Meaning 
+other		not defined within this standard, see manufacturers documentation 
+unknown	Unknown conditions 
+calm		Calm 
+lightBreeze	Light breeze 
+moderateBreeze	Moderate breeze 
+strongBreeze	Strong breeze 
+gale		Gale 
+moderateGale	Moderate gale 
+strongGale	Strong gale 
+stormWinds	Storm winds 
+hurricaneForceWinds	Hurricane force winds 
+gustyWinds	defined by a peak and a lull of greater than 46.3 tenths of 
+		meters per second within a 2 minute period.
+<Data Concept Type>Data Element"
+::=	{ essNtcipWind 3 }
+
+
+-- 5.6.6 Wind Gust Speed
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essMaxWindGustSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>The maximum wind gust recorded by the primary wind sensor during the 10 minutes preceding the observation measured in tenths of meters per second.  
+<SetConstraint>read-only
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of meters per second"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 11 041."
+::=	{ essBufrWind 41 }
+
+
+-- 5.6.7 Wind Gust Direction
+-- This object has been deprecated.  See Clause D.1.3 for more information.
+essMaxWindGustDir OBJECT-TYPE
+SYNTAX	INTEGER (0..361) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>The direction of the maximum wind gust recorded during the 10 minutes preceding the observation at a height as indicated by essWindSensorHeight; measured in degrees clockwise from true North.  The value 361 shall indicate an error condition or missing value.
+<SetConstraint>read-only
+<Data Concept Type>Data Element
+<Unit>degrees"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 11 043."
+::=	{ essBufrWind 43 }
+
+
+-- 5.6.8 Number of Wind Sensors
+windSensorTableNumSensors OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of entries in the wind sensor table.
+<Informative>This value may automatically change upon connecting or disconnecting a sensor; however, the table is still defined as a static table since the creation/deletion of rows is not managed through SNMP logic.
+<SetConstraint>read-only
+<DescriptiveName>WindSensorTable.numSensors:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipWind 7 }
+
+
+-- 5.6.9 Wind Sensor Table
+windSensorTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF WindSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Table containing the wind sensor data fields.
+<DescriptiveName>WindSensorTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipWind 8 }
+
+
+-- 5.6.10 Wind Sensor
+windSensorEntry OBJECT-TYPE
+SYNTAX	WindSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Parameters for specific wind sensor data fields.
+<DescriptiveName>WindSensor
+<Data Concept Type>Class"
+INDEX { windSensorIndex }
+::=	{ windSensorTable 1 }
+
+WindSensorEntry ::= SEQUENCE {
+	windSensorIndex			INTEGER,
+	windSensorHeight			INTEGER,
+	windSensorLocation		DisplayString,
+	windSensorAvgSpeed		INTEGER,
+	windSensorAvgDirection		INTEGER,
+	windSensorSpotSpeed		INTEGER,
+	windSensorSpotDirection		INTEGER,
+	windSensorGustSpeed		INTEGER,
+	windSensorGustDirection		INTEGER,
+	windSensorSituation		INTEGER }
+
+-- 5.6.10.1 Wind Sensor Index
+windSensorIndex OBJECT-TYPE
+SYNTAX	INTEGER (1..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Enumerated list of row entries that will provide wind sensor data.  The first entry shall be that of the primary wind sensor.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.index:identifier
+<Data Concept Type>Data Element"
+::= { windSensorEntry 1 }
+
+-- 5.6.10.2 Wind Sensor Height
+windSensorHeight OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The height of the wind sensor with respect to the essReferenceHeight in meters.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.height:quantity
+<Valid Value Rule>
+The value of 1001 shall indicate a mssing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+::= { windSensorEntry 2 }
+
+-- 5.6.10.3 Wind Sensor Location
+windSensorLocation OBJECT-TYPE
+SYNTAX	DisplayString (SIZE (0..255))
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>A textual string indicating the location of the wind sensor.
+<SetConstraint>always
+<DescriptiveName>WindSensor.location:text
+<Data Concept Type>Data Element"
+::= { windSensorEntry 3 }
+
+-- 5.6.10.4 Wind Sensor Average Speed
+windSensorAvgSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A two minute average of the wind speed in tenths of meters per second as measured by the wind sensor.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.avgSpeed:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of meters per second"
+REFERENCE "WMO Binary Code Form FM 94 BUFR Table B item 0 11 002."
+::= { windSensorEntry 4 }
+
+-- 5.6.10.5 Wind Sensor Average Direction
+windSensorAvgDirection OBJECT-TYPE
+SYNTAX	INTEGER (0..361)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A two minute mode (average) of the direction from which the wind is blowing measured clockwise in degrees from true north as measured by the wind sensor.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.avgDirection:quantity
+<Valid Value Rule>
+The value of zero (0) shall indicate 'calm', when the associated speed is zero (0), or 'light and variable,' when the associated speed is greater than zero (0).  Normal observations, as defined by the WMO, shall report a wind direction in the range of 1 to 360 with 90 meaning from the east and 360 meaning from the north.  The value of 361 shall indicate an error condition and shall always be reported if the associated speed indicates error.
+<Data Concept Type>Data Element
+<Unit>degrees"
+REFERENCE "WMO Code Form FM 94 BUFR Table B item 0 11 001."
+::= { windSensorEntry 5 }
+
+-- 5.6.10.6 Wind Sensor Spot Speed
+windSensorSpotSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The wind speed in tenths of meters per second measured by the wind sensor.  For mobile platforms, the wind speed shall be corrected for vehicle movement.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.spotSpeed:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of meters per second"
+::= { windSensorEntry 6 }
+
+-- 5.6.10.7 Wind Sensor Spot Direction
+windSensorSpotDirection OBJECT-TYPE
+SYNTAX	INTEGER (0..361)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The direction from which the wind is blowing measured in degrees clockwise from true North as measured by the wind sensor.  For mobile platforms, the wind direction shall be corrected for vehicle movement.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.spotDirection:quantity
+<Valid Value Rule>
+The value of zero (0) shall indicate 'calm', when the associated speed is zero (0), or 'light and variable,' when the associated speed is greater than zero (0).  Normal observations, as defined by the WMO, shall report a wind direction in the range of 1 to 360 with 90 meaning from the east and 360 meaning from the north.  The value of 361 shall indicate an error condition and shall always be reported if the associated speed indicates error.
+<Data Concept Type>Data Element
+<Unit>degrees"
+::= { windSensorEntry 7 }
+
+-- 5.6.10.8 Wind Sensor Gust Speed
+windSensorGustSpeed OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The maximum wind gust recorded by the wind sensor during the 10 minutes preceding the observation measured in tenths of meters per second.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.gustSpeed:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of meters per second"
+REFERENCE "WMO Code Form FM 94 BUFR Table B item 0 11 041."
+::= { windSensorEntry 8 }
+
+-- 5.6.10.9 Wind Sensor Gust Direction
+windSensorGustDirection OBJECT-TYPE
+SYNTAX	INTEGER (0..361)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The direction of the maximum wind gust recorded during the 10 minutes preceding the observation measured in degrees clockwise from true North by the wind sensor.
+<SetConstraint>read-only
+<DescriptiveName>WindSensor.gustDirection:quantity
+<Valid Value Rule>
+The value of zero (0) shall indicate 'calm', when the associated speed is zero (0), or 'light and variable,' when the associated speed is greater than zero (0).  Normal observations, as defined by the WMO, shall report a wind direction in the range of 1 to 360 with 90 meaning from the east and 360 meaning from the north.  The value of 361 shall indicate an error condition and shall always be reported if the associated speed indicates error.
+<Data Concept Type>Data Element
+<Unit>degrees"
+REFERENCE "WMO Code Form FM 94 BUFR Table B item 0 11 043."
+::= { windSensorEntry 9 }
+
+-- 5.6.10.10 Wind Sensor Situation
+windSensorSituation OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				unknown (2),
+				calm (3),
+				lightBreeze (4),
+				moderateBreeze (5),
+				strongBreeze (6),
+				gale (7),
+				moderateGale (8),
+				strongGale (9),
+				stormWinds (10),
+				hurricaneForceWinds (11),
+				gustyWinds (12)}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Describes the weather and travel situation in terms of wind from staffed stations only.  Specific ranges for these values are defined in the Glossary of Meteorology.
+<DescriptiveName>WindSensor.situation:code
+<Valid Value Rule>
+Range		Meaning 
+other		not defined within this standard, see manufacturers documentation 
+unknown	Unknown conditions 
+calm		Calm 
+lightBreeze	Light breeze 
+moderateBreeze	Moderate breeze 
+strongBreeze	Strong breeze 
+gale		Gale 
+moderateGale	Moderate gale 
+strongGale	Strong gale 
+stormWinds	Storm winds 
+hurricaneForceWinds	Hurricane force winds 
+gustyWinds	defined by a peak and a lull of greater than 46.3 tenths of 
+		meters per second within a 2 minute period.
+<Data Concept Type>Data Element"
+::= { windSensorEntry 10 }
+
+
+
+-- 5.7 Temperature Data Objects
+-- Contains objects used to describe the temperature data that is 
+-- collected at the ess.
+essNtcipTemperature OBJECT IDENTIFIER ::= {essNtcip 5}
+
+-- 5.7.1 Number of Temperature Sensors
+essNumTemperatureSensors OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of entries in the temperature sensor table.
+<Informative>This value may automatically change upon connecting or disconnecting a sensor; however, the table is still defined as a static table since the creation/deletion of rows is not managed through SNMP logic.
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensorTable.numSensors:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipTemperature 1 }
+
+
+-- 5.7.2 Temperature Sensor Table
+essTemperatureSensorTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF EssTemperatureSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Table containing the temperature sensor data fields.
+<DescriptiveName>TemperatureSensorTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipTemperature 2 }
+
+
+-- 5.7.3 Temperature Sensor
+essTemperatureSensorEntry OBJECT-TYPE
+SYNTAX	EssTemperatureSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Parameters for specific temperature sensor as described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>TemperatureSensor
+<Data Concept Type>Class"
+INDEX { essTemperatureSensorIndex }
+::=	{ essTemperatureSensorTable 1 }
+
+EssTemperatureSensorEntry ::= SEQUENCE {
+	essTemperatureSensorIndex			INTEGER,
+	essTemperatureSensorHeight			INTEGER,
+	essAirTemperature				INTEGER }
+
+-- 5.7.3.1 Temperature Sensor Index
+essTemperatureSensorIndex OBJECT-TYPE
+SYNTAX	INTEGER (1..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Enumerated list of row entries that will provide temperature sensor data.
+<SetConstraint>index
+<DescriptiveName>TemperatureSensor.index:identifier
+<Data Concept Type>Data Element"
+::= { essTemperatureSensorEntry 1 }
+
+-- 5.7.3.2 Temperature Sensor Height
+essTemperatureSensorHeight OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The height of the temperature sensor as measured in meters above essReferenceHeight.
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensor.height:quantity
+<Valid Value Rule>
+The value 1001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+::= { essTemperatureSensorEntry 2 }
+
+-- 5.7.3.3 Air Temperature
+essAirTemperature OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The dry-bulb temperature in tenths of degrees Celsius.  The temperature is an instantaneous reading at the height specified by essTemperatureSensorHeight.  
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensor.airTemperature:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+REFERENCE "Resolution is based on WMO Binary Code Form FM 94 BUFR Table B item 0 12 001; temperature in Kelvin is determined by adding 273.15 to this value."
+::= { essTemperatureSensorEntry 3 }
+
+
+-- 5.7.4 Wetbulb Temperature
+essWetbulbTemp OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The wet-bulb temperature in tenths of degrees Celsius.  The temperature is an instantaneous reading at the height specified by the essTemperatureSensorHeight as specified in the first row of the essTemperatureTable.  
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensorTable.wetBulbTemp:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+REFERENCE	"is based on WMO Binary Code Form FM 94 BUFR Table B item 0 12 002; temperature in Kelvin is determined by adding 273.15 to this value."
+::=	{ essNtcipTemperature 3 }
+
+
+-- 5.7.5 Dewpoint Temperature
+essDewpointTemp OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The dewpoint temperature in tenths of degrees Celsius.  The temperature is an instantaneous reading at the height specified by the essTemperatureSensorHeight as specified in the first row of the essTemperatureTable.  
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensorTable.dewpoint:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+REFERENCE	"Resolution is based on WMO Binary Code Form FM 94 BUFR Table B item 0 12 003; temperature in Kelvin is determined by adding 273.15 to this value."
+::=	{ essNtcipTemperature 4 }
+
+
+-- 5.7.6 Maximum Temperature
+essMaxTemp OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The maximum temperature in tenths of degrees Celsius recorded during the 24 hours preceding the observation at the height specified by the essTemperatureSensorHeight as specified in the first row of the essTemperatureTable.  
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensorTable.maxTemp:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+REFERENCE	"Resolution is based on WMO Binary Code Form FM 94 BUFR Table B item 0 12 011; temperature in Kelvin is determined by adding 273.15 to this value."
+::=	{ essNtcipTemperature 5 }
+
+
+-- 5.7.7 Minimum Temperature
+essMinTemp OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The minimum temperature in tenths of degrees Celsius recorded during the 24 hours preceding the observation at the height specified by the essTemperatureSensorHeight as specified in the first row of the essTemperatureTable.  
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensorTable.minTemp:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+REFERENCE	"Resolution is based on WMO Binary Code Form FM 94 BUFR Table B item 0 12 012; temperature inKelvin is determined by adding 273.15 to this value."
+::=	{ essNtcipTemperature 6 }
+
+
+
+-- 5.8 Humidity and Precipitation Data Objects
+-- Contains objects used to describe the humidity and precipitation 
+-- data that is collected by the ess.
+essBufrPrecip OBJECT IDENTIFIER ::= {essBufr 13 }
+essNtcipPrecip OBJECT IDENTIFIER ::= {essNtcip 6 }
+
+-- 5.8.1 Relative Humidity
+essRelativeHumidity OBJECT-TYPE
+SYNTAX	INTEGER (0..101) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The relative humidity in percent.  
+<SetConstraint>read-only
+<DescriptiveName>TemperatureSensorTable.relativeHumidity:quantity
+<Valid Value Rule>
+The value of 101 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>percent humidity"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 003."
+::=	{ essBufrPrecip 3 }
+
+
+-- 5.8.2 Water Depth
+-- This object has been deprecated.  See Clause D.1.4 for more information.
+essWaterDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>Indicates the depth of the water from a user defined point in centimeters.  The value of 65535 shall indicate an error condition or missing value.  This may be used for stream depth, depth of water over a roadway, reservoir depth, or other such uses.
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.waterDepth:quantity
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::=	{ essNtcipPrecip 1 }
+
+
+-- 5.8.3 Adjacent Snow Depth
+essAdjacentSnowDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..3001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The depth of snow in centimeters on representative areas other than the highway pavement, avoiding drifts and plowed areas.  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.adjacentSnowDepth:quantity
+<Valid Value Rule>
+The value 3001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::=	{ essNtcipPrecip 2 }
+
+
+-- 5.8.4 Roadway Snow Depth
+essRoadwaySnowDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..3001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The current depth of unpacked snow in centimeters on the driving surface.  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.roadwaySnowDepth:quantity
+<Valid Value Rule>
+The value 3001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::=	{ essNtcipPrecip 3 }
+
+
+-- 5.8.5 Roadway Snow Pack Depth
+essRoadwaySnowPackDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..3001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The current depth of packed snow in centimeters on the roadway surface.  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.roadwaySnowPackDepth:quantity
+<Valid Value Rule>
+The value 3001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::=	{ essNtcipPrecip 4 }
+
+
+-- 5.8.6 Precipitation Indicator
+essPrecipYesNo OBJECT-TYPE
+SYNTAX	INTEGER {	precip (1),
+				noPrecip (2),
+				error (3)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates whether or not moisture is detected by the sensor.
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.precipitationIndicator:code
+<Valid Value Rule>
+precip - Moisture is currently being detected by the precipitation sensor
+noPrecip - Moisture is not currently being detected by the precipitation sensor
+error - The sensor is either not connected, not reporting, or is indicating an error
+<Data Concept Type>Data Element"
+::=	{ essNtcipPrecip 5 }
+
+
+-- 5.8.7 Rainfall or Water Equivalent of Snow
+essPrecipRate OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The rainfall, or water equivalent of snow, rate in tenths of grams per square meter per second (for rain, this is approximately to 0.36 mm/hr).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.precipitationRate:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of grams per square meter per second"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 014."
+::=	{ essBufrPrecip 14 }
+
+
+-- 5.8.8 Snowfall Accumulation Rate
+essSnowfallAccumRate OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The snowfall accumulation rate in 10^-7 meters per second (this is equivalent to 0.36 mm/hr).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.snowfallAccumulationRate:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>10^-7 meters per second"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 015."
+::=	{ essBufrPrecip 15 }
+
+
+-- 5.8.9 Precipitation Situation
+essPrecipSituation OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				unknown (2),
+				noPrecipitation (3),
+				unidentifiedSlight (4),
+				unidentifiedModerate (5),
+				unidentifiedHeavy (6),
+				snowSlight (7),
+				snowModerate (8),
+				snowHeavy (9),
+				rainSlight (10),
+				rainModerate (11),
+				rainHeavy (12),
+				frozenPrecipitationSlight (13),
+				frozenPrecipitationModerate (14),
+				frozenPrecipitationHeavy (15)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Describes the weather situation in terms of precipitation.
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.precipitationSituation:code
+<Valid Value Rule>
+Intensity     Meaning 
+slight      < 2mm/h water equivalent 
+moderate    >= 2 and < 8 mm/h water equivalent 
+heavy       >= 8 mm/h water equivalent If one exists, the corresponding BUFR value is indicated for staffed (BUFRs) and automated (BUFRa) stations.  The indicated value can be found in the BUFR Table referenced below.  Defined values are: 
+Range   BUFRa   BUFRs  Meaning 
+1                      other 
+2                      unknown  
+3                      no precipitation 
+4                      unidentified slight 
+5                      unidentified moderate 
+6                      unidentified heavy 
+7       171      85    snow slight 
+8       172      86    snow moderate 
+9       173      86    snow heavy 
+10               61    rain slight 
+11      165      63    rain moderate 
+12      163      65    rain heavy 
+13                     frozen precipitation slight 
+14                     frozen precipitation moderate 
+15                     frozen precipitation heavy
+<Data Concept Type>Data Element"
+REFERENCE	"The values identified in the above table for BUFRa and BUFRs can be found in WMO Binary Code Form FM 94 BUFR Table B item 0 20 003."
+::=	{ essNtcipPrecip 6 }
+
+
+-- 5.8.10 Ice Deposit (Thickness)
+essIceThickness OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the thickness of the ice in millimeters.  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.iceDeposit:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>millimeters"
+::=	{ essNtcipPrecip 7 }
+
+
+-- 5.8.11 Precipitation Start Time
+essPrecipitationStartTime OBJECT-TYPE
+SYNTAX	INTEGER (0..4294967295) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The time at which the most recent precipitation event began, measured in seconds since 00:00:00 January 1, 1970 UTC. 
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.precipitationStartTime:quantity
+<Valid Value Rule>
+As this standard has been developed long after 1970, a value a 0 for time should indicate to the management station that the data received is suspect.
+<Data Concept Type>Data Element
+<Unit>seconds"
+::=	{ essNtcipPrecip 8 }
+
+
+-- 5.8.12 Precipitation End Time
+essPrecipitationEndTime OBJECT-TYPE
+SYNTAX	INTEGER (0..4294967295) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The time at which the most recently completed precipitation event ended, measured in seconds since 00:00:00 January 1, 1970 UTC.  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.precipitationEndTime:quantity
+<Valid Value Rule>
+As this standard has been developed long after 1970, a value of 0 for the time should indicate to the management station that the data received is suspect.
+<Data Concept Type>Data Element
+<Unit>seconds"
+::=	{ essNtcipPrecip 9 }
+
+
+-- 5.8.13 Total Precipitation Past One Hour
+essPrecipitationOneHour OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The total water equivalent precipitation over the hour preceding the observation in tenths of kilograms per square meter (for rain, this is approximately tenths of millimeters).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.oneHour:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of kilograms per square meter"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 019."
+::=	{ essBufrPrecip 19 }
+
+
+-- 5.8.14 Total Precipitation Past Three Hours
+essPrecipitationThreeHours OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The total water equivalent precipitation over the three hours preceding the observation in tenths of kilograms per square meter (for rain, this is approximately tenths of millimeters).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.threeHours:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of kilograms per square meter"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 020."
+::=	{ essBufrPrecip 20 }
+
+
+-- 5.8.15 Total Precipitation Past Six Hours
+essPrecipitationSixHours OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The total water equivalent precipitation over the six hours preceding the observation in tenths of kilograms per square meter (for rain, this is approximately tenths of millimeters).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.sixHours:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of kilograms per square meter"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 021."
+::=	{ essBufrPrecip 21 }
+
+
+-- 5.8.16 Total Precipitation Past Twelve Hours
+essPrecipitationTwelveHours OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The total water equivalent precipitation over the twelve hours preceding the observation in tenths of kilograms per square meter (for rain, this is approximately to tenths of millimeters).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.twelveHours:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of kilograms per square meter"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 022."
+::=	{ essBufrPrecip 22 }
+
+
+-- 5.8.17 Total Precipitation Past Twenty-Four Hours
+essPrecipitation24Hours OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The total water equivalent precipitation over the twenty-four hours preceding the observation in tenths of kilograms per square meter (for rain, this is equivalent to tenths of millimeters).  
+<SetConstraint>read-only
+<DescriptiveName>PrecipitationSensor.24Hours:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of kilograms per square meter"
+REFERENCE	"WMO Binary Code Form FM 94 BUFR Table B item 0 13 023."
+::=	{ essBufrPrecip 23 }
+
+
+-- 5.8.18 Precipitation Sensor Model Information
+precipitationSensorModelInformation OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-write 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A reference to the row in the Module Table (See NTCIP 1201) that indicates the manufacturer, model, and version number of the precipitation sensor.
+<DescriptiveName>PrecipitationSensor.modelInformation:identifier
+<Valid Value Rule>
+The value of zero indicates that this information is not available.
+<Data Concept Type>Data Element"
+::=	{ essNtcipPrecip 10 }
+
+
+-- 5.8.19 Number of Water Level Sensors
+waterLevelSensorTableNumSensors OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of entries in the water level sensor table.
+<Informative>This value may automatically change upon connecting or disconnecting a sensor; however, the table is still defined as a static table since the creation/deletion of rows is not managed through SNMP logic.
+<DescriptiveName>WaterLevelSensorTable.numSensors:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipPrecip 11 }
+
+
+-- 5.8.20 Water Level Sensor Table
+waterLevelSensorTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF WaterLevelSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Table containing the water level sensor data fields.
+<DescriptiveName>WaterLevelSensorTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipPrecip 12 }
+
+
+-- 5.8.21 Water Level Sensor
+waterLevelSensorEntry OBJECT-TYPE
+SYNTAX	WaterLevelSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Parameters for a specific water level sensor as described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>WaterLevelSensor
+<Data Concept Type>Class"
+INDEX { waterLevelSensorIndex }
+::=	{ waterLevelSensorTable 1 }
+
+WaterLevelSensorEntry ::= SEQUENCE {	
+waterLevelSensorIndex		INTEGER,
+waterLevelSensorReading		INTEGER }
+
+-- 5.8.21.1 Water Level Sensor Index
+waterLevelSensorIndex OBJECT-TYPE
+SYNTAX	INTEGER (0..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Enumerated list of row entries that will provide water level sensor data.
+<DescriptiveName>WaterLevelSensor.index:identifier
+<Data Concept Type>Data Element"
+::= { waterLevelSensorEntry 1 }
+
+-- 5.8.21.2 Water Level Sensor Reading
+waterLevelSensorReading OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the depth of the water from a user defined point in centimeters.  This may be used for stream depth, depth of water over a roadway, reservoir depth, or other such uses.
+<DescriptiveName>WaterLevelSensor.reading:quantity
+<Valid Value Rule>
+The value of 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::= { waterLevelSensorEntry 2 }
+
+
+
+-- 5.9 Radiation Objects
+-- Contains objects used to describe the data that is collected by the
+-- pavement surface sensor.
+essBufrRadiation  OBJECT IDENTIFIER ::= {essBufr 14 }
+essNtcipRadiation  OBJECT IDENTIFIER ::= {essNtcip 7}
+
+-- 5.9.1 Solar Radiation
+-- This object has been deprecated.  See Clause D.1.5 for more information.
+essSolarRadiation OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	deprecated 
+DESCRIPTION "<Definition>The direct solar radiation integrated over the 24 hours preceding the observation in Joules per square meter.  The value of 65535 shall indicate a missing value.
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.solarRadiation:quantity
+<Data Concept Type>Data Element
+<Unit>Joules per square meter"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 14 024."
+::=	{ essBufrRadiation 24 }
+
+
+-- 5.9.2 Total Sun
+essTotalSun OBJECT-TYPE
+SYNTAX	INTEGER (0..1441) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The total amount of sunshine in minutes over the 24 hour period preceding the observation.  
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.totalSun:quantity
+<Valid Value Rule>
+The value of 1441 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>minutes"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 14 031."
+::=	{ essBufrRadiation 31 }
+
+
+-- 5.9.3 Cloud Cover Situation
+essCloudSituation OBJECT-TYPE
+SYNTAX	INTEGER {	overcast (1),
+				cloudy (2),
+				partlyCloudy (3),
+				mostlyClear (4),
+				clear (5)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Describes the amount of cloud cover.  The associated percentages of cloud cover are indicated to identify the differences between the defined values.
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.cloudCoverSituation:code
+<Valid Value Rule>
+Defined values are: 
+Range  BUFRs  BUFRa   Meaning 
+1                   other visibility anomaly 
+2                   unknown 
+3      0     100    clear 
+4     44     130    Fog - not patchy 
+5     41     131    Patchy fog 
+6     36     127    Blowing snow 
+7     04     104    Smoke 
+8     07     207    Sea Spray 
+9                   Vehicle Spray 
+10    31     127    Blowing dust or sand 
+11                  sun glare 
+12                  Swarms of insects
+<Data Concept Type>Data Element"
+::=	{ essNtcipRadiation 1 }
+
+
+-- 5.9.4 Terrestrial Radiation
+essInstantaneousTerrestrialRadiation OBJECT-TYPE
+SYNTAX	INTEGER (-2048..2049) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The instantaneous infrared (wavelength of 3.5 - 50 micrometers) radiation being emitted from the atmosphere in watts per square meter.  
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.instantaneousTerrestrialRadiation:quantity
+<Valid Value Rule>
+The value of 2049 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>watts per square meter"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 14 017"
+::=	{ essBufrRadiation 17 }
+
+
+-- 5.9.5 Solar Radiation v2
+essInstantaneousSolarRadiation OBJECT-TYPE
+SYNTAX	INTEGER (-2048..2049) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The instantaneous ultraviolet, visible, and near-infrared (wavelength of less than 3.0 micrometers) radiation hitting the earth's surface in watts per square meter.  
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.instantaneousSolarRadiation:quantity
+<Valid Value Rule>
+The value of 2049 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>watts per square meter"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 14 018"
+::=	{ essBufrRadiation 18 }
+
+
+-- 5.9.6 Total Radiation
+essTotalRadiation OBJECT-TYPE
+SYNTAX	INTEGER (-2048..2049) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The average total radiation hitting the earth's surface in watts per square meter during the radiation period.  
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.totalRadiation:quantity
+<Valid Value Rule>
+The value of 2049 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>Joules per square meter"
+REFERENCE	"WMO Code Form FM 94 BUFR Table B item 0 14 025"
+::=	{ essBufrRadiation 25 }
+
+
+-- 5.9.7 Total Radiation Period
+essTotalRadiationPeriod OBJECT-TYPE
+SYNTAX	INTEGER (0..86400) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The period, in seconds, that corresponds to the length of time the essTotalRadiation is averaged.
+<SetConstraint>read-only
+<DescriptiveName>RadiationSensor.totalRadiationPeriod:quantity
+<Data Concept Type>Data Element
+<Unit>seconds"
+::=	{ essNtcipRadiation 2 }
+
+
+
+-- 5.10 Visibility Data Objects
+-- Contains objects used to describe the visibility data that is 
+-- collected by the ess.
+essNtcipVisibility  OBJECT IDENTIFIER ::= {essNtcip 8 }
+
+-- 5.10.1 Visibility
+essVisibility OBJECT-TYPE
+SYNTAX	INTEGER (0..1000001) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Surface visibility measured in one tenth of a meter.  
+<SetConstraint>read-only
+<DescriptiveName>VisibilitySensor.visibility:quantity
+<Valid Value Rule>
+The value 1000001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>one tenth of a meter"
+REFERENCE	"The value for WMO Code Form FM 94 BUFR Table B item 0 20 001 is given by this value divided by 100."
+::=	{ essNtcipVisibility 1 }
+
+
+-- 5.10.2 Visibility Situation
+essVisibilitySituation OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				unknown (2),
+				clear (3),
+				fogNotPatchy (4),
+				patchyFog (5),
+				blowingSnow (6),
+				smoke (7),
+				seaSpray (8),
+				vehicleSpray (9),
+				blowingDustOrSand (10),
+				sunGlare (11),
+				swarmsOfInsects (12)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Describes the travel environment in terms of visibility.  If one exists, the corresponding BUFR value is indicated for staffed (BUFRs) and automated (BUFRa) stations.  The indicated value can be found in the BUFR Table referenced below.
+<SetConstraint>read-only
+<DescriptiveName>VisibilitySensor.visibilitySituation:code
+<Valid Value Rule>
+Range		BUFRs		BUFRa		Meaning
+	1						other visibility anomaly
+	2						unknown
+	3		0		100		clear
+	4		44		130		Fog - not patchy
+	5		41		131		Patchy fog
+	6		36		127		Blowing snow
+	7		04		104		Smoke
+	8		07		207		Sea Spray
+	9						Vehicle Spray
+	10		31		127		Blowing dust or sand
+	11						sun glare
+	12						Swarms of insects
+<Data Concept Type>Data Element"
+REFERENCE	"The values identified in the above table for BUFRa and BUFRs can be found in WMO Code Form FM 94 BUFR Table B item 0 20 003."
+::=	{ essNtcipVisibility 3 }
+
+
+
+-- 5.11 Pavement Sensor Objects
+-- Contains objects used to describe the data that is collected by the
+-- pavement surface sensor.
+essNtcipPavement  OBJECT IDENTIFIER ::= {essNtcip 9}
+
+-- 5.11.1 Number of Pavement Sensors
+numEssPavementSensors OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of entries in the pavement sensor table.
+<Informative>This value may automatically change upon connecting or disconnecting a sensor; however, the table is still defined as a static table since the creation/deletion of rows is not managed through SNMP logic.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensorTable.numSensors:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipPavement 1 }
+
+
+-- 5.11.2 Pavement Sensor Table
+essPavementSensorTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF EssPavementSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Table containing the pavement sensor data.
+<DescriptiveName>PavementSensorTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipPavement 2 }
+
+
+-- 5.11.3 Pavement Sensor
+essPavementSensorEntry OBJECT-TYPE
+SYNTAX	EssPavementSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A pavement sensor is a sensor that reports the temperature and moisture condition of the roadway pavement.  It can be described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>PavementSensor
+<Data Concept Type>Class"
+INDEX { essPavementSensorIndex }
+::=	{ essPavementSensorTable 1 }
+
+EssPavementSensorEntry ::= SEQUENCE {
+	essPavementSensorIndex			INTEGER,
+	essPavementSensorLocation		DisplayString,
+	essPavementType				INTEGER,
+	essPavementElevation			INTEGER,
+	essPavementExposure			INTEGER,
+	essPavementSensorType			INTEGER,
+	essSurfaceStatus				INTEGER,
+	essSurfaceTemperature			INTEGER,
+	essPavementTemperature			INTEGER,
+	essSurfaceWaterDepth			INTEGER,
+	essSurfaceSalinity 			INTEGER,
+	essSurfaceConductivity			INTEGER,
+	essSurfaceFreezePoint			INTEGER,
+	essSurfaceBlackIceSignal		INTEGER,
+	essPavementSensorError			INTEGER,
+	essSurfaceIceOrWaterDepth		INTEGER,
+	essSurfaceConductivityV2		INTEGER,
+	pavementSensorModelInformation	INTEGER,
+	pavementSensorTemperatureDepth	INTEGER}
+
+-- 5.11.3.1 Pavement Sensor Index
+essPavementSensorIndex OBJECT-TYPE
+SYNTAX	INTEGER (1..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Enumerated list of row entries that will provide surface sensor data.
+<SetConstraint>index
+<DescriptiveName>PavementSensor.index:identifier
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 1 }
+
+-- 5.11.3.2 Pavement Sensor Location
+essPavementSensorLocation OBJECT-TYPE
+SYNTAX	DisplayString (SIZE (0..255))
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>A textual string indicating the location of the pavement sensor.
+<SetConstraint>always
+<DescriptiveName>PavementSensor.location:text
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 2 }
+
+-- 5.11.3.3 Pavement Type
+essPavementType OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				unknown (2),
+				asphalt (3),
+				openGradedAsphalt (4),
+				concrete (5),
+				steelBridge (6),
+				concreteBridge (7),
+				asphaltOverlayBridge (8),
+				timberBridge (9)}
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the type of pavement on the roadway.
+<SetConstraint>always
+<DescriptiveName>PavementSensor.type:code
+<Valid Value Rule>
+other                 a different type of bridge deck 
+unknown               the data was never recorded in the system 
+asphalt               asphalt pavement on ground 
+concrete              concrete pavement on ground 
+steelBridgeconcrete   a concrete driving surface on a steel girder bridge 
+steelBridgeAsphalt    an asphalt driving surface on a steel girder bridge 
+steelBridge           a steel lattice driving surface on the bridge 
+concreteBridge        a concrete driving surface on a concrete bridge 
+concreteBridgeAsphalt an asphalt overlay driving surface on a concrete bridge 
+timberBridge          a wooden deck driving surface on the bridge
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 3 }
+
+-- 5.11.3.4 Pavement Elevation
+essPavementElevation OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The elevation of the street surface in meters with respect to the essReferenceHeight.  
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.elevation:quantity
+<Valid Value Rule>
+The value 1001 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+::= { essPavementSensorEntry 4 }
+
+-- 5.11.3.5 Pavement Exposure
+essPavementExposure OBJECT-TYPE
+SYNTAX	INTEGER (0..101)
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates a very rough percentage of the solar energy which will directly hit the sensor.  
+<SetConstraint>always
+<DescriptiveName>PavementSensor.exposure:quantity
+<Valid Value Rule>
+A value of 100 indicates a fully visible sky.  A value of 101 shall indicate a missing value.
+<Data Concept Type>Data Element
+<Unit>percent exposure"
+::= { essPavementSensorEntry 5 }
+
+-- 5.11.3.6 Pavement Sensor Type
+essPavementSensorType OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				contactPassive (2),
+				contactActive (3),
+				infrared (4),
+				radar (5),
+				vibrating (6),
+				microwave (7),
+				laser (8)}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A value indicating the type of pavement sensor.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.sensorType:code
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 6 }
+
+-- 5.11.3.7 Surface Status
+essSurfaceStatus OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				error (2),
+				dry (3),
+				traceMoisture (4),
+				wet (5),
+				chemicallyWet (6),
+				iceWarning (7),
+				iceWatch (8),
+				snowWarning (9),
+				snowWatch (10),
+				absorption (11),
+				dew (12),
+				frost (13),
+				absorptionAtDewpoint (14)}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A value indicating the pavement surface status.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceStatus:code
+<Valid Value Rule>
+other - The value reported by the sensor is not defined by the standard.  See the manufacturer's documentation for more information.
+noReport - The sensor is not providing any reading for surface status and may not be responding
+errorReport - The sensor is providing a reading for surface status, but either the reading indicates an error code or the data has been deemed invalid or suspect
+dry - The sensor does not detect any moisture or unusual conditions.
+trace - The sensor detects some moisture, but it is suspected to be isolated
+absorption - A salt chemical is present that is not fully dissolved in water.  As a result, the conductivity readings will result in erroneous calculations for amount of chemical in the mix. 
+wet - The sensor detects a significant amount of moisture indicating a wet roadway.
+chemically wet - The sensor detects a signaificant amount of moisture mixed with a de-icing or anti-icing chemical
+dew - The sensor detects moisture that is suspected to be from the formation of dew
+frost - The sensor detects the formation of frost
+freezeAdvisory - The risk of the formation of some sort of frozen moisture on the roadway is elevated, but its occurrence, location, and/or timing is still uncertain
+slushAdvisory - The risk of the accumulation of snow or slush on the roadway is elevated, but its occurrence, location, and/or timing is still uncertain
+iceAdvisory - The risk of the formation of ice or black ice on the roadway is elevated, but its occurrence, location, and/or timing is still uncertain
+freezeHazard - The sensor detects some sort of frozen moisture but is unable to classify as slush or ice.
+slush - The sensor detects snow or slush.
+ice - The sensor detects ice or black ice.  (See essSurfaceBlackIceSignal)
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 7 }
+
+-- 5.11.3.8 Surface Temperature
+essSurfaceTemperature OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The current pavement surface temperature in tenths of degrees Celsius.  
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceTemperature:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+::= { essPavementSensorEntry 8 }
+
+-- 5.11.3.9 Pavement Temperature
+essPavementTemperature OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The current pavement temperature 2-10 cm below the pavement surface in tenths of degrees Celsius.  The specific depth at which the reading is taken is defined by pavementSensorTemperatureDepth.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.pavementTemperature:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+::= { essPavementSensorEntry 9 }
+
+-- 5.11.3.10 Surface Water Depth
+-- This object has been deprecated.  See Clause D.1.6 for more information. 
+essSurfaceWaterDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..255)
+ACCESS	read-only
+STATUS	deprecated
+DESCRIPTION "<Definition>The current depth of water on the surface of the roadway measured in millimeters.  The value 255 shall indicate an error condition or missing value.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceWaterDepth:quantity
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 10 }
+
+-- 5.11.3.11 Surface Salinity
+essSurfaceSalinity OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The pavement salinity in parts per one hundred thousand by weight (i.e., grams of solute per 100,000 grams of solution).  
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceSalinity:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per one hundred thousand by weight"
+::= { essPavementSensorEntry 11 }
+
+-- 5.11.3.12 Surface Conductivity
+-- This object has been deprecated.  See Clause D.1.7 for more information. 
+essSurfaceConductivity OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	deprecated
+DESCRIPTION "<Definition>Indicates the conductance of the ice/liquid mixture on the pavement as detected by the sensor, in mhos, which is the inverse of ohms.  The value  65535 shall indicate an error condition or missing value.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceConductivity:quantity
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 12 }
+
+-- 5.11.3.13 Surface Freezing Point
+essSurfaceFreezePoint OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The temperature in tenths of degrees Celsius at which the existing solution on the roadway will freeze.  
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceFreezingPoint:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+::= { essPavementSensorEntry 13 }
+
+-- 5.11.3.14 Surface Black Ice Signal
+essSurfaceBlackIceSignal OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				noIce (2),
+				blackIce (3),
+				detectorError (4)}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A value indicating if Black Ice is detected by the sensor.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceBlackIce:code
+<Valid Value Rule>
+other - The sensor is reporting a value that is not defined by the standard.  See the manufacturer's documentation for more informaiton.
+noIce - The sensor is not currently detecting black ice.
+blackIce - The sensor is currently detecting black ice.
+detectorError - The sensor is not connected, is not reporting, or is reporting an error.
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 14 }
+
+-- 5.11.3.15 Pavement Sensor Error
+essPavementSensorError OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				none (2),
+				noResponse (3),
+				cutCable (4),
+				shortCircuit (5),
+				dirtyLens (6)}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A value indicating the type of pavement sensor error.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.pavementSensorError:code
+<Valid Value Rule>
+other - An error has been detected that is not defined by the standard; see the manufacturer's documentation for more information.
+none - No error is detected, the sensor appears to be working properly
+noResponse - The sensor is configured and is believed to be connected, but is not responding
+cutCable - The sensor is not configured, not present or not fully connected, perhaps because the cable was cut
+shortCircuit - The sensor input has detected a short-circuit.
+dirtyLens - The lens of the sensor appears to be dirty.
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 15 }
+
+-- 5.11.3.16 Surface Water Depth - Version 2
+essSurfaceIceOrWaterDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The current thickness of ice or depth of water on the surface of the roadway measured in 1/10th of millimeters.  
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceIceOrWaterDepth:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>1/10th of millimeters"
+::= { essPavementSensorEntry 16 }
+
+-- 5.11.3.17 Surface Conductivity - Version 2
+essSurfaceConductivityV2 OBJECT-TYPE
+SYNTAX	INTEGER (0..65535)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the conductivity of the ice/liquid mixture on the pavement as detected by the sensor, in 1/10ths of milli-mhos/cm (mhos is the inverse of ohms).  This value is independent of the size or shape of the sensor and can be directly translated into a percent concentration of chemical (e.g. salinity) through look-up tables for a given chemical.
+<SetConstraint>read-only
+<DescriptiveName>PavementSensor.surfaceConductivityV2:quantity
+<Valid Value Rule>
+The value  65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>1/10ths of milli-mhos/cm"
+::= { essPavementSensorEntry 17 }
+
+-- 5.11.3.18 Pavement Sensor Model Information
+pavementSensorModelInformation OBJECT-TYPE
+SYNTAX	INTEGER (0..255)
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the row in the Module Table (See NTCIP 1201) that contains information about the make, model, and version number of the sensor associated with this row of the Pavement Sensor Table.
+<DescriptiveName>PavementSensor.modelInformation:identifier
+<Valid Value Rule>
+The value of zero indicates that this information is not available.
+<Data Concept Type>Data Element"
+::= { essPavementSensorEntry 18 }
+
+-- 5.11.3.19 Pavement Temperature Depth
+pavementSensorTemperatureDepth OBJECT-TYPE
+SYNTAX	INTEGER (2..11)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The depth at which the pavement temperature is detected.
+<DescriptiveName>PavementSensor.temperatureDepth:quantity
+<Valid Value Rule>
+The value of 11 indicates that the information is not available.
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::= { essPavementSensorEntry 19 }
+
+
+-- 5.11.4 Number of Sub-Surface Sensors
+numEssSubSurfaceSensors OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of entries in the Sub-Surface Sensor Table.
+<Informative>This value may automatically change upon connecting or disconnecting a sensor; however, the table is still defined as a static table since the creation/deletion of rows is not managed through SNMP logic.
+<SetConstraint>read-only
+<DescriptiveName>SubSurfaceSensorTable.numSensors:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipPavement 3 }
+
+
+-- 5.11.5 Sub-Surface Sensor Table
+essSubSurfaceSensorTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF EssSubSurfaceSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Table containing the subsurface sensor data.
+<DescriptiveName>SubSurfaceSensorTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipPavement 4 }
+
+
+-- 5.11.6 Sub-Surface Sensor
+essSubSurfaceSensorEntry OBJECT-TYPE
+SYNTAX	EssSubSurfaceSensorEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A sub-surface sensor is a sensor that reports the temperature and moisture condition of the roadway sub-surface.   It can be described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>SubSurfaceSensor
+<Data Concept Type>Class"
+INDEX { essSubSurfaceSensorIndex }
+::=	{ essSubSurfaceSensorTable 1 }
+
+EssSubSurfaceSensorEntry ::= SEQUENCE {
+	essSubSurfaceSensorIndex                        INTEGER,
+	essSubSurfaceSensorLocation                     DisplayString,
+	essSubSurfaceType                               INTEGER,
+	essSubSurfaceSensorDepth                        INTEGER,
+	essSubSurfaceTemperature                        INTEGER,
+	essSubSurfaceMoisture                           INTEGER,
+	essSubSurfaceSensorError                        INTEGER,
+       essSubSurfaceMoistureOrError 				INTEGER}
+
+-- 5.11.6.1 Sub-Surface Sensor Index
+essSubSurfaceSensorIndex OBJECT-TYPE
+SYNTAX	INTEGER (1..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Enumerated list of row entries that will provide surface sensor data.
+<SetConstraint>index
+<DescriptiveName>SubSurfaceSensor.index:identifier
+<Data Concept Type>Data Element"
+::= { essSubSurfaceSensorEntry 1 }
+
+-- 5.11.6.2 Sub-Surface Sensor Location
+essSubSurfaceSensorLocation OBJECT-TYPE
+SYNTAX	DisplayString (SIZE (0..255))
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>A textual string indicating the location of the subsurface sensor.
+<SetConstraint>always
+<DescriptiveName>SubSurfaceSensor.location:text
+<Data Concept Type>Data Element"
+::= { essSubSurfaceSensorEntry 2 }
+
+-- 5.11.6.3 Sub-Surface Type
+essSubSurfaceType OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				unknown (2),
+				concrete (3),
+				asphalt (4),
+				openGradedAsphalt (5),
+				gravel (6),
+				clay (7),
+				loam (8),
+				sand (9),
+				permafrost (10),
+				variousAggregates (11),
+				air (12)}
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the type of sub-surface.  A value of air would indicate a bridge.
+<SetConstraint>always
+<DescriptiveName>SubSurfaceSensor.type:code
+<Data Concept Type>Data Element"
+::= { essSubSurfaceSensorEntry 3 }
+
+-- 5.11.6.4 Sub-Surface Sensor Depth
+essSubSurfaceSensorDepth OBJECT-TYPE
+SYNTAX	INTEGER (0..1001)
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Depth of sub-surface sensor in centimeters below the pavement surface.  
+<SetConstraint>always
+<DescriptiveName>SubSurfaceSensor.depth:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>centimeters"
+::= { essSubSurfaceSensorEntry 4 }
+
+-- 5.11.6.5 Sub-Surface Temperature
+essSubSurfaceTemperature OBJECT-TYPE
+SYNTAX	INTEGER (-1000..1001)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The current sub-surface temperature in tenths of degrees Celsius. 
+<SetConstraint>read-only
+<DescriptiveName>SubSurfaceSensor.temperature:quantity
+<Valid Value Rule>
+The value 1001 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>tenths of degrees Celsius"
+::= { essSubSurfaceSensorEntry 5 }
+
+-- 5.11.6.6 Sub-Surface Moisture
+essSubSurfaceMoisture OBJECT-TYPE
+SYNTAX	INTEGER (0..101)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>The sub-surface moisture expressed as a percentage (eg. 0 indicates dry, 100 indicates saturated).  
+<SetConstraint>read-only
+<DescriptiveName>SubSurfaceSensor.moisture:quantity
+<Valid Value Rule>
+The value 101 indicates an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>percentage"
+::= { essSubSurfaceSensorEntry 7 }
+
+-- 5.11.6.7 Sub-Surface Sensor Error
+essSubSurfaceSensorError OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				none (2),
+				noResponse (3),
+				cutCable (4),
+				shortCircuit (5)}
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>A value indicating the type of sensor error.
+<SetConstraint>read-only
+<DescriptiveName>SubSurfaceSensor.error:code
+<Valid Value Rule>
+other - An error has been detected that is not defined by the standard; see the manufacturer's documentation for more information.
+none - No error is detected, the sensor appears to be working properly
+noResponse - The sensor is configured and is believed to be connected, but is not responding
+cutCable - The sensor is not configured, not present or not fully connected, perhaps because the cable was cut
+shortCircuit - The sensor input has detected a short-circuit.
+<Data Concept Type>Data Element"
+::= { essSubSurfaceSensorEntry 8 }
+
+
+-- 5.11.7 Pavement Block
+-- This object has been deprecated.  See Clause D.2.8 for more
+-- information. 
+essPavementBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	deprecated  
+DESCRIPTION "<Definition>An OER encoded string of the EssPavementData structure as defined below.  This object is used for uploading current pavement data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssPavementData ::= SEQUENCE OF PavementSensorData
+	-- for (
+--	x = 1; 
+--	x < numEssPavementSensors.0; 
+--	x++)
+
+
+PavementSensorData ::= SEQUENCE {
+	essPavementSensorIndex.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceStatusV2.x			OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceTemperature.x		OPTIONAL, -- @NTCIP1204-200x
+	essPavementTemperature.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceWaterDepth.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceSalinity.x			OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceConductivity.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceFreezePoint.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceBlackIceSignal.x		OPTIONAL, -- @NTCIP1204-200x
+	essPavementSensorError.x		OPTIONAL -- @NTCIP1204-200x
+}
+<Informative>This object has been replaced by essPavementV3Block (See 5.11.9).
+<SetConstraint>read-only
+<DescriptiveName>PavementSensorTable.pavementBlock:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipPavement 5 }
+
+
+-- 5.11.8 Sub-Surface Block Object
+essSubSurfaceBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the EssSubsurfaceData structure as defined below.  This object is used for uploading current subsurface data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssSubSurfaceData ::= SEQUENCE OF SubSurfaceSensorData
+	-- for (
+--	x = 1; 
+--	x < numEssSubSurfaceSensors.0; 
+--	x++)
+
+SubSurfaceSensorData ::= SEQUENCE {
+	essSubSurfaceSensorIndex.x		OPTIONAL, -- @NTCIP1204-200x
+	essSubSurfaceTemperature.x		OPTIONAL, -- @NTCIP1204-200x
+	essSubSurfaceMoisture.x			OPTIONAL, -- @NTCIP1204-200x
+	essSubSurfaceSensorError.x		OPTIONAL, -- @NTCIP1204-200x
+	}
+<SetConstraint>read-only
+<DescriptiveName>SubSurfaceSensorTable.subsurfaceBlock:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipPavement 6 }
+-- 5.11.9 Pavement Block V3
+essPavementV3Block OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the EssPavementDataV3 structure as defined below.  This object is used for uploading current pavement data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+EssPavementDataV3 ::= SEQUENCE OF PavementSensorDataV3
+	-- for (
+--	x = 1; 
+--	x < numEssPavementSensors.0; 
+--	x++)
+
+
+PavementSensorDataV3 ::= SEQUENCE {
+	essPavementSensorIndex.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceStatus.x			OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceTemperature.x			OPTIONAL, -- @NTCIP1204-200x
+	essPavementTemperature.x		OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceSalinity.x			OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceFreezePoint.x			OPTIONAL, -- @NTCIP1204-200x
+	essSurfaceBlackIceSignal.x		OPTIONAL, -- @NTCIP1204-200x
+	essPavementSensorError.x		OPTIONAL -- @NTCIP1204-200x
+	essSurfaceIceOrWaterDepth.x		OPTIONAL -- @NTCIP1204-200x
+	essSurfaceConductivityV2.x		OPTIONAL -- @NTCIP1204-200x
+}
+<SetConstraint>read-only
+<DescriptiveName>PavementSensorTable.pavementBlock:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipPavement 7 }
+
+
+-- 5.12 Mobile Platform Objects
+-- Contains objects related to monitoring mobile platforms that act as 
+-- ESS (e.g., specially-equipped maintenance vehicles).
+-- There has been limited use of mobile ESS platforms within the 
+-- surface transportation industry and as such these objects 
+-- should be considered experimental.
+essNtcipMobile  OBJECT IDENTIFIER ::= {essNtcip 10}
+
+-- 5.12.1 Detected Friction
+essMobileFriction OBJECT-TYPE
+SYNTAX	INTEGER (0..101) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates measured coefficient of friction in percent.  
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.friction:quantity
+<Valid Value Rule>
+The value 101 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>percent friction"
+::=	{ essNtcipMobile 1 }
+
+
+-- 5.12.2 Observed Ground State
+essMobileObservationGroundState OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				dry (2),
+				moist (3),
+				wet (4),
+				flooded (5),
+				frozen (6),
+				glaze (7),
+				dustySandy (8),
+				veryDry (9),
+				icy (10),
+				patchyWetSnow (11),
+				moderateWetSnowCover (12),
+				fullWetSnowCover (13),
+				patchyDrySnow (14),
+				moderateDrySnowCover (15),
+				fullDrySnowCover (16),
+				driftingSnow (17),
+				unknown (18)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The prevailing observed ground state of the surrounding environment as determined by the observer.  This is an indicator of past weather conditions.
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.observedGroundState:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipMobile 2 }
+
+
+-- 5.12.3 Observed Pavement State
+essMobileObservationPavement OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				dry (2),
+				wet (3),
+				puddles (4),
+				shallowStandingWater (5),
+				shallowFlowingWater (6),
+				deepStandingWater (7),
+				deepFlowingWater (8),
+				dustingFreshSnow (9),
+				moderateFreshSnow (10),
+				deepFreshSnow (11),
+				plowedSnow (12),
+				slush (13),
+				packedSnowPatches (14),
+				packedSnow (15),
+				lightSnowDrifts (16),
+				moderateSnowDrifts (17),
+				heavySnowDrifts (18),
+				frost (19),
+				icePatches (20),
+				moderatelyIcy (21),
+				heavyIcing (22),
+				blackIce (23),
+				sheetIce (24),
+				frozenSlush (25)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The prevailing observed conditions on the driving surface as determined by the observer.
+<SetConstraint>read-only
+<DescriptiveName>MobilePlatform.observedPavementState:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipMobile 3 }
+
+
+
+-- 5.13 Pavement Treatment Objects
+-- Contains objects that monitor the various types and amounts of 
+-- treatments that are spread on the pavement surface.
+essNtcipTreatment OBJECT IDENTIFIER ::= { essNtcip 11 }
+
+-- 5.13.1 Number of Treatments
+numEssTreatments OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of entries in the Pavement Treatment Table.
+<SetConstraint>read-only
+<DescriptiveName>PavementTreatmentTable.numTreatments:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipTreatment 1 }
+
+
+-- 5.13.2 Pavement Treatment Table
+essPavementTreatmentTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF EssPavementTreatmentEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Table containing the pavement treatment data.
+<DescriptiveName>PavementTreatmentTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipTreatment 2 }
+
+
+-- 5.13.3 Pavement Treatment
+essPavementTreatmentEntry OBJECT-TYPE
+SYNTAX	EssPavementTreatmentEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A pavement treatment is a chemical that can be applied to the roadway in order to de-ice or prevent icing of the pavement.  It can be described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>PavementTreatment
+<Data Concept Type>Class"
+INDEX { essPavementTreatmentIndex }
+::=	{ essPavementTreatmentTable 1 }
+
+EssPavementTreatmentEntry ::= SEQUENCE {
+	essPavementTreatmentIndex               INTEGER,
+	essPaveTreatProductType                 INTEGER,
+	essPaveTreatProductForm                 INTEGER,
+	essPercentProductMix                    INTEGER}
+
+-- 5.13.3.1 Pavement Treatment Index
+essPavementTreatmentIndex OBJECT-TYPE
+SYNTAX	INTEGER (1..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Enumerated list of row entries that will provide pavement treatment data.
+<SetConstraint>index
+<DescriptiveName>PavementTreatement.index:identifier
+<Data Concept Type>Data Element"
+::= { essPavementTreatmentEntry 1 }
+
+-- 5.13.3.2 Pavement Treatment Product Type
+essPaveTreatProductType OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				sand (2),
+				dirt (3),
+				gravel (4),
+				cinders (5),
+				water (6),
+				enhancedSalts (7),
+				naCl (8),
+				caCl (9),
+				mgCl (10),
+				cMA (11),
+				kAC (12),
+				naFormate (13),
+				naA (14)}
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the type of treatment being applied to the road.  An enhanced definition of some of the values are as follows: other - any other type of treatment water - used as a diluting agent cMA - Calcium-Magnesium Acetate kAC - Potassium-Magnesium Acetate naFormate - Sodium Formate naA - Sodium Acetate
+<Informative>Version 02 of this standard incorrectly defined the set constraint of this read-write object to be read-only; it should be always, however, the intent is that it would only be set by a local connection when the new product is being loaded and that remote systems would only read this object.
+<SetConstraint>always
+<DescriptiveName>PavementTreatement.type:code
+<Valid Value Rule>
+An enhanced definition of some of the values are as follows.
+other - any other type of treatment
+water - used as a diluting agent
+cMA - Calcium-Magnesium Acetate
+kAC - Potassium-Magnesium Acetate
+naFormate - Sodium Formate
+naA - Sodium Acetate
+<Data Concept Type>Data Element"
+::= { essPavementTreatmentEntry 2 }
+
+-- 5.13.3.3 Treatment Product Form
+essPaveTreatProductForm OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				dry (2),
+				prewet (3),
+				liquid (4)}
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the condition of the treatment being applied to the road.
+<SetConstraint>read-only
+<DescriptiveName>PavementTreatement.form:code
+<Data Concept Type>Data Element"
+::= { essPavementTreatmentEntry 3 }
+
+-- 5.13.3.4 Percentage of Treatment Type in Mix
+essPercentProductMix OBJECT-TYPE
+SYNTAX	INTEGER (0..100)
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the percentage of the total application mix by weight that is of the type specified in essPaveTreatProductType.
+<SetConstraint>read-only
+<DescriptiveName>PavementTreatement.mix:quantity
+<Valid Value Rule>
+The sum of these percentages within the total mixture shall equal 100.
+<Data Concept Type>Data Element
+<Unit>percent"
+::= { essPavementTreatmentEntry 4 }
+
+
+-- 5.13.4 Treatment Amount
+essPaveTreatmentAmount OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates quantity of the treatment being applied in kilograms per lane kilometer.
+<SetConstraint>read-only
+<DescriptiveName>PavementTreatmentTable.amount:quantity
+<Valid Value Rule>
+The value of 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>kilograms per lane kilometer"
+::=	{ essNtcipTreatment 3 }
+
+
+-- 5.13.5 Treatment Width
+essPaveTreatmentWidth OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the width of the spread of treatment in meters.
+<SetConstraint>read-only
+<DescriptiveName>PavementTreatmentTable.width:quantity
+<Valid Value Rule>
+The value of 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>meters"
+::=	{ essNtcipTreatment 4 }
+
+
+-- 5.13.6 Pavement Treatment Block
+pavementTreatmentBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the Pavement Treatment data.  This object is used for uploading current pavement treatment data from the ESS in a bandwidth efficient manner.
+
+The OPTIONAL fields shall be present if the data is supported by the implementation and is valid.  The OPTIONAL fields shall be omitted for any data that is invalid or not supported by the implementation.
+
+NOTE: The following structure contains pts data elements in addition to the ess data elements.  Although these are not currently required to fulfill any existing requirements, they are included in order to maintain backwards compatibility with the version 02 standard. 
+
+PavementTreatmentBlock ::= SEQUENCE {
+	treatmentInfo	SEQUENCE OF PavementTreatmentData OPTIONAL,
+	essPaveTreatmentAmount.0	OPTIONAL, -- @NTCIP1204-200x
+	essPaveTreatmentWidth.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsOperationalMode.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsCommandState.0			OPTIONAL, -- @NTCIP1204-200x
+	ptsSprayerState.0			OPTIONAL, -- @NTCIP1204-200x
+	ptsSignalDuration.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsSignalEventCount.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsLastSignalEvent.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsActiveEventCount.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsInactiveEventCount.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsLastactiveEvent.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsLastInactiveEvent.0		OPTIONAL, -- @NTCIP1204-200x
+	ptsError.0				OPTIONAL, -- @NTCIP1204-200x
+	ptsMonitoringDetectors.0	OPTIONAL  -- @NTCIP1204-200x
+}
+
+PavementTreatmentData ::= 
+	-- for (
+	--	x = 1; 
+	--	x < numEssTreatments.0; 
+	--	x++)
+SEQUENCE {
+	essPavementTreatmentIndex.x		OPTIONAL, -- @NTCIP1204-200x
+	essPaveTreatProductType.x		OPTIONAL, -- @NTCIP1204-200x
+	essPaveTreatProductForm.x		OPTIONAL, -- @NTCIP1204-200x
+	essPercentProductMix.x			OPTIONAL -- @NTCIP1204-200x
+}
+<DescriptiveName>PavementTreatmentTable.block:frame
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 5 }
+
+
+-- 5.13.7 Operational Mode
+ptsOperationalMode OBJECT-TYPE
+SYNTAX	INTEGER { 	off (1),
+				manual (2),
+				automatic (3)} 
+ACCESS	read-write 
+STATUS	obsolete 
+DESCRIPTION "<Definition>Indicates the operational mode of the Pavement Treatment System.
+
+When in the 'off' state, the PTS shall not trigger the sprayer even if commanded to do so and shall always be inactive.  The PTS shall transition to the requested operational mode, upon request.
+
+When in the 'automatic' state, the PTS shall monitor conditions and trigger the sprayer based on a manufacturer specific algorithm.  The algorithm shall only consider input from the detectors selected in the ptsMonitoringDetectors object.  The PTS shall also trigger the sprayer if commanded to do so via the ptsCommandState object.  The PTS shall transition to the requested operational mode, upon request.
+
+When in the 'manual' state, the PTS shall trigger the sprayer if commanded to do so via the ptsCommandState object.  The PTS shall transition to the requested operational mode, upon request.
+<SetConstraint>always
+<DescriptiveName>PTS.operationalMode.code
+<Valid Value Rule>
+off	When set to this value the ESS will not trigger the 
+	bridge sprayer 
+
+manual	When set to this value the ESS will only trigger the 
+	bridge sprayer when manually commanded to do
+	so (e.g., see bridgeSprayerMgmtSignalState). 
+
+automatic	When set to this value the ESS will trigger the
+	bridge sprayer when manually commanded to do 
+	so or when the internal algorithm determines
+	that the sprayer should be triggered.
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 6 }
+
+
+-- 5.13.8 Command State
+ptsCommandState OBJECT-TYPE
+SYNTAX	INTEGER { 	other (1),
+				inactive (2),
+				activate (3)} 
+ACCESS	read-write 
+STATUS	obsolete  
+DESCRIPTION "<Definition>Indicates the operational state of the PTS.  When in the 'inactive' state, the PTS shall not be spraying.  Upon entering the 'active' state, either by a manual SET of this object or through an automated algorithm, the PTS shall trigger the sprayer and spray the chemical for a duration as defined by the ptsSignalDuration object.  Upon expiration of this duration, the PTS shall automatically transition back to the 'inactive' state.
+<SetConstraint>always
+<DescriptiveName>PTS.commandState:code
+<Valid Value Rule>
+other - 
+       read  - indicates a unknown or inital state
+       write - no effect
+inactive  - 
+       read  - indicates the ess is not signaling the bridge sprayer 
+       write - no effect
+activate  - 
+       read  - indicates the ess is signaling the bridge sprayer      
+       write - causes the ess to signal the bridge sprayer
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 7 }
+
+
+-- 5.13.9 Sprayer State
+ptsSprayerState OBJECT-TYPE
+SYNTAX	INTEGER {	other (1),
+				inactive (2),
+				active (3)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>other     - indicates a unknown or inital state
+             inactive  - indicates the bridge sprayer is inactive
+             active    - indicates the bridge sprayer is active
+<SetConstraint>read-only
+<DescriptiveName>PTS.sprayerState:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 8 }
+
+
+-- 5.13.10 Signal Duration
+ptsSignalDuration OBJECT-TYPE
+SYNTAX	INTEGER (0..3600000) 
+ACCESS	read-write 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The number of milliseconds of a simple logic level or state the bridge sprayer needs to detect a signal from the ESS
+<SetConstraint>always
+<DescriptiveName>PTS.signalDuration:quantity
+<Data Concept Type>Data Element
+<Unit>milliseconds"
+::=	{ essNtcipTreatment 9 }
+
+
+-- 5.13.11 Signal Event Count
+ptsSignalEventCount OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The count of the number of Signal Events that have occurred.
+<SetConstraint>read-only
+<DescriptiveName>PTS.signalEventCount:quantity
+<Data Concept Type>Data Element
+<Unit>milliseconds"
+::=	{ essNtcipTreatment 10 }
+
+
+-- 5.13.12 Last Signal Event
+ptsLastSignalEvent OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The number of seconds since 00:00:00 Jan 1 1970 UTC.  
+<SetConstraint>read-only
+<DescriptiveName>PTS.lastSignalEvent:quantity
+<Valid Value Rule>
+The value of 0 indicates an unknown or initial value.
+<Data Concept Type>Data Element
+<Unit>seconds"
+::=	{ essNtcipTreatment 11 }
+
+
+-- 5.13.13 Active Event Count
+ptsActiveEventCount OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The count of the number of Active Events that have occurred.
+<SetConstraint>read-only
+<DescriptiveName>PTS.activeEventCount:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipTreatment 12 }
+
+
+-- 5.13.14 Inactive Event Count
+ptsInactiveEventCount OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A count of the number of Inactive Events that have occurred.
+<SetConstraint>read-only
+<DescriptiveName>PTS.inactiveEventCount:quantity
+<Data Concept Type>Data Element
+<Unit>count"
+::=	{ essNtcipTreatment 13 }
+
+
+-- 5.13.15 Last Active Event
+ptsLastActiveEvent OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The number of seconds since 00:00:00 Jan 1 1970 UTC.  
+<SetConstraint>read-only
+<DescriptiveName>PTS.lastActiveEvent:quantity
+<Valid Value Rule>
+The value of 0 indicates an unknown or initial value.
+<Data Concept Type>Data Element
+<Unit>seconds"
+::=	{ essNtcipTreatment 14 }
+
+
+-- 5.13.16 Last Inactive Event
+ptsLastInactiveEvent OBJECT-TYPE
+SYNTAX	Counter 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The number of seconds since 00:00:00 Jan 1 1970 UTC.  
+<SetConstraint>read-only
+<DescriptiveName>PTS.lastInactiveEvent:quantity
+<Valid Value Rule>
+The value of 0 indicates an unknown or initial value.
+<Data Concept Type>Data Element
+<Unit>seconds"
+::=	{ essNtcipTreatment 15 }
+
+
+-- 5.13.17 PTS Error Code
+ptsError OBJECT-TYPE
+SYNTAX	INTEGER { other (1),
+				ok (2),
+				genericError (3),
+				tankLow (4)} 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the status of the bridge sprayer.
+<SetConstraint>read-only
+<DescriptiveName>PTS.error:code
+<Valid Value Rule>
+other        - indicates a unknown or initial state
+ok           - indicates the bridge sprayer is operational
+genericError - indicates the bridge sprayer has an error
+tankLow      - indicates the bridge sprayer's tank is low
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 16 }
+
+
+-- 5.13.18 Monitoring Detectors
+ptsMonitoringDetectors OBJECT-TYPE
+SYNTAX	OCTET STRING (SIZE (4)) 
+ACCESS	read-write 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the pavement detectors that the PTS shall use in its algorithm that determines when the PTS will automatically trigger the sprayer.
+<DescriptiveName>PTS.monitoringDetectors:code
+<Valid Value Rule>
+Each bit indicates whether or not the associated pavement sensor shall be used within the algorithm.  The first (high order) bit in the bit string shall reference the first pavement sensor.  A value of one for any bit shall indicate that the sensor input shall be considered, and a value of zero shall mean that the input shall not be considered.
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 17 }
+
+
+-- 5.13.19 Operational Mode - Version 3
+ptsOperationalModeV3 OBJECT-TYPE
+SYNTAX	INTEGER { 	off (1),
+				manual (2),
+				automatic (3)} 
+ACCESS	read-write 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the operational mode of the Pavement Treatment System.
+
+When in the 'off' state, the PTS shall not trigger the sprayer even if commanded to do so and shall always be inactive.  The PTS shall transition to the requested operational mode, upon request.
+
+When in the 'automatic' state, the PTS shall monitor conditions and trigger the sprayer based on a manufacturer specific algorithm.  The algorithm shall only consider input from the detectors selected in the ptsMonitoringDetectors object.  The PTS shall also trigger the sprayer if commanded to do so via the ptsCommandStateV3 object.  The PTS shall transition to the requested operational mode, upon request.
+
+When in the 'manual' state, the PTS shall trigger the sprayer if commanded to do so via the ptsCommandStateV3 object.  The PTS shall transition to the requested operational mode, upon request.
+<SetConstraint>always
+<DescriptiveName>PTS.operationalMode.code
+<Valid Value Rule>
+off	When set to this value the ESS will not trigger the 
+	bridge sprayer 
+
+manual	When set to this value the ESS will only trigger the 
+	bridge sprayer when manually commanded to do
+	so (e.g., see ptsCommandStateV3). 
+
+automatic	When set to this value the ESS will trigger the
+	bridge sprayer when manually commanded to do 
+	so or when the internal algorithm determines
+	that the sprayer should be triggered.
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 18 }
+-- 5.13.20 Command State – Version 3
+ptsCommandStateV3 OBJECT-TYPE
+SYNTAX	INTEGER { 	other (1),
+				inactive (2),
+				activate (3)} 
+ACCESS	read-write 
+STATUS	mandatory  
+DESCRIPTION "<Definition>Indicates the operational state of the PTS.  When in the 'inactive' state, the PTS shall not be signaling the sprayer.  Upon entering the 'active' state, either by a manual SET of this object or through an automated algorithm, the PTS shall trigger the sprayer using a signal that lasts for a duration as defined by the ptsSignalDuration object.  Upon expiration of this duration, the PTS shall automatically transition back to the 'inactive' state.
+<Informative>This object does not directly control the sprayer, rather it merely signals an external sprayer.  
+<SetConstraint>always
+<DescriptiveName>PTS.commandState:code
+<Valid Value Rule>
+other - 
+       read  - indicates a unknown or inital state
+       write - no effect
+inactive  - 
+       read  - indicates the ess is not signaling the bridge sprayer 
+       write - no effect
+activate  - 
+       read  - indicates the ess is signaling the bridge sprayer      
+       write - causes the ess to signal the bridge sprayer
+<Data Concept Type>Data Element"
+::=	{ essNtcipTreatment 19 }
+
+
+
+-- 5.14 Air Quality Parameters
+-- Contains objects used for monitoring air quality conditions.
+essNtcipAirQuality  OBJECT IDENTIFIER ::= { essNtcip 12 }
+
+-- 5.14.1 Carbon Monoxide Parameter
+essCO OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of carbon monoxide in the air, measured in parts per million.  
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.carbonMonoxide:quantity
+<Valid Value Rule>
+The value 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per million"
+::=	{ essNtcipAirQuality 1 }
+
+
+-- 5.14.2 Carbon Dioxide Parameter
+essCO2 OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of carbon dioxide in the air, measured in parts per billion. 
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.carbonDioxide:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per billion"
+::=	{ essNtcipAirQuality 2 }
+
+
+-- 5.14.3 Nitrous Oxide Parameter
+essNO OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of nitrous oxide in the air, measured in parts per million. 
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.nitrousOxide:quantity
+<Valid Value Rule>
+The value 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per million"
+::=	{ essNtcipAirQuality 3 }
+
+
+-- 5.14.4 Nitrogen Dioxide Parameter
+essNO2 OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of nitrogen dioxide in the air, measured in parts per billion.   
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.nitrogenDioxide:quantity
+<Valid Value Rule>
+The value 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per billion"
+::=	{ essNtcipAirQuality 4 }
+
+
+-- 5.14.5 Sulfer Dioxide Parameter
+essSO2 OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of sulfur dioxide in the air, measured in parts per billion. 
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.sulferDioxide:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per billion"
+::=	{ essNtcipAirQuality 5 }
+
+
+-- 5.14.6 Ozone Parameter
+essO3 OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of ozone in the air, measured in parts per one hundred billion. 
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.ozone:quantity
+<Valid Value Rule>
+The value 255 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>parts per one hundred billion"
+::=	{ essNtcipAirQuality 6 }
+
+
+-- 5.14.7 Particulate Matter Parameter
+essPM10 OBJECT-TYPE
+SYNTAX	INTEGER (0..65535) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The concentration of small particulate matter of 10 micrometers or less in diameter in the air, measured in micrograms per cubic meter.  
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.particulateMatter:quantity
+<Valid Value Rule>
+The value 65535 shall indicate an error condition or missing value.
+<Data Concept Type>Data Element
+<Unit>micrograms per cubic meter"
+::=	{ essNtcipAirQuality 7 }
+
+
+-- 5.14.8 Air Quality Block Object
+essAirQualityBlock OBJECT-TYPE
+SYNTAX	OerString 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>An OER encoded string of the EssAirQualityData structure as defined below.  This object is used for uploading current air quality data from the ESS in a bandwidth efficient manner.
+
+
+A GET shall return data for all of the fields in the structure (even if they are indicated as OPTIONAL); unless the data values are not supported by the controller or are invalid (e.g., the sensor is not attached), in which case the values shall be omitted.
+
+essAirQualityData ::= SEQUENCE {
+	essCO.0				OPTIONAL,	-- @NTCIP1204-200x
+	essCO2.0				OPTIONAL,	-- @NTCIP1204-200x
+	essNO.0				OPTIONAL,	-- @NTCIP1204-200x
+	essNO2.0				OPTIONAL,	-- @NTCIP1204-200x
+	essSO2.0				OPTIONAL,	-- @NTCIP1204-200x
+	essO3.0				OPTIONAL,	-- @NTCIP1204-200x
+	essPM10.0				OPTIONAL	-- @NTCIP1204-200x
+	}
+<SetConstraint>read-only
+<DescriptiveName>AirQuality.airQualityBlock:code
+<Data Concept Type>Data Element"
+::=	{ essNtcipAirQuality 8 }
+
+
+
+-- 5.15 Water Quality Parameters
+--This node contains objects used for monitoring water quality 
+-- conditions.  Reserved for future use.
+essNtcipWaterQuality OBJECT IDENTIFIER ::= { essNtcip 13 }
+
+
+-- 5.16 Snapshot Parameters
+-- Contains objects used to describe the snapshot camera feature
+essNtcipSnapshot  OBJECT IDENTIFIER ::= { essNtcip 14 }
+
+-- 5.16.1 Number of Snapshot Cameras
+essSnapshotNumberOfCameras OBJECT-TYPE
+SYNTAX	INTEGER (0..255) 
+ACCESS	read-only 
+STATUS	mandatory 
+DESCRIPTION "<Definition>Indicates the number of cameras that can be utilized for capturing snapshots on the ESS.
+<Informative>This value may automatically change upon connecting or disconnecting a camera; however, the table is still defined as a static table since the creation/deletion of rows is not managed through SNMP logic.
+<SetConstraint>read-only
+<DescriptiveName>SnapshotCameraTable.numCameras:quantity
+<Data Concept Type>Data Element"
+::=	{ essNtcipSnapshot 1 }
+
+
+-- 5.16.2 Snapshot Camera Table
+essSnapshotCameraTable OBJECT-TYPE
+SYNTAX	SEQUENCE OF EssSnapshotCameraEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>The snapshot camera table provides summary information about the snapshot cameras supported by the ESS.   It can be described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>SnapshotCameraTable
+<Data Concept Type>Class
+<TableType> static"
+::=	{ essNtcipSnapshot 2 }
+
+
+-- 5.16.3 Snapshot Camera
+essSnapshotCameraEntry OBJECT-TYPE
+SYNTAX	EssSnapshotCameraEntry 
+ACCESS	not-accessible 
+STATUS	mandatory 
+DESCRIPTION "<Definition>A snapshot camera is a camera that is able to capture a picture and store it within the device's memory as a file.   It can be described through a number of attributes as indicated by the following subclauses.
+<DescriptiveName>SnapshotCamera
+<Data Concept Type>Class"
+INDEX { essSnapshotCameraIndex }
+::=	{ essSnapshotCameraTable 1 }
+
+EssSnapshotCameraEntry ::= SEQUENCE {
+	essSnapshotCameraIndex		INTEGER,
+	essSnapshotCameraDescription	DisplayString,
+	essSnapshotCameraStoragePath	DisplayString,
+	essSnapshotCameraCommand	INTEGER,
+	essSnapshotCameraError		INTEGER,
+       essSnapshotCameraFilename	OCTET STRING }
+
+-- 5.16.3.1 Snapshot Camera Index
+essSnapshotCameraIndex OBJECT-TYPE
+SYNTAX	INTEGER (0..255)
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the row number of this entry.
+<SetConstraint>index
+<DescriptiveName>SnapshotCamera.index:identifier
+<Data Concept Type>Data Element"
+::= { essSnapshotCameraEntry 1 }
+
+-- 5.16.3.2 Snapshot Camera Description
+essSnapshotCameraDescription OBJECT-TYPE
+SYNTAX	DisplayString (SIZE(1..255))
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the description of this entry.  The description should include information about the location, direction, and subject of the camera.
+<SetConstraint>read-only
+<DescriptiveName>SnapshotCamera.description:text
+<Data Concept Type>Data Element"
+::= { essSnapshotCameraEntry 2 }
+
+-- 5.16.3.3 Snapshot Camera Storage Path
+essSnapshotCameraStoragePath OBJECT-TYPE
+SYNTAX	DisplayString (SIZE(1..255))
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the storage path of snapshots taken from this camera.  The path indicated here shall be relative to the FTP login root.  This path can only include the FTP login root and its subdirectories and cannot include any parent directories that may exist.  The root is specified by the string '/' (one forward slash.  A subdirectory from the root may be specified by the string '/subdir'.
+<SetConstraint>read-only
+<DescriptiveName>SnapshotCamera.storagePath:text
+<Data Concept Type>Data Element"
+DEFVAL { "/" }
+::= { essSnapshotCameraEntry 3 }
+
+-- 5.16.3.4 Snapshot Camera Command
+essSnapshotCameraCommand OBJECT-TYPE
+SYNTAX	INTEGER {	ready(1),
+				captureSnapshot(2) }
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>A command to control the snapshot feature of the ESS.  Setting this object to a value of captureSnapshot(2) will command the ESS to take a snapshot and save the image to memory.  A Get of this object will return a value of captureSnapshot(2) while the ESS is in the process of capturing and saving the image to memory.  A Get of this object when the ESS is not in the process of capturing and saving the image to memory will return a value of ready(1).  If any errors occur in the process of capturing and saving the image they shall be noted in essSnapshotError.
+<Informative>Version 02 of this standard had a typo for the ACCESS; this object must be read-write for the camera to capture a snapshot image.
+<SetConstraint> Can only be set to 'captureSnapshot' when value is currently 'ready'; any other SET shall return a genErr, including a SET to 'ready'.
+<DescriptiveName>SnapshotCamera.command:code
+<Data Concept Type>Data Element"
+::= { essSnapshotCameraEntry 4 }
+
+-- 5.16.3.5 Snapshot Camera Error
+essSnapshotCameraError OBJECT-TYPE
+SYNTAX	INTEGER {	none(1),
+				hardware(2),
+				insufficientMemory(3) }
+ACCESS	read-only
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the status of the last attempt to capture a snapshot using essSnapshotCommand.
+<SetConstraint>read-only
+<DescriptiveName>SnapshotCamera.error:code
+<Valid Value Rule>
+none - no error was detected 
+hardware - an error occured with the camera hardware when attempting to capture a picture.
+insufficientMemory - the ESS does not have sufficient memory to store the new picture.
+<Data Concept Type>Data Element"
+::= { essSnapshotCameraEntry 5 }
+
+-- 5.16.3.6 Snapshot Camera Filename
+essSnapshotCameraFilename OBJECT-TYPE
+SYNTAX	OCTET STRING (SIZE(0..255))
+ACCESS	read-write
+STATUS	mandatory
+DESCRIPTION "<Definition>Indicates the filename used when storing new snapshot images.  This parameter shall only consist of upper and lower case characters (A-Z, a-z), digits (0-9), underscores (_), periods (.), spaces, and the following field names enclosed in chevrons (<>):
+camera: A three digit camera number equal to essSnapshotCameraIndex
+sequence: A three digit value that increments by one each time this 
+camera is used to take a picture.  This value shall roll-over from '999' to '000'.  The initial value of this field and its value after a power outage is manufacture dependent.
+date: A six digit code indicating the UTC date in the format of YYMMDD
+time: A six digit code indicating the UTC time in the format of HHMMSS
+
+All implementations shall support all static character filenames with up to eight characters in the base filename, a period, and up to three characters in the filename extension. Support for longer filenames and the above fields are optional.  
+
+For example, if this parameter has a value of 'latest.jpg', every snapshot taken will be saved to 'latest.jpg' and will overwrite any previous image saved to that filename.  If this parameter has a value of '<date> <sequence>.jpg', each snapshot will have a name (e.g., '060925 038') indicating the date it was taken along with a relatively unique code.  While the second form prevents the inadvertent overwriting of filenames, it increases the likelihood of consuming large amounts of field device memory (eventually resulting in insufficientMemory errors) if not properly managed by the management station.
+<SetConstraint>always
+<DescriptiveName>SnapshotCamera.filename:text
+<Data Concept Type>Data Element"
+::= { essSnapshotCameraEntry 6 }
+
+
+
+  END
+
+
+    
+
+    		NTCIP 1204v03-07
+    		Page 10
+
+© 1998, 2005, 2007 AASHTO / ITE / NEMA	Copy only following notices and permissions.
+
+    		NTCIP 1204v03-07
+    		Page 1
+
+
+© 1998, 2005, 2007 AASHTO / ITE / NEMA	Copy only following notices and permissions.
+
