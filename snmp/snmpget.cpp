@@ -7,92 +7,80 @@
 
 using namespace std;
 
-#define NETSNMP_DS_APP_DONT_FIX_PDUS 0
-
-
-static void optProc(int argc, char *const *argv, int opt)
-{
-    switch (opt) {
-        case 'C':
-        {
-            while (*optarg) {
-                switch (*optarg++) {
-                    case 'f':
-                        netsnmp_ds_toggle_boolean(NETSNMP_DS_APPLICATION_ID, NETSNMP_DS_APP_DONT_FIX_PDUS);
-                        break;
-                    default:
-                        string message = string ("Unknown flag passed to -C: ");
-                        message += optarg[-1];
-                        throw message;
-                }
-            }
-            break;
-        }
-    }
-}
-
-
-void usage(void)
-{
-    cout << "USAGE: snmpget ";
-    snmp_parse_args_usage(stdout);
-    cout << " OID [OID]..." << endl << endl;
-    snmp_parse_args_descriptions(stdout);
-    cout << " -C APPOPTS Set various application specific behaviours:" << endl;
-    cout << "  f: do not fix errors and retry the request" << endl;
-}
-
 
 int main (int argc, char *argv[])
 {
+    // The session is defined here.
+    // Purpose: It's in scope even after an exception in the try...catch block.
     netsnmp_session *ss {nullptr};
     
     try {
-        
-        SOCK_STARTUP;
 
+        // Create and initialize the session to default values.
+        // http://www.net-snmp.org/dev/agent/structsnmp__session.html
+        // The snmp_sess_init prepares a struct snmp_session
+        // that sources transport characteristics and common information
+        // that will be used for a set of SNMP transactions.
         netsnmp_session session {};
+        snmp_sess_init (&session);
 
         // Get the common command line arguments.
-        int arg { 0 };
-        switch (arg = snmp_parse_args(argc, argv, &session, "C:", optProc)) {
-            case NETSNMP_PARSE_ARGS_ERROR:
-                throw string ("Error parsing arguments");
-            case NETSNMP_PARSE_ARGS_SUCCESS_EXIT:
-                throw string ("Error parsing arguments");
-            case NETSNMP_PARSE_ARGS_ERROR_USAGE:
-                usage();
-                throw string ("Error parsing arguments");
-            default:
-                break;
+//        int arg { 0 };
+//        switch (arg = snmp_parse_args(argc, argv, &session, NULL, NULL)) {
+//            case NETSNMP_PARSE_ARGS_ERROR:
+//                throw string ("Error parsing arguments");
+//            case NETSNMP_PARSE_ARGS_SUCCESS_EXIT:
+//                throw string ("Ready parsing arguments");
+//            case NETSNMP_PARSE_ARGS_ERROR_USAGE:
+//                throw string ("Error parsing arguments due to incorrect usage");
+//            default:
+//                break;
+//        }
+//        if (arg >= argc) {
+//            throw string ("Missing object name");
+//        }
+//        if ((argc - arg) > SNMP_MAX_CMDLINE_OIDS) {
+//            throw string ("Too many object identifiers specified");
+//        }
+
+        // The snmp version, one of SNMP_VERSION_1 / SNMP_VERSION_2c / SNMP_VERSION_3.
+        session.version = SNMP_VERSION_2c;
+
+        // The number of retries before timeout.
+        // Note that one retry means it will try 2 times.
+        session.retries = 1;
+
+        // Number of microseconds until first timeout, then exponential backoff.
+        session.timeout = 2000000;
+
+        // Name or address of default peer (may include transport specifier and/or port number)
+        session.peername = const_cast <char *> ("udp:127.0.0.1:161");
+
+        // The community for outgoing requests and the length of the community name.
+        {
+            char * char_ptr = const_cast <char *> ("public");
+            session.community = reinterpret_cast <u_char*> (char_ptr);
+            session.community_len = strlen (char_ptr);
         }
-        
-        if (arg >= argc) {
-            fprintf(stderr, "\n");
-            usage();
-            throw string ("Missing object name");
-        }
-        if ((argc - arg) > SNMP_MAX_CMDLINE_OIDS) {
-            usage();
-            throw string ("Too many object identifiers specified");
-        }
-        
-        // Get the object names.
+
+        // Define the object name(s).
         char * names[SNMP_MAX_CMDLINE_OIDS];
         int current_name { 0 };
-        for (; arg < argc; arg++) names[current_name++] = argv[arg];
-        
+        //for (; arg < argc; arg++) names[current_name++] = argv[arg];
+        names [current_name++] = const_cast <char *> ("iso.3.6.1.2.1.1.3.0");
         
         // Open an SNMP session.
+        // The snmp_open returns a pointer to a newly-formed struct snmp_session object,
+        // which the application must use to reference the active SNMP session.
         ss = snmp_open(&session);
         if (ss == NULL) {
-            // Diagnose snmp_open errors with the input netsnmp_session pointer
+            // Diagnose snmp_open errors with the input netsnmp_session pointer.
             snmp_sess_perror("snmpget", &session);
             throw string ("Cannot open session");
         }
 
         // Repeat the request several times.
-        for (int repeat = 0; repeat < 5; repeat++) {
+        for (int repeat = 0; repeat < 10; repeat++) {
 
             // Create PDU for GET request and add object names to request.
             size_t name_length = MAX_OID_LEN;
@@ -161,9 +149,6 @@ int main (int argc, char *argv[])
 
     // Close the session.
     if (ss) snmp_close(ss);
-
-    // Cleanup.
-    SOCK_CLEANUP;
 
     // Ready.
     return 0;

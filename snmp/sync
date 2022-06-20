@@ -1,4 +1,4 @@
 #!/bin/bash
 
-/opt/local/bin/rsync -av . debian11.local:snmp
+/opt/local/bin/rsync -av -e "ssh -p 2222"  . bibleconsultants.nl:snmp
 
