@@ -1,5 +1,7 @@
 #include <string>
 #include <iostream>
+#include <chrono>
+#include <thread>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
@@ -61,11 +63,13 @@ int main ()
         // For some as yet unknown reason, then it goes well.
         // The fake arguments will be allocated in dynamic memory,
         // because they can be written to by the parser.
-        constexpr int argc = 3;
-        char * argv [argc] { strdup ("program"), strdup ("host"), strdup ("oid") };
-        snmp_parse_args(argc, argv, &session, NULL, NULL);
-        // Free the temporal arguments allocated in dynamic memory.
-        for (int i = 0; i < argc; i++) free (argv[i]);
+        // At the end,free the temporal arguments allocated in dynamic memory.
+        {
+            constexpr int argc = 3;
+            char * argv [argc] { strdup ("program"), strdup ("host"), strdup ("oid") };
+            snmp_parse_args(argc, argv, &session, NULL, NULL);
+            for (int i = 0; i < argc; i++) free (argv[i]);
+        }
 
         // The snmp version, one of SNMP_VERSION_1 / SNMP_VERSION_2c / SNMP_VERSION_3.
         session.version = SNMP_VERSION_3;
@@ -143,7 +147,9 @@ int main ()
         }
 
         // Repeat the request several times.
-        for (int repeat = 0; repeat < 3; repeat++) {
+        constexpr int max_repeat = 10000000;
+        for (int repeat = 0; repeat < max_repeat; repeat++) {
+            cout << repeat << " ";
 
             // Create PDU for GET request and add object names to request.
             size_t name_length = MAX_OID_LEN;
@@ -198,7 +204,7 @@ int main ()
             
             if (response) snmp_free_pdu(response);
 
-            
+            //this_thread::sleep_for(chrono::milliseconds (100));
         }
         
 
