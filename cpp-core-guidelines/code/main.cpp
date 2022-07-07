@@ -161,7 +161,6 @@ void print6 ()
   
 }
 
-
 void print7 ()
 {
   vector <int> values { 1, 2, 3 };
@@ -175,7 +174,6 @@ void print7 ()
   }
   cout << sum1 << " " << sum2 << endl;
 }
-
 
 void print8 ()
 {
