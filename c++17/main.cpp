@@ -51,6 +51,7 @@ string filter_url_dirname (string url)
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
   
+#pragma clang ignored "-Wxxx"
 //  {
 //    set <string> myset {"hello"};
 //    int inserted {0}, skipped {0};
