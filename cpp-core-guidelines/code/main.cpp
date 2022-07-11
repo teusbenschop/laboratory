@@ -102,6 +102,7 @@ void print4 ()
   use1 (value1);
   use2 (value2);
   use3 (value3);
+  delete value3;
 }
 
 class area
@@ -143,12 +144,18 @@ void print5 ()
   }
 }
 
+void print6_f2 (string s)
+{
+  cout << s << endl;
+}
+
 void print6 ()
 {
+  string s { "value" };
   // Which method of passing variables is better in which circumstances?
   // F.16: For “in” parameters, pass cheaply-copied types by value and others by reference to const.
   // void f1 (const string& s);    // OK: pass by reference to const; always cheap.
-  // void f2 (string s);           // Bad: potentially expensive.
+  print6_f2 (s);                   // Bad: potentially expensive.
   // void f3 (int x);              // OK: Unbeatable.
   // void f4 (const int& x);       // Bad: overhead on access in f4().
   // void f5 (unique_ptr<string>); // Input only, and moves ownership of the object.
@@ -158,7 +165,6 @@ void print6 ()
   // void f7 (string && s);        // This suggests that the variable will be moved in f7.
   // F.20: For “out” output values, prefer return values to output parameters
   // vector<string> f8 ();
-  
 }
 
 void print7 ()
@@ -166,7 +172,7 @@ void print7 ()
   vector <int> values { 1, 2, 3 };
   // Cpp Core Guidelines
   // ES.1: Prefer the standard library to other libraries and to “handcrafted code”.
-  auto sum1 = accumulate(begin(values), end(values), 0.0);
+  auto sum1 = accumulate(begin(values), end(values), 0);
   int sum2 { 0 };
   {
     int max = values.size();   // bad: verbose, purpose unstated
