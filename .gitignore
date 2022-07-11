@@ -65,3 +65,5 @@ c++17/x64/Debug/*
 modbus-snmp/modbus-client
 modbus-snmp/modbus-server
 snmp/net-snmp-5.9.1
+modbus/modbus-client
+modbus/modbus-server
