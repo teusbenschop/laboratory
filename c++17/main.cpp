@@ -48,10 +48,10 @@ string filter_url_dirname (string url)
 //  return cpp17_struct {1, "2.3"};
 //}
 
+#pragma clang ignored "-Wxxx"
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-  
-#pragma clang ignored "-Wxxx"
 //  {
 //    set <string> myset {"hello"};
 //    int inserted {0}, skipped {0};
@@ -195,13 +195,27 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 //    }
 //  }
 
+//  {
+//    // Quotes in ordinary string literal.
+//    cout << "'hello world'" << endl;
+//    // Quotes in raw string literal. Example: R"(text)".
+//    cout << R"("hello world")" << endl;
+//    // Clean way to insert quotes.
+//    cout << std::quoted ("hello world") << endl;
+//  }
+  
   {
-    // Quotes in ordinary string literal.
-    cout << "'hello world'" << endl;
-    // Quotes in raw string literal. Example: R"(text)".
-    cout << R"("hello world")" << endl;
-    // Clean way to insert quotes.
-    cout << std::quoted ("hello world") << endl;
+    for (int i = 1; i < 10; i++) {
+      int rev_code = i;
+      cout << rev_code;
+      rev_code >>= 1;
+      cout << " " << rev_code;
+      int tree_cur = 10;
+      //tree_cur -= ((rev_code >>= 1) & 1);
+      tree_cur -= ((rev_code) & 1);
+      cout << " " << tree_cur << endl;
+    }
+
   }
 
   return EXIT_SUCCESS;
