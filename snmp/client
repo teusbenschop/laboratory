@@ -1,14 +1,21 @@
 #!/bin/bash
 
-g++ snmpget.cpp -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
-if [ $? -ne 0 ]; then exit; fi
-# export SNMPCONFPATH=/home/teus/snmp
-# export MIBS=+ALL
+#g++ snmpget.cpp -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
+#if [ $? -ne 0 ]; then exit; fi
+#export SNMPCONFPATH=/Users/teus/.snmp
+export MIBS=NTCIP1203-v0305
 #./snmpget -v 2c -c public -m +ALL -M +/home/teus/snmp/mibs udp:127.0.0.1:161 .1.3.6.1.2.1.1.3.0
 #./snmpget
-#snmptranslate shortErrorStatus.0
+# snmptranslate -m +ALL -M /Users/teus/.snmp/mibs shortErrorStatus.0
 #snmpget -v 3 tcp:192.168.140.10 shortErrorStatus.0
 #snmpget -v 3 tcp:192.168.140.10 1.3.6.1.4.1.1206.4.2.3.9.7.1.0
 #./snmpget host oid
-./snmpget
+#./snmpget
 
+TOID=shortErrorStatus.0
+echo -n "The OID $TOID is numeric OID: "
+snmptranslate -IR -On shortErrorStatus.0
+
+snmpget -v 2c -c public udp:127.0.0.1:6001  .1.3.6.1.4.1.1206.4.2.3.9.7.1.0
+
+echo

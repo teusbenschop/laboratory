@@ -1,26 +1,38 @@
 #!/bin/bash
 
 # Version information.
-/usr/sbin/snmpd --version
-if [ $? -ne 0 ]; then exit; fi
+#/usr/sbin/snmpd --version
+#if [ $? -ne 0 ]; then exit; fi
+
+# Copy the configuration to the default location for it.
+mkdir -p ~/.snmp
+cp snmpd.conf ~/.snmp
 
 # Copy the MIB files to the default location to search for MIBs.
 mkdir -p ~/.snmp/mibs
-cp *.my ~/.snmp/mibs
+cp mibs/* ~/.snmp/mibs
 
 # Translate part of MIB file.
-TOID=ciscoLS1010ChassisFanLed
-echo Translating $TOID
-snmptranslate -m +ALL -IR -On $TOID
-echo
+#TOID=shortErrorStatus.0
+#echo Translating $TOID
+#snmptranslate -On $TOID
+#echo
 
 # Man page: http://www.net-snmp.org/docs/man/snmpd.html
-#LISTENER=tcp:6000
+#LISTENER=udp:6000
 #LISTENER=udp:161
-#echo Starting SNMP daemon
-#/usr/sbin/snmpd -f -m +ALL -a -d -V -DALL $LISTENER
+LISTENER=udp:6001
+echo Starting SNMP daemon
+export MIBDIRS=/home/teus/.snmp/mibs
+export MIBS=+ALL
+/usr/sbin/snmpd -a -c ~/.snmp/snmpd.conf -d -f -m NTCIP1203-v0305 -V  $LISTENER
 
-systemctl status snmpd
+
+# snmpd -LOw -u Debian-snmp -g Debian-snmp -I -smux,mteTrigger,mteTriggerConf -f -p /run/snmpd.pid
+
+
+
+# systemctl status snmpd
 
 # sudo nano /etc/snmp/snmpd.conf
 
