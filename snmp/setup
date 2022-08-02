@@ -3,7 +3,7 @@
 # Copy the configuration to the default location for it.
 mkdir -p ~/.snmp
 if [ $? -ne 0 ]; then exit; fi
-cp snmpd.conf ~/.snmp
+cp agent/snmpd.conf ~/.snmp
 if [ $? -ne 0 ]; then exit; fi
 
 # Copy the MIB files to the default location to search for MIBs.
@@ -14,6 +14,12 @@ if [ $? -ne 0 ]; then exit; fi
 
 #export MIBS=+ALL
 export MIBS=NTCIP1203-v0305
+
+# Compile the Net-SNMP library as-is.
+pushd net-snmp-5.9.1
+echo | ./configure
+make --jobs=8
+popd
 
 # Translate part of MIB file.
 TOID=shortErrorStatus.0

@@ -1,15 +1,6 @@
 #!/bin/bash
 
-# Copy the configuration to the default location for it.
-mkdir -p ~/.snmp
-cp snmpd.conf ~/.snmp
-
-# Copy the MIB files to the default location to search for MIBs.
-mkdir -p ~/.snmp/mibs
-cp mibs/* ~/.snmp/mibs
-
-#g++ snmpd.c -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
-gcc snmpd.c -lnetsnmp -lm -lcrypto -o snmpd
+g++ snmpd.cpp -std=c++17 `net-snmp-config --cflags --libs` -o snmpd
 if [ $? -ne 0 ]; then exit; fi
 
 

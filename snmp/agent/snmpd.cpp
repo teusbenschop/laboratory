@@ -31,7 +31,7 @@
  * *****************************************************************
  */
 /*
- * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
+ * Copyright ï¿½ 2003 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms specified in the COPYING file
  * distributed with the Net-SNMP package.
  */
@@ -145,25 +145,10 @@
 #include <net-snmp/agent/table.h>
 #include <net-snmp/agent/table_iterator.h>
 
-#include "../snmplib/snmp_syslog.h"
+// Todo #include "../snmplib/snmp_syslog.h"
 
-#include "mibgroup/util_funcs/restart.h"
+// Todo #include "mibgroup/util_funcs/restart.h"
 
-/*
- * Include winservice.h to support Windows Service
- */
-#ifdef WIN32
-#include <windows.h>
-#include <tchar.h>
-#include <net-snmp/library/winservice.h>
-
-#define WIN32SERVICE
-
-#endif
-
-#ifndef NETSNMP_NO_SYSTEMD
-#include <net-snmp/library/sd-daemon.h>
-#endif
 
 netsnmp_feature_want(logging_file);
 netsnmp_feature_want(logging_stdio);
@@ -195,6 +180,7 @@ LPCTSTR         app_name_long = _T("Net-SNMP Agent");     /* Application Name */
 
 const char     *app_name = "snmpd";
 
+#undef USING_SMUX_MODULE // Todo
 #ifdef USING_SMUX_MODULE
 #include <mibgroup/smux/smux.h>
 #endif /* USING_SMUX_MODULE */
@@ -856,33 +842,6 @@ main(int argc, char *argv[])
 #endif /* NETSNMP_LOGFILE */
 #endif /* ! NETSNMP_DEFAULT_LOG_SYSLOG */
 
-#ifdef USING_UTIL_FUNCS_RESTART_MODULE
-    {
-        /*
-         * Initialize a argv set to the current for restarting the agent.
-         */
-        char *cptr, **argvptr;
-
-        argvrestartp = (char **)malloc((argc + 2) * sizeof(char *));
-        argvptr = argvrestartp;
-        for (i = 0, ret = 1; i < argc; i++) {
-            ret += strlen(argv[i]) + 1;
-        }
-        argvrestart = (char *) malloc(ret);
-        argvrestartname = (char *) malloc(strlen(argv[0]) + 1);
-        if (!argvrestartp || !argvrestart || !argvrestartname) {
-            fprintf(stderr, "malloc failure processing argvrestart\n");
-            goto out;
-        }
-        strcpy(argvrestartname, argv[0]);
-
-        for (cptr = argvrestart, i = 0; i < argc; i++) {
-            strcpy(cptr, argv[i]);
-            *(argvptr++) = cptr;
-            cptr += strlen(argv[i]) + 1;
-        }
-    }
-#endif /* USING_UTIL_FUNCS_RESTART_MODULE */
 
     if (agent_mode == -1) {
         if (strstr(argv[0], "agentxd") != NULL) {
@@ -1097,11 +1056,6 @@ main(int argc, char *argv[])
     agent_status = AGENT_STOPPED;
 #endif
 
-#ifdef USING_UTIL_FUNCS_RESTART_MODULE
-    SNMP_FREE(argvrestartname);
-    SNMP_FREE(argvrestart);
-    SNMP_FREE(argvrestartp);
-#endif /* USING_UTIL_FUNCS_RESTART_MODULE */
 
     exit_code = 0;
 
