@@ -86,7 +86,7 @@ int main ()
         session.peername = const_cast <char *> (peername.c_str());
 
         // The default SNMPv3 security name to use when using SNMPv3.
-        string security_name = "lassy";
+        string security_name = "username";
         {
             char * char_ptr = const_cast <char *> (security_name.c_str());
             session.securityName = char_ptr;
@@ -116,7 +116,7 @@ int main ()
 
         // The default SNMPv3 authentication pass phrase to use.
         // Note: It must be at least 8 characters long.
-        string pass_phrase = "Key4Lassy";
+        string pass_phrase = "password";
         {
             char * Apsz = const_cast <char *> (pass_phrase.c_str());
             if (Apsz) {
