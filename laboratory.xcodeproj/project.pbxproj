@@ -6,6 +6,22 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CAB882A42899027100CE878A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAB882A32899027100CE878A /* main.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CAB8829E2899027100CE878A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		CA06979627E9A86E00D94477 /* ncurses */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ncurses; sourceTree = "<group>"; };
 		CA0B46F82023498A00966B19 /* linux */ = {isa = PBXFileReference; lastKnownFileType = folder; path = linux; sourceTree = "<group>"; };
@@ -86,6 +102,8 @@
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
+		CAB882A02899027100CE878A /* snmp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = snmp; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAB882A32899027100CE878A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CABEE77C1DD5F653006D8D75 /* bubble.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bubble.html; sourceTree = "<group>"; };
 		CABEE77D1DD5F653006D8D75 /* full.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = full.html; sourceTree = "<group>"; };
@@ -108,6 +126,16 @@
 		CAEF740722945DB900F16631 /* lambdas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lambdas; sourceTree = "<group>"; };
 		CAF2844122676BD50052535E /* django */ = {isa = PBXFileReference; lastKnownFileType = folder; path = django; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CAB8829D2899027100CE878A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		CA0F08D11E5DFE30008F91C3 /* flexbox */ = {
@@ -361,10 +389,28 @@
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA53424D25B6115D008E452A /* websocket-client-1 */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
+				CAB882A22899027100CE878A /* snmp */,
+				CAB882A12899027100CE878A /* Products */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
 			tabWidth = 2;
+		};
+		CAB882A12899027100CE878A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CAB882A02899027100CE878A /* snmp */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CAB882A22899027100CE878A /* snmp */ = {
+			isa = PBXGroup;
+			children = (
+				CAB882A32899027100CE878A /* main.cpp */,
+			);
+			path = snmp;
+			sourceTree = "<group>";
 		};
 		CABEE77B1DD5F653006D8D75 /* quill */ = {
 			isa = PBXGroup;
@@ -413,6 +459,26 @@
 		};
 /* End PBXLegacyTarget section */
 
+/* Begin PBXNativeTarget section */
+		CAB8829F2899027100CE878A /* snmp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CAB882A52899027100CE878A /* Build configuration list for PBXNativeTarget "snmp" */;
+			buildPhases = (
+				CAB8829C2899027100CE878A /* Sources */,
+				CAB8829D2899027100CE878A /* Frameworks */,
+				CAB8829E2899027100CE878A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = snmp;
+			productName = snmp;
+			productReference = CAB882A02899027100CE878A /* snmp */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
 /* Begin PBXProject section */
 		CAB29AC11A4480CC00139BD7 /* Project object */ = {
 			isa = PBXProject;
@@ -422,6 +488,11 @@
 				TargetAttributes = {
 					CAB29AC51A4480CC00139BD7 = {
 						CreatedOnToolsVersion = 6.1.1;
+					};
+					CAB8829F2899027100CE878A = {
+						CreatedOnToolsVersion = 13.4.1;
+						DevelopmentTeam = L37WFUB5MH;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -435,13 +506,26 @@
 				Base,
 			);
 			mainGroup = CAB29AC01A4480CC00139BD7;
+			productRefGroup = CAB882A12899027100CE878A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				CAB29AC51A4480CC00139BD7 /* bibledit */,
+				CAB8829F2899027100CE878A /* snmp */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CAB8829C2899027100CE878A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CAB882A42899027100CE878A /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		CAB29AC61A4480CC00139BD7 /* Debug */ = {
@@ -568,6 +652,47 @@
 			};
 			name = Release;
 		};
+		CAB882A62899027100CE878A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = L37WFUB5MH;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		CAB882A72899027100CE878A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = L37WFUB5MH;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -585,6 +710,15 @@
 			buildConfigurations = (
 				CAB29AC91A4480CC00139BD7 /* Debug */,
 				CAB29ACA1A4480CC00139BD7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CAB882A52899027100CE878A /* Build configuration list for PBXNativeTarget "snmp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAB882A62899027100CE878A /* Debug */,
+				CAB882A72899027100CE878A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

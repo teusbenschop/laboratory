@@ -116,7 +116,7 @@ int main ()
 
         // The default SNMPv3 authentication pass phrase to use.
         // Note: It must be at least 8 characters long.
-        string pass_phrase = "password";
+        string pass_phrase = "password  ";
         {
             char * Apsz = const_cast <char *> (pass_phrase.c_str());
             if (Apsz) {

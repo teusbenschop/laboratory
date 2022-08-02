@@ -1,5 +1,6 @@
 #!/bin/bash
 
-/opt/local/bin/rsync -av -e "ssh -p 4444"  . bibleconsultants.nl:snmp
-#/opt/local/bin/rsync -av -e "ssh -p 2222"  . bibleconsultants.nl:snmp
+find . -name .DS_Store -delete
+#/opt/local/bin/rsync -av -e "ssh -p 4444"  . bibleconsultants.nl:snmp
+/opt/local/bin/rsync -av -e "ssh -p 2222"  . bibleconsultants.nl:snmp
 

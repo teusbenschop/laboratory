@@ -4,7 +4,7 @@ SNMP info
 Info and library: http://www.net-snmp.org
 Man pages: http://www.net-snmp.org/docs/man
 
-The SNMP daemon runs always. When contacted it returns a response. It's the server.
+The SNMP agent runs always. When contacted it returns a response. It's the server.
 A SNMP manager is like a client. It contacts the daemon to query it.
 
 Debian packages: $ apt install libsnmp-dev snmp snmpd

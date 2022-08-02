@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Copy the configuration to the default location for it.
+mkdir -p ~/.snmp
+if [ $? -ne 0 ]; then exit; fi
+cp snmpd.conf ~/.snmp
+if [ $? -ne 0 ]; then exit; fi
+
+# Copy the MIB files to the default location to search for MIBs.
+mkdir -p ~/.snmp/mibs
+if [ $? -ne 0 ]; then exit; fi
+cp mibs/* ~/.snmp/mibs
+if [ $? -ne 0 ]; then exit; fi
+
+#export MIBS=+ALL
+export MIBS=NTCIP1203-v0305
+
+# Translate part of MIB file.
+TOID=shortErrorStatus.0
+echo -n "The OID $TOID is numeric OID: "
+snmptranslate -IR -On shortErrorStatus.0
+
