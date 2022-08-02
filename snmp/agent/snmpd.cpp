@@ -397,14 +397,6 @@ main(int argc, char *argv[])
     /* check if systemd has sockets for us and don't close them */
     prepared_sockets = netsnmp_sd_listen_fds(0);
 #endif /* NETSNMP_NO_SYSTEMD */
-#ifndef WIN32
-    /*
-     * close all non-standard file descriptors we may have
-     * inherited from the shell.
-     */
-    if (!prepared_sockets)
-        netsnmp_close_fds(2);
-#endif
     
     /*
      * register signals ASAP to prevent default action (usually core)
@@ -787,7 +779,7 @@ main(int argc, char *argv[])
         netsnmp_ds_set_boolean(NETSNMP_DS_APPLICATION_ID, 
                                NETSNMP_DS_AGENT_NO_ROOT_ACCESS, 1);
         init_agent(app_name);        /* register our .conf handlers */
-        init_mib_modules();
+//        init_mib_modules();
         init_snmp(app_name);
         fprintf(stderr, "Configuration directives understood:\n");
         read_config_print_usage("  ");
@@ -860,7 +852,7 @@ main(int argc, char *argv[])
         snmp_log(LOG_ERR, "Agent initialization failed\n");
         goto out;
     }
-    init_mib_modules();
+    //init_mib_modules();
 
     /*
      * start library 

@@ -1,41 +1,25 @@
 #!/bin/bash
 
-g++ snmpd.cpp -std=c++17 `net-snmp-config --cflags --libs` -o snmpd
+# Compile the modified SNMP daemon.
+g++ snmpd.cpp -std=c++17 ../net-snmp-5.9.1/agent/.libs/libnetsnmpagent.so -lnetsnmp -lm -lssl -lcrypto -o snmpd
 if [ $? -ne 0 ]; then exit; fi
 
-
-
 # Version information.
-#/usr/sbin/snmpd --version
+./snmpd --version | awk 'NF'
 #if [ $? -ne 0 ]; then exit; fi
 
-# Translate part of MIB file.
-#TOID=shortErrorStatus.0
-#echo Translating $TOID
-#snmptranslate -On $TOID
-#echo
+# Set the MIB file.
+export MIBDIRS=~/.snmp/mibs
+export MIBS=NTCIP1203-v0305
 
-# Man page: http://www.net-snmp.org/docs/man/snmpd.html
-#LISTENER=udp:6000
-#LISTENER=udp:161
-#LISTENER=udp:6001
-#echo Starting SNMP daemon
-#export MIBDIRS=/home/teus/.snmp/mibs
-#export MIBS=+ALL
-#/usr/sbin/snmpd -a -c ~/.snmp/snmpd.conf -d -f -m NTCIP1203-v0305 -V  $LISTENER
+TOID=shortErrorStatus.0
+echo -n "$TOID is "
+snmptranslate -IR -On shortErrorStatus.0
 
-# snmpd -LOw -u Debian-snmp -g Debian-snmp -I -smux,mteTrigger,mteTriggerConf -f -p /run/snmpd.pid
-
-# systemctl status snmpd
-
-# sudo nano /etc/snmp/snmpd.conf
-
-# Change:
-# rocommunity  public default -V systemonly
-# rocommunity6 public default -V systemonly
-# To:
-# rocommunity  public default
-# rocommunity6 public default
-
-# sudo systemctl restart snmpd
+echo Starting SNMP daemon
+# Man pages: http://www.net-snmp.org/docs/man/
+LISTENER=udp:6161
+LISTENER=tcp:127.0.0.1:2161
+LISTENER=udp:161
+sudo ./snmpd -a -c ~/.snmp/snmpd.conf -C -d -f -M $MIBDIRS -m $MIBS -V -D $LISTENER
 
