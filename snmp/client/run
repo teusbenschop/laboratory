@@ -15,9 +15,10 @@ export MIBS=NET-SNMP-EXAMPLES-MIB
 #./snmpget host oid
 #./snmpget
 
-#TOID=shortErrorStatus.0
-#echo -n "Translating $TOID to "
-#snmptranslate -IR -On shortErrorStatus.0
+TOID=shortErrorStatus.0
+TOID=netSnmpExampleInteger.0
+echo -n "Translating $TOID to "
+snmptranslate -IR -On $TOID
 
 LISTENER=udp:127.0.0.1:6161
 LISTENER=tcp:127.0.0.1:2161
