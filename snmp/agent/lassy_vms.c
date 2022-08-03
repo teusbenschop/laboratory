@@ -29,10 +29,11 @@
 // the support we need so the needed functions aren't removed at compile time.
 netsnmp_feature_require(long_instance);
 
-// Then, we declare the variables we want to be accessed.
+// Then declare the variables to be accessed.
 // Plus their default values.
 static long net_snmp_example_integer = 42;
 
+// Declare the callback handler for printing out more information on SET and GET.
 int handle_net_snmp_example_integer_object(netsnmp_mib_handler *handler,
                                            netsnmp_handler_registration *reginfo,
                                            netsnmp_agent_request_info *reqinfo,
@@ -56,15 +57,15 @@ int handle_net_snmp_example_integer_object(netsnmp_mib_handler *handler,
     return SNMP_ERR_GENERR;
 }
 
-// Our initialization routine, automatically called by the agent
-// (to get called, the function name must match init_FILENAME()).
+// The initialization routine, automatically called by the agent.
+// To get called, the function name must match init_FILENAME().
 void init_lassy_vms(void)
 {
-    // The OID we want to register our integer at.
+    // The OID to register the integer at.
     // This should be a fully qualified instance.
-    // In our case, it's a scalar at:
+    // In this case, it's a scalar at:
     // NET-SNMP-EXAMPLES-MIB::netSnmpExampleInteger.0
-    // (note the trailing 0 which is required for any instantiation of any scalar object).
+    // Note the trailing 0 which is required for any instantiation of any scalar object.
     oid my_registration_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 2, 1, 1, 0 };
     
     // A debugging statement.
@@ -73,13 +74,12 @@ void init_lassy_vms(void)
                 "Initalizing example scalar int.  Default value = %ld\n",
                 net_snmp_example_integer));
     
-    // The line below registers our variable above as accessible and makes it writable.
+    // The line below registers the scalar variable above as accessible and makes it writable.
     // A read only version of the same registration would merely call
     // register_read_only_long_instance()
     // instead.
-    // If we wanted a callback when the value was retrieved or set
-    // (even though the details of doing this are handled for you),
-    // you could change the NULL pointer below to a valid handler function.
+    // Also register a callback when the value was retrieved or set.
+    // Note that the details of doing this are handled automatically.
     netsnmp_register_long_instance("my example int variable",
                                    my_registration_oid,
                                    OID_LENGTH(my_registration_oid),
