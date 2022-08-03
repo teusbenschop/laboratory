@@ -19,19 +19,24 @@
  *
  */
 
-// Start by including the appropriate header files.
+
+// Include the appropriate header files.
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
-// If --enable-minimalist has been turned on, we need to register
-// the support we need so the needed functions aren't removed at compile time.
+
+// If "--enable-minimalist" has been turned on,
+// register the support needed,
+// so the needed functions aren't removed at compile time.
 netsnmp_feature_require(long_instance);
 
-// Then declare the variables to be accessed.
+
+// Declare the variables to be accessed.
 // Plus their default values.
 static long net_snmp_example_integer = 42;
+
 
 // Declare the callback handler for printing out more information on SET and GET.
 int handle_net_snmp_example_integer_object(netsnmp_mib_handler *handler,
@@ -57,6 +62,7 @@ int handle_net_snmp_example_integer_object(netsnmp_mib_handler *handler,
     return SNMP_ERR_GENERR;
 }
 
+
 // The initialization routine, automatically called by the agent.
 // To get called, the function name must match init_FILENAME().
 void init_lassy_vms(void)
@@ -70,9 +76,7 @@ void init_lassy_vms(void)
     
     // A debugging statement.
     // Run the agent with -Dexample_lassy_vms to see the output of this debugging statement.
-    DEBUGMSGTL(("example_lassy_vms",
-                "Initalizing example scalar int.  Default value = %ld\n",
-                net_snmp_example_integer));
+    // DEBUGMSGTL(("example_lassy_vms", "Initalizing example scalar int. Default value = %ld\n", net_snmp_example_integer));
     
     // The line below registers the scalar variable above as accessible and makes it writable.
     // A read only version of the same registration would merely call
@@ -86,6 +90,6 @@ void init_lassy_vms(void)
                                    &net_snmp_example_integer,
                                    &handle_net_snmp_example_integer_object);
     
-    DEBUGMSGTL(("example_lassy_vms",
-                "Done initalizing example scalar int\n"));
+    // DEBUGMSGTL(("example_lassy_vms", "Done initalizing example scalar int\n"));
 }
+
