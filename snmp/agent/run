@@ -8,18 +8,19 @@ if [ $? -ne 0 ]; then exit; fi
 ./snmpd --version | awk 'NF'
 #if [ $? -ne 0 ]; then exit; fi
 
-# Set the MIB file.
-export MIBDIRS=~/.snmp/mibs
-export MIBS=NTCIP1203-v0305
+# Set the MIB file(s).
+MIBDIRS=~/.snmp/mibs
+MIBS=NTCIP1203-v0305
+#export MIBS=ALL
 
-TOID=shortErrorStatus.0
-echo -n "$TOID is "
-snmptranslate -IR -On shortErrorStatus.0
+#TOID=shortErrorStatus.0
+#echo -n "$TOID is "
+#snmptranslate -IR -On shortErrorStatus.0
 
 echo Starting SNMP daemon
 # Man pages: http://www.net-snmp.org/docs/man/
+LISTENER=udp:161
 LISTENER=udp:6161
 LISTENER=tcp:127.0.0.1:2161
-LISTENER=udp:161
-sudo ./snmpd -a -c ~/.snmp/snmpd.conf -C -d -f -M $MIBDIRS -m $MIBS -V -D $LISTENER
+./snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V -D $LISTENER
 
