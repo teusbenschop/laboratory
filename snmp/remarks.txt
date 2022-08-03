@@ -7,8 +7,8 @@ Man pages: http://www.net-snmp.org/docs/man
 The SNMP agent runs always. When contacted it returns a response. It's the server.
 A SNMP manager is like a client. It contacts the daemon to query it.
 
-Debian packages: $ apt install libsnmp-dev snmp snmpd
-macOS: $ port install net-snmp
+Debian: $ apt install libsnmp-dev snmp snmpd
+macOS:  $ port install net-snmp
 RedHat: $ yum install net-snmp
 
 Example snmpwalk: https://www.ittsystems.com/snmpwalk-examples/

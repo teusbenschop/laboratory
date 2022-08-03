@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# See the tutorial at http://www.net-snmp.org/tutorial/tutorial-5/toolkit/mib_module/
+
 # Copy the configuration to the default location for it.
 mkdir -p ~/.snmp
 if [ $? -ne 0 ]; then exit; fi
@@ -11,14 +13,22 @@ mkdir -p ~/.snmp/mibs
 if [ $? -ne 0 ]; then exit; fi
 cp mibs/* ~/.snmp/mibs
 if [ $? -ne 0 ]; then exit; fi
+cp net-snmp-5.9.1/mibs/* ~/.snmp/mibs/
+if [ $? -ne 0 ]; then exit; fi
+
+# Copy the scalar_int.h/.c into the mibsgroup.
+cp agent/scalar_int.* net-snmp-5.9.1/agent/mibgroup
+if [ $? -ne 0 ]; then exit; fi
 
 #export MIBS=+ALL
 export MIBS=NTCIP1203-v0305
 
 # Compile the Net-SNMP library as-is.
 pushd net-snmp-5.9.1
-echo | ./configure
-make --jobs=8
+echo | ./configure --with-mib-modules="scalar_int"
+if [ $? -ne 0 ]; then exit; fi
+make --jobs=25
+if [ $? -ne 0 ]; then exit; fi
 popd
 
 # Translate part of MIB file.

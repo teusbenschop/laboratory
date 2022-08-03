@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Compile the modified SNMP daemon.
-g++ snmpd.cpp -std=c++17 ../net-snmp-5.9.1/agent/.libs/libnetsnmpagent.so -lnetsnmp -lm -lssl -lcrypto -o snmpd
-if [ $? -ne 0 ]; then exit; fi
+#g++ snmpd.cpp -std=c++17 ../net-snmp-5.9.1/agent/.libs/libnetsnmpagent.so -lnetsnmp -lm -lssl -lcrypto -o snmpd
+#if [ $? -ne 0 ]; then exit; fi
 
 # Version information.
-./snmpd --version | awk 'NF'
+#./snmpd --version | awk 'NF'
 #if [ $? -ne 0 ]; then exit; fi
 
 # Set the MIB file(s).
@@ -22,5 +22,4 @@ echo Starting SNMP daemon
 LISTENER=udp:161
 LISTENER=udp:6161
 LISTENER=tcp:127.0.0.1:2161
-./snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V -D $LISTENER
-
+~/snmp/net-snmp-5.9.1/agent/snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V -D $LISTENER
