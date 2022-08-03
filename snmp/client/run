@@ -4,8 +4,8 @@ g++ snmpget.cpp -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
 if [ $? -ne 0 ]; then exit; fi
 
 #export SNMPCONFPATH=/Users/teus/.snmp
-#export MIBS=NTCIP1203-v0305
 export MIBS=NET-SNMP-EXAMPLES-MIB
+export MIBS=NTCIP1203-v0305
 
 #./snmpget -v 2c -c public -m +ALL -M +/home/teus/snmp/mibs udp:127.0.0.1:161 .1.3.6.1.2.1.1.3.0
 #./snmpget
@@ -15,8 +15,8 @@ export MIBS=NET-SNMP-EXAMPLES-MIB
 #./snmpget host oid
 #./snmpget
 
-TOID=shortErrorStatus.0
 TOID=netSnmpExampleInteger.0
+TOID=shortErrorStatus.0
 echo -n "Translating $TOID to "
 snmptranslate -IR -On $TOID
 
@@ -25,7 +25,11 @@ LISTENER=tcp:127.0.0.1:2161
 #snmpget -v 2c -c public $LISTENER shortErrorStatus.0
 #snmpwalk -v 2c -c public $LISTENER
 #snmpget -v 2c -c public $LISTENER shortErrorStatus.0
-snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 42
-snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
-snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 123
-snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
+#snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 42
+#snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
+#snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 123
+#snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
+snmpset -v 2c -c public $LISTENER shortErrorStatus.0 = 42
+snmpget -v 2c -c public $LISTENER shortErrorStatus.0
+snmpset -v 2c -c public $LISTENER shortErrorStatus.0 = 123
+snmpget -v 2c -c public $LISTENER shortErrorStatus.0

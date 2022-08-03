@@ -33,32 +33,33 @@
 netsnmp_feature_require(long_instance);
 
 
-// Declare the variables to be accessed.
+// Declare the variabless to be accessed.
 // Plus their default values.
 static long net_snmp_example_integer = 42;
+static long lassy_vms_short_error_status = 0;
 
 
 // Declare the callback handler for printing out more information on SET and GET.
-int handle_net_snmp_example_integer_object(netsnmp_mib_handler *handler,
-                                           netsnmp_handler_registration *reginfo,
-                                           netsnmp_agent_request_info *reqinfo,
-                                           netsnmp_request_info *requests)
+int handle_lassy_vms_object(netsnmp_mib_handler *handler,
+                            netsnmp_handler_registration *reginfo,
+                            netsnmp_agent_request_info *reqinfo,
+                            netsnmp_request_info *requests)
 {
     if (reqinfo->mode == MODE_GET) {
         //            net_snmp_example_integer = 100500;
         //            snmp_set_var_typed_value(requests->requestvb, ASN_INTEGER,
         //                                     &net_snmp_example_integer,
         //                                     sizeof(long));
-        printf("get net_snmp_example_integer\n");
+        printf("Get %s\n", reginfo->handlerName);
         return SNMP_ERR_NOERROR;
     }
     if (MODE_IS_SET(reqinfo->mode)) {
         if (reqinfo->mode == MODE_SET_COMMIT) {
-            printf("set net_snmp_example_integer\n");
+            printf("Set %s\n", reginfo->handlerName);
         }
         return SNMP_ERR_NOERROR;
     }
-    printf ("unknown mode (%d) in handle_net_snmp_example_integer_object\n", reqinfo->mode);
+    printf ("unknown mode (%d) in handler %s\n", reqinfo->mode, reginfo->handlerName);
     return SNMP_ERR_GENERR;
 }
 
@@ -72,8 +73,9 @@ void init_lassy_vms(void)
     // In this case, it's a scalar at:
     // NET-SNMP-EXAMPLES-MIB::netSnmpExampleInteger.0
     // Note the trailing 0 which is required for any instantiation of any scalar object.
-    oid my_registration_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 2, 1, 1, 0 };
-    
+    oid net_snmp_example_integer_oid[] = { 1, 3, 6, 1, 4, 1, 8072, 2, 1, 1, 0 };
+    oid lassy_vms_short_error_status_oid[] = { 1, 3, 6, 1, 4, 1, 1206, 4, 2, 3, 9, 7, 1, 0 };
+
     // A debugging statement.
     // Run the agent with -Dexample_lassy_vms to see the output of this debugging statement.
     // DEBUGMSGTL(("example_lassy_vms", "Initalizing example scalar int. Default value = %ld\n", net_snmp_example_integer));
@@ -85,11 +87,16 @@ void init_lassy_vms(void)
     // Also register a callback when the value was retrieved or set.
     // Note that the details of doing this are handled automatically.
     netsnmp_register_long_instance("my example int variable",
-                                   my_registration_oid,
-                                   OID_LENGTH(my_registration_oid),
+                                   net_snmp_example_integer_oid,
+                                   OID_LENGTH(net_snmp_example_integer_oid),
                                    &net_snmp_example_integer,
-                                   &handle_net_snmp_example_integer_object);
-    
+                                   &handle_lassy_vms_object);
+    netsnmp_register_long_instance("shortErrorStatus.0",
+                                   lassy_vms_short_error_status_oid,
+                                   OID_LENGTH(lassy_vms_short_error_status_oid),
+                                   &lassy_vms_short_error_status,
+                                   &handle_lassy_vms_object);
+
     // DEBUGMSGTL(("example_lassy_vms", "Done initalizing example scalar int\n"));
 }
 
