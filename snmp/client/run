@@ -28,6 +28,3 @@ snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 42
 snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
 snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 123
 snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
-
-
-

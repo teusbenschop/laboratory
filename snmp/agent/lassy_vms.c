@@ -1,4 +1,4 @@
-/**  @example scalar_int.c
+/**  @example lassy_vms.c
  *  This example creates some scalar registrations that allows
  *  some simple variables to be accessed via SNMP.  In a more
  *  realistic example, it is likely that these variables would also be
@@ -19,9 +19,7 @@
  *
  */
 
-/*
- * start be including the appropriate header files 
- */
+// Start by including the appropriate header files.
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 #include <net-snmp/net-snmp-includes.h>
@@ -43,7 +41,7 @@ static long     example1 = 42;  /* default value */
  * (to get called, the function name must match init_FILENAME())
  */
 void
-init_scalar_int(void)
+init_lassy_vms(void)
 {
     /*
      * the OID we want to register our integer at.  This should be a
@@ -56,10 +54,10 @@ init_scalar_int(void)
         { 1, 3, 6, 1, 4, 1, 8072, 2, 1, 1, 0 };
 
     /*
-     * a debugging statement.  Run the agent with -Dexample_scalar_int to see
+     * a debugging statement.  Run the agent with -Dexample_lassy_vms to see
      * the output of this debugging statement. 
      */
-    DEBUGMSGTL(("example_scalar_int",
+    DEBUGMSGTL(("example_lassy_vms",
                 "Initalizing example scalar int.  Default value = %ld\n",
                 example1));
 
@@ -79,6 +77,6 @@ init_scalar_int(void)
                                   OID_LENGTH(my_registration_oid),
                                   &example1, NULL);
 
-    DEBUGMSGTL(("example_scalar_int",
+    DEBUGMSGTL(("example_lassy_vms",
                 "Done initalizing example scalar int\n"));
 }

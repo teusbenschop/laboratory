@@ -22,4 +22,4 @@ echo Starting SNMP daemon
 LISTENER=udp:161
 LISTENER=udp:6161
 LISTENER=tcp:127.0.0.1:2161
-~/snmp/net-snmp-5.9.1/agent/snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V -D $LISTENER
+../net-snmp-5.9.1/agent/snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V -D  $LISTENER

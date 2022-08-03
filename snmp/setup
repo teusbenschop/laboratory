@@ -16,8 +16,8 @@ if [ $? -ne 0 ]; then exit; fi
 cp net-snmp-5.9.1/mibs/* ~/.snmp/mibs/
 if [ $? -ne 0 ]; then exit; fi
 
-# Copy the scalar_int.h/.c into the mibsgroup.
-cp agent/scalar_int.* net-snmp-5.9.1/agent/mibgroup
+# Copy the lassy_vms.h/.c into the mibsgroup.
+cp agent/lassy_vms.* net-snmp-5.9.1/agent/mibgroup
 if [ $? -ne 0 ]; then exit; fi
 
 #export MIBS=+ALL
@@ -25,7 +25,7 @@ export MIBS=NTCIP1203-v0305
 
 # Compile the Net-SNMP library as-is.
 pushd net-snmp-5.9.1
-echo | ./configure --with-mib-modules="scalar_int"
+echo | ./configure --with-mib-modules="lassy_vms"
 if [ $? -ne 0 ]; then exit; fi
 make --jobs=25
 if [ $? -ne 0 ]; then exit; fi
