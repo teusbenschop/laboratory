@@ -9,9 +9,9 @@
 #if [ $? -ne 0 ]; then exit; fi
 
 # Set the MIB file(s).
-MIBDIRS=~/.snmp/mibs
-MIBS=NTCIP1203-v0305
-#export MIBS=ALL
+export MIBDIRS=~/.snmp/mibs
+export MIBS=ALL
+export MIBS=NTCIP1203-v0305
 
 #TOID=shortErrorStatus.0
 #echo -n "$TOID is "
@@ -19,7 +19,8 @@ MIBS=NTCIP1203-v0305
 
 echo Starting SNMP daemon
 # Man pages: http://www.net-snmp.org/docs/man/
-LISTENER=udp:161
-LISTENER=udp:6161
-LISTENER=tcp:127.0.0.1:2161
-../net-snmp-5.9.1/agent/snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V $LISTENER
+#LISTENER=udp:161
+#LISTENER=udp:6161
+#LISTENER=tcp:127.0.0.1:2161
+# -Le - log to stderr
+../net-snmp-5.9.1/agent/snmpd -a -C -c ~/.snmp/snmpd.conf -d -f -M $MIBDIRS -m $MIBS -V -Dusm,vacm,snmp,subtree -Le tcp:127.0.0.1:2161

@@ -2,7 +2,7 @@
 
 # See the tutorial at http://www.net-snmp.org/tutorial/tutorial-5/toolkit/mib_module/
 
-# Copy the configuration to the default location for it.
+# Copy the configurations to the default location for them.
 mkdir -p ~/.snmp
 if [ $? -ne 0 ]; then exit; fi
 cp agent/snmpd.conf ~/.snmp
@@ -35,4 +35,10 @@ popd
 TOID=shortErrorStatus.0
 echo -n "The OID $TOID is numeric OID: "
 snmptranslate -IR -On shortErrorStatus.0
+
+# Configure daemon for SNMP v3.
+# $ snmpconf
+# Create snmpd.conf
+# Access Control Setup.
+# SNMPv3 read-write user
 

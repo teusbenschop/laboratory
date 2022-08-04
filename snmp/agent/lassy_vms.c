@@ -80,22 +80,23 @@ void init_lassy_vms(void)
     // Run the agent with -Dexample_lassy_vms to see the output of this debugging statement.
     // DEBUGMSGTL(("example_lassy_vms", "Initalizing example scalar int. Default value = %ld\n", net_snmp_example_integer));
     
-    // The line below registers the scalar variable above as accessible and makes it writable.
+    // The lines below register the scalar variables above as accessible and make them writable.
     // A read only version of the same registration would merely call
-    // register_read_only_long_instance()
-    // instead.
+    // "register_read_only_long_instance()" instead.
     // Also register a callback when the value was retrieved or set.
     // Note that the details of doing this are handled automatically.
+    // Register the context name too.
     netsnmp_register_long_instance("my example int variable",
                                    net_snmp_example_integer_oid,
                                    OID_LENGTH(net_snmp_example_integer_oid),
                                    &net_snmp_example_integer,
                                    &handle_lassy_vms_object);
-    netsnmp_register_long_instance("shortErrorStatus.0",
-                                   lassy_vms_short_error_status_oid,
-                                   OID_LENGTH(lassy_vms_short_error_status_oid),
-                                   &lassy_vms_short_error_status,
-                                   &handle_lassy_vms_object);
+    netsnmp_register_long_instance_context("shortErrorStatus.0",
+                                           lassy_vms_short_error_status_oid,
+                                           OID_LENGTH(lassy_vms_short_error_status_oid),
+                                           &lassy_vms_short_error_status,
+                                           &handle_lassy_vms_object,
+                                           "VMS1");
 
     // DEBUGMSGTL(("example_lassy_vms", "Done initalizing example scalar int\n"));
 }

@@ -1,10 +1,12 @@
 #!/bin/bash
 
-g++ snmpget.cpp -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
-if [ $? -ne 0 ]; then exit; fi
+#g++ snmpget.cpp -std=c++17 -lnetsnmp -lm -lcrypto -o snmpget
+#if [ $? -ne 0 ]; then exit; fi
 
-#export SNMPCONFPATH=/Users/teus/.snmp
+#export SNMPCONFPATH=~/.snmp
+#echo $SNMPCONFPATH
 export MIBS=NET-SNMP-EXAMPLES-MIB
+export MIBS=ALL
 export MIBS=NTCIP1203-v0305
 
 #./snmpget -v 2c -c public -m +ALL -M +/home/teus/snmp/mibs udp:127.0.0.1:161 .1.3.6.1.2.1.1.3.0
@@ -14,22 +16,20 @@ export MIBS=NTCIP1203-v0305
 #snmpget -v 3 tcp:192.168.140.10 1.3.6.1.4.1.1206.4.2.3.9.7.1.0
 #./snmpget host oid
 #./snmpget
+# snmpget -v 3 -u lassy -n VMS1 -l authNoPriv -a MD5 -A Key4Lassy -M +/usr/share/vms-proxy/ntcip_mibs -m ALL tcp:192.168.140.8:161 shortErrorStatus.0
 
 TOID=netSnmpExampleInteger.0
 TOID=shortErrorStatus.0
 echo -n "Translating $TOID to "
 snmptranslate -IR -On $TOID
 
-LISTENER=udp:127.0.0.1:6161
-LISTENER=tcp:127.0.0.1:2161
-#snmpget -v 2c -c public $LISTENER shortErrorStatus.0
-#snmpwalk -v 2c -c public $LISTENER
-#snmpget -v 2c -c public $LISTENER shortErrorStatus.0
-#snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 42
-#snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
-#snmpset -v 2c -c public $LISTENER netSnmpExampleInteger.0 = 123
-#snmpget -v 2c -c public $LISTENER netSnmpExampleInteger.0
-snmpset -v 2c -c public $LISTENER shortErrorStatus.0 = 42
-snmpget -v 2c -c public $LISTENER shortErrorStatus.0
-snmpset -v 2c -c public $LISTENER shortErrorStatus.0 = 123
-snmpget -v 2c -c public $LISTENER shortErrorStatus.0
+#snmpget -v 2c -c public tcp:127.0.0.1:2161 shortErrorStatus.0
+#snmpwalk -v 2c -c public tcp:127.0.0.1:2161
+#snmpget -v 3 -a MD5 -A Key4Lassy -u lassy -l authNoPriv -n VMS1 $LISTENER shortErrorStatus.0
+#snmpset -v 2c -c public tcp:127.0.0.1:2161 shortErrorStatus.0 = 42
+#snmpget -v 2c -c public tcp:127.0.0.1:2161 shortErrorStatus.0
+#snmpset -v 2c -c public tcp:127.0.0.1:2161 shortErrorStatus.0x = 123
+#snmpget -v 2c -c public tcp:127.0.0.1:2161 shortErrorStatus.0
+#snmpget -v 2c -c public -M +~/.snmp/mibs -m NTCIP1203-v0305 tcp:127.0.0.1:2161 shortErrorStatus.0
+snmpget -v 3 -u username -n VMS1 -l authNoPriv -a MD5 -A password -M +~/.snmp/mibs -m NTCIP1203-v0305 tcp:127.0.0.1:2161 shortErrorStatus.0
+
