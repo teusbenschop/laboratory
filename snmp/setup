@@ -16,7 +16,7 @@ if [ $? -ne 0 ]; then exit; fi
 #cp net-snmp-5.9.1/mibs/* ~/.snmp/mibs/
 #if [ $? -ne 0 ]; then exit; fi
 
-# Copy the lassy_vms.h/.c into the mibsgroup.
+# Copy the lassy_vms.h/.c into the mibsroup folder.
 cp agent/lassy_vms.* net-snmp-5.9.1/agent/mibgroup
 if [ $? -ne 0 ]; then exit; fi
 
