@@ -1,4 +1,6 @@
 #!/bin/bash
-g++ -Wall -Wextra -pedantic -std=c++11 -O3 `pkg-config libxml-2.0 --libs --cflags` html.cpp -o html
-./html
+# Install package libgumbo-dev
+g++ -Wall -Wextra -pedantic -std=c++17 -g -O2 -o html html.cpp `pkg-config libxml-2.0 gumbo --libs --cflags` 
+valgrind --leak-check=yes  --track-origins=yes --show-reachable=yes ./html
+#./html
 rm -rf html
