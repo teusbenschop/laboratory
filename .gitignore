@@ -67,3 +67,5 @@ modbus-snmp/modbus-server
 snmp/net-snmp-5.9.1
 modbus/modbus-client
 modbus/modbus-server
+libxml2/html.dSYM/*
+

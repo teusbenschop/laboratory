@@ -51,6 +51,7 @@
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
+		CA49269429054EE300FEB6D3 /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
 		CA5DD4DC277EF2F000E50FF7 /* run */ = {isa = PBXFileReference; lastKnownFileType = text; path = run; sourceTree = "<group>"; };
 		CA5DD4DD277EF31D00E50FF7 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -83,7 +84,6 @@
 		CA7BF1181E41E2F4008FF558 /* winsockserver.sln */ = {isa = PBXFileReference; lastKnownFileType = text; path = winsockserver.sln; sourceTree = "<group>"; };
 		CA7CF5FD2859D7BE00BFA358 /* modbus */ = {isa = PBXFileReference; lastKnownFileType = folder; path = modbus; sourceTree = "<group>"; };
 		CA7CF5FE285AF31700BFA358 /* snmp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = snmp; sourceTree = "<group>"; };
-		CA7D459E2631F95D003F2E12 /* libxml2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = libxml2; sourceTree = "<group>"; };
 		CA830390229D85310025462E /* qt5 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = qt5; sourceTree = "<group>"; };
 		CA84FC412240074E00734EFE /* cobol */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cobol; sourceTree = "<group>"; };
 		CA87D4EF27BBB66700B64CD8 /* udp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = udp; sourceTree = "<group>"; };
@@ -359,10 +359,10 @@
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
 				CA6E11BF266D3B8200C5CBBB /* haak-bible */,
+				CA49269429054EE300FEB6D3 /* html */,
 				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
-				CA7D459E2631F95D003F2E12 /* libxml2 */,
 				CA0B46F82023498A00966B19 /* linux */,
 				CA98E2391DA8D14000F43F4B /* lzw */,
 				CA6C24E62595E36D00505E9A /* macos */,
@@ -371,6 +371,7 @@
 				CA7CF5FD2859D7BE00BFA358 /* modbus */,
 				CA06979627E9A86E00D94477 /* ncurses */,
 				CA3BCCB7231C146B00111FBE /* opencv */,
+				CAB882A12899027100CE878A /* Products */,
 				CA374CB9226399D600D70B55 /* python */,
 				CA830390229D85310025462E /* qt5 */,
 				CABEE77B1DD5F653006D8D75 /* quill */,
@@ -378,6 +379,7 @@
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
 				CA7CF5FE285AF31700BFA358 /* snmp */,
+				CAB882A22899027100CE878A /* snmp */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CA3DD73520DA64A500CD428E /* sortable */,
 				CA6C8CF72269F1200067F7BE /* stm32fo-discovery */,
@@ -389,8 +391,6 @@
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA53424D25B6115D008E452A /* websocket-client-1 */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
-				CAB882A22899027100CE878A /* snmp */,
-				CAB882A12899027100CE878A /* Products */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
