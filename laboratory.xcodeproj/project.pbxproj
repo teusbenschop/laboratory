@@ -51,7 +51,7 @@
 		CA3C9E4C1E000DF1007990B5 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
-		CA49269429054EE300FEB6D3 /* html */ = {isa = PBXFileReference; lastKnownFileType = folder; path = html; sourceTree = "<group>"; };
+		CA4926952905557E00FEB6D3 /* tidy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tidy; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
 		CA5DD4DC277EF2F000E50FF7 /* run */ = {isa = PBXFileReference; lastKnownFileType = text; path = run; sourceTree = "<group>"; };
 		CA5DD4DD277EF31D00E50FF7 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -346,6 +346,7 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
+				CA4926952905557E00FEB6D3 /* tidy */,
 				CA5DD4DA277EF2F000E50FF7 /* c++17 */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
@@ -359,7 +360,6 @@
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
 				CA6E11BF266D3B8200C5CBBB /* haak-bible */,
-				CA49269429054EE300FEB6D3 /* html */,
 				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
