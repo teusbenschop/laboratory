@@ -1,28 +1,36 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <vector>
 #include <string>
 #include <libxml/tree.h>
 #include <libxml/HTMLparser.h>
 #include <gumbo.h>
+#include "pugixml.hpp"
 
 using namespace std;
+using namespace pugi;
 
-void attempt_one (string contents)
+// Read the broken html file.
+// It leaves lots and lots of html out.
+// It leaks no memory.
+string attempt_one (string contents)
 {
+    string result {};
     // Parse HTML and create a DOM tree.
     int options = HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING;
     xmlDoc* xmldoc = htmlReadDoc ((xmlChar*)contents.c_str(), NULL, NULL, options);
-    //cout << xmldoc  << endl;
     if (xmldoc) {
-        xmlChar *s;
-        int size;
+        xmlChar *s {};
+        int size {0};
         xmlDocDumpMemory(xmldoc, &s, &size);
-        string xml = (char *)s;
-        cout << xml << endl;
+        result = (char *)s;
         xmlFree(s);
+        xmlFreeDoc(xmldoc);
     }
-    if (xmldoc) xmlFreeDoc(xmldoc);
+    // Done.
+    return result;
 }
 
 void walkTree(xmlNode * a_node)
@@ -42,7 +50,10 @@ void walkTree(xmlNode * a_node)
     }
 }
 
-void attempt_two (string contents)
+// Read the broken html file.
+// It leaves lots and lots of html out.
+// It leaks lots of memory.
+string attempt_two (string contents)
 {
     // https://stackoverflow.com/questions/10740250/c-cpp-version-of-beautifulsoup-especially-at-handling-malformed-html/10741112
     
@@ -60,10 +71,27 @@ void attempt_two (string contents)
     htmlParseChunk(parser, "", 0, 1);
     
     // Get the data parsed by walking the XML tree created.
-    walkTree(xmlDocGetRootElement(parser->myDoc));
+    //walkTree(xmlDocGetRootElement(parser->myDoc));
+
+    // Get the text representation of the html
+    string result {};
+    if (parser->myDoc) {
+        xmlChar *s {};
+        int size {0};
+        xmlDocDumpMemory(parser->myDoc, &s, &size);
+        result = (char *)s;
+        xmlFree(s);
+        xmlFreeDoc(parser->myDoc);
+    }
+
+    // Done
+    return result;
 }
 
-void attempt_three (string contents)
+// Read the broken html file.
+// It properly fixes the broken html.
+// It leaks lots and lots of memory.
+string attempt_three (string contents)
 {
     // Create a parser context.
     htmlParserCtxtPtr parser = htmlCreatePushParserCtxt (NULL, NULL, NULL, 0, NULL, XML_CHAR_ENCODING_UTF8);
@@ -80,17 +108,19 @@ void attempt_three (string contents)
     // Finalize parsing the chunk.
     htmlParseChunk(parser, NULL, 0, 1);
     
+    string result {};
     if (parser->myDoc) {
         xmlChar *s;
         int size;
         xmlDocDumpMemory(parser->myDoc, &s, &size);
-        string xml = (char *)s;
-        cout << xml << endl;
+        result = (char *)s;
         xmlFree(s);
         xmlFree (parser->myDoc);
     }
     
     if (parser) xmlFree (parser);
+    
+    return result;
 }
 
 
@@ -355,7 +385,7 @@ static std::string prettyprint(GumboNode* node, int lvl, const std::string inden
     
     std::string indent_space {std::string ((lvl-1)*n,c)};
     
-    // {retty print the contents.
+    // Pretty print the contents.
     std::string contents {prettyprint_contents(node, lvl+1, indent_chars)};
     
     if (need_special_handling) {
@@ -396,30 +426,103 @@ static std::string prettyprint(GumboNode* node, int lvl, const std::string inden
 }
 
 
-void attempt_four (string contents)
+string attempt_four (string contents)
 {
     // https://github.com/google/gumbo-parser
     GumboOptions options = kGumboDefaultOptions;
     GumboOutput* output = gumbo_parse_with_options(&options, contents.data(), contents.length());
     std::string indent_chars {" "};
-    std::cout << prettyprint(output->document, 0, indent_chars) << std::endl;
+    contents = prettyprint(output->document, 0, indent_chars);
     gumbo_destroy_output(&kGumboDefaultOptions, output);
+    return contents;
 }
 
 
-int main(int argc, char *argv[])
+string attempt_five (string contents)
 {
-    (void) argc;
-    (void) argv;
+    // Split the contents up into lines.
+    vector <string> lines;
+    {
+        istringstream iss (contents);
+        for (string token; getline (iss, token, '\n'); ) lines.push_back (move (token));
+    }
+    
+    contents.clear();
+
+    int line_count {0};
+    for (const auto & line : lines) {
+        if (!line_count) {
+            size_t pos = line.find (R"(class="verse )");
+            if (pos == string::npos) continue;
+            pos = line.find (" verse-2 ");
+            if (pos == string::npos) continue;
+            line_count++;
+        }
+        if (line_count) {
+            if (line_count < 100) {
+                line_count++;
+                contents.append (line);
+                contents.append ("\n");
+            } else {
+                line_count = 0;
+            }
+        }
+    }
+    
+    return contents;
+}
+
+
+void parse_one (string contents)
+{
+    // Parse the html into a DOM.
+    xml_document document {};
+    document.load_string (contents.c_str());
+
+    // Example verse container within the XML:
+    // Verse 0:
+    // <p class="summary">...</>
+    // Other verses:
+    // <div class="verse verse-1 active size-change bold-change cursive-change align-change">...
+    int verse {2};
+    string selector;
+    if (verse != 0) selector = "//div[contains(@class,'verse-" + to_string (verse) + " ')]";
+    else selector = "//p[@class='summary']";
+    xpath_node xpathnode = document.select_node(selector.c_str());
+    xml_node div_node = xpathnode.node();
+    
+    // Print it to see what it has become.
+    {
+        stringstream output {};
+//        document.print (output, "", format_raw);
+        div_node.print (output, "", format_raw);
+        cout << output.str () << endl;
+    }
+}
+
+
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
+{
     // Load text into memory.
-    string path = "hebrews-10.htms";
-    path = "html.txt";
+    string path {"original.html"};
     ifstream ifs (path);
     string contents ((istreambuf_iterator<char>(ifs)), (istreambuf_iterator<char>() ) );
+    
     // Parse broken HTML.
-    //attempt_one (contents);
-    //attempt_two (contents);
-    //attempt_three (contents);
-    attempt_four (contents);
+    //contents = attempt_one (contents);
+    //contents = attempt_two (contents);
+    //contents = attempt_three (contents);
+    //contents = attempt_four (contents);
+    contents = attempt_five (contents);
+    parse_one (contents);
+
+    // Save the tidied text to file.
+    path = "output.html";
+    ofstream file;
+    file.open(path, ios::binary | ios::trunc);
+    file << contents;
+    file.close ();
+
+    // Ready.
     return EXIT_SUCCESS;
 }
