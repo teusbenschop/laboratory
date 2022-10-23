@@ -225,7 +225,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   {
     // Example "03 02 01 00 00"
     using OctetStream = vector <unsigned char>;
-    vector <unsigned char> characters { 3, 2, 1, 0, 0 }; // Todo use this with comment.
+    vector <unsigned char> characters { 3, 2, 1, 0, 0 };
     vector <byte> bytes { byte{3}, byte{2}, byte{1}, byte{0}, byte{0} };
 
     cout << static_cast <int> (characters[0]) << endl;
