@@ -8,6 +8,10 @@
 #include <libxml/HTMLparser.h>
 #include <gumbo.h>
 #include "pugixml.hpp"
+#include <tidy.h>
+#include <tidybuffio.h>
+#include <stdio.h>
+#include <errno.h>
 
 using namespace std;
 using namespace pugi;
@@ -15,7 +19,7 @@ using namespace pugi;
 // Read the broken html file.
 // It leaves lots and lots of html out.
 // It leaks no memory.
-string attempt_one (string contents)
+string libxml1 (string contents)
 {
     string result {};
     // Parse HTML and create a DOM tree.
@@ -53,7 +57,7 @@ void walkTree(xmlNode * a_node)
 // Read the broken html file.
 // It leaves lots and lots of html out.
 // It leaks lots of memory.
-string attempt_two (string contents)
+string libxml2 (string contents)
 {
     // https://stackoverflow.com/questions/10740250/c-cpp-version-of-beautifulsoup-especially-at-handling-malformed-html/10741112
     
@@ -91,7 +95,7 @@ string attempt_two (string contents)
 // Read the broken html file.
 // It properly fixes the broken html.
 // It leaks lots and lots of memory.
-string attempt_three (string contents)
+string libxml3 (string contents)
 {
     // Create a parser context.
     htmlParserCtxtPtr parser = htmlCreatePushParserCtxt (NULL, NULL, NULL, 0, NULL, XML_CHAR_ENCODING_UTF8);
@@ -426,7 +430,7 @@ static std::string prettyprint(GumboNode* node, int lvl, const std::string inden
 }
 
 
-string attempt_four (string contents)
+string libgumbo1 (string contents)
 {
     // https://github.com/google/gumbo-parser
     GumboOptions options = kGumboDefaultOptions;
@@ -438,7 +442,7 @@ string attempt_four (string contents)
 }
 
 
-string attempt_five (string contents)
+string splitlines1 (string contents)
 {
     // Split the contents up into lines.
     vector <string> lines;
@@ -473,7 +477,53 @@ string attempt_five (string contents)
 }
 
 
-void parse_one (string contents)
+string tidy1 (string contents)
+{
+    TidyBuffer output {};
+    memset (&output, 0, sizeof(TidyBuffer));
+    TidyBuffer errbuf {};
+    memset (&errbuf, 0, sizeof(TidyBuffer));
+    
+    // Initialize the document.
+    TidyDoc tdoc = tidyCreate();
+    //printf( "Tidying:\t%s\n", input );
+    
+    // Set a few options.
+    tidyOptSetBool (tdoc, TidyXmlOut, yes);
+    tidyOptSetBool (tdoc, TidyHideComments, yes);
+    tidyOptSetBool (tdoc, TidyJoinClasses, yes);
+    tidyOptSetBool (tdoc, TidyBodyOnly, yes);
+    // Capture diagnostics.
+    int rc = tidySetErrorBuffer (tdoc, &errbuf);
+    // Parse the input.
+    if (rc >= 0) rc = tidyParseString (tdoc, contents.c_str());
+    // Tidy it up.
+    if (rc >= 0) rc = tidyCleanAndRepair (tdoc);
+    // Run the diagnostics.
+    if (rc >= 0) rc = tidyRunDiagnostics (tdoc);
+    // If error, force output.
+    if (rc > 1) rc = (tidyOptSetBool (tdoc, TidyForceOutput, yes) ? rc : -1);
+    // Pretty print.
+    if (rc >= 0) rc = tidySaveBuffer (tdoc, &output);
+    
+    if (rc >= 0) {
+        //if (rc > 0) printf ("\nDiagnostics:\n\n%s", errbuf.bp);
+        //printf ("\nAnd here is the result:\n\n%s", output.bp);
+        contents = string (reinterpret_cast<char const*>(output.bp));
+    }
+    else printf ("A severe error (%d) occurred.\n", rc);
+
+    // Release memory.
+    tidyBufFree (&output);
+    tidyBufFree (&errbuf);
+    tidyRelease (tdoc);
+
+    // Done.
+    return contents;
+}
+
+
+string pugixml1 (string contents)
 {
     // Parse the html into a DOM.
     xml_document document {};
@@ -491,13 +541,12 @@ void parse_one (string contents)
     xpath_node xpathnode = document.select_node(selector.c_str());
     xml_node div_node = xpathnode.node();
     
-    // Print it to see what it has become.
-    {
-        stringstream output {};
-//        document.print (output, "", format_raw);
-        div_node.print (output, "", format_raw);
-        cout << output.str () << endl;
-    }
+    // Output it to see what it has become.
+    stringstream output {};
+    div_node.print (output, "", format_raw);
+    contents = output.str ();
+    
+    return contents;
 }
 
 
@@ -509,20 +558,41 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
     string contents ((istreambuf_iterator<char>(ifs)), (istreambuf_iterator<char>() ) );
     
     // Parse broken HTML.
-    //contents = attempt_one (contents);
-    //contents = attempt_two (contents);
-    //contents = attempt_three (contents);
-    //contents = attempt_four (contents);
-    contents = attempt_five (contents);
-    parse_one (contents);
+    //contents = libxml1 (contents);
+    //contents = libxml2 (contents);
+    //contents = libxml3 (contents);
+    contents = libgumbo1 (contents);
+    {
+        path = "1gumbo.html";
+        ofstream file;
+        file.open(path, ios::binary | ios::trunc);
+        file << contents;
+        file.close ();
+    }
+
+    //contents = splitlines1 (contents);
+    contents = tidy1 (contents);
+    {
+        path = "2tidy.html";
+        ofstream file;
+        file.open(path, ios::binary | ios::trunc);
+        file << contents;
+        file.close ();
+    }
+
+    contents = pugixml1 (contents);
 
     // Save the tidied text to file.
-    path = "output.html";
-    ofstream file;
-    file.open(path, ios::binary | ios::trunc);
-    file << contents;
-    file.close ();
+    {
+        path = "3output.html";
+        ofstream file;
+        file.open(path, ios::binary | ios::trunc);
+        file << contents;
+        file.close ();
+    }
 
     // Ready.
     return EXIT_SUCCESS;
 }
+
+
