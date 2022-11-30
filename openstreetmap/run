@@ -1,7 +1,0 @@
-#!/bin/bash
-# Install package libgumbo-dev
-g++ -Wall -Wextra -pedantic -std=c++17 -g -O2 -o generator main.cpp pugixml.cpp utils.cpp
-./generator
-rm -rf generator
-rm -rf generator.dSYM
-
