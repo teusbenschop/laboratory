@@ -95,6 +95,7 @@ string libxml2 (string contents)
 // Read the broken html file.
 // It properly fixes the broken html.
 // It leaks lots and lots of memory.
+// The leaks have now been fixed through the proper calls.
 string libxml3 (string contents)
 {
     // Create a parser context.
@@ -119,10 +120,14 @@ string libxml3 (string contents)
         xmlDocDumpMemory(parser->myDoc, &s, &size);
         result = (char *)s;
         xmlFree(s);
-        xmlFree (parser->myDoc);
+        // Free documents with xmlFreeDoc.
+        xmlFreeDoc (parser->myDoc);
     }
     
-    if (parser) xmlFree (parser);
+    // Free the parser context with htmlFreeParserCtxt.
+    if (parser) htmlFreeParserCtxt (parser);
+    
+    // If you're testing for memory leaks, call xmlCleanupParser at the end of the program.
     
     return result;
 }
@@ -560,36 +565,36 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
     // Parse broken HTML.
     //contents = libxml1 (contents);
     //contents = libxml2 (contents);
-    //contents = libxml3 (contents);
-    contents = libgumbo1 (contents);
-    {
-        path = "1gumbo.html";
-        ofstream file;
-        file.open(path, ios::binary | ios::trunc);
-        file << contents;
-        file.close ();
-    }
+    contents = libxml3 (contents);
+//    contents = libgumbo1 (contents);
+//    {
+//        path = "1gumbo.html";
+//        ofstream file;
+//        file.open(path, ios::binary | ios::trunc);
+//        file << contents;
+//        file.close ();
+//    }
 
     //contents = splitlines1 (contents);
-    contents = tidy1 (contents);
-    {
-        path = "2tidy.html";
-        ofstream file;
-        file.open(path, ios::binary | ios::trunc);
-        file << contents;
-        file.close ();
-    }
+//    contents = tidy1 (contents);
+//    {
+//        path = "2tidy.html";
+//        ofstream file;
+//        file.open(path, ios::binary | ios::trunc);
+//        file << contents;
+//        file.close ();
+//    }
 
-    contents = pugixml1 (contents);
+//    contents = pugixml1 (contents);
 
     // Save the tidied text to file.
-    {
-        path = "3output.html";
-        ofstream file;
-        file.open(path, ios::binary | ios::trunc);
-        file << contents;
-        file.close ();
-    }
+//    {
+//        path = "3output.html";
+//        ofstream file;
+//        file.open(path, ios::binary | ios::trunc);
+//        file << contents;
+//        file.close ();
+//    }
 
     // Ready.
     return EXIT_SUCCESS;
