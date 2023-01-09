@@ -59,7 +59,6 @@
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		CA5F28CD290A423A00CC9A0E /* openstreetmap */ = {isa = PBXFileReference; lastKnownFileType = folder; path = openstreetmap; sourceTree = "<group>"; };
 		CA6C24E62595E36D00505E9A /* macos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = macos; sourceTree = "<group>"; };
 		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
 		CA6E11BF266D3B8200C5CBBB /* haak-bible */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haak-bible"; sourceTree = "<group>"; };
@@ -121,6 +120,7 @@
 		CAE44BB91DE1D23C001F29D1 /* footnotes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = footnotes.css; sourceTree = "<group>"; };
 		CAE44BBA1DE1D23C001F29D1 /* footnotes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = footnotes.html; sourceTree = "<group>"; };
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
+		CAE7A88629633DEC00366467 /* concurrency */ = {isa = PBXFileReference; lastKnownFileType = folder; path = concurrency; sourceTree = "<group>"; };
 		CAE92415203B04F900D84B09 /* mbedtls */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mbedtls; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
@@ -351,6 +351,7 @@
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
 				CA84FC412240074E00734EFE /* cobol */,
+				CAE7A88629633DEC00366467 /* concurrency */,
 				CA74AB20282041380051E815 /* cpp-core-guidelines */,
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
 				CAF2844122676BD50052535E /* django */,
@@ -371,7 +372,6 @@
 				CA7CF5FD2859D7BE00BFA358 /* modbus */,
 				CA06979627E9A86E00D94477 /* ncurses */,
 				CA3BCCB7231C146B00111FBE /* opencv */,
-				CA5F28CD290A423A00CC9A0E /* openstreetmap */,
 				CAB882A12899027100CE878A /* Products */,
 				CA374CB9226399D600D70B55 /* python */,
 				CA830390229D85310025462E /* qt5 */,
