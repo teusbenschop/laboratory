@@ -13,6 +13,7 @@
 #include <latch>
 #include <barrier>
 #include <sstream>
+#include <shared_mutex>
 #include "main.h"
 
 
@@ -27,7 +28,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     //latch1 ();
     //barrier1 ();
     //coroutines1 ();
-    timed_mutex1 ();
+    //timed_mutex1 ();
+    shared_mutex1();
     return EXIT_SUCCESS;
 }
 
@@ -338,7 +340,7 @@ void timed_mutex1 ()
     for (int i = 0; i < 4; ++i) {
         threads.emplace_back (timed_mutex_job, i);
     }
-    for (auto& thread: threads) {
+    for (auto& thread : threads) {
         thread.join();
     }
 }
@@ -362,4 +364,56 @@ void timed_mutex_job (int id)
     }
     std::lock_guard<std::mutex> lock {mutex};
     std::cout << "[" << id << "]" << stream.str() << std::endl;
+}
+
+
+class ThreadSafeCounter {
+public:
+    ThreadSafeCounter() = default;
+    
+    // Multiple threads/readers can read the counter's value at the same time.
+    unsigned int get() const {
+        std::shared_lock lock (mutex);
+        return value;
+    }
+    
+    // Only one thread/writer can increment/write the counter's value.
+    void increment() {
+        std::unique_lock lock (mutex);
+        ++value;
+    }
+    
+    // Only one thread/writer can reset/write the counter's value.
+    void reset() {
+        std::unique_lock lock (mutex);
+        value = 0;
+    }
+    
+private:
+    mutable std::shared_mutex mutex;
+    unsigned int value {0};
+};
+
+
+void shared_mutex1()
+{
+    ThreadSafeCounter counter {};
+    
+    std::mutex mutex {};
+    
+    auto increment_and_print = [&counter, &mutex]() {
+        for (int i = 0; i < 3; i++) {
+            counter.increment();
+            std::unique_lock lock (mutex);
+            std::cout << std::this_thread::get_id() << ' ' << counter.get() << std::endl;
+        }
+    };
+    
+    std::thread thread1(increment_and_print);
+    std::thread thread2(increment_and_print);
+    std::thread thread3(increment_and_print);
+
+    thread1.join();
+    thread2.join();
+    thread3.join();
 }
