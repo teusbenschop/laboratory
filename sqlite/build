@@ -1,0 +1,1 @@
+g++ -std=c++17 -Wall -Wno-unknown-pragmas -Wextra -pedantic  -g -O2 *.cpp `pkg-config --cflags --libs sqlite3`

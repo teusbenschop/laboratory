@@ -53,6 +53,7 @@
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
 		CA4926952905557E00FEB6D3 /* tidy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tidy; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
+		CA57C716297543F900D86BE7 /* freetype */ = {isa = PBXFileReference; lastKnownFileType = folder; path = freetype; sourceTree = "<group>"; };
 		CA5DD4DC277EF2F000E50FF7 /* run */ = {isa = PBXFileReference; lastKnownFileType = text; path = run; sourceTree = "<group>"; };
 		CA5DD4DD277EF31D00E50FF7 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		CA5DD4DE277EF31D00E50FF7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -102,6 +103,7 @@
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
+		CAB396D12988DF330035E25E /* boost */ = {isa = PBXFileReference; lastKnownFileType = folder; path = boost; sourceTree = "<group>"; };
 		CAB882A02899027100CE878A /* snmp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = snmp; sourceTree = BUILT_PRODUCTS_DIR; };
 		CAB882A32899027100CE878A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
 		CAE7A88629633DEC00366467 /* concurrency */ = {isa = PBXFileReference; lastKnownFileType = folder; path = concurrency; sourceTree = "<group>"; };
 		CAE92415203B04F900D84B09 /* mbedtls */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mbedtls; sourceTree = "<group>"; };
+		CAEAADA129E6CADB00C9FC60 /* sqlite */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sqlite; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 		CAEF740722945DB900F16631 /* lambdas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lambdas; sourceTree = "<group>"; };
@@ -347,6 +350,7 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
+				CAB396D12988DF330035E25E /* boost */,
 				CA5DD4DA277EF2F000E50FF7 /* c++17 */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
@@ -358,6 +362,7 @@
 				CA0F615022342BA500BE6EEF /* fill-image */,
 				CA6F20512621C4F5003A1F6D /* flask */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
+				CA57C716297543F900D86BE7 /* freetype */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
 				CA6E11BF266D3B8200C5CBBB /* haak-bible */,
@@ -383,6 +388,7 @@
 				CAB882A22899027100CE878A /* snmp */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CA3DD73520DA64A500CD428E /* sortable */,
+				CAEAADA129E6CADB00C9FC60 /* sqlite */,
 				CA6C8CF72269F1200067F7BE /* stm32fo-discovery */,
 				CAD6869F1E290470007CA7FC /* stylesheet */,
 				CADBACAF25937907000527CA /* synflood */,

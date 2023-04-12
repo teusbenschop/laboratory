@@ -29,7 +29,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     //barrier1 ();
     //coroutines1 ();
     //timed_mutex1 ();
-    shared_mutex1();
+    //shared_mutex1();
+    mutex_types();
     return EXIT_SUCCESS;
 }
 
@@ -416,4 +417,45 @@ void shared_mutex1()
     thread1.join();
     thread2.join();
     thread3.join();
+}
+
+
+void mutex_types()
+{
+    std::mutex m_cout;
+    std::timed_mutex m_a;
+    std::thread lock_first([&m_a, &m_cout]() {
+        std::unique_lock ul(m_a);
+        m_cout.lock();      // Bad
+        std::cout << "Thread " << std::this_thread::get_id() << " locked the mutex.\nPress any key to release the lock.\n";
+        m_cout.unlock();     // Bad
+        std::getchar();
+    });
+    
+    std::thread try_the_lock([&m_a, &m_cout]() {
+        std::unique_lock ul(m_a, std::defer_lock);
+        constexpr int max_wait {2};
+        m_cout.lock();     // Bad
+        std::cout << "Thread " << std::this_thread::get_id() << " waiting at most " << max_wait << " seconds to obtain the lock.\n";
+        m_cout.unlock();     // Bad
+        if (std::lock_guard cout_lk(m_cout); ul.try_lock_for(std::chrono::seconds(max_wait)))
+            std::cout << "Thread " << std::this_thread::get_id() << " successfully obtained the lock.\n";
+        else
+            std::cout << "Thread " << std::this_thread::get_id() << " failed to obtain the lock in time!\n";
+    });
+    
+    try {
+        std::unique_lock cul(m_cout);
+        std::cout << std::thread::hardware_concurrency() << " threads supported by the system.\n";
+        cul.unlock();
+        if (lock_first.joinable())   lock_first.join();
+        if (try_the_lock.joinable()) try_the_lock.join();
+        
+        cul.lock();
+        std::cout << "Program complete.\n";
+    }
+    catch (const std::system_error& e) {
+        std::cout << "Whoopsy Daisies: " << e.what() << "\n";
+    }
+
 }

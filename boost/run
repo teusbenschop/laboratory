@@ -1,0 +1,7 @@
+# watch -n 0.1 'scp * 192.168.135.118:tmp'
+
+echo compile
+g++ -std=c++17 -Wall -Wno-unknown-pragmas -Wextra -pedantic -pthread -g -O2 main.cpp
+if [ $? -ne 0 ]; then exit; fi
+./a.out
+rm -rf a.out*
