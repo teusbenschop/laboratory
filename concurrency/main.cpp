@@ -15,6 +15,7 @@
 #include <sstream>
 #include <shared_mutex>
 #include "main.h"
+#include "stuck.h"
 
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
@@ -30,7 +31,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     //coroutines1 ();
     //timed_mutex1 ();
     //shared_mutex1();
-    mutex_types();
+    //mutex_types();
+    stuck_threads();
     return EXIT_SUCCESS;
 }
 
@@ -458,4 +460,29 @@ void mutex_types()
         std::cout << "Whoopsy Daisies: " << e.what() << "\n";
     }
 
+}
+
+
+void stuck_threads()
+{
+    std::cout << "Monitoring thread" << std::endl;
+    std::vector <stuck *> stuck_threads {};
+    stuck * stuck_pointer {nullptr};
+    for (int i = 0; i < 3; i++) {
+        if (stuck_pointer) stuck_threads.push_back (stuck_pointer);
+        stuck_pointer = new stuck(i);
+        std::this_thread::sleep_for (std::chrono::seconds(10));
+    }
+    if (stuck_pointer) stuck_threads.push_back (stuck_pointer);
+    for (int i = 0; i < 100; i++) {
+        for (auto& stuck_pointer : stuck_threads) {
+            if (stuck_pointer) {
+                if (stuck_pointer->m_ready) {
+                    delete stuck_pointer;
+                    stuck_pointer = nullptr;
+                }
+            }
+        }
+        std::this_thread::sleep_for (std::chrono::seconds(1));
+    }
 }

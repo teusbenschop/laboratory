@@ -31,3 +31,5 @@ void timed_mutex_job (int id);
 void shared_mutex1();
 void mutex_types();
 
+void stuck_threads();
+
