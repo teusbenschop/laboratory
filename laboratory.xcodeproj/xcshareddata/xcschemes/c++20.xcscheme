@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CAB29AC51A4480CC00139BD7"
-               BuildableName = "bibledit"
-               BlueprintName = "bibledit"
-               ReferencedContainer = "container:bibledit.xcodeproj">
+               BlueprintIdentifier = "CA7937FE2A49FA9C00B460A5"
+               BuildableName = "c++20"
+               BlueprintName = "c++20"
+               ReferencedContainer = "container:laboratory.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -39,16 +39,18 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
-      <MacroExpansion>
+      allowLocationSimulation = "YES"
+      viewDebuggingEnabled = "No">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CAB29AC51A4480CC00139BD7"
-            BuildableName = "bibledit"
-            BlueprintName = "bibledit"
-            ReferencedContainer = "container:bibledit.xcodeproj">
+            BlueprintIdentifier = "CA7937FE2A49FA9C00B460A5"
+            BuildableName = "c++20"
+            BlueprintName = "c++20"
+            ReferencedContainer = "container:laboratory.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -56,15 +58,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CAB29AC51A4480CC00139BD7"
-            BuildableName = "bibledit"
-            BlueprintName = "bibledit"
-            ReferencedContainer = "container:bibledit.xcodeproj">
+            BlueprintIdentifier = "CA7937FE2A49FA9C00B460A5"
+            BuildableName = "c++20"
+            BlueprintName = "c++20"
+            ReferencedContainer = "container:laboratory.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
