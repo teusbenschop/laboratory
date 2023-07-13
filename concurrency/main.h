@@ -19,8 +19,6 @@ void future1 ();
 
 void latch1 ();
 
-void barrier1 ();
-
 void coroutines1 ();
 
 void timed_mutex1 ();

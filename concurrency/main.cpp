@@ -11,7 +11,6 @@
 #include <future>
 #include <memory>
 #include <latch>
-#include <barrier>
 #include <sstream>
 #include <shared_mutex>
 #include "main.h"
@@ -27,7 +26,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     //jthreads1 ();
     //future1 ();
     //latch1 ();
-    //barrier1 ();
     //coroutines1 ();
     //timed_mutex1 ();
     //shared_mutex1();
@@ -284,42 +282,6 @@ void latch1 ()
     std::cout << "Ready cleaning up" << std::endl;
     for (auto const& job : jobs) {
         std::cout << "  " << job.product << '\n';
-    }
-}
-
-
-void barrier1 ()
-{
-    const auto workers = { "anil", "busara", "carl" };
-    
-    // A function that is run om completion of a barrier.
-    auto on_completion = []() noexcept {
-        // locking not needed here
-        static auto phase = "... done\n" "Cleaning up...\n";
-        std::cout << phase;
-        phase = "... done\n";
-    };
-
-    // Define the barrier to use with the completion callback.
-    std::barrier sync_point(std::ssize(workers), on_completion);
-    
-    // The worker function.
-    auto work = [&](std::string name) {
-        std::string product = "  " + name + " worked\n";
-        std::cout << product;  // ok, op<< call is atomic
-        sync_point.arrive_and_wait();
-        product = "  " + name + " cleaned\n";
-        std::cout << product;
-        sync_point.arrive_and_wait();
-    };
-    
-    std::cout << "Starting...\n";
-    std::vector<std::thread> threads;
-    for (auto const& worker : workers) {
-        threads.emplace_back(work, worker);
-    }
-    for (auto& thread : threads) {
-        thread.join();
     }
 }
 
