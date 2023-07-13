@@ -69,3 +69,4 @@ modbus/modbus-client
 modbus/modbus-server
 libxml2/html.dSYM/*
 
+c++20/a.out.dSYM/Contents/Info.plist
