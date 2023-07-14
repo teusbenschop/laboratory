@@ -1,9 +1,14 @@
 #include "main.h"
+#include <version>
 #include <iostream>
 #include <functional>
 #include <chrono>
 #include <array>
 #include <set>
+#include <algorithm>
+#include <ranges>
+#include <list>
+#include <numeric>
 
 [[maybe_unused]] static void test_lambda_capture ()
 {
@@ -132,8 +137,8 @@ public:
     using namespace std::chrono;
     auto stop = clock_type::now();
     auto duration = (stop - m_start);
-    auto ms = duration_cast<milliseconds>(duration).count();
-    std::cout << ms << " ms " << function_ << '\n';
+    auto ms = duration_cast<microseconds>(duration).count();
+    std::cout << ms << " microseconds " << function_ << '\n';
   }
 private:
   const char* function_ = {};
@@ -217,7 +222,7 @@ auto sum_scores(const std::vector<T>& objects) {
   return sum;
 }
 
-static void sum_scores_compare_processing_time ()
+[[maybe_unused]] static void sum_scores_compare_processing_time ()
 {
   std::cout << "sizeof(small_object): " << sizeof(small_object) << " bytes" << std::endl;
   std::cout << "sizeof(big_object): " << sizeof(big_object) << " bytes" << std::endl;
@@ -245,9 +250,260 @@ static void sum_scores_compare_processing_time ()
   std::cout << "total sum: " << small_sum + big_sum << std::endl;
 }
 
+[[maybe_unused]] static void sorting ()
+{
+  {
+    auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
+    std::sort(values.begin(), values.end());
+    std::cout << (std::ranges::is_sorted(values) ? "sorted" : "unsorted") << std::endl;
+  }
+  {
+    auto v = std::vector{6, 3, 2, 7, 4, 1, 5};
+    std::ranges::sort(v);
+    std::cout << (std::ranges::is_sorted(v) ? "sorted" : "unsorted") << std::endl;
+  }
+}
+
+[[maybe_unused]] static void print_ranges_for_each (auto&& r) {
+  std::ranges::for_each(r, [](auto&& i) {
+    std::cout << i << ' ';
+  });
+  std::cout << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_transform()
+{
+  auto input = std::vector<int>{1, 2, 3, 4};
+  auto output = std::vector<int>(input.size());
+  auto lambda = [](auto&& i) { return i * i; };
+  std::ranges::transform(input, output.begin(), lambda);
+  print_ranges_for_each(output);
+}
+
+[[maybe_unused]] static void algorithm_fill()
+{
+  std::vector<int> v(5);
+  std::ranges::fill(v, -123);
+  print_ranges_for_each(v);
+}
+
+[[maybe_unused]] static void algorithm_generate()
+{
+  std::vector<int> v(4);
+  std::ranges::generate(v, std::rand);
+  print_ranges_for_each(v);
+}
+
+[[maybe_unused]] static void algorithm_iota()
+{
+  auto v = std::vector<int>(6);
+  std::iota(v.begin(), v.end(), 0);
+  print_ranges_for_each(v);
+  // Output: 0 1 2 3 4 5
+}
+
+[[maybe_unused]] static void algorithm_find()
+{
+  auto col = std::list{2, 4, 3, 2, 3, 1};
+  auto it = std::ranges::find(col, 2);
+  if (it != col.end()) {
+    std::cout << *it << '\n';
+  }
+}
+
+[[maybe_unused]] static void algorithm_binary_search()
+{
+  auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
+  // A binary search works if the container is sorted.
+  std::cout << std::boolalpha << std::ranges::is_sorted(v) << std::endl;
+  bool found = std::ranges::binary_search(v, 3);
+  std::cout << std::boolalpha << found << std::endl; // Output: true
+}
+
+[[maybe_unused]] static void algorithm_lower_upper_bound()
+{
+  auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
+  {
+    auto it = std::ranges::lower_bound(v, 3);
+    if (it != v.end()) {
+      auto index = std::distance(v.begin(), it);
+      std::cout << "Position: " << index << '\n';
+    }
+  }
+  {
+    auto it = std::ranges::upper_bound(v, 3);
+    if (it != v.end()) {
+      auto index = std::distance(v.begin(), it);
+      std::cout << "Position: " << index << '\n';
+    }
+    // Output: Position: 5
+  }
+}
+
+[[maybe_unused]] static void algorithm_all_any_none_of()
+{
+  const auto v = std::vector<int>{3, 2, 2, 1, 0, 2, 1};
+  print_ranges_for_each(v);
+
+  const auto is_negative = [](int i) { return i < 0; };
+  
+  std::cout << "Contains only natural numbers: " << std::boolalpha << std::ranges::none_of(v, is_negative) << std::endl;
+
+  std::cout << "Contains only negative numbers: " << std::boolalpha << std::ranges::all_of(v, is_negative) << std::endl;
+
+  std::cout << "Contains at least one negative number: " << std::boolalpha << std::ranges::any_of(v, is_negative) << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_count()
+{
+  auto v = std::list{3, 3, 2, 1, 3, 1, 3};
+  auto n = std::ranges::count(v, 3);
+  std::cout << n << std::endl; // Output: 4
+}
+
+static auto some_func() { return 200; }
+
+[[maybe_unused]] static void algorithm_min_max_clamp()
+{
+  const auto y_max = 100;
+  const auto y_min = 10;
+  std::cout << std::min(some_func(), y_max) << std::endl;
+  std::cout << std::max(some_func(), y_min) << std::endl;
+  std::cout << std::clamp(some_func(), y_min, y_max) << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_minmax()
+{
+  const auto v = std::vector<int>{4, 2, 1, 7, 3, 1, 5};
+  const auto [min, max] = std::ranges::minmax(v);
+  std::cout << min << " " << max << std::endl; // Output: 1 7
+}
+
+[[maybe_unused]] static void algorithm_projections()
+{
+  auto names = std::vector<std::string>{"Ralph",  "Lisa", "Homer", "Maggie", "Apu",  "Bart"};
+  std::ranges::sort(names, std::less<>{}, &std::string::size);
+  // names is now "Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"
+  // Find names with length 3
+  auto iterator = std::ranges::find(names, 3, &std::string::size);
+  std::cout << "Find first name with length 3: " << *iterator << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_lambda_projections()
+{
+  struct Player {
+    std::string name{};
+    int level{};
+    float health{1.0f};
+  };
+  auto players = std::vector<Player>{
+    {"Aki", 1, 9.f},
+    {"Nao", 2, 7.f},
+    {"Rei", 2, 3.f}};
+  const auto level_and_health = [](const Player& p) {
+    return std::tie(p.level, p.health);
+  };
+  // Order players by level, then health
+  std::ranges::sort(players, std::less<>{}, level_and_health);
+  std::ranges::for_each(players, [](auto&& player) {
+    std::cout << player.name << " " << player.level << " " << player.health << std::endl;
+  });
+}
+
+template <typename Iterator>
+auto contains_duplicates_n2(Iterator begin, Iterator end) {
+  for (auto it = begin; it != end; ++it)
+    if (std::find(std::next(it), end, *it) != end)
+      return true;
+  return false;
+}
+
+template <typename Iterator>
+auto contains_duplicates_allocating(Iterator first, Iterator last) {
+  // As (*begin) returns a reference, we have to get the base type using std::decay_t
+  using ValueType = std::decay_t<decltype(*first)>;
+  auto copy = std::vector<ValueType>(first, last);
+  std::sort(copy.begin(), copy.end());
+  return std::adjacent_find(copy.begin(), copy.end()) != copy.end();
+}
+
+
+[[maybe_unused]] static void algorithm_contains_duplicates()
+{
+  auto vals = std::vector{1,4,2,5,3,6,4,7,5,8,6,9,0};
+  {
+    scoped_timer ("a");
+    auto a = contains_duplicates_n2(vals.begin(), vals.end());
+    std::cout << "Contains duplicates: " << std::boolalpha << a << std::endl;
+  }
+  {
+    scoped_timer ("b");
+    auto b = contains_duplicates_allocating(vals.begin(), vals.end());
+    std::cout << "Contains duplicates: " << std::boolalpha << b << std::endl;
+  }
+}
+
+struct Grid {
+  Grid(int w, int h)
+  : m_width{w}, m_height{h}
+  {
+    m_data.resize(static_cast<size_t>(w * h));
+  }
+  auto get_row_v1(int y); // Returns iterator pairs
+  auto get_row_v2(int y); // Returns range using subrange
+  auto get_row_v3(int y); // Returns range using counted
+  std::vector<int> m_data{};
+  int m_width{};
+  int m_height{};
+};
+
+auto Grid::get_row_v1(int y) {
+  auto left = m_data.begin() + m_width * y;
+  auto right = left + m_width;
+  return std::make_pair(left, right);
+}
+
+auto Grid::get_row_v2(int y) {
+  auto first = m_data.begin() + m_width * y;
+  auto sentinel = first + m_width;
+  return std::ranges::subrange{first, sentinel};
+}
+
+auto Grid::get_row_v3(int y) {
+  auto first = m_data.begin() + m_width * y;
+  return std::views::counted(first, m_width);
+}
+
+[[maybe_unused]] static void algorithm_grid()
+{
+  {
+    auto grid = Grid{10, 10};
+    auto y = 3;
+    auto row = grid.get_row_v1(y);
+    std::generate(row.first, row.second, [](){return 5;});
+    auto num_fives = std::count(row.first, row.second, 5);
+    std::cout << "number of fives: " << num_fives << std::endl;
+  }
+  {
+    auto grid = Grid{10, 10};
+    auto y = 3;
+    auto row = grid.get_row_v2(y);
+    std::ranges::generate(row, std::rand);
+    auto num_fives = std::ranges::count(row, 5);
+    std::cout << "num_fives " << num_fives << std::endl;
+  }
+  {
+    auto grid = Grid{10, 10};
+    auto y = 3;
+    auto row = grid.get_row_v3(y);
+    std::ranges::generate(row, std::rand);
+    auto num_fives = std::ranges::count(row, 5);
+    std::cout << "num_fives " << num_fives << std::endl;
+  }
+}
+
 int main()
 {
-  std::cout << "main" << std::endl;
-  sum_scores_compare_processing_time ();
+  algorithm_grid();
   return 0;
 }
