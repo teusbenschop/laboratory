@@ -9,6 +9,12 @@
 #include <ranges>
 #include <list>
 #include <numeric>
+#include <sstream>
+#include <memory>
+#include <cstdint>
+#include <type_traits>
+#include <cmath>
+#include <concepts>
 
 [[maybe_unused]] static void test_lambda_capture ()
 {
@@ -137,8 +143,8 @@ public:
     using namespace std::chrono;
     auto stop = clock_type::now();
     auto duration = (stop - m_start);
-    auto ms = duration_cast<microseconds>(duration).count();
-    std::cout << ms << " microseconds " << function_ << '\n';
+    auto ms = duration_cast<nanoseconds>(duration).count();
+    std::cout << ms << " nanoseconds " << function_ << '\n';
   }
 private:
   const char* function_ = {};
@@ -490,7 +496,7 @@ auto Grid::get_row_v3(int y) {
     auto row = grid.get_row_v2(y);
     std::ranges::generate(row, std::rand);
     auto num_fives = std::ranges::count(row, 5);
-    std::cout << "num_fives " << num_fives << std::endl;
+    std::cout << "number of fives: " << num_fives << std::endl;
   }
   {
     auto grid = Grid{10, 10};
@@ -498,12 +504,484 @@ auto Grid::get_row_v3(int y) {
     auto row = grid.get_row_v3(y);
     std::ranges::generate(row, std::rand);
     auto num_fives = std::ranges::count(row, 5);
-    std::cout << "num_fives " << num_fives << std::endl;
+    std::cout << "number of fives: " << num_fives << std::endl;
   }
+}
+
+struct student {
+  int year{};
+  int score{};
+  std::string name{};
+};
+
+[[maybe_unused]] static auto get_max_score_copy(const std::vector<student>& students, int year)
+{
+  auto by_year = [=](const auto& s) { return s.year == year; };
+  // The student list needs to be copied in order to filter on the year.
+  auto v = std::vector<student>{};
+  std::ranges::copy_if(students, std::back_inserter(v), by_year);
+  auto it = std::ranges::max_element(v, std::less{}, &student::score);
+  return it != v.end() ? it->score : 0;
+}
+
+[[maybe_unused]] static auto get_max_score_for_loop(const std::vector<student>& students, int year) {
+  auto max_score = 0;
+  for (const auto& student : students) {
+    if (student.year == year) {
+      max_score = std::max(max_score, student.score);
+    }
+  }
+  return max_score;
+}
+
+[[maybe_unused]] static auto max_value(auto&& range) {
+  const auto it = std::ranges::max_element(range);
+  return it != range.end() ? *it : 0;
+}
+
+[[maybe_unused]] static auto get_max_score(const std::vector<student>& students, int year)
+{
+  const auto by_year = [=](auto&& s) { return s.year == year; };
+  return max_value(students | std::views::filter(by_year) | std::views::transform(&student::score));
+}
+
+[[maybe_unused]] static auto get_max_score_explicit_views(const std::vector<student>& s, int year) {
+  auto by_year = [=](const auto& s) { return s.year == year; };
+  auto v1 = std::ranges::ref_view{s}; // Wrap container in a view.
+  auto v2 = std::ranges::filter_view{v1, by_year};
+  auto v3 = std::ranges::transform_view{v2, &student::score};
+  auto it = std::ranges::max_element(v3);
+  return it != v3.end() ? *it : 0;
+}
+
+[[maybe_unused]] static void algorithm_composability()
+{
+  auto students = std::vector<student>{
+    {3, 120, "A"},
+    {2, 140, "B"},
+    {3, 190, "C"},
+    {2, 110, "D"},
+    {2, 120, "E"},
+    {3, 130, "F"},
+  };
+  {
+    scoped_timer ("copy");
+    auto score = get_max_score_copy(students, 2); // score is 140
+    std::cout << score << std::endl;
+  }
+  {
+    scoped_timer ("for loop");
+    auto score = get_max_score_for_loop(students, 2); // score is 140
+    std::cout << score << std::endl;
+  }
+  {
+    scoped_timer ("composed");
+    auto score = get_max_score(students, 2);
+    std::cout << score << std::endl;
+  }
+  {
+    scoped_timer ("explicit");
+    auto score = get_max_score_explicit_views(students, 2);
+    std::cout << score << std::endl;
+  }
+}
+
+[[maybe_unused]] static void algorithm_views_transform()
+{
+  auto numbers = std::vector {1, 2, 3, 4, 5, 6, 7, 8};
+  auto square = [](auto v) { return v * v; };
+  // Create a view, but do not yet evaluate this view.
+  auto squared_view = std::views::transform(numbers, square);
+  // Iterate over the squared view, which invokes evaluation and so invokes the lambda.
+  for (auto s : squared_view) std::cout << s << " ";
+  std::cout << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_views_filter()
+{
+  auto v = std::vector{4, 5, 6, 7, 6, 5, 4};
+  auto odd_view = std::views::filter(v, [](auto i) { return (i % 2) == 1; });
+  for (auto odd_number : odd_view) std::cout << odd_number << " ";
+  // Output: 5 7 5
+  std::cout << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_views_join()
+{
+  auto list_of_lists =
+  std::vector<std::vector<int>>{{1, 2}, {3, 4, 5}, {5}, {4, 3, 2, 1}};
+  auto flattened_view = std::views::join(list_of_lists);
+  for (auto v : flattened_view) std::cout << v << " ";
+  // Output: 1 2 3 4 5 5 4 3 2 1
+  std::cout << std::endl;
+  
+  auto max_value = *std::ranges::max_element(flattened_view);
+  // max_value is 5
+  std::cout << max_value << std::endl;
+}
+
+// Materialize the range r into a std::vector
+// See also https://timur.audio/how-to-make-a-container-from-a-c20-range
+[[maybe_unused]] static auto to_vector(auto&& r) {
+  std::vector<std::ranges::range_value_t<decltype(r)>> v;
+  if constexpr (std::ranges::sized_range<decltype(r)>) {
+    v.reserve(std::ranges::size(r));
+  }
+  std::ranges::copy(r, std::back_inserter(v));
+  return v;
+}
+
+[[maybe_unused]] static void algorithm_views_materialize()
+{
+  auto ints = std::list{2, 3, 4, 2, 1};
+  auto r = ints | std::views::transform([](auto i) { return std::to_string(i); });
+  auto strings = to_vector(r);
+  print_ranges_for_each (strings);
+}
+
+template<typename T>
+class type_deduction;
+
+[[maybe_unused]] static void algorithm_views_take()
+{
+  auto vec = std::vector<int>{4, 2, 7, 1, 2, 6, 1, 5};
+  auto first_half = vec | std::views::take(vec.size());
+  std::ranges::sort(first_half);
+  // vec is now 1, 2, 4, 7, 2, 6, 1, 5
+  print_ranges_for_each (first_half);
+  //type_deduction<decltype(first_half)> compiler_error;
+}
+
+[[maybe_unused]] static void algorithm_views_split_join()
+{
+  auto csv = std::string{"10,11,12"};
+//  auto digits = csv | std::ranges::views::split(',') // [ [1, 0], [1, 1], [1, 2] ]
+//  | std::views::join;          // [ 1, 0, 1, 1, 1, 2 ]
+  
+//  for (auto i : digits) {
+//    std::cout << i;
+//  }
+  // Prints 101112
+}
+
+[[maybe_unused]] static void algorithm_views_sampling()
+{
+  auto vec = std::vector{1, 2, 3, 4, 5, 4, 3, 2, 1};
+//  auto v = vec | std::views::drop_while([](auto i) { return i < 5; }) |
+//  std::views::take(3);
+//  // Prints 5 4 3
+//  for (const auto& i : v) {
+//    std::cout << i << " ";
+//  }
+  std::cout << std::endl;
+}
+
+[[maybe_unused]] static void algorithm_views_stream()
+{
+  // auto ifs = std::ifstream("numbers.txt");
+  // Using an istringstream instead of ifstream here
+//  auto ifs = std::istringstream{"1.4142 1.618 2.71828 3.14159 6.283"};
+//  for (auto f : std::ranges::istream_view<float>(ifs)) {
+//    std::cout << f << '\n';
+//  }
+  // ifs.close();
+}
+
+struct User {
+  User(const std::string& name) : name_(name) { }
+  std::string name_;
+};
+
+[[maybe_unused]] static void memory_placement_new()
+{
+  {
+    auto* user = new User {"John"};
+    delete user;
+  }
+  {
+    // Allocate memory.
+    auto* memory = std::malloc(sizeof(User));
+    // Construct new object in existing memory.
+    auto* user = ::new (memory) User("john");
+    std::cout << user->name_ << std::endl;
+    // Call destructor.
+    user->~User();
+    // Free memory on heap.
+    std::free(memory);
+  }
+  {
+    auto* memory = std::malloc(sizeof(User));
+    auto* user_ptr = reinterpret_cast<User*>(memory);
+    std::uninitialized_fill_n(user_ptr, 1, User{"john"});
+    std::construct_at (user_ptr, User{"john"}); // C++20.
+    std::cout << user_ptr->name_ << std::endl;
+    std::destroy_at(user_ptr);
+    std::free(memory);
+  }
+}
+
+template <typename T>
+auto pow_n_traditional(const T& v, int n) {
+  auto product = T{1};
+  for (int i = 0; i < n; ++i) {
+    product *= v;
+  }
+  return product;
+}
+
+auto pow_n_abbreviated (const auto&v, int n) {
+  auto product = decltype(v){1};
+  for (int i = 0; i < n; i++) {
+    product *= v;
+  }
+  return product;
+}
+
+auto pow_n_remove_cfref (const auto&v, int n) {
+  typename std::remove_cvref<decltype(v)>::type product {1};
+  for (int i = 0; i < n; i++) {
+    product *= v;
+  }
+  return product;
+}
+
+[[maybe_unused]] static void template_pow()
+{
+  auto x = pow_n_traditional<float>(2.0f, 3); // x is a float
+  std::cout << x << std::endl;
+  //type_deduction<decltype(x)> compiler_error;
+  auto y = pow_n_traditional<int>(3, 3); // y is an int
+  std::cout << y << std::endl;
+  auto z = pow_n_abbreviated(3.0, 3);
+  std::cout << z << std::endl;
+  {
+    auto pow_n_func = []<class T>(const T& v, int n) {
+      auto product = T{1};
+      for (int i = 0; i < n; ++i) {
+        product *= v;
+      }
+      return product;
+    };
+    auto a = pow_n_func(3, 3); // x is an int
+    std::cout << a << std::endl;
+
+  }
+}
+
+template <typename T>
+auto sign_func(const T& v) -> int {
+  if (std::is_unsigned_v<T>) {
+    return 1;
+  }
+  return v < 0 ? -1 : 1;
+}
+
+[[maybe_unused]] static void demo_type_traits()
+{
+  const auto same_type = std::is_same_v<uint8_t, unsigned char>;
+  static_assert(same_type);
+
+  const auto is_float_or_double = std::is_floating_point_v<decltype(3.f)>;
+  static_assert(is_float_or_double);
+
+  class Planet {};
+  class Mars : public Planet {};
+  class Sun {};
+  static_assert(std::is_base_of_v<Planet, Mars>);
+  static_assert(!std::is_base_of_v<Planet, Sun>);
+
+  {
+    auto unsigned_value = uint32_t{42};
+    auto sign = sign_func(unsigned_value);
+    std::cout << sign << std::endl; // 1
+  }
+  {
+    auto signed_value = int32_t{-42};
+    auto sign = sign_func(signed_value);
+    std::cout << sign << std::endl; // -1
+  }
+}
+
+[[maybe_unused]] static consteval auto consteval_sum (int x, int y)
+{
+  return x + y;
+}
+
+[[maybe_unused]] static void demo_consteval()
+{
+  [[maybe_unused]] constexpr auto sum = consteval_sum(1, 2);
+  [[maybe_unused]] auto x = 1;
+  // auto sum2 = consteval_sum(x, 2); // Fails to compile.
+}
+
+struct Bear {
+  auto roar() const { std::cout << "roar\n"; }
+};
+struct Duck {
+  auto quack() const { std::cout << "quack\n"; }
+};
+
+// The function speak can't be used with Bear and Duck class
+template <typename Animal>
+auto speak(const Animal& a) {
+  if (std::is_same_v<Animal, Bear>) {
+    a.roar();
+  } else if (std::is_same_v<Animal, Duck>) {
+    a.quack();
+  }
+}
+
+template <typename Animal>
+void constexpr_if_speak(const Animal& a) {
+  if constexpr (std::is_same_v<Animal, Bear>) {
+    a.roar();
+  } else if constexpr (std::is_same_v<Animal, Duck>) {
+    a.quack();
+  }
+}
+
+template <typename T>
+auto generic_mod(const T& v, const T& n) -> T {
+  assert(n != 0);
+  if (std::is_floating_point_v<T>) {
+    return std::fmod(v, n);
+  } else {
+    return v % n; // if T is a floating point, this line wont compile
+  }
+}
+
+template <typename T>
+auto constexpr_if_generic_mod(const T& v, const T& n) -> T {
+  assert(n != 0);
+  if constexpr (std::is_floating_point_v<T>) {
+    return std::fmod(v, n);
+  } else {        // If T is a floating point,
+    return v % n; // this code is eradicated
+  }
+}
+
+[[maybe_unused]] static void demo_if_constexpr()
+{
+  {
+    Bear bear;
+    Duck duck;
+    constexpr_if_speak(bear);
+    constexpr_if_speak(duck);
+    // Won't compile because constexpr if is not used.
+    // speak(bear);
+    // speak(duck);
+  }
+  {
+    auto const value = 7;
+    auto const modulus = 5;
+    auto const result = generic_mod(value, modulus);
+    auto const constexpr_if_result = constexpr_if_generic_mod(value, modulus);
+    std::cout << result << " " << constexpr_if_result << std::endl;
+  }
+  {
+    auto const value = 1.5f;
+    auto const modulus = 1.0f;
+    // Compilation error % operation for float value
+    // auto const result = generic_mod(value, modulus);
+    auto const constexpr_if_result = constexpr_if_generic_mod(value, modulus);
+    std::cout << constexpr_if_result << std::endl;
+  }
+}
+
+template <typename T>
+class Point2D {
+public:
+  Point2D(T x, T y) : x_{x}, y_{y} {}
+  auto x() { return x_; }
+  auto y() { return y_; }
+private:
+  T x_{};
+  T y_{};
+};
+
+template <typename T>
+auto dist(T point1, T point2) {
+  auto a = point1.x() - point2.x();
+  auto b = point1.y() - point2.y();
+  return std::sqrt(a * a + b * b);
+};
+
+[[maybe_unused]] static void point_template_unconstrained()
+{
+  {
+    auto p1 = Point2D{2, 2};
+    auto p2 = Point2D{6, 5};
+    auto d = dist(p1, p2);
+    std::cout << d << std::endl;
+  }
+  // The code below doesn't compile because type int doesn't have x() and y() functions.
+  // Needed is better error messages when trying to instantiate this function template.
+  // dist(3, 4);
+  {
+    // We don't want this to compile: Point2D<const char*>
+    auto from = Point2D{"2.0", "2.0"};
+    auto to = Point2D{"6.0", "5.0"};
+    auto d = dist(from, to);
+    // Prints nonsense.
+    std::cout << d << std::endl;
+  }
+}
+
+template <typename T>
+concept floating_point = std::is_floating_point_v<T>;
+
+template <typename T>
+concept number = floating_point<T> || std::is_integral_v<T>;
+
+template <typename T>
+concept range = requires(T& t) {
+  begin(t);
+  end(t);
+};
+
+// Constraining types with concepts.
+
+template <typename T>
+requires std::integral<T> auto mod(T v, T n) {
+  return v % n;
+}
+
+// Using concepts with abbreviated function templates.
+
+std::integral auto mod_abbreviated(std::integral auto v, std::integral auto n) {
+  return v % n;
+}
+
+template <typename T>
+requires std::integral<T> struct struct_foo {
+  T value;
+};
+
+[[maybe_unused]] static void constraints_and_concepts()
+{
+  {
+    auto x = mod(5, 2); // OK: Integral types
+    std::cout << "should be 1: " << x << std::endl;
+    // Compilation error, not integral types
+    // auto y = mod(5.f, 2.f);
+  }
+  {
+    auto x = mod_abbreviated(5, 2); // OK: Integral types
+    std::cout << "should be 1: " << x << std::endl;
+    // Compilation error, not integral types
+    // auto y = mod_abbreviated(5.f, 2.f);
+  }
+  {
+    //auto x = struct_foo<int>{5};
+    //std::cout << "should be 1: " << x << std::endl;
+    // Compilation error, not integral types
+    // auto y = Foo{5.f};
+  }
+
 }
 
 int main()
 {
-  algorithm_grid();
+  constraints_and_concepts();
   return 0;
 }

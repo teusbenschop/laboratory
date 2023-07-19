@@ -1,3 +1,4 @@
+# -Xclang -ast-print -fsyntax-only
 g++ -std=c++20 -Wall -Wno-unknown-pragmas -Wextra -pedantic -g -O2 *.cpp
 if [ $? -ne 0 ]; then exit; fi
 ./a.out
