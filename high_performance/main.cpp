@@ -1,4 +1,3 @@
-#include "main.h"
 #include <version>
 #include <iostream>
 #include <functional>
@@ -15,6 +14,8 @@
 #include <type_traits>
 #include <cmath>
 #include <concepts>
+#include <unordered_map>
+#include <optional>
 
 [[maybe_unused]] static void test_lambda_capture ()
 {
@@ -957,6 +958,18 @@ requires std::integral<T> struct struct_foo {
   T value;
 };
 
+// Use function overloading.
+
+template <std::integral T>
+T generic_mod(T v, T n) { // Integral version.
+  return v % n;
+}
+
+template <std::floating_point T>
+T generic_mod(T v, T n) { // Floating point version.
+  return std::fmod(v, n);
+}
+
 [[maybe_unused]] static void constraints_and_concepts()
 {
   {
@@ -977,11 +990,161 @@ requires std::integral<T> struct struct_foo {
     // Compilation error, not integral types
     // auto y = Foo{5.f};
   }
+  // Using an integral type.
+  {
+    auto const value = 7;
+    auto const modulus = 5;
+    auto const x = generic_mod(value, modulus);
+    std::cout << "should be 2: " << x << std::endl;
+  }
+  // Using a floating point type.
+  {
+    auto const value = 1.5f;
+    auto const modulus = 1.0f;
+    auto const x = generic_mod(value, modulus);
+    std::cout << "should be 0.5: " << x << std::endl;
+  }
+}
 
+template <typename T>
+concept arithmetic = std::is_arithmetic_v<T>;
+
+template <typename T>
+concept point = requires(T p) {
+  requires std::is_same_v<decltype(p.x()), decltype(p.y())>;
+  requires arithmetic<decltype(p.x())>;
+};
+
+std::floating_point auto dist (point auto p1, point auto p2) {
+  auto a = p1.x() - p2.x();
+  auto b = p1.y() - p2.y();
+  return std::sqrt(a * a + b * b);
+}
+
+template <arithmetic T> // T is now constrained.
+class Point2D_v2 {
+public:
+  Point2D_v2 (T x, T y) : x_{x}, y_{y} {}
+  auto x() { return x_; }
+  auto y() { return y_; }
+  // …
+private:
+  T x_{};
+  T y_{};
+};
+
+[[maybe_unused]] static void point2d_concepts()
+{
+  auto p1 = Point2D_v2{2, 2};
+  auto p2 = Point2D_v2{6, 5};
+  auto d = dist(p1, p2);
+  std::cout << d << std::endl;
+  // Trying to instatiate Point2D with unrelevant types is no longer possible.
+  // auto p = Point2D_v2{"2.0", "2.0"};
+}
+
+template <typename T>
+constexpr auto make_false() {
+  return false;
+}
+
+template <typename Dst, typename Src>
+auto safe_cast(const Src& v) -> Dst {
+  constexpr auto is_same_type = std::is_same_v<Src, Dst>;
+  constexpr auto is_pointer_to_pointer = std::is_pointer_v<Src> && std::is_pointer_v<Dst>;
+  constexpr auto is_float_to_float = std::is_floating_point_v<Src> && std::is_floating_point_v<Dst>;
+  constexpr auto is_number_to_number = std::is_arithmetic_v<Src> && std::is_arithmetic_v<Dst>;
+  constexpr auto is_intptr_to_ptr = (std::is_same_v<uintptr_t, Src> || std::is_same_v<intptr_t, Src>) && std::is_pointer_v<Dst>;
+  constexpr auto is_ptr_to_intptr = std::is_pointer_v<Src> && (std::is_same_v<uintptr_t, Dst> || std::is_same_v<intptr_t, Dst>);
+  
+  if constexpr (is_same_type) {
+    return v;
+  }
+  else if constexpr (is_intptr_to_ptr || is_ptr_to_intptr) {
+    return reinterpret_cast<Dst>(v);
+  }
+  else if constexpr (is_pointer_to_pointer) {
+    assert(dynamic_cast<Dst>(v) != nullptr);
+    return static_cast<Dst>(v);
+  }
+  else if constexpr (is_float_to_float) {
+    auto casted = static_cast<Dst>(v);
+    auto casted_back = static_cast<Src>(v);
+    assert(!isnan(casted_back) && !isinf(casted_back));
+    return casted;
+  }
+  else if constexpr (is_number_to_number) {
+    auto casted = static_cast<Dst>(v);
+    auto casted_back = static_cast<Src>(casted);
+    assert(casted == casted_back);
+    return casted;
+  }
+  else {
+    static_assert(make_false<Src>(), "CastError");
+    return Dst{}; // This can never happen, the static_assert should have failed
+  }
+}
+
+[[maybe_unused]] static void demo_safe_cast()
+{
+  auto x = safe_cast<int>(42.0f);
+  std::cout << x << std::endl;
+  // Only compiles on a 16-bits system.
+  //auto y = safe_cast<int*>(int16_t{42});
+}
+
+constexpr auto hash_function(const char* str) -> size_t {
+  auto sum = size_t{0};
+  for (auto ptr = str; *ptr != '\0'; ++ptr)
+    sum += static_cast<size_t>(*ptr);
+  return sum;
+}
+
+class PrehashedString {
+public:
+  template <size_t N>
+  constexpr PrehashedString(const char (&str)[N])
+  : m_hash{hash_function(&str[0])},
+  m_size{N - 1}, // The subtraction is to avoid null at the end.
+  m_strptr{&str[0]} {}
+  auto operator==(const PrehashedString& s) const {
+    return m_size == s.m_size && std::equal(c_str(), c_str() + m_size, s.c_str());
+  }
+  auto operator!=(const PrehashedString& s) const { return !(*this == s); }
+  constexpr auto size() const { return m_size; }
+  constexpr auto get_hash() const { return m_hash; }
+  constexpr auto c_str() const -> const char* { return m_strptr; }
+private:
+  size_t m_hash{};
+  size_t m_size{};
+  const char* m_strptr{nullptr};
+};
+
+template <>
+struct std::hash<PrehashedString> {
+  constexpr auto operator()(const PrehashedString& s) const {
+    return s.get_hash();
+  }
+};
+
+[[maybe_unused]] static void compile_time_hash()
+{
+  const auto& hash_fn = std::hash<PrehashedString>{};
+  const auto& str = PrehashedString("abc");
+  std::cout << hash_fn(str) << std::endl;
+  std::cout << hash_function("abc") << std::endl;
+}
+
+[[maybe_unused]] static void demo_optional()
+{
+  auto c = std::vector<std::optional<int>>{{3}, {}, {1}, {}, {2}};
+  std::sort(c.begin(), c.end());
+  const auto sorted = std::vector<std::optional<int>>{{}, {}, {1}, {2}, {3}};
+  std::cout << "vectors are equal: " << std::boolalpha << (c==sorted) << std::endl;
 }
 
 int main()
 {
-  constraints_and_concepts();
-  return 0;
+  demo_optional();
+  return EXIT_SUCCESS;
 }
