@@ -16,6 +16,15 @@
 #include <concepts>
 #include <unordered_map>
 #include <optional>
+#include <tuple>
+#include <future>
+#include <random>
+#include <atomic>
+#include <barrier>
+#include <condition_variable>
+#include <queue>
+#include <latch>
+#include <semaphore>
 
 [[maybe_unused]] static void test_lambda_capture ()
 {
@@ -1143,8 +1152,820 @@ struct std::hash<PrehashedString> {
   std::cout << "vectors are equal: " << std::boolalpha << (c==sorted) << std::endl;
 }
 
+[[maybe_unused]] static auto make_saturn() { return std::tuple{"Saturn", 82, true}; }
+
+// Automatic type deduction by defining the struct within the function itself.
+[[maybe_unused]] static auto make_earth() {
+  struct Planet { std::string name; int n_moons; bool rings; };
+  return Planet{"Earth", 1, false};
+}
+
+[[maybe_unused]] static void demo_tuple()
+{
+  {
+    // Using std::get<N>
+    auto t = make_saturn();
+    auto name = std::get<0>(t);
+    auto n_moons = std::get<1>(t);
+    auto rings = std::get<2>(t);
+    std::cout << name << ' ' << n_moons << ' ' << rings << std::endl;
+    // Output: Saturn 82 true
+  }
+  {
+    // Using std::tie
+    auto name = std::string{};
+    auto n_moons = int{};
+    auto rings = bool{};
+    std::tie(name, n_moons, rings) = make_saturn();
+    std::cout << name << ' ' << n_moons << ' ' << rings << std::endl;
+  }
+  {
+    const auto& [name, n_moons, rings] = make_saturn();
+    std::cout << name << ' ' << n_moons << ' ' << rings << '\n';
+  }
+  {
+    auto planets = {std::tuple{"Mars", 2, false}, std::tuple{"Neptune", 14, true}};
+    for (auto&& [name, n_moons, rings] : planets) {
+      std::cout << name << ' ' << n_moons << ' ' << rings << std::endl;
+    }
+  }
+  {
+    auto p = make_earth();
+    std::cout << p.name << ' ' << p.n_moons << ' ' << p.rings << std::endl;
+  }
+}
+
+template <size_t Index, typename TupleType, typename Functor>
+auto tuple_at(const TupleType& tpl, const Functor& func) -> void {
+  const auto& val = std::get<Index>(tpl);
+  func(val);
+}
+
+template <typename TupleType, typename Functor, size_t Index = 0>
+auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
+  constexpr auto tuple_size = std::tuple_size_v<TupleType>;
+  if constexpr (Index < tuple_size) {
+    tuple_at<Index>(tpl, ifunctor);
+    tuple_for_each<TupleType, Functor, Index + 1>(tpl, ifunctor);
+  }
+}
+
+template <typename... Ts> auto make_string(const Ts&... values) {
+  auto sstr = std::ostringstream{};
+  // Create a tuple of the variadic parameter pack.
+  auto tuple = std::tie(values...);
+  // Iterate the tuple.
+  tuple_for_each(tuple, [&sstr](const auto& v) { sstr << std::boolalpha << v << " "; });
+  return sstr.str();
+}
+
+[[maybe_unused]] static void demo_variadic_pack()
+{
+  auto str = make_string(42, "hi", true, false, 42.0f);
+  std::cout << str << std::endl;
+}
+
+[[maybe_unused]] static void heterogenous_collections_with_variant()
+{
+  {
+    using namespace std::string_literals;
+    using VariantType = std::variant<int, std::string, bool>;
+    auto container = std::vector<VariantType>{};
+    container.push_back(false);
+    container.push_back("I am a string"s);
+    container.push_back("I am also a string"s);
+    container.push_back(13);
+    container.pop_back();
+    std::reverse(container.begin(), container.end());
+  }
+  {
+    using namespace std::string_literals;
+    using VariantType = std::variant<int, std::string, bool>;
+    auto v = std::vector<VariantType>{42, "needle"s, true};
+    for (const auto& item : v) {
+      std::visit([](const auto& x) { std::cout << x << std::endl; }, item);
+    }
+    auto num_bools = std::count_if(v.begin(), v.end(), [](const auto& item) {
+      return std::holds_alternative<bool>(item);
+    });
+    std::cout << "num_bools: " << num_bools << std::endl;
+    auto contains_needle_string =
+    std::any_of(v.begin(), v.end(), [](const auto& item) {
+      return std::holds_alternative<std::string>(item) &&
+      std::get<std::string>(item) == "needle";
+    });
+    std::cout << "contains_needle_string " << std::boolalpha << contains_needle_string << std::endl;
+  }
+}
+
+
+[[maybe_unused]] static void projections_and_comparison_operators()
+{
+  struct Player {
+    std::string name{};
+    int level{};
+    int score{};
+  };
+  
+  constexpr auto create_players = []() {
+    return std::vector<Player>{
+      {"Kai", 34, 23092},
+      {"Ali", 56, 43423},
+      {"Mel", 34, 12981}
+    };
+  };
+
+  // Manually written comparison function.
+  {
+    auto players = create_players();
+    
+    auto cmp = [](const Player& lhs, const Player& rhs) {
+      if (lhs.level == rhs.level) {
+        return lhs.score < rhs.score;
+      } else {
+        return lhs.level < rhs.level;
+      }
+    };
+    
+    std::sort(players.begin(), players.end(), cmp);
+    std::cout << "should be 34: " << players.front().level << std::endl;
+    std::cout << "should be 12981: " << players.front().score << std::endl;
+  }
+
+  // Comparison function via std::tie.
+  {
+    auto players = create_players();
+    
+    auto cmp = [](const Player& lhs, const Player& rhs) {
+      auto p1 = std::tie(lhs.level, lhs.score); // Projection
+      auto p2 = std::tie(rhs.level, rhs.score); // Projection
+      return p1 < p2;
+    };
+    std::sort(players.begin(), players.end(), cmp);
+    std::cout << "should be 34: " << players.front().level << std::endl;
+    std::cout << "should be 12981: " << players.front().score << std::endl;
+  }
+
+  // Comparison using std::tie and std::ranges.
+  {
+    auto players = create_players();
+    std::ranges::sort(players, std::less{}, [](const Player& p) {
+      return std::tie(p.level, p.score);
+    });
+    std::cout << "should be 34: " << players.front().level << std::endl;
+    std::cout << "should be 12981: " << players.front().score << std::endl;
+  }
+}
+
+[[maybe_unused]] static void lazy_evaluation()
+{
+  // This is to postpone or not execute parts not needed for obtaining the result.
+  // If for example finding which distance is larger,
+  // then the formula is square root from the square,
+  // but for finding the larger one, the square root is not needed,
+  // it is enough to calculate the square of the two values.
+}
+
+[[maybe_unused]] static void pipe_operator()
+{
+  {
+    const auto r = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
+    auto odd_positive_numbers = r | std::views::filter([](auto v) { return v > 0; }) | std::views::filter([](auto v) { return (v % 2) == 1; });
+    auto it = std::begin(odd_positive_numbers);
+    std::cout << *it << std::endl;
+    it++;
+    std::cout << *it << std::endl;
+    it++;
+    std::cout << *it << std::endl;
+  }
+}
+
+template <typename T> struct ContainsProxy { const T& m_value; };
+
+template <typename Range, typename T>
+auto operator|(const Range& r, const ContainsProxy<T>& proxy) {
+  const auto& v = proxy.m_value;
+  return std::find(r.begin(), r.end(), v) != r.end();
+}
+
+template <typename T> auto contains(const T& v) { return ContainsProxy<T>{v}; }
+
+[[maybe_unused]] static void proxy_objects()
+{
+  {
+    auto numbers = std::vector<int>{1, 3, 5, 7, 9};
+    auto seven = 7;
+    auto proxy = ContainsProxy<decltype(seven)>{seven};
+    bool has_seven = numbers | proxy;
+    std::cout << std::boolalpha << has_seven << std::endl;
+  }
+  {
+    auto penguins = std::vector<std::string>{"Ping", "Roy", "Silo"};
+    bool has_silo = penguins | contains("Silo");
+    std::cout << std::boolalpha << has_silo << std::endl;
+  }
+}
+
+[[maybe_unused]] static void test_async()
+{
+  auto divide = [](int a, int b) -> int {
+    if (!b) throw std::runtime_error("Cannot divide by zero");
+    std::cout << "Lambda running on thread id " << std::this_thread::get_id() << std::endl;
+    return a / b;
+  };
+  
+  std::cout << "Main running on thread id " << std::this_thread::get_id() << std::endl;
+  std::future future = std::async(divide, 45, 5);
+  int result = future.get();
+  std::cout << 45 / 5 << " " << result << std::endl;
+}
+
+struct Stats {
+  int heads{};
+  int tails{};
+};
+
+/* Does not compile yet on macOS Ventura
+auto random_int(int min, int max) {
+  // One engine instance per thread
+  static thread_local auto engine =
+  std::default_random_engine{std::random_device{}()};
+  
+  auto dist = std::uniform_int_distribution<>{min, max};
+  return dist(engine);
+}
+
+void flip_coin(std::size_t n, Stats& outcomes) {
+  auto flip = [&outcomes](auto n) {
+    auto heads = std::atomic_ref<int>{outcomes.heads};
+    auto tails = std::atomic_ref<int>{outcomes.tails};
+    for (auto i = 0u; i < n; ++i) {
+      random_int(0, 1) == 0 ? ++heads : ++tails;
+    }
+  };
+  auto t1 = std::jthread{flip, n / 2};       // First half
+  auto t2 = std::jthread{flip, n - (n / 2)}; // The rest
+}
+ */
+
+[[maybe_unused]] static void atomic_references()
+{
+  auto stats = Stats{};
+  //flip_coin(5000, stats); // Flip 5000 times
+  std::cout << "heads: " << stats.heads << ", tails: " << stats.tails << std::endl;
+}
+
+// No compiler support yet.
+/*
+namespace SpinLock {
+
+class SimpleMutex {
+  std::atomic_flag is_locked{}; // Cleared by default
+public:
+  auto lock() noexcept {
+    while (is_locked.test_and_set()) {
+      while (is_locked.test()) // C++20
+        ;                      // Spin here
+    }
+  }
+  auto unlock() noexcept { is_locked.clear(); }
+};
+
+TEST(Atomics, SimpleSpinLock) {
+  
+  constexpr auto n = 1'000'000;
+  auto counter = 0; // Counter will be protected by mutex
+  auto counter_mutex = SimpleMutex{};
+  
+  auto increment_counter = [&] {
+    for (int i = 0; i < n; ++i) {
+      counter_mutex.lock();
+      ++counter;
+      counter_mutex.unlock();
+    }
+  };
+  
+  auto t1 = std::thread{increment_counter};
+  auto t2 = std::thread{increment_counter};
+  
+  t1.join(); // Or use std::jthread
+  t2.join();
+  
+  std::cout << counter << '\n';
+  // If we don't have a data race, this assert should hold:
+  ASSERT_EQ(n * 2, counter);
+}
+
+} // namespace SpinLock
+
+namespace WaitAndNotify {
+
+class SimpleMutex {
+  std::atomic_flag is_locked{};
+  
+public:
+  auto lock() noexcept {
+    while (is_locked.test_and_set())
+      is_locked.wait(true); // Don’t spin, wait
+  }
+  
+  auto unlock() noexcept {
+    is_locked.clear();
+    is_locked.notify_one(); // Notify blocked thread
+  }
+};
+
+TEST(Atomics, WaitAndNotify) {
+  
+  constexpr auto n = 1000000;
+  auto counter = 0; // Counter will be protected by mutex
+  auto counter_mutex = SimpleMutex{};
+  
+  auto increment_counter = [&] {
+    for (int i = 0; i < n; ++i) {
+      counter_mutex.lock();
+      ++counter;
+      counter_mutex.unlock();
+    }
+  };
+  
+  auto t1 = std::thread{increment_counter};
+  auto t2 = std::thread{increment_counter};
+  t1.join();
+  t2.join();
+  
+  std::cout << counter << '\n';
+  // If we don't have a data race, this assert should hold:
+  ASSERT_EQ(n * 2, counter);
+}
+
+} // namespace WaitAndNotify
+*/
+
+
+// This demonstrates how to use std::lock to lock multiple locks at the simultaneously.
+// This avoids the risk of having deadlocks in the transfer function.
+[[maybe_unused]] static void avoid_deadlock()
+{
+  struct account {
+    int m_balance{0};
+    std::mutex m_mutex{};
+  };
+
+  auto transfer_money = [](account& from, account& to, int amount) -> void {
+    // Define two deferred unique locks.
+    auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
+    auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
+    // Lock both unique_locks at the same time to avoid a deadlock.
+    std::lock(lock1, lock2);
+    // Do the transfer.
+    from.m_balance -= amount;
+    to.m_balance += amount;
+    // End of scope releases locks.
+  };
+
+  auto account1 = account{100};
+  auto account2 = account{30};
+  transfer_money(account1, account2, 20);
+  std::cout << "Account 1: " << account1.m_balance << std::endl;
+  std::cout << "Account 2: " << account2.m_balance << std::endl;
+}
+
+[[maybe_unused]] static void barriers()
+{
+  auto random_int = [] (int min, int max) -> int {
+    // One engine instance per thread
+    thread_local static auto engine = std::default_random_engine{std::random_device{}()};
+    auto distribution = std::uniform_int_distribution<>{min, max};
+    return distribution(engine);
+  };
+
+  constexpr auto n_dice = 5;
+  
+  auto done = false;
+  auto dice = std::array<int, n_dice>{};
+  auto threads = std::vector<std::thread>{};
+  auto n_turns = 0;
+  
+  // Completion function.
+  auto check_result = [&] {
+    ++n_turns;
+    auto is_six = [](auto i) { return i == 6; };
+    done = std::all_of(dice.begin(), dice.end(), is_six);
+  };
+
+  auto barrier = std::barrier{n_dice, check_result};
+  for (size_t i = 0; i < n_dice; ++i) {
+    threads.emplace_back([&, i] () {
+      while (!done) {
+        // Roll dice.
+        dice[i] = random_int(1, 6);
+        // Decrement the count by 1, wait here till the barrier is 0,
+        // and then until the phase completion step of the current phase is run.
+        barrier.arrive_and_wait();
+      }
+    });
+  }
+  for (auto&& t : threads) {
+    t.join();
+  }
+  std::cout << "number of turns: " << n_turns << std::endl;
+}
+
+[[maybe_unused]] static void condition_variables()
+{
+  auto condition_variable = std::condition_variable{};
+  auto queue = std::queue<int>{};
+  // Protect the shared queue.
+  auto mutex = std::mutex{};
+  // Special value to signal that we are done.
+  constexpr int sentinel = -1;
+
+  // For verifying the test.
+  std::vector<int> result;
+  
+  auto print_ints = [&] () -> void {
+    auto i = int{0};
+    while (i != sentinel) {
+      {
+        auto lock = std::unique_lock<std::mutex>{mutex};
+        while (queue.empty()) {
+          condition_variable.wait(lock); // The lock is released while waiting
+        }
+        // An alternative approach using a predicate:
+        // condition_variable.wait(lock, [] { return !q.empty(); });
+        i = queue.front();
+        queue.pop();
+      }
+      if (i != sentinel) {
+        std::cout << "Got: " << i << std::endl;
+        result.push_back(i);
+      }
+    }
+  };
+  
+  auto generate_ints = [&] () -> void {
+    for (auto i : {1, 2, 3, sentinel}) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(300));
+      {
+        auto lock = std::scoped_lock{mutex};
+        queue.push(i);
+      }
+      condition_variable.notify_one();
+    }
+  };
+
+  std::thread producer(generate_ints);
+  std::thread consumer(print_ints);
+  
+  producer.join();
+  consumer.join();
+
+  for (auto i : result) std::cout << i << " ";
+  std::cout << std::endl;
+}
+
+[[maybe_unused]] static void data_race_demo()
+{
+  std::atomic<int> atomic_counter {};
+  int normal_counter {};
+  // Counter protected by mutex.
+  int mutex_counter {};
+  std::mutex counter_mutex;
+
+  const auto increment_atomic_counter = [&] (int n) {
+    for (int i = 0; i < n; i++) {
+      ++atomic_counter;
+    }
+    std::cout << "atomic ready" << std::endl;
+  };
+
+  const auto increment_normal_counter = [&] (int n) {
+    for (int i = 0; i < n; i++) {
+      ++normal_counter;
+    }
+    std::cout << "normal ready" << std::endl;
+  };
+
+  const auto increment_mutex_counter = [&] (int n) {
+    for (int i = 0; i < n; i++) {
+      auto lock = std::scoped_lock{counter_mutex};
+      ++mutex_counter;
+    }
+    std::cout << "mutex ready" << std::endl;
+  };
+
+  constexpr auto n_times = 1'000'000;
+  std::thread thread1(increment_atomic_counter, n_times);
+  std::thread thread2(increment_atomic_counter, n_times);
+  std::thread thread3(increment_normal_counter, n_times);
+  std::thread thread4(increment_normal_counter, n_times);
+  std::thread thread5(increment_mutex_counter, n_times);
+  std::thread thread6(increment_mutex_counter, n_times);
+
+  thread1.join();
+  thread2.join();
+  thread3.join();
+  thread4.join();
+  thread5.join();
+  thread6.join();
+
+  // If we don't have a data race, this should hold:
+  std::cout << "without a data race the counters should be: " << n_times * 3 << std::endl;
+  std::cout << "atomic: " << atomic_counter << std::endl;;
+  std::cout << "normal: " << normal_counter << std::endl;;
+  std::cout << "mutex : " << mutex_counter << std::endl;;
+}
+
+// It should be possible to set an exception in a promise.
+[[maybe_unused]] static void future_and_promise_and_exception()
+{
+  const auto divide = [] (int a, int b, std::promise<int>& promise) {
+    try {
+      if (!b) {
+        throw std::runtime_error("Cannot divide by zero");
+      }
+      const auto result = a / b;
+      promise.set_value(result);
+    } catch(...) {
+      try {
+        // store anything thrown in the promise
+        promise.set_exception(std::current_exception());
+        // or throw a custom exception instead
+        // p.set_exception(std::make_exception_ptr(MyException("mine")));
+      } catch(...) {} // set_exception() may throw too
+    }
+  };
+
+  {
+    std::promise<int> promise;
+    std::thread thread {divide, 45, 5, std::ref(promise)};
+    auto future = promise.get_future();
+    auto result = future.get();
+    std::cout << "result should be " << 45 / 5 << " and it is " << result << std::endl;
+    thread.join();
+  }
+  try {
+    std::promise<int> promise;
+    std::thread thread {divide, 45, 0, std::ref(promise)};
+    auto future = promise.get_future();
+    auto result = future.get();
+    std::cout << result << std::endl;
+    std::cout << "result should give an exception" << std::endl;
+    thread.join();
+  } catch (const std::exception& exception) {
+    std::cout << exception.what() << std::endl;
+  }
+}
+
+[[maybe_unused]] static void joinable_thread()
+{
+  [[maybe_unused]] auto print = []() {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::cout << "Thread ID: " << std::this_thread::get_id() << '\n';
+  };
+  std::cout << "main begin" << std::endl;
+#ifdef __cpp_lib_jthread
+  auto joinable_thread = std::jthread{print};
+#else
+  std::cout << "no support for jthread" << std::endl;
+#endif
+  std::cout << "main end" << std::endl;
+  // OK: jthread will join automatically
+}
+
+[[maybe_unused]] static void latches()
+{
+  auto prefault_stack = [] () {
+    // We don't know the size of the stack.
+    constexpr auto stack_size = 500u * 1024u;
+    // Make volatile to avoid optimization.
+    volatile unsigned char mem[stack_size];
+    std::fill(std::begin(mem), std::end(mem), 0);
+    std::cout << "Thread stack has been pre-faulted" << std::endl;
+  };
+  
+  constexpr auto n_threads = 3;
+  auto latch = std::latch{n_threads};
+  auto threads = std::vector<std::thread>{};
+
+  for (auto i = 0; i < n_threads; ++i) {
+    threads.emplace_back([&] {
+      prefault_stack();
+      latch.arrive_and_wait(); // Or just count_down();
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::cout << "Thread is working" << std::endl;
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    });
+  }
+
+  latch.wait();
+  std::cout << "Threads have been initialized, starting to work" << std::endl;
+  for (auto&& thread : threads) {
+    thread.join();
+  }
+}
+
+template <class T, size_t N> class lock_free_queue {
+  std::array<T, N> m_buffer{};   // Used by both threads
+  std::atomic<size_t> m_size{0}; // Used by both threads
+  size_t m_read_pos{0};          // Used by reader thread
+  size_t m_write_pos{0};         // Used by writer thread
+  static_assert(std::atomic<size_t>::is_always_lock_free);
+  
+  bool do_push(T&& t) {
+    if (m_size.load() == N) {
+      return false;
+    }
+    m_buffer[m_write_pos] = std::forward<decltype(t)>(t);
+    m_write_pos = (m_write_pos + 1) % N;
+    m_size.fetch_add(1);
+    return true;
+  }
+  
+public:
+  // Writer thread.
+  bool push(T&& t) { return do_push(std::move(t)); }
+  bool push(const T& t) { return do_push(t); }
+  
+  // Reader thread.
+  auto pop() -> std::optional<T> {
+    auto val = std::optional<T>{};
+    if (m_size.load() > 0) {
+      val = std::move(m_buffer[m_read_pos]);
+      m_read_pos = (m_read_pos + 1) % N;
+      m_size.fetch_sub(1);
+    }
+    return val;
+  }
+  auto size() const noexcept { return m_size.load(); }
+};
+
+[[maybe_unused]] static void demo_lock_free_queue()
+{
+  constexpr auto max_size = 5;
+
+  lock_free_queue<std::optional<int>, max_size> queue;
+  
+  auto writer = std::thread{[&queue]() {
+    for (auto i = 0; i < 10; ++i) {
+      bool pushed = queue.push({i});
+      if (!pushed) {
+        i--;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
+    }
+    queue.push(std::nullopt);
+  }};
+
+  std::vector<int> result;
+
+  auto reader = std::thread{[&queue, &result]() {
+    for (;;) {
+      while (queue.size() == 0) {
+        // busy wait
+      }
+      auto element = *queue.pop();
+      if (element.has_value()) {
+        std::cout << "Got: " << *element << std::endl;
+        result.push_back(*element);
+      } else {
+        break;
+      }
+    }
+  }};
+  
+  writer.join();
+  reader.join();
+
+  std::cout << "Result: ";
+  for (auto i : result) std::cout << i << " ";
+  std::cout << std::endl;
+  // Should be std::vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}).
+}
+
+template <class T, int N> class bounded_buffer {
+  std::array<T, N> m_buffer;
+  std::size_t m_read_pos{};
+  std::size_t m_write_pos{};
+  std::mutex m_mutex;
+  std::counting_semaphore<N> m_n_empty_slots{N};
+  std::counting_semaphore<N> m_n_full_slots{0};
+  
+  void do_push(auto&& item) {
+    // Take one of the empty slots.
+    // Atomically decrements the internal counter by 1 if it is greater than ​0.
+    // Otherwise blocks until it is greater than ​0​.
+    m_n_empty_slots.acquire();
+    try {
+      auto lock = std::unique_lock{m_mutex};
+      m_buffer[m_write_pos] = std::forward<decltype(item)>(item);
+      m_write_pos = (m_write_pos + 1) % N;
+    } catch (...) {
+      // Atomically increments the internal counter by 1.
+      // Any thread(s) waiting for the counter to be greater than ​0​,
+      // such as ones being blocked in acquire, will subsequently be unblocked.
+      m_n_empty_slots.release();
+      throw;
+    }
+    // Increment the counter and signal that there is one more full slot.
+    m_n_full_slots.release(); // New
+  }
+  
+public:
+  void push(const T& item) { do_push(item); }
+  void push(T&& item) { do_push(std::move(item)); }
+  
+  auto pop() {
+    // Take one of the full slots (might block).
+    m_n_full_slots.acquire();
+    auto item = std::optional<T>{};
+    try {
+      auto lock = std::unique_lock{m_mutex};
+      item = std::move(m_buffer[m_read_pos]);
+      m_read_pos = (m_read_pos + 1) % N;
+    } catch (...) {
+      m_n_full_slots.release();
+      throw;
+    }
+    // Increment and signal that there is one more empty slot.
+    m_n_empty_slots.release();
+    return std::move(*item);
+  }
+};
+
+[[maybe_unused]] static void semaphores()
+{
+  auto buffer = bounded_buffer<std::string, 3>{};
+  auto sentinel = std::string{""};
+  
+  auto producer = std::thread{[&]() {
+    buffer.push("1");
+    buffer.push("2");
+    buffer.push("3");
+    buffer.push("4");
+    buffer.push("5");
+    buffer.push("6");
+    buffer.push(sentinel);
+  }};
+  
+  auto consumer = std::thread{[&]() {
+    while (true) {
+      auto s = buffer.pop();
+      if (s == sentinel) return;
+      std::cout << "Got: " << s << '\n';
+    }
+  }};
+  
+  producer.join();
+  consumer.join();
+}
+
+// No need to pass a promise ref here.
+static int task_divide(int a, int b) {
+  if (b == 0) {
+    throw std::runtime_error{"Divide by zero exception"};
+  }
+  return a / b;
+}
+
+[[maybe_unused]] static void tasks()
+{
+  std::packaged_task<decltype(task_divide)> task(task_divide);
+  auto future = task.get_future();
+  std::thread thread(std::move(task), 45, 5);
+  try {
+    auto result = future.get();
+    std::cout << result << std::endl;
+  } catch (const std::exception& exception) {
+    std::cout << exception.what() << std::endl;
+  }
+  thread.join();
+}
+
+[[maybe_unused]] static void stop_token()
+{
+#ifdef __cpp_lib_jthread
+  
+  const auto print = [] (std::stop_token stoken) -> void {
+    while (!stoken.stop_requested()) {
+      std::cout << std::this_thread::get_id() << '\n';
+      std::this_thread::sleep_for(std::chrono::seconds{1});
+    }
+    std::cout << "Stop requested" << std::endl;
+  }
+
+  auto joinable_thread = std::jthread(print);
+  std::cout << "main: goes to sleep" << std::endl;
+  std::this_thread::sleep_for(std::chrono::seconds{3});
+  std::cout << "main: request jthread to stop" << std::endl;
+  joinable_thread.request_stop();
+  
+#endif
+}
+
 int main()
 {
-  demo_optional();
+  tasks();
   return EXIT_SUCCESS;
 }

@@ -81,47 +81,6 @@
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		CA6743BC2A5DAB2E006769F9 /* vec2d_length_proxy_tests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vec2d_length_proxy_tests.cpp; sourceTree = "<group>"; };
-		CA6743BD2A5DAB2E006769F9 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		CA6743BE2A5DAB2E006769F9 /* string_concat_proxy_tests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = string_concat_proxy_tests.cpp; sourceTree = "<group>"; };
-		CA6743BF2A5DAB2E006769F9 /* vec2d_length_proxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vec2d_length_proxy.h; sourceTree = "<group>"; };
-		CA6743C12A5DAB2E006769F9 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		CA6743C22A5DAB2E006769F9 /* vec2d_length_proxy_bm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vec2d_length_proxy_bm.cpp; sourceTree = "<group>"; };
-		CA6743C32A5DAB2E006769F9 /* string_concat_proxy_bm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = string_concat_proxy_bm.cpp; sourceTree = "<group>"; };
-		CA6743C42A5DAB2E006769F9 /* string_concat_proxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = string_concat_proxy.h; sourceTree = "<group>"; };
-		CA6743C52A5DAB2E006769F9 /* pipe_operator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipe_operator.cpp; sourceTree = "<group>"; };
-		CA6743C62A5DAB2E006769F9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		CA6743C82A5DAB2E006769F9 /* counter_data_race.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = counter_data_race.cpp; sourceTree = "<group>"; };
-		CA6743C92A5DAB2E006769F9 /* latches.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = latches.cpp; sourceTree = "<group>"; };
-		CA6743CA2A5DAB2E006769F9 /* semaphores.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = semaphores.cpp; sourceTree = "<group>"; };
-		CA6743CB2A5DAB2E006769F9 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		CA6743CC2A5DAB2E006769F9 /* atomic_references.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = atomic_references.cpp; sourceTree = "<group>"; };
-		CA6743CD2A5DAB2E006769F9 /* lock_free_queue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = lock_free_queue.cpp; sourceTree = "<group>"; };
-		CA6743CE2A5DAB2E006769F9 /* barriers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = barriers.cpp; sourceTree = "<group>"; };
-		CA6743CF2A5DAB2E006769F9 /* future_and_promises.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = future_and_promises.cpp; sourceTree = "<group>"; };
-		CA6743D02A5DAB2E006769F9 /* stop_token.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = stop_token.cpp; sourceTree = "<group>"; };
-		CA6743D12A5DAB2E006769F9 /* print_thread_id.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = print_thread_id.cpp; sourceTree = "<group>"; };
-		CA6743D22A5DAB2E006769F9 /* tasks.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tasks.cpp; sourceTree = "<group>"; };
-		CA6743D32A5DAB2E006769F9 /* async.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = async.cpp; sourceTree = "<group>"; };
-		CA6743D42A5DAB2E006769F9 /* atomics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = atomics.cpp; sourceTree = "<group>"; };
-		CA6743D52A5DAB2E006769F9 /* counter_mutex.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = counter_mutex.cpp; sourceTree = "<group>"; };
-		CA6743D62A5DAB2E006769F9 /* counter_atomic.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = counter_atomic.cpp; sourceTree = "<group>"; };
-		CA6743D72A5DAB2E006769F9 /* joinable_thread.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = joinable_thread.cpp; sourceTree = "<group>"; };
-		CA6743D82A5DAB2E006769F9 /* condition_variables.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = condition_variables.cpp; sourceTree = "<group>"; };
-		CA6743D92A5DAB2E006769F9 /* avoid_deadlock.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = avoid_deadlock.cpp; sourceTree = "<group>"; };
-		CA6743DA2A5DAB2E006769F9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		CA6744102A5DAB2E006769F9 /* example_reflection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = example_reflection.h; sourceTree = "<group>"; };
-		CA6744112A5DAB2E006769F9 /* example_reflection_concepts.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = example_reflection_concepts.cpp; sourceTree = "<group>"; };
-		CA6744122A5DAB2E006769F9 /* example_reflection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = example_reflection.cpp; sourceTree = "<group>"; };
-		CA6744132A5DAB2E006769F9 /* any.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = any.cpp; sourceTree = "<group>"; };
-		CA6744142A5DAB2E006769F9 /* tuple_accessing_elements.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tuple_accessing_elements.cpp; sourceTree = "<group>"; };
-		CA6744162A5DAB2E006769F9 /* variadic_template_parameter_pack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = variadic_template_parameter_pack.cpp; sourceTree = "<group>"; };
-		CA6744172A5DAB2E006769F9 /* example_projections.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = example_projections.cpp; sourceTree = "<group>"; };
-		CA6744182A5DAB2E006769F9 /* tuple.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tuple.cpp; sourceTree = "<group>"; };
-		CA6744192A5DAB2E006769F9 /* variant.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = variant.cpp; sourceTree = "<group>"; };
-		CA67441A2A5DAB2E006769F9 /* pair.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pair.cpp; sourceTree = "<group>"; };
-		CA67441B2A5DAB2E006769F9 /* heterogenous_container_of_variants.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = heterogenous_container_of_variants.cpp; sourceTree = "<group>"; };
-		CA67441D2A5DAB2E006769F9 /* tuple_algorithms.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tuple_algorithms.cpp; sourceTree = "<group>"; };
 		CA6744212A5DAB2E006769F9 /* task.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = task.h; sourceTree = "<group>"; };
 		CA6744222A5DAB2E006769F9 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		CA6744232A5DAB2E006769F9 /* asio_timer_coro.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = asio_timer_coro.cpp; sourceTree = "<group>"; };
@@ -371,84 +330,11 @@
 			children = (
 				CA6744582A5DAC18006769F9 /* main.cpp */,
 				CA6744572A5DAC17006769F9 /* run */,
-				CA67440E2A5DAB2E006769F9 /* Chapter09 */,
-				CA6743BB2A5DAB2E006769F9 /* Chapter10 */,
-				CA6743C72A5DAB2E006769F9 /* Chapter11 */,
 				CA67443A2A5DAB2E006769F9 /* Chapter12 */,
 				CA6744202A5DAB2E006769F9 /* Chapter13 */,
 				CA67442A2A5DAB2E006769F9 /* Chapter14 */,
 			);
 			path = high_performance;
-			sourceTree = "<group>";
-		};
-		CA6743BB2A5DAB2E006769F9 /* Chapter10 */ = {
-			isa = PBXGroup;
-			children = (
-				CA6743BC2A5DAB2E006769F9 /* vec2d_length_proxy_tests.cpp */,
-				CA6743BD2A5DAB2E006769F9 /* CMakeLists.txt */,
-				CA6743BE2A5DAB2E006769F9 /* string_concat_proxy_tests.cpp */,
-				CA6743BF2A5DAB2E006769F9 /* vec2d_length_proxy.h */,
-				CA6743C02A5DAB2E006769F9 /* benchmarks */,
-				CA6743C42A5DAB2E006769F9 /* string_concat_proxy.h */,
-				CA6743C52A5DAB2E006769F9 /* pipe_operator.cpp */,
-				CA6743C62A5DAB2E006769F9 /* main.cpp */,
-			);
-			path = Chapter10;
-			sourceTree = "<group>";
-		};
-		CA6743C02A5DAB2E006769F9 /* benchmarks */ = {
-			isa = PBXGroup;
-			children = (
-				CA6743C12A5DAB2E006769F9 /* CMakeLists.txt */,
-				CA6743C22A5DAB2E006769F9 /* vec2d_length_proxy_bm.cpp */,
-				CA6743C32A5DAB2E006769F9 /* string_concat_proxy_bm.cpp */,
-			);
-			path = benchmarks;
-			sourceTree = "<group>";
-		};
-		CA6743C72A5DAB2E006769F9 /* Chapter11 */ = {
-			isa = PBXGroup;
-			children = (
-				CA6743C82A5DAB2E006769F9 /* counter_data_race.cpp */,
-				CA6743C92A5DAB2E006769F9 /* latches.cpp */,
-				CA6743CA2A5DAB2E006769F9 /* semaphores.cpp */,
-				CA6743CB2A5DAB2E006769F9 /* CMakeLists.txt */,
-				CA6743CC2A5DAB2E006769F9 /* atomic_references.cpp */,
-				CA6743CD2A5DAB2E006769F9 /* lock_free_queue.cpp */,
-				CA6743CE2A5DAB2E006769F9 /* barriers.cpp */,
-				CA6743CF2A5DAB2E006769F9 /* future_and_promises.cpp */,
-				CA6743D02A5DAB2E006769F9 /* stop_token.cpp */,
-				CA6743D12A5DAB2E006769F9 /* print_thread_id.cpp */,
-				CA6743D22A5DAB2E006769F9 /* tasks.cpp */,
-				CA6743D32A5DAB2E006769F9 /* async.cpp */,
-				CA6743D42A5DAB2E006769F9 /* atomics.cpp */,
-				CA6743D52A5DAB2E006769F9 /* counter_mutex.cpp */,
-				CA6743D62A5DAB2E006769F9 /* counter_atomic.cpp */,
-				CA6743D72A5DAB2E006769F9 /* joinable_thread.cpp */,
-				CA6743D82A5DAB2E006769F9 /* condition_variables.cpp */,
-				CA6743D92A5DAB2E006769F9 /* avoid_deadlock.cpp */,
-				CA6743DA2A5DAB2E006769F9 /* main.cpp */,
-			);
-			path = Chapter11;
-			sourceTree = "<group>";
-		};
-		CA67440E2A5DAB2E006769F9 /* Chapter09 */ = {
-			isa = PBXGroup;
-			children = (
-				CA6744132A5DAB2E006769F9 /* any.cpp */,
-				CA6744172A5DAB2E006769F9 /* example_projections.cpp */,
-				CA6744112A5DAB2E006769F9 /* example_reflection_concepts.cpp */,
-				CA6744122A5DAB2E006769F9 /* example_reflection.cpp */,
-				CA6744102A5DAB2E006769F9 /* example_reflection.h */,
-				CA67441B2A5DAB2E006769F9 /* heterogenous_container_of_variants.cpp */,
-				CA67441A2A5DAB2E006769F9 /* pair.cpp */,
-				CA6744142A5DAB2E006769F9 /* tuple_accessing_elements.cpp */,
-				CA67441D2A5DAB2E006769F9 /* tuple_algorithms.cpp */,
-				CA6744182A5DAB2E006769F9 /* tuple.cpp */,
-				CA6744162A5DAB2E006769F9 /* variadic_template_parameter_pack.cpp */,
-				CA6744192A5DAB2E006769F9 /* variant.cpp */,
-			);
-			path = Chapter09;
 			sourceTree = "<group>";
 		};
 		CA6744202A5DAB2E006769F9 /* Chapter13 */ = {
