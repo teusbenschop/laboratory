@@ -33,7 +33,7 @@ class ViewController: NSViewController {
     if name.isEmpty {
       name = "World"
     }
-    let greeting = "Hello" + name
+    let greeting = "Hello " + name
     print (greeting)
     theLabel2.stringValue = greeting
   }

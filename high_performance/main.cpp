@@ -25,6 +25,8 @@
 #include <queue>
 #include <latch>
 #include <semaphore>
+#include <coroutine>
+#include <limits>
 
 [[maybe_unused]] static void test_lambda_capture ()
 {
@@ -163,11 +165,13 @@ private:
 
 [[maybe_unused]] static void benchmarking_function()
 {
-  [[maybe_unused]] auto scoped_timer ("test");
-  for (unsigned int i = 0; i < 10000; i++) {
-    std::cout << ".";
+  {
+    [[maybe_unused]] auto scoped_timer ("test");
+    for (unsigned int i = 0; i < 10000; i++) {
+      //std::cout << ".";
+    }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
 }
 
 // This example demonstrates cache thrashing.
@@ -1956,16 +1960,252 @@ static int task_divide(int a, int b) {
   }
 
   auto joinable_thread = std::jthread(print);
-  std::cout << "main: goes to sleep" << std::endl;
+  std::cout << "Main: goes to sleep" << std::endl;
   std::this_thread::sleep_for(std::chrono::seconds{3});
-  std::cout << "main: request jthread to stop" << std::endl;
+  std::cout << "Main: request jthread to stop" << std::endl;
   joinable_thread.request_stop();
   
 #endif
 }
 
+// The resumable return object.
+class Resumable {
+  struct Promise {
+    auto get_return_object() {
+      using Handle = std::coroutine_handle<Promise>;
+      return Resumable{Handle::from_promise(*this)};
+    }
+    auto initial_suspend() { return std::suspend_always{}; }
+    auto final_suspend() noexcept { return std::suspend_always{}; }
+    void return_void() {}
+    void unhandled_exception() { std::terminate(); }
+  };
+  std::coroutine_handle<Promise> m_coroutine_handle;
+  explicit Resumable(std::coroutine_handle<Promise> handle) : m_coroutine_handle{handle} {}
+  
+public:
+  using promise_type = Promise;
+  Resumable(Resumable&& r) : m_coroutine_handle{std::exchange(r.m_coroutine_handle, {})} {}
+  ~Resumable() { if (m_coroutine_handle) m_coroutine_handle.destroy(); }
+  bool resume() {
+    if (!m_coroutine_handle.done()) m_coroutine_handle.resume();
+    return !m_coroutine_handle.done();
+  }
+};
+
+template <typename T>
+struct Generator {
+  
+private:
+  struct Promise {
+    T m_value;
+    auto get_return_object() -> Generator {
+      using Handle = std::coroutine_handle<Promise>;
+      return Generator{Handle::from_promise(*this)};
+    }
+    auto initial_suspend() { return std::suspend_always{}; }
+    auto final_suspend() noexcept { return std::suspend_always{}; }
+    void return_void() {}
+    void unhandled_exception() { throw; }
+    auto yield_value(T&& value) {
+      m_value = std::move(value);
+      return std::suspend_always{};
+    }
+    auto yield_value(const T& value) {
+      m_value = value;
+      return std::suspend_always{};
+    }
+  };
+  
+  struct Sentinel {};
+  
+  struct Iterator {
+    
+    using iterator_category = std::input_iterator_tag;
+    using value_type = T;
+    using difference_type = ptrdiff_t;
+    using pointer = T*;
+    using reference = T&;
+    
+    std::coroutine_handle<Promise> m_coroutine_handle;
+    Iterator& operator++() {
+      m_coroutine_handle.resume();
+      return *this;
+    }
+    void operator++(int) { (void)operator++(); }
+    T operator*() const { return  m_coroutine_handle.promise().m_value; }
+    pointer operator->() const { return std::addressof(operator*()); }
+    bool operator==(Sentinel) const { return m_coroutine_handle.done(); }
+  };
+  
+  std::coroutine_handle<Promise> m_coroutine_handle;
+  explicit Generator(std::coroutine_handle<Promise> co_handle) : m_coroutine_handle(co_handle) {}
+  
+public:
+  using promise_type = Promise;
+  
+  Generator(Generator&& g) : m_coroutine_handle(std::exchange(g.m_coroutine_handle, {})) {}
+  ~Generator() { if (m_coroutine_handle) { m_coroutine_handle.destroy();  } }
+  
+  auto begin() {
+    m_coroutine_handle.resume();
+    return Iterator{m_coroutine_handle};
+  }
+  auto end() { return Sentinel{}; }
+};
+
+[[maybe_unused]] static void simple_coroutine_example()
+{
+  auto iota = [] (int start) -> Generator<int> {
+    for (int i = start; i < std::numeric_limits<int>::max(); ++i) {
+      co_yield i;
+    }
+  };
+
+  auto take_until = [](Generator<int>& generator, int until) -> Generator<int> {
+    for (auto value : generator) {
+      if (value > until) {
+        co_return;
+      }
+      co_yield value;
+    }
+  };
+  
+  Generator<int> int_generator = iota(2);
+  auto values = take_until (int_generator, 5);
+  // Pull values lazily.
+  for (const auto value : values) {
+    std::cout << value << " ";
+    // Prints: 2 3 4 5
+  }
+  std::cout << std::endl;
+}
+
+[[maybe_unused]] static void simple_resumable_demo()
+{
+  auto coroutine = []() -> Resumable {
+    // Initial suspend.
+    std::cout << "3 ";
+    // Explicit suspend.
+    co_await std::suspend_always{};
+    std::cout << "5 ";
+  };
+
+  std::cout << "1 ";
+  // Create coroutine state.
+  auto resumable = coroutine();
+  std::cout << "2 ";
+  // Resume.
+  resumable.resume();
+  std::cout << "4 ";
+  // Resume.
+  resumable.resume();
+  std::cout << "6 " << std::endl;
+  // Prints: 1 2 3 4 5 6
+  // Destroy coroutine state
+}
+
+[[maybe_unused]] static void pass_coroutine_around()
+{
+  auto coroutine = []() -> Resumable {
+    // Initial suspend.
+    std::cout << "c1" << std::endl;
+    // Explicit suspend.
+    co_await std::suspend_always{};
+    std::cout << "c2 " << std::endl;
+  };
+
+  auto resumable = coroutine();
+
+  // Resume from main.
+  resumable.resume();
+  
+  auto thread = std::thread{[r = std::move(resumable)]() mutable {
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(500ms);
+    // Resume from thread.
+    r.resume();
+  }};
+  thread.join();
+}
+
+template <typename T>
+auto lin_value(T start, T stop, std::size_t index, std::size_t n) {
+  assert(n > 1 && index < n);
+  const auto amount = static_cast<T>(index) / (n - 1);
+  const auto v = start + amount * (stop - start);
+  return v;
+}
+
+
+template <typename T>
+auto lineair_space_coroutine(T start, T stop, std::size_t n) -> Generator<T> {
+  for (auto i = 0u; i < n; ++i) {
+    co_yield lin_value(start, stop, i, n);
+  }
+}
+
+template <typename T>
+auto lineair_space_ranges(T start, T stop, std::size_t n) {
+  return std::views::iota(0ul, n)
+  |
+  std::views::transform([=](auto i) {
+    return lin_value(start, stop, i, n);
+  });
+}
+
+[[maybe_unused]] static void linear_space_with_coroutines()
+{
+  for (auto v : lineair_space_coroutine(2.0, 3.0, 5)) {
+    std::cout << v << " ";
+  }
+  std::cout << std::endl;
+  for (auto v : lineair_space_ranges(2.0, 3.0, 5)) {
+    std::cout << v << " ";
+  }
+  std::cout << std::endl;
+  // Prints: 2, 2.25, 2.5, 2.75, 3,
+}
+
+struct ScopedNanoTimer
+{
+  std::chrono::high_resolution_clock::time_point timepoint0;
+  std::function<void(long)> callback;
+  
+  ScopedNanoTimer(std::function<void(long)> callback)
+  : timepoint0(std::chrono::high_resolution_clock::now())
+  , callback(callback) { }
+  ~ScopedNanoTimer()
+  {
+    const auto timepoint1 = std::chrono::high_resolution_clock::now();
+    const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(timepoint1-timepoint0).count();
+    callback(nanos);
+  }
+};
+
+struct ScopedNanoResults
+{
+  void operator()(long ns)
+  {
+    std::cout << "Elapsed time is " << ns << " nanoseconds" << std::endl;
+  }
+};
+
+static void scoped_nano_timer ()
+{
+  ScopedNanoResults scoped_nano_results;
+  ScopedNanoTimer scoped_nano_timer(scoped_nano_results);
+  
+  // Do some work you want to time.
+  constexpr int N {100000};
+  long double sum {0.0};
+  for (int i {0}; i < N; i++)
+    sum += i * 45.678;
+  std::cout << "The sum is " << sum << std::endl;
+}
+
 int main()
 {
-  tasks();
+  scoped_nano_timer();
   return EXIT_SUCCESS;
 }
