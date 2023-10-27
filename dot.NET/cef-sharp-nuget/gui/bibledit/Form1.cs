@@ -98,7 +98,7 @@ namespace Bibledit
         {
             //Cef.Initialize(new CefSettings());
             //browser = new WebBrowser();
-            browser = new ChromiumWebBrowser("http://localhost:9876");
+            browser = new ChromiumWebBrowser("http://bibledit.org:8090");
             //browser.DownloadHandler = new DownloadHandler();
             Controls.Add(browser);
             browser.Dock = DockStyle.Fill;
