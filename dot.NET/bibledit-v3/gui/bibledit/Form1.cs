@@ -44,7 +44,6 @@ namespace Bibledit
 
 
         string windowstate = "windowstate.txt";
-        Process BibleditCore;
         public static ChromiumWebBrowser browser = null;
 
 
@@ -105,9 +104,9 @@ namespace Bibledit
 
         public void InitBrowser()
         {
+            Debug.WriteLine("init");
             Cef.Initialize(new CefSettings());
-            browser = new ChromiumWebBrowser("http://localhost:" + portNumber);
-            //Console.WriteLine("http://localhost:" + portNumber);
+            browser = new ChromiumWebBrowser("https://bibledit.org:8091");
             //browser.DownloadHandler = new DownloadHandler();
             Controls.Add(browser);
             browser.Dock = DockStyle.Fill;
@@ -117,22 +116,8 @@ namespace Bibledit
         public Form1()
         {
             InitializeComponent();
-            //InitBrowser();
+            InitBrowser();
             MyHookID = SetHook(MyKeyboardProcessor);
-
-            // Create a timer with a one-second interval.
-            externalUrlTimer = new System.Timers.Timer(1000);
-            // Hook up the Elapsed event for the timer. 
-            externalUrlTimer.Elapsed += OnTimedEvent;
-            externalUrlTimer.AutoReset = false;
-            externalUrlTimer.Start();
-
-            // Create a timer for receiving the Paratext focused reference.
-            focusedReferenceTimer = new System.Timers.Timer(1000);
-            focusedReferenceTimer.Elapsed += OnFocusedReferenceTimedEvent;
-            focusedReferenceTimer.AutoReset = false;
-            focusedReferenceTimer.Start();
-
             dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(GuiUpdaterTick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
@@ -143,8 +128,6 @@ namespace Bibledit
         ~Form1()
         {
             UnhookWindowsHookEx(MyHookID);
-            externalUrlTimer.Stop();
-            externalUrlTimer.Dispose();
         }
 
 
@@ -207,53 +190,6 @@ namespace Bibledit
                 // This happens on starting the app for the first time.
                 // Or when the file is no longer available.
             }
-
-
-            // Kill any previous servers. This frees the port to connect to.
-            foreach (var process in Process.GetProcessesByName("server"))
-            {
-                process.Kill();
-            }
-            BibleditCore = new Process();
-            BibleditCore.StartInfo.WorkingDirectory = System.IO.Path.Combine(Application.StartupPath);
-            BibleditCore.StartInfo.FileName = System.IO.Path.Combine(Application.StartupPath, "server.exe");
-            //BibleditCore.StartInfo.WorkingDirectory = @"C:\bibledit-windows";
-            //BibleditCore.StartInfo.FileName = @"C:\bibledit-windows\server.exe";
-            BibleditCore.StartInfo.Arguments = "";
-            BibleditCore.StartInfo.CreateNoWindow = true;
-            BibleditCore.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            BibleditCore.EnableRaisingEvents = true;
-            BibleditCore.Exited += new EventHandler(ProcessExited);
-            BibleditCore.StartInfo.UseShellExecute = false;
-            BibleditCore.StartInfo.RedirectStandardOutput = true;
-            BibleditCore.EnableRaisingEvents = true;
-            BibleditCore.OutputDataReceived += new DataReceivedEventHandler((sender2, e2) =>
-            {
-                String line = e2.Data;
-                if (!String.IsNullOrWhiteSpace(line))
-                {
-                    String number = Regex.Match(e2.Data, @"\d+$").Value;
-                    if (!String.IsNullOrWhiteSpace(number))
-                    {
-                        portNumber = number;
-                        //Console.WriteLine(portNumber);
-                    }
-                }
-            });
-            BibleditCore.Start();
-            // Set the server to run on one processor only. 
-            // That gives a huge boost to the speed of the Cygwin library.
-            // The difference in speed is clear: It runs times faster.
-            // When a background task runs in Bibledit, the GUI takes a long time to respond without this processor affinity.
-            // http://zachsaw.blogspot.nl/2012/10/multithreading-under-cygwin.html
-            // http://stackoverflow.com/questions/2510593/how-can-i-set-processor-affinity-in-net
-            // What works well too: PsExec.exe -a 1 server.exe
-            // After the C++ code was compiled through Visual Studio, the processor limit is no longer relevant.
-            // BibleditCore.ProcessorAffinity = (IntPtr)1;
-
-            // Asynchronously read the standard output of the spawned process.
-            // This raises OutputDataReceived events for each line of output.
-            BibleditCore.BeginOutputReadLine();
         }
 
 
@@ -280,20 +216,6 @@ namespace Bibledit
                 // This has happened in the case reported below.
                 // https://github.com/bibledit/cloud/issues/266
             }
-
-            // Kill the bibledit core.
-            BibleditCore.EnableRaisingEvents = false;
-            BibleditCore.CloseMainWindow();
-            BibleditCore.Kill();
-            BibleditCore.WaitForExit();
-            BibleditCore.Close();
-        }
-
-
-        private void ProcessExited(object sender, System.EventArgs e)
-        {
-            // When the Bibledit server process exits or crashes, restart it straightaway.
-            BibleditCore.Start();
         }
 
 
@@ -364,93 +286,11 @@ namespace Bibledit
 
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
-            try
-            {
-                // Connect to the local Bibledit client server.
-                TcpClient socket = new TcpClient();
-                socket.Connect("localhost", 9876);
-                // Fetch the link that indicates to open an external website.
-                NetworkStream ns = socket.GetStream();
-                StreamWriter sw = new StreamWriter(ns);
-                sw.WriteLine("GET /assets/external HTTP/1.1");
-                sw.WriteLine("");
-                sw.Flush();
-                // Read the response from the local Bibledit client server.
-                String response;
-                StreamReader sr = new StreamReader(ns);
-                do
-                {
-                    response = sr.ReadLine();
-                    // Check for a URL to open.
-                    if ((response != null) && (response.Length > 4) && (response.Substring(0, 4) == "http"))
-                    {
-                        // Open the URL in default web browser.
-                        System.Diagnostics.Process.Start(response);
-                    }
-                }
-                while (response != null);
-                // Close connection.
-                socket.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            // Restart the timeout.
-            externalUrlTimer.Stop();
-            externalUrlTimer.Start();
         }
 
 
         private void OnFocusedReferenceTimedEvent(Object source, ElapsedEventArgs e)
         {
-            try
-            {
-                // Read the reference from Paratext from the registry.
-                String SantaFeFocusKey = @"SOFTWARE\SantaFe\Focus\";
-                String ScriptureReferenceKey = "ScriptureReference";
-                //String ScriptureReferenceListKey = "ScriptureReferenceList";
-                using (var hkcu = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
-                using (var key = hkcu.OpenSubKey(SantaFeFocusKey + ScriptureReferenceKey))
-                {
-                    if (key != null)
-                    {
-                        var value = key?.GetValue("");
-                        if (value != null)
-                        {
-                            String focus = value.ToString();
-                            // Encode the space.
-                            focus = Uri.EscapeUriString(focus);
-                            // Connect to the local Bibledit client server.
-                            TcpClient socket = new TcpClient();
-                            socket.Connect("localhost", 9876);
-                            // Send the Paratext focused reference to the correct link.
-                            NetworkStream ns = socket.GetStream();
-                            StreamWriter sw = new StreamWriter(ns);
-                            sw.WriteLine("GET /navigation/paratext?from=" + focus + " HTTP/1.1");
-                            sw.WriteLine("");
-                            sw.Flush();
-                            // Read the response from the local Bibledit client server.
-                            String response;
-                            StreamReader sr = new StreamReader(ns);
-                            do
-                            {
-                                response = sr.ReadLine();
-                            }
-                            while (response != null);
-                            // Close connection.
-                            socket.Close();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            // Restart the timeout.
-            focusedReferenceTimer.Stop();
-            focusedReferenceTimer.Start();
         }
 
 
