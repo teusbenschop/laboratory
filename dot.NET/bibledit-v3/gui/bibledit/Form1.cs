@@ -11,7 +11,7 @@ using System.Net.Sockets;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
-
+using CefSharp.Handler;
 
 namespace Bibledit
 {
@@ -48,10 +48,6 @@ namespace Bibledit
 
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-
-        private System.Timers.Timer externalUrlTimer;
-        private System.Timers.Timer focusedReferenceTimer;
 
 
         private DispatcherTimer dispatcherTimer = null;
@@ -107,7 +103,7 @@ namespace Bibledit
             Debug.WriteLine("init");
             Cef.Initialize(new CefSettings());
             browser = new ChromiumWebBrowser("https://bibledit.org:8091");
-            //browser.DownloadHandler = new DownloadHandler();
+            browser.DownloadHandler = new DownloadHandler();
             Controls.Add(browser);
             browser.Dock = DockStyle.Fill;
         }
