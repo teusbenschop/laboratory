@@ -27,6 +27,7 @@
 #include <semaphore>
 #include <coroutine>
 #include <limits>
+#include <cassert>
 
 [[maybe_unused]] static void test_lambda_capture ()
 {
@@ -107,7 +108,7 @@ static auto create_buttons() {
 
 
 // Requires C++20
-[[maybe_unused]] static void stateles_lambdas() {
+[[maybe_unused]] static void stateless_lambdas() {
   auto x = [] {}; // A lambda without captures
   auto y = x;     // Assignable
   decltype(y) z;  // Default-constructible
@@ -123,19 +124,19 @@ static auto create_buttons() {
   auto y = []<typename T>(T v) { return v + 1; };
   
   {
-    // Using char
+    // Using char.
     auto v = 'a';
     std::cout << v + 1 << " " << x(v) << std::endl;
     std::cout << v + 1 << " " << y(v) << std::endl;
   }
   
   {
-    // Using int
+    // Using int.
     std::cout << x(41) << std::endl;
     std::cout << y(41) << std::endl;
   }
   {
-    // Using
+    // Using unsigned int 64.
     auto v = std::uint64_t{41};
     std::cout << v + 1 << " " << x(v) << std::endl;
     std::cout << v + 1 << " " << y(v) << std::endl;
@@ -401,7 +402,7 @@ static auto some_func() { return 200; }
 
 [[maybe_unused]] static void algorithm_projections()
 {
-  auto names = std::vector<std::string>{"Ralph",  "Lisa", "Homer", "Maggie", "Apu",  "Bart"};
+  auto names = std::vector<std::string>{"Ralph", "Lisa", "Homer", "Maggie", "Apu", "Bart"};
   std::ranges::sort(names, std::less<>{}, &std::string::size);
   // names is now "Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"
   // Find names with length 3
@@ -624,14 +625,14 @@ struct student {
 {
   auto list_of_lists =
   std::vector<std::vector<int>>{{1, 2}, {3, 4, 5}, {5}, {4, 3, 2, 1}};
-  auto flattened_view = std::views::join(list_of_lists);
-  for (auto v : flattened_view) std::cout << v << " ";
+//  auto flattened_view = std::views::join(list_of_lists);
+//  for (auto v : flattened_view) std::cout << v << " ";
   // Output: 1 2 3 4 5 5 4 3 2 1
-  std::cout << std::endl;
+//  std::cout << std::endl;
   
-  auto max_value = *std::ranges::max_element(flattened_view);
+//  auto max_value = *std::ranges::max_element(flattened_view);
   // max_value is 5
-  std::cout << max_value << std::endl;
+//  std::cout << max_value << std::endl;
 }
 
 // Materialize the range r into a std::vector
