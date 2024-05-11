@@ -3,13 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		CA67445B2A5DAC37006769F9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA6744582A5DAC18006769F9 /* main.cpp */; };
 		CA7938072A49FADD00B460A5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CA7937FD2A49FA8100B460A5 /* main.cpp */; };
-		CAB882A42899027100CE878A /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CAB882A32899027100CE878A /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -134,7 +133,6 @@
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
 		CAB396D12988DF330035E25E /* boost */ = {isa = PBXFileReference; lastKnownFileType = folder; path = boost; sourceTree = "<group>"; };
 		CAB882A02899027100CE878A /* snmp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = snmp; sourceTree = BUILT_PRODUCTS_DIR; };
-		CAB882A32899027100CE878A /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CABEE77C1DD5F653006D8D75 /* bubble.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bubble.html; sourceTree = "<group>"; };
 		CABEE77D1DD5F653006D8D75 /* full.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = full.html; sourceTree = "<group>"; };
@@ -459,7 +457,6 @@
 				CA98E23D1DA8D16200F43F4B /* random */,
 				CABEE77A1DD5F645006D8D75 /* README.md */,
 				CA7CF5FE285AF31700BFA358 /* snmp */,
-				CAB882A22899027100CE878A /* snmp */,
 				CA98E2401DA8D16900F43F4B /* socket */,
 				CA3DD73520DA64A500CD428E /* sortable */,
 				CAEAADA129E6CADB00C9FC60 /* sqlite */,
@@ -486,14 +483,6 @@
 				CA6744542A5DAB7B006769F9 /* high_performance */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		CAB882A22899027100CE878A /* snmp */ = {
-			isa = PBXGroup;
-			children = (
-				CAB882A32899027100CE878A /* main.cpp */,
-			);
-			path = snmp;
 			sourceTree = "<group>";
 		};
 		CABEE77B1DD5F653006D8D75 /* quill */ = {
@@ -661,7 +650,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CAB882A42899027100CE878A /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
