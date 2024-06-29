@@ -1,0 +1,65 @@
+#!/bin/bash
+
+ROOTDIR=/tmp/self-signed-certificates
+echo Self signed certificates root directory $ROOTDIR
+rm -rf $ROOTDIR/*
+mkdir -p $ROOTDIR
+cd $ROOTDIR
+if [ $? != 0 ]; then exit 1; fi
+
+PASSWORD=password
+
+CADIR=$ROOTDIR/ca
+echo Create a certificate authority certificate in $CADIR using password: $PASSWORD
+mkdir -p $CADIR
+cd $CADIR
+if [ $? != 0 ]; then exit 1; fi
+echo If there is an error “Error Loading extension section v3_ca” on macOS, consult this script
+# Add the following to your /etc/ssl/openssl.cnf
+# [ v3_ca ]
+# basicConstraints = critical,CA:TRUE
+# subjectKeyIdentifier = hash
+# authorityKeyIdentifier = keyid:always,issuer:always
+openssl req -new -x509 -days 3650 -extensions v3_ca -keyout ca.key -out ca.crt -subj /C=NL/ST=GD/L=Eerbeek/O=Laboratory/OU=root/CN=localhost -passout pass:$PASSWORD
+if [ $? != 0 ]; then exit 1; fi
+
+SERVERDIR=$ROOTDIR/server
+echo Create server certificates in $SERVERDIR
+mkdir -p $SERVERDIR
+cd $SERVERDIR
+if [ $? != 0 ]; then exit 1; fi
+echo Generate server private key and make it world-readable
+openssl genrsa -out server.key 2048
+if [ $? != 0 ]; then exit 1; fi
+chmod +r server.key
+if [ $? != 0 ]; then exit 1; fi
+echo Create server certificate signing request
+openssl req -nodes -newkey rsa:2048 -key server.key -out server.csr -subj /C=NL/ST=GD/L=Eerbeek/O=Laboratory/OU=server/CN=localhost
+if [ $? != 0 ]; then exit 1; fi
+echo Pass the Certificate Signing Request to the validation authority
+openssl x509 -req -in server.csr -CA ../ca/ca.crt -CAkey ../ca/ca.key -CAcreateserial -out server.crt -days 1000 -passin pass:$PASSWORD
+if [ $? != 0 ]; then exit 1; fi
+echo Remove the certificate signing request
+rm server.csr
+if [ $? != 0 ]; then exit 1; fi
+
+CLIENTDIR=$ROOTDIR/client
+echo Create client certificates in $CLIENTDIR
+mkdir -p $CLIENTDIR
+cd $CLIENTDIR
+if [ $? != 0 ]; then exit 1; fi
+echo Generate client private key and make it world-readable
+openssl genrsa -out client.key 2048
+if [ $? != 0 ]; then exit 1; fi
+chmod +r client.key
+if [ $? != 0 ]; then exit 1; fi
+echo Create client certificate signing request
+openssl req -out client.csr -key client.key -new -subj /C=NL/ST=GD/L=Eerbeek/O=Laboratory/OU=client/CN=localhost
+echo Pass the Certificate Signing Request to the validation authority
+openssl x509 -req -in client.csr -CA ../ca/ca.crt -CAkey ../ca/ca.key -CAcreateserial -out client.crt -days 1000 -passin pass:$PASSWORD
+if [ $? != 0 ]; then exit 1; fi
+echo Remove the certificate signing request
+rm client.csr
+if [ $? != 0 ]; then exit 1; fi
+
+echo All done
