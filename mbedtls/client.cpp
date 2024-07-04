@@ -4,15 +4,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <exception>
 #include <fstream>
-#include <ios>
 #include <iostream>
-#include <istream>
-#include <limits>
 #include <memory>
-#include <ostream>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -105,7 +99,7 @@ static void display_mbed_tls_error (const int ret, const char* context, std::str
 
 int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
 {
-    constexpr auto debug_level {1};
+    constexpr auto debug_level {0};
     mbedtls_debug_set_threshold(debug_level);
 
     std::cout << "Initialize the session data" << std::endl;
@@ -125,7 +119,7 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
     display_mbed_tls_error (status, "Failed to initialize PSA Crypto implementation", nullptr);
 
     std::cout << "Seeding the random number generator" << std::endl;
-    constexpr const auto pers {"Bibledit Client"};
+    constexpr const auto pers {"client"};
     int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, reinterpret_cast <const unsigned char *>(pers), strlen(pers));
     display_mbed_tls_error (ret, "Failed to seed the random number generator", nullptr);
 
@@ -134,8 +128,8 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
     ret = mbedtls_x509_crt_parse_file(&cacert, ca_certificate);
     display_mbed_tls_error (ret, "Failed to load the CA root certificate", nullptr);
 
-    constexpr auto server_name {"bibledit.org"};
-    constexpr auto server_port {"8091"};
+    constexpr auto server_name {"localhost"};
+    constexpr auto server_port {"4433"};
     std::cout << "Connecting to tcp " << server_name << ":" << server_port << std::endl;
     ret = mbedtls_net_connect(&server_fd, server_name, server_port, MBEDTLS_NET_PROTO_TCP);
     display_mbed_tls_error (ret, "Failed to connect to the server", nullptr);
