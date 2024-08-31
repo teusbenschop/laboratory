@@ -15,8 +15,8 @@
 #include <string.h>
 #pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Wc99-extensions"
-#include <mbedtls/build_info.h>
-#include <mbedtls/platform.h>
+#include "mbedtls/build_info.h"
+#include "mbedtls/platform.h"
 #include "mbedtls/net_sockets.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/ssl.h"
