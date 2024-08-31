@@ -128,12 +128,12 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
         int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, reinterpret_cast <const unsigned char *>(pers), strlen(pers));
         throw_mbed_tls_error (ret, "Failed to seed the random number generator");
         
-        std::cout << "Loading the server certificate" << std::endl;
         constexpr const auto server_certificate {"/tmp/self-signed-certificates/server/server.crt"};
+        std::cout << "Loading the server certificate: " << server_certificate << std::endl;
         ret = mbedtls_x509_crt_parse_file(&srvcert, server_certificate);
         throw_mbed_tls_error (ret, "Failed to load the server certificate");
-        std::cout << "Loading the CA root certificate" << std::endl;
         constexpr const auto ca_certificate {"/tmp/self-signed-certificates/ca/ca.crt"};
+        std::cout << "Loading the CA root certificate: " << ca_certificate << std::endl;
         ret = mbedtls_x509_crt_parse_file(&srvcert, ca_certificate);
         throw_mbed_tls_error (ret, "Failed to load the CA root certificate");
         std::cout << "Loading the server private key" << std::endl;
@@ -209,13 +209,7 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
                 } while (true);
                 
                 std::cout << "Write to client" << std::endl;
-                constexpr const auto http_response {
-                    "HTTP/1.0 200 OK\n"
-                    "Content-Type: text/html\n"
-                    "\n"
-                    "<h2>Mbed TLS Test Server</h2>\n"
-                    "<p>Successful connection using: %s</p>\n"
-                };
+                constexpr const auto http_response {"Hello client!"};
                 
                 len = snprintf((char *) buf, strlen(http_response) + 1, http_response, mbedtls_ssl_get_ciphersuite(&ssl));
                 

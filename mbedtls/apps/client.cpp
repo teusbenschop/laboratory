@@ -164,7 +164,7 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
         std::cerr << "Failed to verify peer certificate: " << vrfy_buf << std::endl;
     }
 
-    constexpr auto get_request {"GET / HTTP/1.0\n\n"};
+    constexpr auto get_request {"Hello server!"};
     std::cout << "Write to server: " << get_request << std::endl;
     unsigned char buf[1024] {};
     int len = snprintf(reinterpret_cast <char*>(buf), strlen(get_request)+1, "%s", get_request);
