@@ -415,3 +415,4 @@ void client()
     mbedtls_entropy_free(&entropy);
     mbedtls_psa_crypto_free();
 }
+
