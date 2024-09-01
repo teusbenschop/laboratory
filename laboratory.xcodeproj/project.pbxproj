@@ -463,7 +463,7 @@
 			buildConfigurationList = CAB29AC81A4480CC00139BD7 /* Build configuration list for PBXLegacyTarget "bibledit" */;
 			buildPhases = (
 			);
-			buildToolPath = /Users/teus/dev/laboratory/mbedtls/build.sh;
+			buildToolPath = /Users/teus/dev/laboratory/mbedtls/client.sh;
 			buildWorkingDirectory = /Users/teus/dev/laboratory/mbedtls;
 			dependencies = (
 			);

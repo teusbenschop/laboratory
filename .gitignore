@@ -88,3 +88,5 @@ mbedtls/main
 /mbedtls/x64
 /mbedtls/.vs
 /mbedtls/Debug
+mbedtls/client
+mbedtls/server
