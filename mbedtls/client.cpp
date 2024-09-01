@@ -13,8 +13,9 @@
 #include "mbedtls/x509.h"
 #include "mbedtls/ssl_cache.h"
 #pragma GCC diagnostic pop
+#ifdef WIN32
 #pragma comment(lib, "bcrypt.lib")
-
+#endif
 
 static void display_mbed_tls_error (const int ret, const char* context)
 {
@@ -71,12 +72,13 @@ int main()
     display_mbed_tls_error (ret, "Failed to seed the random number generator");
     
     std::cout << "Loading the CA root certificate" << std::endl;
-    constexpr const auto ca_certificate {"/tmp/self-signed-certificates/ca/ca.crt"};
+    //constexpr const auto ca_certificate {"/tmp/self-signed-certificates/ca/ca.crt"};
+    constexpr const auto ca_certificate {"cas.crt"};
     ret = mbedtls_x509_crt_parse_file(&cacert, ca_certificate);
     display_mbed_tls_error (ret, "Failed to load the CA root certificate");
     
-    constexpr auto server_name {"localhost"};
-    constexpr auto server_port {"4433"};
+    constexpr auto server_name {"bibledit.org"};
+    constexpr auto server_port {"8091"};
     std::cout << "Connecting to tcp " << server_name << ":" << server_port << std::endl;
     ret = mbedtls_net_connect(&server_fd, server_name, server_port, MBEDTLS_NET_PROTO_TCP);
     display_mbed_tls_error (ret, "Failed to connect to the server");
@@ -85,8 +87,8 @@ int main()
     ret = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
     display_mbed_tls_error (ret, "Failed to set SSL/TLS defaults");
     // Value OPTIONAL is not optimal for security, but makes things easier just now.
-    mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
-    //    mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_NONE);
+    //mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+    mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_NONE);
     mbedtls_ssl_conf_ca_chain(&conf, &cacert, NULL);
     mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
     mbedtls_ssl_conf_dbg(&conf, my_debug, stdout);
@@ -98,8 +100,9 @@ int main()
     
     std::cout << "Performing the SSL/TLS handshake" << std::endl;
     while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
-        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+        if ((ret != MBEDTLS_ERR_SSL_WANT_READ) && (ret != MBEDTLS_ERR_SSL_WANT_WRITE) && (ret != MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET)) {
             display_mbed_tls_error (ret, "Handshake failure");
+            return EXIT_FAILURE;
         }
     }
     
@@ -109,15 +112,17 @@ int main()
         char vrfy_buf[512];
         mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "", flags);
         std::cerr << "Failed to verify peer certificate: " << vrfy_buf << std::endl;
+        return EXIT_FAILURE;
     }
     
-    constexpr auto get_request {"Hello server!"};
-    std::cout << "Write to server: " << get_request << std::endl;
+    constexpr auto get_request {"GET \n\n"};
+    std::cout << "Write the GET request to the server" << std::endl;
     unsigned char buf[1024] {};
     int len = snprintf(reinterpret_cast <char*>(buf), strlen(get_request)+1, "%s", get_request);
     while ((ret = mbedtls_ssl_write(&ssl, buf, len)) <= 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
             display_mbed_tls_error (ret, "Failed to write to server");
+            return EXIT_FAILURE;
         }
     }
     len = ret;
