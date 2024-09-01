@@ -83,3 +83,8 @@ dot.NET/bibledit-v3/gui/GPUCache/data_3
 dot.NET/bibledit-v3/gui/GPUCache/index
 .DS_Store
 mbedtls/main
+*.vsidx
+*.obj
+/mbedtls/x64
+/mbedtls/.vs
+/mbedtls/Debug

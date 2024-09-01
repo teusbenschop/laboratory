@@ -1,5 +1,6 @@
 #include "main.h"
 #include <iostream>
+#include <string>
 #pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #include "mbedtls/build_info.h"

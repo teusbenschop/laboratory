@@ -1206,7 +1206,7 @@
  *
  * Uncomment this macro to disable the built-in platform entropy functions.
  */
-//#define MBEDTLS_NO_PLATFORM_ENTROPY
+#define MBEDTLS_NO_PLATFORM_ENTROPY
 
 /**
  * \def MBEDTLS_ENTROPY_FORCE_SHA256
@@ -2090,7 +2090,7 @@
  *
  * Uncomment this to enable pthread mutexes.
  */
-#define MBEDTLS_THREADING_PTHREAD
+//#define MBEDTLS_THREADING_PTHREAD
 
 /**
  * \def MBEDTLS_USE_PSA_CRYPTO
@@ -3609,7 +3609,7 @@
  *
  * Enable this layer to allow use of mutexes within Mbed TLS
  */
-#define MBEDTLS_THREADING_C
+//#define MBEDTLS_THREADING_C
 
 /**
  * \def MBEDTLS_TIMING_C
