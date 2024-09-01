@@ -13,9 +13,7 @@
 #include "mbedtls/x509.h"
 #include "mbedtls/ssl_cache.h"
 #pragma GCC diagnostic pop
-#ifdef WIN32
 #pragma comment(lib, "bcrypt.lib")
-#endif
 
 static void display_mbed_tls_error (const int ret, const char* context)
 {
