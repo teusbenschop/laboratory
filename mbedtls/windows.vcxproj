@@ -129,7 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="client.cpp" />
     <ClCompile Include="mbedtls\aes.c" />
     <ClCompile Include="mbedtls\aesce.c" />
     <ClCompile Include="mbedtls\aesni.c" />
