@@ -88,6 +88,8 @@ int main()
         constexpr const auto listening_port {"4433"};
         std::cout << "Bind to all interfaces port " << listening_port << std::endl;
         ret = mbedtls_net_bind(&listen_fd, nullptr, listening_port, MBEDTLS_NET_PROTO_TCP);
+        //std::cout << "Bind to one interface port " << listening_port << std::endl;
+        //ret = mbedtls_net_bind(&listen_fd, "localhost", listening_port, MBEDTLS_NET_PROTO_TCP);
         throw_mbed_tls_error (ret, "Failed to bind");
         
         std::cout << "Setting up the SSL data" << std::endl;

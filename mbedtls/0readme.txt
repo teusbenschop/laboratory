@@ -8,12 +8,16 @@ sed -i.bak '/#define MBEDTLS_THREADING_PTHREAD/d' mbedtls/mbedtls_config.h
 
 Deal with this error:
 LNK2019	unresolved external symbol BCryptGenRandom referenced in function mbedtls_platform_entropy_poll	windows
-Uncomment #define MBEDTLS_NO_PLATFORM_ENTROPY
-in file mbedtls_config.h
+Add the following to the client.cpp code:
+#pragma comment(lib, "bcrypt.lib")
 
 Using the code
-* Build the library object files throug $ ./lib.sh
-* Build the server through $ ./servers.sh
-* Run the server through $ ./servers
-* Build the client through $ ./client.sh
-* Run the client through $ ./client
+* Build the library object files on Linux throug $ ./lib.sh
+* Build the server on Linux through $ ./servers.sh
+* Run the server on Linux through $ ./servers
+* Build the client on Linux through $ ./client.sh
+* Run the client on Linux through $ ./client
+Or
+* Build the clienton Visual Studio on Windows.
+* Run the client on Windows through $ ./client.exe
+
