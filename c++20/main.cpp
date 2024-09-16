@@ -76,7 +76,8 @@ int main()
   //stop_call_back();
   //sync_stream();
   //starts_ends_with();
-  bind_front();
+  //bind_front();
+  distribution();
   return EXIT_SUCCESS;
 }
 
@@ -952,6 +953,39 @@ void bind_front()
   auto mul_plus_seven = std::bind_back(madd, 7);
   std::cout << mul_plus_seven(4, 10) << '\n'; // equivalent to `madd(4, 10, 7)`
 #endif
+}
+
+
+void distribution()
+{
+  const int nrolls = 10000; // number of experiments
+  const int nstars = 100;   // maximum number of stars to distribute
+
+  // Define a Mersenne-Twister pseudo random number generator, only once in the application:
+  std::mt19937 generator1;
+
+  std::default_random_engine generator;
+
+  std::poisson_distribution<int> distribution(4.1);
+  
+  int p[10]={};
+  
+  for (int i=0; i<nrolls; ++i) {
+    int number = distribution(generator);
+    if (number<10) ++p[number];
+  }
+  
+  for (int i = 0; i < 10; ++i)
+    std::cout << i << ": " << std::string(p[i]*nstars/nrolls,'*') << std::endl;
+
+  {
+    // Define the Poisson distribution engine with the desired mean value:
+    std::poisson_distribution<int> distrib(1);
+    // Generate a 50-piece sample of integers and print on stdout:
+    for (int i=0 ; i<50; i++)
+      std::cout << distrib(generator1) << " ";
+    std::cout << "\n\n";
+  }
 }
 
 

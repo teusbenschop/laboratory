@@ -25,4 +25,5 @@ void stop_call_back();
 void sync_stream();
 void starts_ends_with();
 void bind_front();
+void distribution();
 
