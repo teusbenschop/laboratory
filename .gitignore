@@ -90,3 +90,9 @@ mbedtls/main
 /mbedtls/Debug
 mbedtls/client
 mbedtls/server
+/dot.NET/Bibledit-v4/bin/Debug
+/dot.NET/Bibledit-v4/obj
+/dot.NET/Bibledit-v4/packages/Microsoft.Web.WebView2.1.0.2792.45/build
+dot.NET/Bibledit-v4/packages/Microsoft.Web.WebView2.1.0.2792.45/Microsoft.Web.WebView2.1.0.2792.45.nupkg
+dot.NET/Bibledit-v4/packages/Microsoft.Web.WebView2.1.0.2792.45/WebView2.idl
+dot.NET/Bibledit-v4/packages/Microsoft.Web.WebView2.1.0.2792.45/WebView2.tlb
