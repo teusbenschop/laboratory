@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Rockgame" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Oh dear! You both made the same guess; try again!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cga-6k-vNN">
+                                <rect key="frame" x="46.666666666666657" y="259" width="300" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="300" id="xn2-bA-nyv"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="25"/>
+                                <color key="textColor" systemColor="systemOrangeColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BKg-AU-ttJ">
+                                <rect key="frame" x="36.666666666666657" y="318" width="320" height="216"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="BYZ-38-t0r" id="boL-xA-6rO"/>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="iFy-m6-YvY"/>
+                                </connections>
+                            </pickerView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kbk-RH-plX">
+                                <rect key="frame" x="124" y="565" width="145" height="35"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="145" id="kaJ-Cf-7t4"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="gray" title="Play"/>
+                                <connections>
+                                    <action selector="onSubmitButtonClick:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wl1-jM-dnO"/>
+                                </connections>
+                            </button>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="equal" translatesAutoresizingMaskIntoConstraints="NO" id="hfj-Zd-4vJ">
+                                <rect key="frame" x="106.66666666666669" y="114" width="180" height="128"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="180" id="9L6-gD-7P3"/>
+                                </constraints>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="linkedin" translatesAutoresizingMaskIntoConstraints="NO" id="rCG-Z3-qNA">
+                                <rect key="frame" x="332" y="69" width="45" height="45"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="45" id="ahO-tA-jkP"/>
+                                    <constraint firstAttribute="height" constant="45" id="vUv-nW-mvH"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="cga-6k-vNN" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Bff-L0-0qK"/>
+                            <constraint firstItem="kbk-RH-plX" firstAttribute="top" secondItem="BKg-AU-ttJ" secondAttribute="bottom" constant="31" id="HZ2-gK-cga"/>
+                            <constraint firstItem="kbk-RH-plX" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="QI2-6a-ft8"/>
+                            <constraint firstItem="rCG-Z3-qNA" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="Zin-BG-HsM"/>
+                            <constraint firstItem="hfj-Zd-4vJ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="dYd-hG-QX2"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="rCG-Z3-qNA" secondAttribute="trailing" constant="16" id="ddW-vO-nSB"/>
+                            <constraint firstItem="cga-6k-vNN" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="200" id="gQP-zi-PUq"/>
+                            <constraint firstItem="BKg-AU-ttJ" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="jBV-Jn-sbm"/>
+                            <constraint firstItem="BKg-AU-ttJ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="jc3-eJ-fNy"/>
+                            <constraint firstItem="hfj-Zd-4vJ" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="55" id="u76-7N-NOg"/>
+                            <constraint firstItem="cga-6k-vNN" firstAttribute="top" secondItem="hfj-Zd-4vJ" secondAttribute="bottom" constant="17" id="xg9-rF-faw"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="PickerView" destination="BKg-AU-ttJ" id="IBU-gx-GZC"/>
+                        <outlet property="linkdinImageView" destination="rCG-Z3-qNA" id="fvq-Ea-S5H"/>
+                        <outlet property="resultImageView" destination="hfj-Zd-4vJ" id="ssB-rQ-P7f"/>
+                        <outlet property="resultLabelView" destination="cga-6k-vNN" id="zXh-uK-sVj"/>
+                        <outlet property="submitButton" destination="kbk-RH-plX" id="7hG-dS-rgh"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="64.885496183206101" y="-27.464788732394368"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="equal" width="128" height="128"/>
+        <image name="linkedin" width="128" height="128"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemOrangeColor">
+            <color red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
