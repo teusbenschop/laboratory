@@ -10,22 +10,9 @@
 		CA6106F92CCC1BF400AA56BF /* Bibledit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bibledit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CA61070B2CCC1BF600AA56BF /* Exceptions for "Bibledit" folder in "Bibledit" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = CA6106F82CCC1BF400AA56BF /* Bibledit */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CA6106FB2CCC1BF400AA56BF /* Bibledit */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				CA61070B2CCC1BF600AA56BF /* Exceptions for "Bibledit" folder in "Bibledit" target */,
-			);
 			path = Bibledit;
 			sourceTree = "<group>";
 		};
