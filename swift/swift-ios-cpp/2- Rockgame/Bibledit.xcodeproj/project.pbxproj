@@ -18,7 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		E2A8BBFA2B7943C000249CCC /* Rockgame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rockgame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2A8BBFA2B7943C000249CCC /* Bibledit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Bibledit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2A8BBFD2B7943C000249CCC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E2A8BBFF2B7943C000249CCC /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		E2A8BC012B7943C000249CCC /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -47,7 +47,7 @@
 		E2A8BBF12B7943C000249CCC = {
 			isa = PBXGroup;
 			children = (
-				E2A8BBFC2B7943C000249CCC /* Rockgame */,
+				E2A8BBFC2B7943C000249CCC /* RockGame */,
 				E2A8BBFB2B7943C000249CCC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,12 +55,12 @@
 		E2A8BBFB2B7943C000249CCC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E2A8BBFA2B7943C000249CCC /* Rockgame.app */,
+				E2A8BBFA2B7943C000249CCC /* Bibledit.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E2A8BBFC2B7943C000249CCC /* Rockgame */ = {
+		E2A8BBFC2B7943C000249CCC /* RockGame */ = {
 			isa = PBXGroup;
 			children = (
 				E2A8BC112B79473500249CCC /* AppDelegates */,
@@ -69,7 +69,7 @@
 				E2A8BC132B79475500249CCC /* UI */,
 				E2A8BC0B2B7943C100249CCC /* Info.plist */,
 			);
-			path = Rockgame;
+			path = RockGame;
 			sourceTree = "<group>";
 		};
 		E2A8BC112B79473500249CCC /* AppDelegates */ = {
@@ -122,9 +122,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E2A8BBF92B7943C000249CCC /* Rockgame */ = {
+		E2A8BBF92B7943C000249CCC /* Bibledit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E2A8BC0E2B7943C100249CCC /* Build configuration list for PBXNativeTarget "Rockgame" */;
+			buildConfigurationList = E2A8BC0E2B7943C100249CCC /* Build configuration list for PBXNativeTarget "Bibledit" */;
 			buildPhases = (
 				E2A8BBF62B7943C000249CCC /* Sources */,
 				E2A8BBF72B7943C000249CCC /* Frameworks */,
@@ -134,9 +134,9 @@
 			);
 			dependencies = (
 			);
-			name = Rockgame;
+			name = Bibledit;
 			productName = Rockgame;
-			productReference = E2A8BBFA2B7943C000249CCC /* Rockgame.app */;
+			productReference = E2A8BBFA2B7943C000249CCC /* Bibledit.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -155,7 +155,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E2A8BBF52B7943C000249CCC /* Build configuration list for PBXProject "Rockgame" */;
+			buildConfigurationList = E2A8BBF52B7943C000249CCC /* Build configuration list for PBXProject "Bibledit" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -168,7 +168,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E2A8BBF92B7943C000249CCC /* Rockgame */,
+				E2A8BBF92B7943C000249CCC /* Bibledit */,
 			);
 		};
 /* End PBXProject section */
@@ -404,7 +404,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E2A8BBF52B7943C000249CCC /* Build configuration list for PBXProject "Rockgame" */ = {
+		E2A8BBF52B7943C000249CCC /* Build configuration list for PBXProject "Bibledit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E2A8BC0C2B7943C100249CCC /* Debug */,
@@ -413,7 +413,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E2A8BC0E2B7943C100249CCC /* Build configuration list for PBXNativeTarget "Rockgame" */ = {
+		E2A8BC0E2B7943C100249CCC /* Build configuration list for PBXNativeTarget "Bibledit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E2A8BC0F2B7943C100249CCC /* Debug */,
