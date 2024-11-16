@@ -1,22 +1,45 @@
 import SwiftUI
 import WebKit
 
-let web_view = WebView()
+let webview1 : WebView = WebView()
+let webview2 : WebView = WebView()
+
+let about_blank : String = "about:blank"
 
 struct ContentView: View {
     
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+    
+    @State var enable_second_view: Bool = false
+    
     var body: some View {
-        VStack {
-            web_view
+        NavigationStack {
+            webview1
+            .navigationDestination(isPresented: $enable_second_view) {
+                webview2
+                .navigationBarBackButtonHidden(true)
+                .onAppear() {
+                    print ("webview2 appears")
+                    webview2.loadURL(urlString: "https://freesoftwareconsultants.nl")
+                    webview1.loadURL(urlString: about_blank)
+                }
+            }
+            .onAppear() {
+                print ("webview1 appears")
+                webview1.loadURL(urlString: "https://bibledit.org:8091")
+                webview2.loadURL(urlString: about_blank)
+            }
         }
         .onAppear(){
-            web_view.loadURL(urlString: "https://bibledit.org:8091")
+            print ("body view appears")
         }
         .onReceive(timer) { input in
-            print (input)
+            enable_second_view.toggle()
         }
+    }
+    
+    init() {
+        print ("init")
     }
 }
 
@@ -49,3 +72,4 @@ struct WebView: UIViewRepresentable {
         webView.load(URLRequest(url: URL(string: urlString)!))
     }
 }
+
