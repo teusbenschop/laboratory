@@ -21,6 +21,8 @@ struct ContentView: View {
     
     @State var view_state : ViewState = ViewState.splash
     
+    @State var tab_number : Int = 0
+    
     var body: some View {
         VStack {
             if view_state == ViewState.splash {
@@ -41,11 +43,12 @@ struct ContentView: View {
                 }
             }
             if view_state == ViewState.basic {
-                TabView {
+                TabView(selection: $tab_number) {
                     webview_translate
                         .tabItem {
                             Label("Translate", systemImage: "doc")
                         }
+                        .tag(0)
                         .onAppear() {
                             webview_translate.loadURL(urlString: "https://bibledit.org:8091/editone2/index")
                         }
@@ -53,6 +56,7 @@ struct ContentView: View {
                         .tabItem {
                             Label("Resources", systemImage: "book")
                         }
+                        .tag(1)
                         .onAppear() {
                             webview_resources.loadURL(urlString: "https://bibledit.org:8091/resource/index")
                         }
@@ -60,6 +64,7 @@ struct ContentView: View {
                         .tabItem {
                             Label("Notes", systemImage: "note")
                         }
+                        .tag(2)
                         .onAppear() {
                             webview_notes.loadURL(urlString: "https://bibledit.org:8091/notes/index")
                         }
@@ -67,8 +72,9 @@ struct ContentView: View {
                         .tabItem {
                             Label("Settings", systemImage: "gear")
                         }
+                        .tag(3)
                         .onAppear() {
-                            webview_settings.loadURL(urlString: "https://bibledit.org:8091/index/index?item=settings")
+                            webview_settings.loadURL(urlString: "https://bibledit.org:8091/personalize/index")
                         }
                 }
                 .onAppear() {
@@ -90,6 +96,12 @@ struct ContentView: View {
         .onReceive(timer) { input in
             if view_state == ViewState.splash {
                 view_state = ViewState.basic
+                if tab_number < 3 {
+                    tab_number += 1
+                }
+                else {
+                    tab_number = 0
+                }
             }
             else if view_state == ViewState.basic {
                 view_state = ViewState.advanced
