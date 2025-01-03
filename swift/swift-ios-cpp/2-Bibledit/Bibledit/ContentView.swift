@@ -15,11 +15,14 @@ enum ViewState {
     case advanced
 }
 
+//let web_content_downloader : WebContentDownloader = WebContentDownloader()
+
+
 struct ContentView: View {
     
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     
-    @State var view_state : ViewState = ViewState.splash
+    @State var view_state : ViewState = ViewState.advanced
     
     @State var tab_number : Int = 0
     
@@ -88,7 +91,7 @@ struct ContentView: View {
                         webview_resources.loadURL(urlString: about_blank)
                         webview_notes.loadURL(urlString: about_blank)
                         webview_settings.loadURL(urlString: about_blank)
-                        webview_advanced.loadURL(urlString: "https://bibledit.org:8091")
+                        webview_advanced.loadURL(urlString: "https://bibledit.org:8091/exports/Sample/usfm/full")
                     }
             }
 
@@ -107,7 +110,7 @@ struct ContentView: View {
                 view_state = ViewState.advanced
             }
             else if view_state == ViewState.advanced {
-                view_state = ViewState.splash
+//                view_state = ViewState.splash
             }
         }
     }
@@ -144,4 +147,105 @@ struct WebView: UIViewRepresentable {
     func loadURL(urlString: String) {
         webView.load(URLRequest(url: URL(string: urlString)!))
     }
+    
+//    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
+//        if navigationAction.shouldPerformDownload {
+//            decisionHandler(.download, preferences)
+//            print ("decision handler download preferences")
+//        } else {
+//            decisionHandler(.allow, preferences)
+//            print ("decision handler allow preferences")
+//        }
+//    }
+    
+//    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+//        if navigationResponse.canShowMIMEType {
+//            decisionHandler(.allow)
+//            print ("decision handler allow")
+//        } else {
+//            decisionHandler(.download)
+//            print ("decision handler download")
+//        }
+//    }
+    
+//    func download(_ download: WKDownload, decideDestinationUsing
+//                  response: URLResponse, suggestedFilename: String,
+//                  completionHandler: @escaping (URL?) -> Void) {
+//        completionHandler(URL(string: "/tmp/ios-download"))
+//    }
+    
+//    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+//        download.delegate = web_content_downloader
+//    }
+
+//    func downloadDidFinish(_ download: WKDownload) {
+//        print ("download did finish")
+//    }
+    
+//    public func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+//        print ("download error")
+//    }
 }
+
+
+//protocol WebDownloadable: WKDownloadDelegate {
+//    func downloadDidFinish(fileResultPath: URL)
+//    func downloadDidFail(error: Error, resumeData: Data?)
+//}
+
+//class WebContentDownloader: NSObject {
+//    
+//    private var filePathDestination: URL?
+//    
+//    weak var downloadDelegate: WebDownloadable?
+//    
+//    func generateTempFile(with suggestedFileName: String?) -> URL {
+//        let temporaryDirectoryFolder = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+//        print ("generate temp file")
+//        return temporaryDirectoryFolder.appendingPathComponent(suggestedFileName ?? ProcessInfo().globallyUniqueString)
+//    }
+//    
+//    func downloadFileOldWay(fileURL: URL, optionSessionCookies: [HTTPCookie]?) {
+//        print ("download file old way")
+//        // Your classic URL Session Data Task
+//    }
+//    
+//    private func cleanUp() {
+//        filePathDestination = nil
+//        print ("cleanup")
+//    }
+//}
+
+
+//extension WebContentDownloader: WKDownloadDelegate {
+//    
+//    func downloadDidFinish(_ download: WKDownload) {
+//        
+//        guard let filePathDestination = filePathDestination else {
+//            return
+//        }
+//        downloadDelegate?.downloadDidFinish(fileResultPath: filePathDestination)
+//        cleanUp()
+//    }
+//    
+//    public func download(_ download: WKDownload,
+//                         didFailWithError error: Error,
+//                         resumeData: Data?) {
+//        downloadDelegate?.downloadDidFail(error: error, resumeData: resumeData)
+//        print ("download 1 within extension")
+//    }
+//    
+//    func download(_ download: WKDownload, decideDestinationUsing
+//                  response: URLResponse, suggestedFilename: String,
+//                  completionHandler: @escaping (URL?) -> Void) {
+//        
+//        print ("download 2 within extension")
+//        filePathDestination = generateTempFile(with: suggestedFilename)
+//        completionHandler(filePathDestination)
+//    }
+//    
+//    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+//        print ("set download delegate")
+//        download.delegate = downloadDelegate
+//    }
+//}
