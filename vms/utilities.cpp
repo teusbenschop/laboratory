@@ -1,4 +1,5 @@
 #include "utilities.h"
+#include "file.h"
 #include <filesystem>
 #include <iostream>
 #include <dirent.h>
@@ -40,6 +41,18 @@ void recursive_scandir (const std::string& folder, std::vector <std::string>& pa
       paths.push_back (path);
     }
   }
+}
+
+
+std::vector<file::File> paths_to_files(const std::vector<std::string>& paths) // Todo
+{
+  std::vector<file::File> files{};
+  for (const auto& p : paths) {
+    const std::filesystem::path path (p);
+    files.emplace_back (path.filename(), path.extension(), path.parent_path(),
+                        static_cast<int>(std::filesystem::file_size(path)));
+  }
+  return files;
 }
 
 
