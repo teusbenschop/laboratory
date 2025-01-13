@@ -7,4 +7,4 @@
 #/opt/local/bin/sshpass -p benschop ssh -o StrictHostKeyChecking=no 10.211.55.64 "cd /tmp/vms; g++ -Wall -Wextra -pedantic -Wno-deprecated -std=c++20 -O3 *.cpp -o vms"
 
 
-g++ -Wall -Wextra -pedantic -Wno-deprecated -std=c++20 -O3 *.cpp -o vms
+g++ -Wall -Wextra -pedantic -Wno-deprecated -std=c++20 -O3 *.cpp -o /tmp/vms
