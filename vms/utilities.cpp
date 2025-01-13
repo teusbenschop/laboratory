@@ -2,6 +2,7 @@
 #include "file.h"
 #include <filesystem>
 #include <iostream>
+#include <fstream>
 #include <dirent.h>
 
 namespace utilities {
@@ -50,9 +51,45 @@ std::vector<file::File> paths_to_files(const std::vector<std::string>& paths) //
   for (const auto& p : paths) {
     const std::filesystem::path path (p);
     files.emplace_back (path.filename(), path.extension(), path.parent_path(),
-                        static_cast<int>(std::filesystem::file_size(path)));
+                        static_cast<int>(std::filesystem::file_size(path)), p);
   }
   return files;
+}
+
+
+std::string get_contents(const std::string& path)
+{
+  if (!std::filesystem::exists (path))
+    return std::string();
+  try {
+    std::ifstream ifs(path.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    const std::streamoff filesize = ifs.tellg();
+    if (filesize == 0)
+      return std::string();
+    ifs.seekg(0, std::ios::beg);
+    std::vector <char> bytes(static_cast<size_t> (filesize));
+    ifs.read(&bytes[0], static_cast<int> (filesize));
+    return std::string(&bytes[0], static_cast<size_t> (filesize));
+  }
+  catch (...) { }
+  return std::string();
+}
+
+
+std::string home_dir()
+{
+  static std::string cache {};
+  if (!cache.empty())
+    return cache;
+  if (const char* home = getenv ("HOME"); home) {
+    cache = home;
+    return cache;
+  }
+  throw std::runtime_error("Error: Cannot find the home directory");
+  
+
+  
+  
 }
 
 

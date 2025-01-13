@@ -1,5 +1,6 @@
 
 #include "arguments.h"
+#include "utilities.h"
 #include <sstream>
 #include <filesystem>
 #include <getopt.h>
@@ -10,10 +11,10 @@ namespace arguments {
 
 Arguments::Arguments()
 {
-  std::filesystem::path build_path (home());
+  std::filesystem::path build_path (utilities::home_dir());
   build_path /= "work/trafikverket/files/vms-proxy/tfs_ums3_build";
   build_directory = build_path;
-  std::filesystem::path install_path (home());
+  std::filesystem::path install_path (utilities::home_dir());
   install_path /= "work/trafikverket/files/vms-proxy/UMS3 proxy installation";
   installable_directory = install_path;
 }
@@ -54,14 +55,6 @@ Arguments parse(const int argc, char* argv[])
     throw std::runtime_error("Error: Installable directory missing.");
   
   return arguments;
-}
-
-std::string Arguments::home()
-{
-  if (const char* home = getenv ("HOME"); home) {
-    return home;
-  }
-  throw std::runtime_error("Error: Cannot find the home directory");
 }
 
 }
