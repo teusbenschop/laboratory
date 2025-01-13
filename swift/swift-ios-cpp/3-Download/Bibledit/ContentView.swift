@@ -9,66 +9,74 @@ struct ContentView: View {
 }
 
 
-class Coordinator: NSObject, WKNavigationDelegate, WKDownloadDelegate {
-    
-    let parent: WebView
-    
+class Coordinator: NSObject {
+    var parent: WebView
     fileprivate var downloadDestinationURL: URL?
-    
     init(parent: WebView) {
         self.parent = parent
     }
+}
+
+
+extension Coordinator: WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
         if navigationAction.shouldPerformDownload {
-            decisionHandler(.download, preferences)
             print ("action decision download")
+            decisionHandler(.download, preferences)
         } else {
-            decisionHandler(.allow, preferences)
             print ("action decision allow")
+            decisionHandler(.allow, preferences)
         }
     }
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
         if navigationResponse.canShowMIMEType {
-            decisionHandler(.allow)
             print ("response decision allow")
+            decisionHandler(.allow)
         } else {
-            decisionHandler(.download)
             print ("response decision download")
+            decisionHandler(.download)
         }
     }
+}
+
+
+extension Coordinator: WKDownloadDelegate {
     
-    public func destinationUrlForFile(withName name: String) -> URL? {
-        let temporaryDir = NSTemporaryDirectory()
-        let url = URL(fileURLWithPath: temporaryDir)
-            .appendingPathComponent(UUID().uuidString)
-        
-        if ((try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)) == nil) {
-            return nil
-        }
-        
-        return url.appendingPathComponent(name)
+    func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) {
+        download.delegate = self
     }
     
-    func download(_ download: WKDownload,
-                  decideDestinationUsing response: URLResponse,
-                  suggestedFilename: String,
-                  completionHandler: @escaping (URL?) -> Void) {
-        print ("decide destination using")
-        completionHandler(URL(string: "/tmp/ios-download"))
+    func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
+        let fileManager = FileManager.default
+        let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileUrl =  documentDirectory.appendingPathComponent("\(suggestedFilename)", isDirectory: false)
+        
+        parent.downloadUrl = fileUrl
+        completionHandler(fileUrl)
     }
     
+    // MARK: - Optional
     func downloadDidFinish(_ download: WKDownload) {
         print ("download did finish")
+        print (download)
+    }
+
+    func downloadDidFinish(location url: URL) {
+        print ("download did finish 2")
+        DispatchQueue.main.async {
+            let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+//            activityVC.popoverPresentationController?.sourceView = self.view
+//            activityVC.popoverPresentationController?.sourceRect = self.view.frame
+//            activityVC.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
+//            self.present(activityVC, animated: true, completion: nil)
+        }
     }
     
-    public func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
-        print ("download error")
-    }
-    
-    public func downloadDidFailed(withError error: Error) {
-         print (error)
+    func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+        print(error.localizedDescription)
+        // you can add code here to continue the download in case there was a failure.
     }
 }
 
@@ -76,6 +84,7 @@ class Coordinator: NSObject, WKNavigationDelegate, WKDownloadDelegate {
 struct WebView: UIViewRepresentable {
     let request: URLRequest
     private var webView: WKWebView
+    var downloadUrl = URL(fileURLWithPath: "")
 
     init(request: URLRequest) {
         self.webView = WKWebView()
@@ -95,24 +104,8 @@ struct WebView: UIViewRepresentable {
         uiView.load(request)
     }
     
-    func goBack(){
-        webView.goBack()
-    }
-    
-    func goForward(){
-        webView.goForward()
-    }
-    
     func loadURL(urlString: String) {
         webView.load(URLRequest(url: URL(string: urlString)!))
-    }
-
-    func refresh() {
-        webView.reload()
-    }
-    
-    func goHome() {
-        webView.load(request)
     }
 
 }
