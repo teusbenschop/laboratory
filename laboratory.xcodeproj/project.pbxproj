@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXFileReference section */
@@ -122,6 +122,10 @@
 		CAEF740722945DB900F16631 /* lambdas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lambdas; sourceTree = "<group>"; };
 		CAF2844122676BD50052535E /* django */ = {isa = PBXFileReference; lastKnownFileType = folder; path = django; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		CA0232062D2E947700908318 /* vms */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = vms; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
 		CA0F08D11E5DFE30008F91C3 /* flexbox */ = {
@@ -411,6 +415,7 @@
 				CA5EB3111DDF5B0000565FA2 /* torch */,
 				CA87D4EF27BBB66700B64CD8 /* udp */,
 				CA98E2431DA8D17000F43F4B /* vfork */,
+				CA0232062D2E947700908318 /* vms */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
 				CA53424D25B6115D008E452A /* websocket-client-1 */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
@@ -463,8 +468,8 @@
 			buildConfigurationList = CAB29AC81A4480CC00139BD7 /* Build configuration list for PBXLegacyTarget "bibledit" */;
 			buildPhases = (
 			);
-			buildToolPath = /Users/teus/dev/laboratory/mbedtls/client.sh;
-			buildWorkingDirectory = /Users/teus/dev/laboratory/mbedtls;
+			buildToolPath = /Users/teus/dev/laboratory/vms/build;
+			buildWorkingDirectory = /Users/teus/dev/laboratory/vms;
 			dependencies = (
 			);
 			name = bibledit;
