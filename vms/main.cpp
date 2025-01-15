@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iomanip>
 #include "arguments.h"
 #include "installable.h"
 #include "utilities.h"
@@ -24,8 +25,8 @@ const std::set<std::string> installable_extensions {
   // ".docx",
   ".exe",
   // ".ini",
-  ".pdb",
-  ".sdf",
+  // ".pdb", Program database with debug information.
+  // ".sdf", Visual Studio code browser database.
   // ".txt",
   // ".xlsx",
 };
@@ -33,11 +34,14 @@ const std::set<std::string> installable_extensions {
 // Print whether all distinct installables are the same.
 // Example: The file foo.dll occurs multiple times in the installable.
 //          Prints whether they are all the same.
-constexpr const bool list_installable_consistency {true};
+constexpr const bool list_installable_consistency {false};
 
 // Whether to print whether every installable is obtainable from the built source.
-constexpr const bool list_installable_from_source {false};
+constexpr const bool list_installable_from_source_detailed {false};
+constexpr const bool list_installable_from_source_summary {false};
 
+// Whether to print a script for disassemble dll and exe files on Windows.
+constexpr const bool list_disassembler_commands {true};
 
 int main (int argc, char *argv[])
 {
@@ -153,9 +157,9 @@ int main (int argc, char *argv[])
     }
     
     
-    // Check that the files in the installable can be found in the built source code.
+    // Elaborate check whether the files in the installable can be found in the built source code.
     // Limit checks to the given file extensions.
-    if (list_installable_from_source) {
+    if (list_installable_from_source_detailed) {
       std::cout << std::endl;
       for (const auto& installable_file : installable_files) {
         if (!installable_extensions.contains(installable_file.extension))
@@ -188,6 +192,80 @@ int main (int argc, char *argv[])
           std::cout << "A matching file in the built source was not found" << std::endl;
       }
     }
+
+    
+    // Summarizing check whether the files in the installable
+    // can be found in the built source code.
+    // Limit checks to the given file extensions.
+    if (list_installable_from_source_summary) {
+      std::map<std::string,int> filenames{};
+      std::map<std::string,int> name_matches{};
+      std::map<std::string,int> size_matches{};
+      std::map<std::string,int> content_matches{};
+      for (const auto& installable_file : installable_files) {
+        if (!installable_extensions.contains(installable_file.extension))
+          continue;
+        filenames[installable_file.name]++;
+        bool name_match {false};
+        bool size_match {false};
+        bool content_match {false};
+        for (const auto& build_file : build_files) {
+          if (installable_file.name != build_file.name)
+            continue;
+          name_match = true;
+          if (installable_file.size != build_file.size) {
+            continue;
+          }
+          size_match = true;
+          const std::string installable_contents {utilities::get_contents(installable_file.path)};
+          const std::string build_contents {utilities::get_contents(build_file.path)};
+          if (installable_contents == build_contents) {
+            content_match = true;
+          }
+        }
+        if (name_match)
+          name_matches[installable_file.name]++;
+        if (size_match)
+          size_matches[installable_file.name]++;
+        if (content_match)
+          content_matches[installable_file.name]++;
+      }
+      std::cout << "The installable file header indicates the filenames from the installable" << std::endl;
+      std::cout << "The count header indicates how often the installable occurs in the installaton package" << std::endl;
+      std::cout << "The name match header indicates how often the name was found in the built sources" << std::endl;
+      std::cout << "The size match header indicates how often a file with the same name and ame size was found in the built sources" << std::endl;
+      std::cout << "The content match header indicates how often the exact file was found in the built sources" << std::endl;
+      std::cout << std::endl;
+      constexpr const char separator {' '};
+      constexpr const int name_width {60};
+      constexpr const int num_width {15};
+      std::cout << std::setw(name_width) << std::setfill(separator) << "Installable file" << std::setw(num_width) << std::setfill(separator) << "count" << std::setw(num_width) << std::setfill(separator) << "name match" << std::setw(num_width) << std::setfill(separator) << "size match" << std::setw(num_width) << std::setfill(separator) << "content match" << std::endl;
+      std::cout << std::endl;
+      for (const auto& filename : filenames) {
+        std::cout << std::setw(name_width) << std::setfill(separator) << filename.first << std::setw(num_width) << std::setfill(separator) << filename.second << std::setw(num_width) << std::setfill(separator) << name_matches[filename.first] << std::setw(num_width) << std::setfill(separator) << size_matches[filename.first] << std::setw(num_width) << std::setfill(separator) << content_matches[filename.first] << std::endl;
+      }
+    }
+
+    
+    // Whether to print disassembler commands for object files and executables.
+    if (list_disassembler_commands) {
+      const auto print_command = [] (const auto& file) {
+        const auto path = file.parent + "/" + file.name;
+        std::cout << "ildasm /source /pubonly /noca /nobar ";
+        std::cout << std::quoted(path);
+        std::cout << " /out=" << std::quoted(utilities::path_to_ildasm(file));
+        std::cout << std::endl;
+      };
+      const std::set<std::string> extensions { ".dll", ".exe" };
+      std::cout << std::endl;
+      for (const auto& file : installable_files)
+        if (extensions.contains(file.extension))
+          print_command(file);
+      for (const auto& file : build_files)
+        if (extensions.contains(file.extension))
+          print_command(file);
+    }
+    
     
     // Ready.
     return EXIT_SUCCESS;

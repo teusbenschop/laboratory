@@ -86,11 +86,14 @@ std::string home_dir()
     return cache;
   }
   throw std::runtime_error("Error: Cannot find the home directory");
-  
-
-  
-  
 }
+
+
+// Function to convert a file object to a path to the IL deassembler file.
+std::string path_to_ildasm (const file::File& file) {
+  const auto path = file.parent + "/" + file.name;
+  return path.substr(0, path.size() - file.extension.size()) + ".ildasm.txt";
+};
 
 
 }

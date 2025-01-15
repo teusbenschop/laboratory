@@ -12,5 +12,6 @@ void recursive_scandir (const std::string& folder, std::vector <std::string> & p
 std::vector<file::File> paths_to_files(const std::vector<std::string>& paths);
 std::string get_contents(const std::string& path);
 std::string home_dir();
+std::string path_to_ildasm (const file::File& file);
 
 }
