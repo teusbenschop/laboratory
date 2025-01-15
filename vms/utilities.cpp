@@ -50,12 +50,14 @@ void recursive_scandir (const std::string& folder, std::vector<std::string>& pat
 }
 
 
-std::vector<file::File> paths_to_files(const std::vector<std::string>& paths) // Todo
+std::vector<file::File> paths_to_files(const std::vector<std::string>& paths)
 {
   std::vector<file::File> files{};
   for (const auto& p : paths) {
     const std::filesystem::path path (p);
-    files.emplace_back (path.filename(), path.extension(), path.parent_path(),
+    files.emplace_back (path.filename(),
+                        path.extension(),
+                        path.parent_path(),
                         std::filesystem::is_directory(path) ? 0 : static_cast<int>(std::filesystem::file_size(path)),
                         p);
   }

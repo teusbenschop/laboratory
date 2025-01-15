@@ -42,10 +42,10 @@ constexpr const bool list_installable_from_source_detailed {false};
 constexpr const bool list_installable_from_source_summary {false};
 
 // Whether to print a script for disassemble dll and exe files on Windows.
-constexpr const bool list_disassembler_commands {false};
+constexpr const bool list_disassembler_commands {true};
 
 // Normalize non-ASCII characters in path names.
-constexpr const bool normalize_non_ascii_paths {true};
+constexpr const bool normalize_non_ascii_paths {false};
 
 int main (int argc, char *argv[])
 {
@@ -259,6 +259,7 @@ int main (int argc, char *argv[])
         std::cout << std::quoted(path);
         std::cout << " /out=" << std::quoted(utilities::path_to_ildasm(file));
         std::cout << std::endl;
+        std::cout << "IF %ERRORLEVEL% NEQ 0 pause" << std::endl;
       };
       const std::set<std::string> extensions { ".dll", ".exe" };
       std::cout << std::endl;
@@ -268,12 +269,13 @@ int main (int argc, char *argv[])
       for (const auto& file : build_files)
         if (extensions.contains(file.extension))
           print_command(file);
+      std::cout << "echo Ready" << std::endl;
+
     }
 
 
     // Whether to normalize non-ASCII parts of file paths.
     if (normalize_non_ascii_paths) {
-
       const auto get_paths = [&arguments] () {
         std::vector <std::string> paths;
         utilities::recursive_scandir(arguments.build_directory, paths, true);
@@ -282,7 +284,6 @@ int main (int argc, char *argv[])
       };
       const std::vector<file::File> paths = get_paths();
       std::cout << "Scanning " << paths.size() << " files" << std::endl;
-
       for (const auto& path : paths) {
         const auto normalize = [] (const auto& file) {
           const std::string path = file.parent + "/" + file.name;
