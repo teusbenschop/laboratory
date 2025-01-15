@@ -4,6 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <dirent.h>
+#include <unicode/normlzr.h>
+#include <unicode/translit.h>
+
 
 namespace utilities {
 
@@ -31,13 +34,15 @@ std::vector <std::string> scandir (const std::string& folder)
 }
 
 
-void recursive_scandir (const std::string& folder, std::vector <std::string>& paths)
+void recursive_scandir (const std::string& folder, std::vector<std::string>& paths, const bool include_dirs)
 {
   std::vector <std::string> files = scandir (folder);
   for (const auto& file : files) {
     const std::filesystem::path path = std::filesystem::path(folder).append(file);
     if (std::filesystem::is_directory(path)) {
-      recursive_scandir (path, paths);
+      if (include_dirs)
+        paths.push_back (path);
+      recursive_scandir (path, paths, include_dirs);
     } else {
       paths.push_back (path);
     }
@@ -51,7 +56,8 @@ std::vector<file::File> paths_to_files(const std::vector<std::string>& paths) //
   for (const auto& p : paths) {
     const std::filesystem::path path (p);
     files.emplace_back (path.filename(), path.extension(), path.parent_path(),
-                        static_cast<int>(std::filesystem::file_size(path)), p);
+                        std::filesystem::is_directory(path) ? 0 : static_cast<int>(std::filesystem::file_size(path)),
+                        p);
   }
   return files;
 }
@@ -94,6 +100,29 @@ std::string path_to_ildasm (const file::File& file) {
   const auto path = file.parent + "/" + file.name;
   return path.substr(0, path.size() - file.extension.size()) + ".ildasm.txt";
 };
+
+
+std::string normalize (const std::string input)
+{
+  // UTF-8 std::string -> UTF-16 UnicodeString
+  icu::UnicodeString source = icu::UnicodeString::fromUTF8 (icu::StringPiece (input));
+  
+  // Transliterate UTF-16 UnicodeString following this rule:
+  // decompose, remove diacritics, recompose
+  UErrorCode status = U_ZERO_ERROR;
+  icu::Transliterator *accents_converter = icu::Transliterator::createInstance("NFD; [:M:] Remove; NFC", UTRANS_FORWARD, status);
+  accents_converter->transliterate(source);
+  
+  // Case folding.
+  //source.foldCase ();
+  
+  // UTF-16 UnicodeString -> UTF-8 std::string
+  std::string result {};
+  source.toUTF8String (result);
+  
+  // Ready.
+  return result;
+}
 
 
 }

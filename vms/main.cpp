@@ -5,6 +5,7 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
 #include "arguments.h"
 #include "installable.h"
 #include "utilities.h"
@@ -41,7 +42,10 @@ constexpr const bool list_installable_from_source_detailed {false};
 constexpr const bool list_installable_from_source_summary {false};
 
 // Whether to print a script for disassemble dll and exe files on Windows.
-constexpr const bool list_disassembler_commands {true};
+constexpr const bool list_disassembler_commands {false};
+
+// Normalize non-ASCII characters in path names.
+constexpr const bool normalize_non_ascii_paths {true};
 
 int main (int argc, char *argv[])
 {
@@ -55,7 +59,7 @@ int main (int argc, char *argv[])
     // Produce the File containers for the build and for the installable.
     const auto get_paths = [](const std::string& directory) {
       std::vector <std::string> paths;
-      utilities::recursive_scandir(directory, paths);
+      utilities::recursive_scandir(directory, paths, false);
       return utilities::paths_to_files(paths);
     };
     const std::vector<file::File> build_files = get_paths(arguments.build_directory);
@@ -265,7 +269,36 @@ int main (int argc, char *argv[])
         if (extensions.contains(file.extension))
           print_command(file);
     }
-    
+
+
+    // Whether to normalize non-ASCII parts of file paths.
+    if (normalize_non_ascii_paths) {
+
+      const auto get_paths = [&arguments] () {
+        std::vector <std::string> paths;
+        utilities::recursive_scandir(arguments.build_directory, paths, true);
+        utilities::recursive_scandir(arguments.installable_directory, paths, true);
+        return utilities::paths_to_files(paths);
+      };
+      const std::vector<file::File> paths = get_paths();
+      std::cout << "Scanning " << paths.size() << " files" << std::endl;
+
+      for (const auto& path : paths) {
+        const auto normalize = [] (const auto& file) {
+          const std::string path = file.parent + "/" + file.name;
+          if (std::filesystem::exists(std::filesystem::path(path))) {
+            const std::string normal_path = utilities::normalize (path);
+            if (normal_path != path) {
+              std::cout << "From: " << path << std::endl;
+              std::cout << "To  : " << normal_path << std::endl;
+              std::filesystem::rename (std::filesystem::path(path), std::filesystem::path(normal_path));
+            }
+          }
+        };
+        normalize(path);
+      }
+    }
+
     
     // Ready.
     return EXIT_SUCCESS;

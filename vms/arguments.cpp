@@ -12,10 +12,10 @@ namespace arguments {
 Arguments::Arguments()
 {
   std::filesystem::path build_path (utilities::home_dir());
-  build_path /= "work/trafikverket/files/vms-proxy/tfs_ums3_build";
+  build_path /= "Desktop/tfs_ums3_build";
   build_directory = build_path;
   std::filesystem::path install_path (utilities::home_dir());
-  install_path /= "work/trafikverket/files/vms-proxy/UMS3 proxy installation";
+  install_path /= "Desktop/UMS3 proxy installation";
   installable_directory = install_path;
 }
 
