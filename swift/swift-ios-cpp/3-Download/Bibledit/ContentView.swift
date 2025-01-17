@@ -57,7 +57,6 @@ extension Coordinator: WKDownloadDelegate {
         completionHandler(fileUrl)
     }
     
-    // MARK: - Optional
     func downloadDidFinish(_ download: WKDownload) {
         print ("download did finish")
         print (download)
