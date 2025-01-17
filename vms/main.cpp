@@ -39,10 +39,10 @@ constexpr const bool list_installable_consistency {false};
 
 // Whether to print whether every installable is obtainable from the built source.
 constexpr const bool list_installable_from_source_detailed {false};
-constexpr const bool list_installable_from_source_summary {false};
+constexpr const bool list_installable_from_source_summary {true};
 
 // Whether to print a script for disassemble dll and exe files on Windows.
-constexpr const bool list_disassembler_commands {true};
+constexpr const bool list_disassembler_commands {false};
 
 // Normalize non-ASCII characters in path names.
 constexpr const bool normalize_non_ascii_paths {false};
@@ -223,7 +223,10 @@ int main (int argc, char *argv[])
           size_match = true;
           const std::string installable_contents {utilities::get_contents(installable_file.path)};
           const std::string build_contents {utilities::get_contents(build_file.path)};
-          if (installable_contents == build_contents) {
+          const int percentage = utilities::word_similarity (installable_contents, build_contents);
+          std::cout << percentage << std::endl; // Todo
+          // Todo use: path_to_ildasm
+          if (percentage > 95) {
             content_match = true;
           }
         }

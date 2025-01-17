@@ -1,8 +1,10 @@
 #include "utilities.h"
 #include "file.h"
+#include "dtl/dtl.hpp"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <dirent.h>
 #include <unicode/normlzr.h>
 #include <unicode/translit.h>
@@ -123,6 +125,71 @@ std::string normalize (const std::string input)
   source.toUTF8String (result);
   
   // Ready.
+  return result;
+}
+
+
+
+// This calculates the similarity between the old and new strings.
+// It works at the word level.
+// It returns the similarity as a percentage.
+// 100% means that the text is completely similar.
+// And 0% means that the text is completely different.
+// The output ranges from 0 to 100%.
+int word_similarity (std::string oldstring, std::string newstring) // Todo
+{
+  // Split the input up into words separated by spaces.
+  oldstring = replace ("\n", " ", oldstring);
+  newstring = replace ("\n", " ", newstring);
+  const std::vector <std::string> old_sequence = explode (oldstring, ' ');
+  const std::vector <std::string> new_sequence = explode (newstring, ' ');
+  
+  // Run the diff engine.
+  dtl::Diff <std::string> diff (old_sequence, new_sequence);
+  diff.compose();
+  
+  // Get the shortest edit distance.
+  std::stringstream result;
+  diff.printSES (result);
+  
+  // Calculate the total elements compared, and the total differences found.
+  int element_count = 0;
+  int similar_count = 0;
+  const std::vector <std::string> output = explode (result.str(), '\n');
+  for (const auto& line : output) {
+    if (line.empty ())
+      continue;
+    element_count++;
+    const char indicator = line.front ();
+    if (indicator == ' ')
+      similar_count++;
+  }
+  
+  // Calculate the percentage similarity.
+  const int percentage = static_cast<int> (round (100 * (static_cast<float>(similar_count) / static_cast<float>(element_count))));
+  return percentage;
+}
+
+
+std::string replace (const std::string& search, const std::string& replace, std::string subject)
+{
+  size_t offposition {subject.find (search)};
+  while (offposition != std::string::npos) {
+    subject.replace (offposition, search.length (), replace);
+    offposition = subject.find (search, offposition + replace.length ());
+  }
+  return subject;
+}
+
+
+std::vector <std::string> explode (const std::string& value, char delimiter)
+{
+  std::vector <std::string> result;
+  std::istringstream iss (value);
+  for (std::string token; getline (iss, token, delimiter); )
+  {
+    result.push_back (std::move (token));
+  }
   return result;
 }
 

@@ -14,5 +14,8 @@ std::string get_contents(const std::string& path);
 std::string home_dir();
 std::string path_to_ildasm (const file::File& file);
 std::string normalize (const std::string input);
+int word_similarity (std::string oldstring, std::string newstring);
+std::string replace (const std::string& search, const std::string& replace, std::string subject);
+std::vector <std::string> explode (const std::string& value, char delimiter);
 
 }
