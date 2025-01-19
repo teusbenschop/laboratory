@@ -65,30 +65,22 @@ extension Coordinator: WKDownloadDelegate {
     }
     
     func downloadDidFinish(_ download: WKDownload) {
-        print ("download did finish 1")
+        print ("download did finish")
         print (parent.download_url)
-        //let activityVC = UIActivityViewController(activityItems: [parent.downloadUrl], applicationActivities: nil)
-        //activityVC.popoverPresentationController?.sourceView = self.view
-        //activityVC.popoverPresentationController?.sourceRect = self.view.frame
-        //activityVC.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
-        //self.present(activityVC, animated: true, completion: nil)
-    }
-
-    func downloadDidFinish(location url: URL) {
-        print ("download did finish 2")
         DispatchQueue.main.async {
-            let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-//            activityVC.popoverPresentationController?.sourceView = self.view
-//            activityVC.popoverPresentationController?.sourceRect = self.view.frame
-//            activityVC.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
-//            self.present(activityVC, animated: true, completion: nil)
+            guard let root_view_controller = UIApplication.shared.windows.last?.rootViewController
+            else { return }
+            let view_controller = UIActivityViewController(activityItems: [self.parent.download_url], applicationActivities: nil)
+            view_controller.excludedActivityTypes = nil
+            view_controller.popoverPresentationController?.sourceView = root_view_controller.view
+            root_view_controller.present(view_controller, animated: true)
         }
     }
-    
+
     func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
         print ("download failed with error")
         print(error.localizedDescription)
-        // you can add code here to continue the download in case there was a failure.
+        // You can add code here to continue the download in case there was a failure.
     }
 }
 
@@ -121,85 +113,3 @@ struct WebView: UIViewRepresentable {
     }
 
 }
-
-
-/* Todo
-private func downloadData(fromURL url:URL,
-                          fileName:String,
-                          completion:@escaping (Bool, URL?) -> Void) {
-    webView.configuration.websiteDataStore.httpCookieStore.getAllCookies() { cookies in
-        let session = URLSession.shared
-        session.configuration.httpCookieStorage?.setCookies(cookies, for: url, mainDocumentURL: nil)
-        let task = session.downloadTask(with: url) { localURL, urlResponse, error in
-            if let localURL = localURL {
-                let destinationURL = self.moveDownloadedFile(url: localURL, fileName: fileName)
-                completion(true, destinationURL)
-            }
-            else {
-                completion(false, nil)
-            }
-        }
-        
-        task.resume()
-    }
-}
- */
-
-private func moveDownloadedFile(url:URL, fileName:String) -> URL {
-    let tempDir = NSTemporaryDirectory()
-    let destinationPath = tempDir + fileName
-    let destinationURL = URL(fileURLWithPath: destinationPath)
-    try? FileManager.default.removeItem(at: destinationURL)
-    try? FileManager.default.moveItem(at: url, to: destinationURL)
-    return destinationURL
-}
-
-
-/* Todo
-func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-    if let mimeType = navigationResponse.response.mimeType {
-        if isMimeTypeConfigured(mimeType) {
-            if let url = navigationResponse.response.url {
-                if #available(iOS 14.5, *) {
-                    decisionHandler(.download)
-                } else {
-                    var fileName = getDefaultFileName(forMimeType: mimeType)
-                    if let name = getFileNameFromResponse(navigationResponse.response) {
-                        fileName = name
-                    }
-                    downloadData(fromURL: url, fileName: fileName) { success, destinationURL in
-                        if success, let destinationURL = destinationURL {
-                            self.delegate.fileDownloadedAtURL(url: destinationURL)
-                        }
-                    }
-                    decisionHandler(.cancel)
-                }
-                return
-            }
-        }
-    }
-    decisionHandler(.allow)
-}
- */
-
-/* Todo
-extension WKWebviewDownloadHelper: WKDownloadDelegate {
-    func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
-        let temporaryDir = NSTemporaryDirectory()
-        let fileName = temporaryDir + "/" + suggestedFilename
-        let url = URL(fileURLWithPath: fileName)
-        fileDestinationURL = url
-        completionHandler(url)
-    }
-    
-   
-    func downloadDidFinish(_ download: WKDownload) {
-        print("download finish")
-        if let url = fileDestinationURL {
-            self.delegate.fileDownloadedAtURL(url: url)
-        }
-    }
-}
- */
-
-
