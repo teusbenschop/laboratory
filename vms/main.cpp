@@ -206,26 +206,33 @@ int main (int argc, char *argv[])
       std::map<std::string,int> name_matches{};
       std::map<std::string,int> size_matches{};
       std::map<std::string,int> content_matches{};
+      int installable_done_count {0};
       for (const auto& installable_file : installable_files) {
+        installable_done_count++;
         if (!installable_extensions.contains(installable_file.extension))
           continue;
+        std::cout << installable_done_count << "/" << installable_files.size() << std::endl;
         filenames[installable_file.name]++;
         bool name_match {false};
         bool size_match {false};
         bool content_match {false};
+        if (content_match)
+          continue;
         for (const auto& build_file : build_files) {
           if (installable_file.name != build_file.name)
             continue;
           name_match = true;
-          if (installable_file.size != build_file.size) {
+          const float size_diff = std::abs(installable_file.size - build_file.size) / installable_file.size;
+          if (size_diff > 0.1)
             continue;
-          }
           size_match = true;
+//          const std::string installable_ildasm_path {utilities::path_to_ildasm(installable_file)};
+//          const std::string installable_contents {utilities::get_contents(installable_ildasm_path)};
+//          const std::string build_ildasm_path {utilities::path_to_ildasm(build_file)};
+//          const std::string build_contents {utilities::get_contents(build_ildasm_path)};
           const std::string installable_contents {utilities::get_contents(installable_file.path)};
           const std::string build_contents {utilities::get_contents(build_file.path)};
           const int percentage = utilities::word_similarity (installable_contents, build_contents);
-          std::cout << percentage << std::endl; // Todo
-          // Todo use: path_to_ildasm
           if (percentage > 95) {
             content_match = true;
           }
@@ -240,8 +247,8 @@ int main (int argc, char *argv[])
       std::cout << "The installable file header indicates the filenames from the installable" << std::endl;
       std::cout << "The count header indicates how often the installable occurs in the installaton package" << std::endl;
       std::cout << "The name match header indicates how often the name was found in the built sources" << std::endl;
-      std::cout << "The size match header indicates how often a file with the same name and ame size was found in the built sources" << std::endl;
-      std::cout << "The content match header indicates how often the exact file was found in the built sources" << std::endl;
+      std::cout << "The size match header indicates how often a file with the same name and about the same size was found in the built sources" << std::endl;
+      std::cout << "The content match header indicates how often the file was found in the built sources with 95% content match" << std::endl;
       std::cout << std::endl;
       constexpr const char separator {' '};
       constexpr const int name_width {60};
