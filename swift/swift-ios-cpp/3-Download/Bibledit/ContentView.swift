@@ -2,9 +2,12 @@ import SwiftUI
 @preconcurrency import WebKit
 
 struct ContentView: View {
-    let web_view = WebView(request: URLRequest(url: URL(string: "https://bibledit.org:8091/exports/Sample/usfm/full")!))
+    let web_view = WebView()
     var body: some View {
         web_view
+            .onAppear(){
+                web_view.loadURL(urlString: "https://bibledit.org:8091/exports/Sample/usfm/full")
+            }
     }
 }
 
@@ -86,13 +89,11 @@ extension Coordinator: WKDownloadDelegate {
 
 
 struct WebView: UIViewRepresentable {
-    let request: URLRequest
-    private var webView: WKWebView
+    private var web_view: WKWebView
     var download_url = URL(fileURLWithPath: "")
 
-    init(request: URLRequest) {
-        self.webView = WKWebView()
-        self.request = request
+    init() {
+        self.web_view = WKWebView()
     }
 
     func makeCoordinator() -> Coordinator {
@@ -100,16 +101,14 @@ struct WebView: UIViewRepresentable {
     }
     
     func makeUIView(context: Context) -> WKWebView {
-        return webView
+        return web_view
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
         uiView.navigationDelegate = context.coordinator
-        uiView.load(request)
     }
     
     func loadURL(urlString: String) {
-        webView.load(URLRequest(url: URL(string: urlString)!))
+        web_view.load(URLRequest(url: URL(string: urlString)!))
     }
-
 }
