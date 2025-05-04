@@ -8,6 +8,8 @@ void attributes__no_unique_address__likely__unlikely();
 void const_eval (unsigned int argc);
 void const_init ();
 void aggregate_initialization();
+void coroutines();
+void modules();
 void constraints_concepts();
 void header_bit ();
 void header_compare();
@@ -24,6 +26,6 @@ void joinable_thread_advanced();
 void stop_call_back();
 void sync_stream();
 void starts_ends_with();
-void bind_front();
+void bind_front_back();
 void distribution();
 
