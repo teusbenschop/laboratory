@@ -17,17 +17,16 @@
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #pragma GCC diagnostic pop
 #include "ldap.h"
-#include "main.h"
 
 
-// Some slightly older documentation that shows the basic of an LDAP client.
+// Some slightly older documentation that shows the basics of an LDAP client.
 // https://docs.oracle.com/cd/E19957-01/817-6707/writing.html#wp25467
 
 
 int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
 {
     // Get a pointer to an opaque LDAP structure and keep it for subsequent calls.
-    constexpr const auto uri {"ldap://192.168.135.125:389"};
+    constexpr const auto uri {"ldap://10.211.55.64:389"};
     std::cout << "Initializing LDAP structure for URI " << std::quoted(uri) << std::endl;
     LDAP* ld {nullptr};
     int rc = ldap_initialize(&ld, uri);
@@ -64,7 +63,7 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
     // Search the LDAP directory for entries.
     constexpr const auto base_dn {"dc=dev,dc=com"};
     constexpr const auto scope {LDAP_SCOPE_SUBTREE};
-    constexpr const auto filter {"(cn=lassy)"};
+    constexpr const auto filter {"(cn=ldapuser)"};
     std::cout << "Searching the directory for entries" << std::endl;
     std::cout << "Base DN " << std::quoted(base_dn) << std::endl;
     std::cout << "Scope " << scope << " = subtree" << std::endl;

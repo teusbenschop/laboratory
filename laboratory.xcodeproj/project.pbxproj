@@ -473,7 +473,7 @@
 			buildPhases = (
 			);
 			buildToolPath = make;
-			buildWorkingDirectory = "/Users/teus/dev/laboratory/c++23";
+			buildWorkingDirectory = /Users/teus/dev/laboratory/ldap;
 			dependencies = (
 			);
 			name = bibledit;

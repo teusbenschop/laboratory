@@ -1,7 +1,3 @@
-#!/bin/bash
-
-rm -f /tmp/ldap
-
 # Since OpenLDAP 2.3, part of the C API has been deprecated.
 # This means that the deprecated C functions are present in the libraries,
 # and thus compatibility with legacy clients is ensured,
@@ -16,7 +12,5 @@ rm -f /tmp/ldap
 # It is recommended that legacy applications be upgraded
 # to make use of replacements to deprecated functions.
 
-g++ -Wall -Wextra -pedantic -std=c++17 -lpthread -DLDAP_DEPRECATED -I/opt/local/include -L/opt/local/lib -lldap -o /tmp/ldap main.cpp
-if [ $? -ne 0 ]; then exit; fi
-
-/tmp/ldap
+main: main.cpp
+	g++ -std=c++20 -mmacosx-version-min=15.4 -Wall -Wno-unknown-pragmas -Wextra -pedantic -g -O2 -lpthread -DLDAP_DEPRECATED -I/opt/local/include -L/opt/local/lib -lldap -o /tmp/main main.cpp
