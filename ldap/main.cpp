@@ -51,13 +51,35 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
     //    that requires authentication as a user with certain access privileges.
     // 2. You are connecting to a LDAPv2 server.
     //    LDAPv2 servers typically require clients to bind before any operations can be performed.
-    constexpr const auto admin_dn {"cn=admin,dc=dev,dc=com"};
-    constexpr const auto admin_password {"test123"};
-    std::cout << "Bind to the server with dn " << std::quoted(admin_dn) << " password " << std::quoted(admin_password) << std::endl;
-    rc = ldap_bind_s (ld, admin_dn, admin_password, LDAP_AUTH_SIMPLE);
-    if (rc != LDAP_SUCCESS) {
-        std::cerr << "Could not bind to the server: " << ldap_err2string(rc) << " (" << rc << ")" << std::endl;
-        return EXIT_FAILURE;
+    constexpr const char* user_dn {"cn=ldapuser,ou=People,dc=dev,dc=com"};
+    constexpr const char* password {"ldappass"};
+    std::cout << "Bind to the server with dn " << std::quoted(user_dn) << " password " << std::quoted(password) << std::endl;
+    {
+        rc = ldap_bind_s (ld, user_dn, password, LDAP_AUTH_SIMPLE);
+        if (rc != LDAP_SUCCESS) {
+            std::cerr << "Could not bind to the server: " << ldap_err2string(rc) << " (" << rc << ")" << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+    {
+        berval credentials {
+            .bv_len = strlen(password),
+            .bv_val = const_cast<char*>(password),
+        };
+        rc = ldap_sasl_bind_s(ld,
+                              user_dn,
+                              LDAP_SASL_SIMPLE,
+                              &credentials,
+                              nullptr, // serverctrls - not used for simple authentication.
+                              nullptr, // clientctrls - not used for simple authentication.
+                              nullptr  // servercredp - not used for simple authentication.
+                              );
+        if (rc != LDAP_SUCCESS) {
+            std::cerr << "Could not bind to the server: " << ldap_err2string(rc) << " (" << rc << ")" << std::endl;
+            return EXIT_FAILURE;
+        }
+        // No need to do this due to how the .bv_val is allocated.
+        //ber_bvfree(&credentials);
     }
 
     // Search the LDAP directory for entries.
@@ -86,8 +108,19 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
         char* dn = ldap_get_dn (ld, entry);
         std::cout << "dn: " << dn << std::endl;
         // Free the allocated memory.
-        if (dn) 
+        if (dn)
             ldap_memfree (dn);
+        // Get the values for "cn".
+        berval** values = ldap_get_values_len(ld, entry, "cn");
+        berval* const* list = values;
+        while (list && *list) {
+            berval* value = *list++;
+            std::string s (value->bv_val, value->bv_len);
+            std::cout << "cn: " << s << std::endl; // Todo crashes.
+        }
+        // Free the allocated memory for values.
+        if (values)
+            ldap_value_free_len(values);
     }
              
     // Free the allocated search result.
@@ -96,8 +129,9 @@ int main([[maybe_unused]]int argc, [[maybe_unused]]char *argv[])
     // Unbind from the server directory, terminate the current association,
     // and free the resources contained in the LDAP structure.
     std::cout << "Disconnect and free resources" << std::endl;
-    ldap_unbind (ld);
+    ldap_unbind_ext (ld, nullptr, nullptr);
 
     // Done.
+    std::cout << "Ready" << std::endl;
     return EXIT_SUCCESS;
 }
