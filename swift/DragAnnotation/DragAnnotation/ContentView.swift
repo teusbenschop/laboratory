@@ -74,7 +74,6 @@ class DraggableAnnotationView: MKAnnotationView {
 
 struct MapView: UIViewRepresentable {
     var region: MKCoordinateRegion
-    var tappedCoordinates: [CLLocationCoordinate2D]
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -107,9 +106,7 @@ struct MapView: UIViewRepresentable {
             let mapView = gestureRecognizer.view as! MKMapView
             let touchPoint = gestureRecognizer.location(in: mapView)
             let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
-            
-            parent.tappedCoordinates.append(coordinate)
-            parent.region = mapView.region
+            print ("tap on", coordinate)
         }
         
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -132,11 +129,9 @@ struct MapView: UIViewRepresentable {
             case .starting:
                 view.dragState = .dragging
             case .dragging:
-                // Todo parent.tappedCoordinates[annotation.index] = annotation.coordinate
                 break
             case .ending, .canceling:
                 view.dragState = .none
-                // Todo parent.tappedCoordinates[annotation.index] = annotation.coordinate
             case .none:
                 break
             default:
@@ -157,10 +152,8 @@ struct MapView: UIViewRepresentable {
 }
 
 struct ContentView: View {
-    private var tappedCoordinates: [CLLocationCoordinate2D] = []
-    
     var body: some View {
-        MapView(region: region, tappedCoordinates: tappedCoordinates)
+        MapView(region: region)
             .edgesIgnoringSafeArea(.all)
     }
 }
