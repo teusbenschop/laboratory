@@ -116,23 +116,21 @@ struct MapView: UIViewRepresentable {
             return nil
         }
 
-        // Gets fired if an annotation view got selected.
+        // The map view selected an annotation view.
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
             view.image = UIImage(systemName: annotationStateImageName(selected: view.isSelected, dragging: false))
         }
-        
-        
-        // Gets fired if an annotation view got deselected.
+                
+        // The map view deselected an annotation view.
         func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
             view.image = UIImage(systemName: annotationStateImageName(selected: view.isSelected, dragging: false))
         }
-
         
-        // Gets fired if an annotation got selected.
+        // The map view selected an annotation.
         func mapView(_ mapView: MKMapView, didSelect annotation: any MKAnnotation) {
         }
 
-        // Gets fired if an annotation got deselected.
+        // The map view deselected an annotation.
         func mapView(_ mapView: MKMapView, didDeselect annotation: any MKAnnotation) {
         }
 
