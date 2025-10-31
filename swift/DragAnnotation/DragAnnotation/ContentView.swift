@@ -31,6 +31,15 @@ func dragStateToString(state: MKAnnotationView.DragState) -> String
 }
 
 
+func annotationStateImageName(selected: Bool, dragging: Bool) -> String
+{
+    if selected {
+        return "arrow.up.and.down.and.arrow.left.and.right"
+    }
+    return "circle.fill"
+}
+
+
 class DraggableAnnotation: NSObject, MKAnnotation {
 
     var coordinate: CLLocationCoordinate2D
@@ -55,15 +64,13 @@ class DraggableAnnotationView: MKAnnotationView {
     
     override func setDragState(_ newState: MKAnnotationView.DragState, animated: Bool) {
         super.setDragState(newState, animated: animated)
-        print("Drag state changed to", dragStateToString(state: newState))
         updateAppearance()
     }
     
     private func updateAppearance() {
         let dragging = dragState != .none
         let scale: CGFloat = dragging ? 1.3 : 1.0
-        let name = dragging ? "arrow.up.and.down.and.arrow.left.and.right" : "circle.fill"
-        
+        let name = annotationStateImageName(selected: self.isSelected, dragging: dragging)
         UIView.animate(withDuration: 0.5) {
             self.transform = CGAffineTransform(scaleX: scale, y: scale)
             self.image = UIImage(systemName: name)?.withTintColor(.red, renderingMode: .alwaysOriginal)
@@ -79,8 +86,6 @@ struct MapView: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.mapType = .standard
-        let tapRecognizer = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
-        mapView.addGestureRecognizer(tapRecognizer)
         let annotation = DraggableAnnotation(coordinate: amsterdam, index: 1)
         mapView.addAnnotation(annotation)
         return mapView
@@ -102,26 +107,37 @@ struct MapView: UIViewRepresentable {
             super.init()
         }
         
-        @objc func handleTap(_ gestureRecognizer: UITapGestureRecognizer) {
-            let mapView = gestureRecognizer.view as! MKMapView
-            let touchPoint = gestureRecognizer.location(in: mapView)
-            let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
-            print ("tap on", coordinate)
-        }
-        
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is DraggableAnnotation {
-                let annotationView = DraggableAnnotationView(annotation: annotation, reuseIdentifier: "draggablePin")
+                let annotationView = DraggableAnnotationView(annotation: annotation, reuseIdentifier: "draggable")
                 annotationView.isDraggable = true
-                print("Created new DraggableAnnotationView")
                 return annotationView
             }
             return nil
         }
+
+        // Gets fired if an annotation view got selected.
+        func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+            view.image = UIImage(systemName: annotationStateImageName(selected: view.isSelected, dragging: false))
+        }
         
+        
+        // Gets fired if an annotation view got deselected.
+        func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
+            view.image = UIImage(systemName: annotationStateImageName(selected: view.isSelected, dragging: false))
+        }
+
+        
+        // Gets fired if an annotation got selected.
+        func mapView(_ mapView: MKMapView, didSelect annotation: any MKAnnotation) {
+        }
+
+        // Gets fired if an annotation got deselected.
+        func mapView(_ mapView: MKMapView, didDeselect annotation: any MKAnnotation) {
+        }
+
         func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, didChange newState: MKAnnotationView.DragState, fromOldState oldState: MKAnnotationView.DragState) {
             guard let annotation = view.annotation as? DraggableAnnotation else { return }
-            print ("annotation index", annotation.index)
 
             print("Drag state changed from", dragStateToString(state: oldState), "to", dragStateToString(state: newState))
             
@@ -132,6 +148,7 @@ struct MapView: UIViewRepresentable {
                 break
             case .ending, .canceling:
                 view.dragState = .none
+                mapView.deselectAnnotation(annotation, animated: true)
             case .none:
                 break
             default:
@@ -139,15 +156,6 @@ struct MapView: UIViewRepresentable {
             }
         }
         
-        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-            if let polyline = overlay as? MKPolyline {
-                let renderer = MKPolylineRenderer(polyline: polyline)
-                renderer.strokeColor = .blue
-                renderer.lineWidth = 3
-                return renderer
-            }
-            return MKOverlayRenderer()
-        }
     }
 }
 
@@ -157,4 +165,3 @@ struct ContentView: View {
             .edgesIgnoringSafeArea(.all)
     }
 }
-
