@@ -1,23 +1,29 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var locationViewModel = LocationManager()
+    @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         NavigationView {
             VStack {
+                Text("Latitude " + locationManager.location.coordinate.latitude.description)
+                Text("Longitude " + locationManager.location.coordinate.longitude.description)
+                Text("Speed " + locationManager.location.speed.description)
+                Text("Time " + locationManager.location.timestamp.description)
+                Text("Sequence " + locationManager.counter.description)
+                    .padding(.bottom)
                 Button("Start") {
-                    locationViewModel.start()
+                    locationManager.start()
                 }
                 .buttonStyle(.borderedProminent)
                 Button("Stop") {
-                    locationViewModel.stop()
+                    locationManager.stop()
                 }
                 .buttonStyle(.borderedProminent)
             }
 
             .onAppear {
-                locationViewModel.requestPermission()
+                locationManager.requestPermission()
 //                vm.startLiveUpdates() // Todo resume on relaunch
             }
         }
