@@ -33,7 +33,10 @@ class LocationManager: ObservableObject {
         var counter : Int = 0
         keepRunning = true
 //        updateTask?.cancel()
-        backgroundActivity = CLBackgroundActivitySession() // 👈 This keeps your app alive in background
+        // Create an object that manages a visual indicator to the user
+        // that keeps the app in use in the background,
+        // allowing it to receive updates or events.
+        backgroundActivity = CLBackgroundActivitySession()
 
         updateTask = Task {
             do {
