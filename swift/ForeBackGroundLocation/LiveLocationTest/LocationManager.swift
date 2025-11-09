@@ -1,11 +1,3 @@
-//
-//  LocationViewModel.swift
-//  KanbanDemo
-//
-//  Created by Hardik Darji on 14/07/25.
-//
-
-
 import Foundation
 import CoreLocation
 
