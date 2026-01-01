@@ -82,7 +82,8 @@
 // Implementing a button class with std::function.
 class button1 {
 public:
-  button1(std::function<void(void)> click) : m_handler{click} {std::cout << "create object button1" << std::endl;}
+  button1(std::function<void(void)> click) : m_handler{click} {std::cout << "create object button1 with function click at " << &click << std::endl;}
+  button1() {std::cout << "create object button1 wihthout parameters" << std::endl;}
   ~button1(){std::cout << "destroy object button1" << std::endl;}
   auto on_click() const { m_handler(); }
 private:
@@ -267,7 +268,7 @@ auto sum_scores(const std::vector<T>& objects) {
   return sum;
 }
 
-[[maybe_unused]] static void sum_scores_compare_processing_time ()
+[[maybe_unused]] void sum_scores_compare_processing_time ()
 {
   std::cout << "sizeof(small_object): " << sizeof(small_object) << " bytes" << std::endl;
   std::cout << "sizeof(big_object): " << sizeof(big_object) << " bytes" << std::endl;
@@ -295,151 +296,185 @@ auto sum_scores(const std::vector<T>& objects) {
   std::cout << "total sum: " << small_sum + big_sum << std::endl;
 }
 
-[[maybe_unused]] static void sorting ()
+
+[[maybe_unused]] void sorting ()
 {
-  {
-    auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
-    std::sort(values.begin(), values.end());
+  const auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
+  const auto print = [](const auto& values) {
+    std::ranges::for_each(values, [](const auto& v) {std::cout << v << " ";});
     std::cout << (std::ranges::is_sorted(values) ? "sorted" : "unsorted") << std::endl;
-  }
-  {
-    auto v = std::vector{6, 3, 2, 7, 4, 1, 5};
-    std::ranges::sort(v);
-    std::cout << (std::ranges::is_sorted(v) ? "sorted" : "unsorted") << std::endl;
-  }
+  };
+  print(values);
+  auto vs = values;
+  std::sort(vs.begin(), vs.end());
+  print(vs);
+  auto vrs = values;
+  std::ranges::sort(vrs);
+  print(vrs);
 }
 
-[[maybe_unused]] static void print_ranges_for_each (auto&& r) {
+
+[[maybe_unused]] void print_ranges_for_each (auto&& r) {
   std::ranges::for_each(r, [](auto&& i) {
     std::cout << i << ' ';
   });
   std::cout << std::endl;
 }
 
-[[maybe_unused]] static void algorithm_transform()
+
+[[maybe_unused]] void algorithm_transform()
 {
   auto input = std::vector<int>{1, 2, 3, 4};
   auto output = std::vector<int>(input.size());
   auto lambda = [](auto&& i) { return i * i; };
   std::ranges::transform(input, output.begin(), lambda);
+  std::cout << "std::ranges::transform: ";
   print_ranges_for_each(output);
 }
 
-[[maybe_unused]] static void algorithm_fill()
+
+[[maybe_unused]] void algorithm_fill()
 {
   std::vector<int> v(5);
   std::ranges::fill(v, -123);
+  std::cout << "std::ranges::fill: ";
   print_ranges_for_each(v);
 }
 
-[[maybe_unused]] static void algorithm_generate()
+
+[[maybe_unused]] void algorithm_generate()
 {
   std::vector<int> v(4);
   std::ranges::generate(v, std::rand);
+  std::cout << "std::ranges::generate: ";
   print_ranges_for_each(v);
 }
 
-[[maybe_unused]] static void algorithm_iota()
+
+[[maybe_unused]] void algorithm_iota()
 {
   auto v = std::vector<int>(6);
   std::iota(v.begin(), v.end(), 0);
+  std::cout << "std::iota: ";
   print_ranges_for_each(v);
   // Output: 0 1 2 3 4 5
 }
 
-[[maybe_unused]] static void algorithm_find()
+
+[[maybe_unused]] void algorithm_find()
 {
-  auto col = std::list{2, 4, 3, 2, 3, 1};
-  auto it = std::ranges::find(col, 2);
-  if (it != col.end()) {
-    std::cout << *it << '\n';
+  {
+    const auto numbers = std::list{2, 4, 3, 2, 3, 1};
+    auto it = std::ranges::find(numbers, 2);
+    if (it != numbers.cend())
+      std::cout << "std::ranges::find: " << *it << std::endl;
+  }
+  {
+    struct person {
+      unsigned uid;
+      std::string name, position;
+    };
+    const std::vector<person> persons {
+      {0, "Ana", "barber"},
+      {1, "Bob", "cook"},
+      {2, "Eve", "builder"}
+    };
+    if (const auto it = std::ranges::find(persons, "Bob", &person::name);
+        it != persons.cend())
+      std::cout << "std::ranges::find: " << it->uid << " " << it->name << " " << it->position << std::endl;
   }
 }
 
-[[maybe_unused]] static void algorithm_binary_search()
+[[maybe_unused]] void algorithm_binary_search()
 {
   auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
   // A binary search works if the container is sorted.
-  std::cout << std::boolalpha << std::ranges::is_sorted(v) << std::endl;
+  std::cout << "container for binary search is sorted: " << std::boolalpha << std::ranges::is_sorted(v) << std::endl;
   bool found = std::ranges::binary_search(v, 3);
-  std::cout << std::boolalpha << found << std::endl; // Output: true
+  std::cout << "found: " << std::boolalpha << found << std::endl; // Output: true
 }
 
-[[maybe_unused]] static void algorithm_lower_upper_bound()
+
+[[maybe_unused]] void algorithm_lower_upper_bound()
 {
-  auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
-  {
-    auto it = std::ranges::lower_bound(v, 3);
-    if (it != v.end()) {
-      auto index = std::distance(v.begin(), it);
-      std::cout << "Position: " << index << '\n';
-    }
+  const auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
+  if (const auto it = std::ranges::lower_bound(v, 3);
+      it != v.cend()) {
+    auto index = std::distance(v.begin(), it);
+    std::cout << "Lower bound position: " << index << '\n';
   }
-  {
-    auto it = std::ranges::upper_bound(v, 3);
-    if (it != v.end()) {
-      auto index = std::distance(v.begin(), it);
-      std::cout << "Position: " << index << '\n';
-    }
-    // Output: Position: 5
+  if (auto it = std::ranges::upper_bound(v, 3);
+      it != v.cend()) {
+    auto index = std::distance(v.begin(), it);
+    std::cout << "Upper bound position: " << index << '\n';
   }
 }
 
-[[maybe_unused]] static void algorithm_all_any_none_of()
+
+[[maybe_unused]] void algorithm_all_any_none_of()
 {
-  const auto v = std::vector<int>{3, 2, 2, 1, 0, 2, 1};
-  print_ranges_for_each(v);
+  const auto numbers = std::vector{3, 2, 2, 1, 0, 2, 1};
+  std::cout << "Input data: ";
+  print_ranges_for_each(numbers);
 
   const auto is_negative = [](int i) { return i < 0; };
   
-  std::cout << "Contains only natural numbers: " << std::boolalpha << std::ranges::none_of(v, is_negative) << std::endl;
+  std::cout << "Contains only natural numbers: " << std::boolalpha << std::ranges::none_of(numbers, is_negative) << std::endl;
 
-  std::cout << "Contains only negative numbers: " << std::boolalpha << std::ranges::all_of(v, is_negative) << std::endl;
+  std::cout << "Contains only negative numbers: " << std::boolalpha << std::ranges::all_of(numbers, is_negative) << std::endl;
 
-  std::cout << "Contains at least one negative number: " << std::boolalpha << std::ranges::any_of(v, is_negative) << std::endl;
+  std::cout << "Contains at least one negative number: " << std::boolalpha << std::ranges::any_of(numbers, is_negative) << std::endl;
 }
 
-[[maybe_unused]] static void algorithm_count()
+
+[[maybe_unused]] void algorithm_count()
 {
-  auto v = std::list{3, 3, 2, 1, 3, 1, 3};
-  auto n = std::ranges::count(v, 3);
-  std::cout << n << std::endl; // Output: 4
+  const auto numbers = std::list{3, 3, 2, 1, 3, 1, 3};
+  std::cout << "Input data: ";
+  print_ranges_for_each(numbers);
+  const auto n = std::ranges::count(numbers, 3);
+  std::cout << "Number 3 occurs " << n << " times" << std::endl; // Output: 4
 }
 
-static auto some_func() { return 200; }
 
-[[maybe_unused]] static void algorithm_min_max_clamp()
+[[maybe_unused]] void algorithm_min_max_clamp()
 {
-  const auto y_max = 100;
-  const auto y_min = 10;
-  std::cout << std::min(some_func(), y_max) << std::endl;
-  std::cout << std::max(some_func(), y_min) << std::endl;
-  std::cout << std::clamp(some_func(), y_min, y_max) << std::endl;
+  const auto twohundred = []() { return 200; };
+  const auto ten = 10;
+  const auto hundred = 100;
+  std::cout << "min: " << std::min(twohundred(), hundred) << std::endl;
+  std::cout << "max: " << std::max(twohundred(), ten) << std::endl;
+  std::cout << "clamp: " << std::clamp(twohundred(), ten, hundred) << std::endl;
 }
 
-[[maybe_unused]] static void algorithm_minmax()
+
+[[maybe_unused]] void algorithm_minmax()
 {
-  const auto v = std::vector<int>{4, 2, 1, 7, 3, 1, 5};
-  const auto [min, max] = std::ranges::minmax(v);
-  std::cout << min << " " << max << std::endl; // Output: 1 7
+  const auto values = std::vector{4, 2, 1, 7, 3, 1, 5};
+  const auto [min, max] = std::ranges::minmax(values);
+  std::cout << "min=" << min << " max=" << max << std::endl; // Output: 1 7
 }
 
-[[maybe_unused]] static void algorithm_projections()
+
+[[maybe_unused]] void algorithm_projections()
 {
   auto names = std::vector<std::string>{"Ralph", "Lisa", "Homer", "Maggie", "Apu", "Bart"};
   std::ranges::sort(names, std::less<>{}, &std::string::size);
-  // names is now "Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"
-  // Find names with length 3
-  auto iterator = std::ranges::find(names, 3, &std::string::size);
+  std::cout << "Input data: ";
+  print_ranges_for_each(names);
+  // The names are now: "Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"
+  // Find names with length 3.
+  const auto iterator = std::ranges::find(names, 3, &std::string::size);
   std::cout << "Find first name with length 3: " << *iterator << std::endl;
 }
 
-[[maybe_unused]] static void algorithm_lambda_projections()
+
+[[maybe_unused]] void algorithm_lambda_projections()
 {
   struct Player {
     std::string name{};
     int level{};
-    float health{1.0f};
+    float health{};
   };
   auto players = std::vector<Player>{
     {"Aki", 1, 9.f},
@@ -448,12 +483,13 @@ static auto some_func() { return 200; }
   const auto level_and_health = [](const Player& p) {
     return std::tie(p.level, p.health);
   };
-  // Order players by level, then health
+  std::cout << "Order players by level, then by health" << std::endl;
   std::ranges::sort(players, std::less<>{}, level_and_health);
   std::ranges::for_each(players, [](auto&& player) {
     std::cout << player.name << " " << player.level << " " << player.health << std::endl;
   });
 }
+
 
 template <typename Iterator>
 auto contains_duplicates_n2(Iterator begin, Iterator end) {
@@ -463,19 +499,23 @@ auto contains_duplicates_n2(Iterator begin, Iterator end) {
   return false;
 }
 
+
 template <typename Iterator>
 auto contains_duplicates_allocating(Iterator first, Iterator last) {
   // As (*begin) returns a reference, we have to get the base type using std::decay_t
   using ValueType = std::decay_t<decltype(*first)>;
   auto copy = std::vector<ValueType>(first, last);
   std::sort(copy.begin(), copy.end());
+  // The std::adjacent_find searches the range for two consecutive equal elements.
   return std::adjacent_find(copy.begin(), copy.end()) != copy.end();
 }
 
 
-[[maybe_unused]] static void algorithm_contains_duplicates()
+[[maybe_unused]] void algorithm_contains_duplicates()
 {
   auto vals = std::vector{1,4,2,5,3,6,4,7,5,8,6,9,0};
+  std::cout << "Input values: ";
+  print_ranges_for_each(vals);
   {
     scoped_timer ("a");
     auto a = contains_duplicates_n2(vals.begin(), vals.end());
@@ -488,64 +528,6 @@ auto contains_duplicates_allocating(Iterator first, Iterator last) {
   }
 }
 
-struct Grid {
-  Grid(int w, int h)
-  : m_width{w}, m_height{h}
-  {
-    m_data.resize(static_cast<size_t>(w * h));
-  }
-  auto get_row_v1(int y); // Returns iterator pairs
-  auto get_row_v2(int y); // Returns range using subrange
-  auto get_row_v3(int y); // Returns range using counted
-  std::vector<int> m_data{};
-  int m_width{};
-  int m_height{};
-};
-
-auto Grid::get_row_v1(int y) {
-  auto left = m_data.begin() + m_width * y;
-  auto right = left + m_width;
-  return std::make_pair(left, right);
-}
-
-auto Grid::get_row_v2(int y) {
-  auto first = m_data.begin() + m_width * y;
-  auto sentinel = first + m_width;
-  return std::ranges::subrange{first, sentinel};
-}
-
-auto Grid::get_row_v3(int y) {
-  auto first = m_data.begin() + m_width * y;
-  return std::views::counted(first, m_width);
-}
-
-[[maybe_unused]] static void algorithm_grid()
-{
-  {
-    auto grid = Grid{10, 10};
-    auto y = 3;
-    auto row = grid.get_row_v1(y);
-    std::generate(row.first, row.second, [](){return 5;});
-    auto num_fives = std::count(row.first, row.second, 5);
-    std::cout << "number of fives: " << num_fives << std::endl;
-  }
-  {
-    auto grid = Grid{10, 10};
-    auto y = 3;
-    auto row = grid.get_row_v2(y);
-    std::ranges::generate(row, std::rand);
-    auto num_fives = std::ranges::count(row, 5);
-    std::cout << "number of fives: " << num_fives << std::endl;
-  }
-  {
-    auto grid = Grid{10, 10};
-    auto y = 3;
-    auto row = grid.get_row_v3(y);
-    std::ranges::generate(row, std::rand);
-    auto num_fives = std::ranges::count(row, 5);
-    std::cout << "number of fives: " << num_fives << std::endl;
-  }
-}
 
 struct student {
   int year{};
@@ -553,9 +535,9 @@ struct student {
   std::string name{};
 };
 
-[[maybe_unused]] static auto get_max_score_copy(const std::vector<student>& students, int year)
+[[maybe_unused]] auto get_max_score_copy(const std::vector<student>& students, int year)
 {
-  auto by_year = [=](const auto& s) { return s.year == year; };
+  const auto by_year = [year](const auto& s) { return s.year == year; };
   // The student list needs to be copied in order to filter on the year.
   auto v = std::vector<student>{};
   std::ranges::copy_if(students, std::back_inserter(v), by_year);
@@ -563,39 +545,37 @@ struct student {
   return it != v.end() ? it->score : 0;
 }
 
-[[maybe_unused]] static auto get_max_score_for_loop(const std::vector<student>& students, int year) {
-  auto max_score = 0;
-  for (const auto& student : students) {
-    if (student.year == year) {
+[[maybe_unused]] auto get_max_score_for_loop(const std::vector<student>& students, int year) {
+  auto max_score {0};
+  for (const auto& student : students)
+    if (student.year == year)
       max_score = std::max(max_score, student.score);
-    }
-  }
   return max_score;
 }
 
-[[maybe_unused]] static auto max_value(auto&& range) {
+[[maybe_unused]] auto max_value(auto&& range) {
   const auto it = std::ranges::max_element(range);
   return it != range.end() ? *it : 0;
 }
 
-[[maybe_unused]] static auto get_max_score(const std::vector<student>& students, int year)
+[[maybe_unused]] auto get_max_score(const std::vector<student>& students, int year)
 {
-  const auto by_year = [=](auto&& s) { return s.year == year; };
+  const auto by_year = [year](auto&& s) { return s.year == year; };
   return max_value(students | std::views::filter(by_year) | std::views::transform(&student::score));
 }
 
-[[maybe_unused]] static auto get_max_score_explicit_views(const std::vector<student>& s, int year) {
-  auto by_year = [=](const auto& s) { return s.year == year; };
-  auto v1 = std::ranges::ref_view{s}; // Wrap container in a view.
-  auto v2 = std::ranges::filter_view{v1, by_year};
+[[maybe_unused]] auto get_max_score_explicit_views(const std::vector<student>& s, int year) {
+  auto by_year = [year](const auto& s) { return s.year == year; };
+  const auto v1 = std::ranges::ref_view{s}; // Wrap container in a view.
+  const auto v2 = std::ranges::filter_view{v1, by_year};
   auto v3 = std::ranges::transform_view{v2, &student::score};
   auto it = std::ranges::max_element(v3);
   return it != v3.end() ? *it : 0;
 }
 
-[[maybe_unused]] static void algorithm_composability()
+[[maybe_unused]] void algorithm_composability()
 {
-  auto students = std::vector<student>{
+  const auto students = std::vector<student>{
     {3, 120, "A"},
     {2, 140, "B"},
     {3, 190, "C"},
@@ -625,43 +605,54 @@ struct student {
   }
 }
 
-[[maybe_unused]] static void algorithm_views_transform()
+
+[[maybe_unused]] void algorithm_views_transform()
 {
-  auto numbers = std::vector {1, 2, 3, 4, 5, 6, 7, 8};
-  auto square = [](auto v) { return v * v; };
+  const auto numbers = std::vector {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  std::cout << "Input numbers: ";
+  print_ranges_for_each(numbers);
+  const auto square = [](auto v) { return v * v; };
   // Create a view, but do not yet evaluate this view.
   auto squared_view = std::views::transform(numbers, square);
   // Iterate over the squared view, which invokes evaluation and so invokes the lambda.
+  std::cout << "Square: ";
   for (auto s : squared_view) std::cout << s << " ";
   std::cout << std::endl;
 }
 
-[[maybe_unused]] static void algorithm_views_filter()
+
+[[maybe_unused]] void algorithm_views_filter()
 {
-  auto v = std::vector{4, 5, 6, 7, 6, 5, 4};
+  const auto v = std::vector{4, 5, 6, 7, 6, 5, 4};
+  std::cout << "Input numbers: ";
+  print_ranges_for_each(v);
   auto odd_view = std::views::filter(v, [](auto i) { return (i % 2) == 1; });
-  for (auto odd_number : odd_view) std::cout << odd_number << " ";
+  std::cout << "Odd numbers: ";
+  for (const auto odd_number : odd_view) std::cout << odd_number << " ";
   // Output: 5 7 5
   std::cout << std::endl;
 }
 
-[[maybe_unused]] static void algorithm_views_join()
+
+[[maybe_unused]] void algorithm_views_join()
 {
-  auto list_of_lists =
-  std::vector<std::vector<int>>{{1, 2}, {3, 4, 5}, {5}, {4, 3, 2, 1}};
-//  auto flattened_view = std::views::join(list_of_lists);
-//  for (auto v : flattened_view) std::cout << v << " ";
+  const auto list_of_lists = std::vector<std::vector<int>>{{1, 2}, {3, 4, 5}, {5}, {4, 3, 2, 1}};
+  const auto flattened_view = std::views::join(list_of_lists);
+  std::cout << "Flattened view: ";
+  for (auto v : flattened_view) std::cout << v << " ";
   // Output: 1 2 3 4 5 5 4 3 2 1
-//  std::cout << std::endl;
+  std::cout << std::endl;
   
-//  auto max_value = *std::ranges::max_element(flattened_view);
+  std::cout << "Max value: ";
+  const auto max_value = *std::ranges::max_element(flattened_view);
   // max_value is 5
-//  std::cout << max_value << std::endl;
+  std::cout << max_value << std::endl;
 }
 
-// Materialize the range r into a std::vector
+
+// Materialize the range r into a std::vector.
 // See also https://timur.audio/how-to-make-a-container-from-a-c20-range
-[[maybe_unused]] static auto to_vector(auto&& r) {
+[[maybe_unused]] auto to_vector(auto&& r) {
   std::vector<std::ranges::range_value_t<decltype(r)>> v;
   if constexpr (std::ranges::sized_range<decltype(r)>) {
     v.reserve(std::ranges::size(r));
@@ -670,94 +661,108 @@ struct student {
   return v;
 }
 
-[[maybe_unused]] static void algorithm_views_materialize()
+
+[[maybe_unused]] void algorithm_views_materialize()
 {
   auto ints = std::list{2, 3, 4, 2, 1};
-  auto r = ints | std::views::transform([](auto i) { return std::to_string(i); });
+  std::cout << "Input numbers: ";
+  print_ranges_for_each (ints);
+  const auto r = ints | std::views::transform([](const auto i) { return std::to_string(i); });
   auto strings = to_vector(r);
+  std::cout << "Output strings: ";
   print_ranges_for_each (strings);
 }
 
-template<typename T>
-class type_deduction;
 
-[[maybe_unused]] static void algorithm_views_take()
+[[maybe_unused]] void algorithm_views_take()
 {
-  auto vec = std::vector<int>{4, 2, 7, 1, 2, 6, 1, 5};
-  auto first_half = vec | std::views::take(vec.size());
+  auto vec = std::vector{4, 2, 7, 1, 2, 6, 1, 5};
+  std::cout << "Input numbers: ";
+  print_ranges_for_each (vec);
+  const auto first_half = vec | std::views::take(vec.size() / 2);
+  // This sorts the first half of the original vector via the view.
   std::ranges::sort(first_half);
-  // vec is now 1, 2, 4, 7, 2, 6, 1, 5
-  print_ranges_for_each (first_half);
-  //type_deduction<decltype(first_half)> compiler_error;
+  std::cout << "First half sorted numbers: ";
+  print_ranges_for_each (vec);
 }
 
-[[maybe_unused]] static void algorithm_views_split_join()
+
+[[maybe_unused]] void algorithm_views_split_join()
 {
   auto csv = std::string{"10,11,12"};
-//  auto digits = csv | std::ranges::views::split(',') // [ [1, 0], [1, 1], [1, 2] ]
-//  | std::views::join;          // [ 1, 0, 1, 1, 1, 2 ]
-  
-//  for (auto i : digits) {
-//    std::cout << i;
-//  }
-  // Prints 101112
+  std::cout << "CSV: " << csv << std::endl;
+  auto digits = csv | std::ranges::views::split(',');
+  // [ [1, 0], [1, 1], [1, 2] ]
+  std::cout << "Split: ";
+  for (const auto digit : digits) {
+    std::cout << " [ ";
+    for (const auto element : digit)
+      std::cout << element;
+    std::cout << " ] ";
+  }
+  std::cout << std::endl;
+  auto joined = digits | std::views::join;
+  // [ 1, 0, 1, 1, 1, 2 ]
+  std::cout << "Joined: ";
+  print_ranges_for_each (joined);
 }
 
-[[maybe_unused]] static void algorithm_views_sampling()
+
+[[maybe_unused]] void algorithm_views_sampling()
 {
   auto vec = std::vector{1, 2, 3, 4, 5, 4, 3, 2, 1};
-//  auto v = vec | std::views::drop_while([](auto i) { return i < 5; }) |
-//  std::views::take(3);
-//  // Prints 5 4 3
-//  for (const auto& i : v) {
-//    std::cout << i << " ";
-//  }
-  std::cout << std::endl;
+  std::cout << "Input numbers: ";
+  print_ranges_for_each (vec);
+  // Apply the range adaptor that represents view of elements from an underlying sequence,
+  // beginning at the first element for which the predicate returns false.
+  auto v = vec | std::views::drop_while([](auto i) { return i < 5; });
+  std::cout << "After drop while: ";
+  print_ranges_for_each (v);
+  // Prints 5 4 3 2 1
 }
 
-[[maybe_unused]] static void algorithm_views_stream()
-{
-  // auto ifs = std::ifstream("numbers.txt");
-  // Using an istringstream instead of ifstream here
-//  auto ifs = std::istringstream{"1.4142 1.618 2.71828 3.14159 6.283"};
-//  for (auto f : std::ranges::istream_view<float>(ifs)) {
-//    std::cout << f << '\n';
-//  }
-  // ifs.close();
-}
 
-struct User {
-  User(const std::string& name) : name_(name) { }
-  std::string name_;
-};
-
-[[maybe_unused]] static void memory_placement_new()
+[[maybe_unused]] void algorithm_views_stream()
 {
-  {
-    auto* user = new User {"John"};
-    delete user;
+  const auto s{"1.4142 1.618 2.71828 3.14159 6.283"};
+  std::cout << "Input: " << s << std::endl;
+  auto iss = std::istringstream{s};
+  for (auto f : std::ranges::istream_view<float>(iss)) {
+    std::cout << f << std::endl;
   }
+}
+
+
+[[maybe_unused]] void memory_placement_new()
+{
+  struct User {
+    User(const std::string& name) : m_name(name) { }
+    std::string m_name;
+  };
+  // Established way.
   {
-    // Allocate memory.
+    // Allocate sufficient memory for the User object.
     auto* memory = std::malloc(sizeof(User));
     // Construct new object in existing memory.
-    auto* user = ::new (memory) User("john");
-    std::cout << user->name_ << std::endl;
-    // Call destructor.
+    auto* user = new (memory) User("John");
+    std::cout << "Pre-allocated " << user->m_name << std::endl;
+    // Call destructor: This does not yet free the memory.
     user->~User();
     // Free memory on heap.
     std::free(memory);
   }
+  // Modern way in C++20.
   {
     auto* memory = std::malloc(sizeof(User));
     auto* user_ptr = reinterpret_cast<User*>(memory);
-    std::uninitialized_fill_n(user_ptr, 1, User{"john"});
-    std::construct_at (user_ptr, User{"john"}); // C++20.
-    std::cout << user_ptr->name_ << std::endl;
+    std::uninitialized_fill_n(user_ptr, 1, User{"John"});
+    std::construct_at (user_ptr, User{"John"});
+    std::cout << "Constructed at " << user_ptr->m_name << std::endl;
     std::destroy_at(user_ptr);
     std::free(memory);
   }
 }
+
 
 template <typename T>
 auto pow_n_traditional(const T& v, int n) {
@@ -784,13 +789,16 @@ auto pow_n_remove_cfref (const auto&v, int n) {
   return product;
 }
 
-[[maybe_unused]] static void template_pow()
+[[maybe_unused]] void template_or_auto_or_remove_cvref_methods()
 {
-  auto x = pow_n_traditional<float>(2.0f, 3); // x is a float
-  std::cout << x << std::endl;
-  //type_deduction<decltype(x)> compiler_error;
-  auto y = pow_n_traditional<int>(3, 3); // y is an int
-  std::cout << y << std::endl;
+  {
+    auto result = pow_n_traditional<float>(2.0f, 3);
+    std::cout << "Traditional float: " << result << std::endl;
+  }
+  {
+    auto result = pow_n_traditional<int>(3, 3);
+    std::cout << "Traditional int: " << result << std::endl;
+  }
   auto z = pow_n_abbreviated(3.0, 3);
   std::cout << z << std::endl;
   {
@@ -803,7 +811,6 @@ auto pow_n_remove_cfref (const auto&v, int n) {
     };
     auto a = pow_n_func(3, 3); // x is an int
     std::cout << a << std::endl;
-
   }
 }
 
@@ -2223,5 +2230,31 @@ int main()
   lambda_auto_typename();
   test_contains();
   sum_scores_compare_processing_time();
+  sorting();
+  algorithm_transform();
+  algorithm_fill();
+  algorithm_generate();
+  algorithm_iota();
+  algorithm_find();
+  algorithm_binary_search();
+  algorithm_lower_upper_bound();
+  algorithm_all_any_none_of();
+  algorithm_count();
+  algorithm_min_max_clamp();
+  algorithm_minmax();
+  algorithm_projections();
+  algorithm_lambda_projections();
+  algorithm_contains_duplicates();
+  algorithm_composability();
+  algorithm_views_transform();
+  algorithm_views_filter();
+  algorithm_views_join();
+  algorithm_views_materialize();
+  algorithm_views_take();
+  algorithm_views_split_join();
+  algorithm_views_sampling();
+  algorithm_views_stream();
+  memory_placement_new();
+  template_or_auto_or_remove_cvref_methods();
   return EXIT_SUCCESS;
 }
