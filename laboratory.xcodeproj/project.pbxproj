@@ -52,7 +52,6 @@
 		CA6C24E62595E36D00505E9A /* macos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = macos; sourceTree = "<group>"; };
 		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
 		CA6E11BF266D3B8200C5CBBB /* haak-bible */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "haak-bible"; sourceTree = "<group>"; };
-		CA6F20512621C4F5003A1F6D /* flask */ = {isa = PBXFileReference; lastKnownFileType = folder; path = flask; sourceTree = "<group>"; };
 		CA741F7E1E01717B004EA723 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA74AB20282041380051E815 /* cpp-core-guidelines */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "cpp-core-guidelines"; sourceTree = "<group>"; };
@@ -120,7 +119,6 @@
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 		CAEF740722945DB900F16631 /* lambdas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lambdas; sourceTree = "<group>"; };
-		CAF2844122676BD50052535E /* django */ = {isa = PBXFileReference; lastKnownFileType = folder; path = django; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -376,10 +374,8 @@
 				CAE7A88629633DEC00366467 /* concurrency */,
 				CA74AB20282041380051E815 /* cpp-core-guidelines */,
 				CA23F7C51F9CC1770030A2AE /* curl-websocket */,
-				CAF2844122676BD50052535E /* django */,
 				CA7F7CCD2AB729EC00FA3EBA /* dot.NET */,
 				CA0F615022342BA500BE6EEF /* fill-image */,
-				CA6F20512621C4F5003A1F6D /* flask */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA23C8EF2A518F9300086F1E /* Frameworks */,
 				CA57C716297543F900D86BE7 /* freetype */,
