@@ -47,7 +47,7 @@
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		CA6744572A5DAC17006769F9 /* run */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = run; sourceTree = "<group>"; };
+		CA60B6D82F066CF400CD9D7E /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		CA6744582A5DAC18006769F9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA6C24E62595E36D00505E9A /* macos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = macos; sourceTree = "<group>"; };
 		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
@@ -233,7 +233,7 @@
 			isa = PBXGroup;
 			children = (
 				CA6744582A5DAC18006769F9 /* main.cpp */,
-				CA6744572A5DAC17006769F9 /* run */,
+				CA60B6D82F066CF400CD9D7E /* Makefile */,
 			);
 			path = high_performance;
 			sourceTree = "<group>";
@@ -469,7 +469,7 @@
 			buildPhases = (
 			);
 			buildToolPath = make;
-			buildWorkingDirectory = /Users/teus/dev/laboratory/ldap;
+			buildWorkingDirectory = /Users/teus/dev/laboratory/high_performance;
 			dependencies = (
 			);
 			name = bibledit;
@@ -483,7 +483,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 2620;
 				ORGANIZATIONNAME = "Teus Benschop";
 				TargetAttributes = {
 					CAB29AC51A4480CC00139BD7 = {
@@ -564,6 +564,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Debug;
 		};
@@ -614,6 +615,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Release;
 		};

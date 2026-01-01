@@ -28,8 +28,9 @@
 #include <coroutine>
 #include <limits>
 #include <cassert>
+#include <iomanip>
 
-[[maybe_unused]] static void test_lambda_capture ()
+[[maybe_unused]] void test_lambda_capture ()
 {
   // Capture by value.
   {
@@ -37,46 +38,52 @@
     // Note that the following lambda, via the capture, copies the current v = 7 into the lambda.
     // Mark it mutable because it mutates the captured v.
     auto lambda = [v]() mutable {
-      std::cout << v << std::endl;
+      std::cout << "Captured v = " << v << std::endl;
       ++v;
     };
     lambda();
     lambda();
-    std::cout << v << std::endl;
+    std::cout << "Original v = " << v << std::endl;
   }
   
   // Capture by reference.
   {
     auto v = 7;
     auto lambda = [&v]() {
-      std::cout << v << std::endl;
+      std::cout << "Captured v by reference = " << v << std::endl;
       ++v;
     };
     lambda();
     lambda();
-    std::cout << v << std::endl;
+    std::cout << "Original v = " << v << std::endl;
   }
 }
 
-[[maybe_unused]] static void assign_two_lambdas_to_same_function_object ()
+
+[[maybe_unused]] void assign_two_lambdas_to_same_function_object ()
 {
   // Create an unassigned std::function object.
   auto func = std::function<void(int)>{};
   
-  // Assign a lambda without capture to the std::function object
-  func = [](int v) { std::cout << v << std::endl; };
+  // Assign a lambda without capture to the std::function object.
+  func = [](int v) {
+    std::cout << "Assigned lambda without capture: " << v << std::endl;
+  };
   func(12); // Prints 12.
   
   // Assign a lambda with capture to the same std::function object.
-  auto forty_two = 42;
-  func = [forty_two](int v) { std::cout << (v + forty_two) << std::endl; };
+  auto v42 = 42;
+  func = [v42](int v) {
+    std::cout << "Assigned lambda with capture: " << (v + v42) << std::endl;
+  };
   func(12); // Prints 54.
 }
 
 // Implementing a button class with std::function.
 class button1 {
 public:
-  button1(std::function<void(void)> click) : m_handler{click} {}
+  button1(std::function<void(void)> click) : m_handler{click} {std::cout << "create object button1" << std::endl;}
+  ~button1(){std::cout << "destroy object button1" << std::endl;}
   auto on_click() const { m_handler(); }
 private:
   std::function<void(void)> m_handler{};
@@ -96,52 +103,66 @@ static auto create_buttons() {
   return std::vector<button1>{beep, bop, silent};
 }
 
-[[maybe_unused]] static void std_function_with_button_class ()
+
+[[maybe_unused]] void std_function_with_button_class()
 {
-  const auto& buttons = create_buttons();
+  const auto buttons = create_buttons();
   for (const auto& b : buttons) {
     b.on_click();
   }
   buttons.front().on_click(); // counter has been incremented
-  // Output "Beep: 0! Bop. Beep: 1!"
+  /* Output
+   create object button1
+   create object button1
+   create object button1
+   destroy object button1
+   destroy object button1
+   destroy object button1
+   destroy object button1
+   destroy object button1
+   destroy object button1
+   Beep:0
+   Bop:
+   Beep:1
+   destroy object button1
+   destroy object button1
+   destroy object button1
+   */
 }
 
 
-// Requires C++20
-[[maybe_unused]] static void stateless_lambdas() {
-  auto x = [] {}; // A lambda without captures
-  auto y = x;     // Assignable
-  decltype(y) z;  // Default-constructible
+[[maybe_unused]] void stateless_lambdas() {
+  // A stateless lambda (function) does not retain any data or memory
+  // from one execution to the next.
+  const auto x = [] {};
+  // Assignable.
+  const auto y = x;
+  // Default-constructible (i.e. constructor without parameters, or with default parameters.
+  const decltype(y) z;
   static_assert(std::is_same_v<decltype(x), decltype(y)>); // passes
   static_assert(std::is_same_v<decltype(x), decltype(z)>); // passes
+  static_assert(std::is_same_v<decltype(y), decltype(z)>); // passes
 }
 
-[[maybe_unused]] static void lambda_auto_typename() {
-  // Using auto
+
+[[maybe_unused]] void lambda_auto_typename()
+{
+  // Using auto.
   auto x = [](auto v) { return v + 1; };
   
-  // Using typename
+  // Using typename.
   auto y = []<typename T>(T v) { return v + 1; };
   
-  {
-    // Using char.
-    auto v = 'a';
-    std::cout << v + 1 << " " << x(v) << std::endl;
-    std::cout << v + 1 << " " << y(v) << std::endl;
-  }
+  // Using char.
+  std::cout << std::setw(13) << "type char " << x('a') << " " << y('a') << std::endl;
   
-  {
-    // Using int.
-    std::cout << x(41) << std::endl;
-    std::cout << y(41) << std::endl;
-  }
-  {
-    // Using unsigned int 64.
-    auto v = std::uint64_t{41};
-    std::cout << v + 1 << " " << x(v) << std::endl;
-    std::cout << v + 1 << " " << y(v) << std::endl;
-  }
+  // Using int.
+  std::cout << std::setw(13) << "type int " << x(41) << " " << y(41) << std::endl;
+
+  // Using unsigned int 64.
+  std::cout << std::setw(13) << "type uint 64 " << x(static_cast<std::uint64_t>(41)) << " " << y(static_cast<std::uint64_t>(41)) << std::endl;
 }
+
 
 class scoped_timer {
   
@@ -164,7 +185,8 @@ private:
   const clock_type::time_point m_start = {};
 };
 
-[[maybe_unused]] static void benchmarking_function()
+
+[[maybe_unused]] void benchmarking_function()
 {
   {
     [[maybe_unused]] auto scoped_timer ("test");
@@ -208,13 +230,15 @@ using matrix_type = std::array<std::array<int, k_size>, k_size>;
 // might not fit on the stack.
 matrix_type m;
 
-[[maybe_unused]] static void test_contains()
+
+[[maybe_unused]] void test_contains()
 {
   auto bag = std::multiset<std::string>{};
   std::string word {"word"};
   bag.insert(word);
-  std::cout << bag.contains(word) << std::endl;
+  std::cout << "Multiset bag contains word: " << std::boolalpha << bag.contains(word) << std::endl;
 }
+
 
 //
 // This example demonstrates that traversing a contiguous array
@@ -856,22 +880,13 @@ void constexpr_if_speak(const Animal& a) {
 }
 
 template <typename T>
-auto generic_mod(const T& v, const T& n) -> T {
-  assert(n != 0);
-  if (std::is_floating_point_v<T>) {
-    return std::fmod(v, n);
-  } else {
-    return v % n; // if T is a floating point, this line wont compile
-  }
-}
-
-template <typename T>
-auto constexpr_if_generic_mod(const T& v, const T& n) -> T {
+auto generic_modulus_combined(const T v, const T n) -> T {
   assert(n != 0);
   if constexpr (std::is_floating_point_v<T>) {
     return std::fmod(v, n);
-  } else {        // If T is a floating point,
-    return v % n; // this code is eradicated
+  } else {
+    // If T is a floating point this code is skipped, it won't be compiled, so no compile errors.
+    return v % n;
   }
 }
 
@@ -889,17 +904,14 @@ auto constexpr_if_generic_mod(const T& v, const T& n) -> T {
   {
     auto const value = 7;
     auto const modulus = 5;
-    auto const result = generic_mod(value, modulus);
-    auto const constexpr_if_result = constexpr_if_generic_mod(value, modulus);
-    std::cout << result << " " << constexpr_if_result << std::endl;
+    auto const result = generic_modulus_combined(value, modulus);
+    std::cout << result << std::endl;
   }
   {
     auto const value = 1.5f;
     auto const modulus = 1.0f;
-    // Compilation error % operation for float value
-    // auto const result = generic_mod(value, modulus);
-    auto const constexpr_if_result = constexpr_if_generic_mod(value, modulus);
-    std::cout << constexpr_if_result << std::endl;
+    auto const result = generic_modulus_combined(value, modulus);
+    std::cout << result << std::endl;
   }
 }
 
@@ -975,12 +987,12 @@ requires std::integral<T> struct struct_foo {
 // Use function overloading.
 
 template <std::integral T>
-T generic_mod(T v, T n) { // Integral version.
+T generic_mod_overload(T v, T n) { // Integral version.
   return v % n;
 }
 
 template <std::floating_point T>
-T generic_mod(T v, T n) { // Floating point version.
+T generic_mod_overload(T v, T n) { // Floating point version.
   return std::fmod(v, n);
 }
 
@@ -1008,14 +1020,14 @@ T generic_mod(T v, T n) { // Floating point version.
   {
     auto const value = 7;
     auto const modulus = 5;
-    auto const x = generic_mod(value, modulus);
+    auto const x = generic_mod_overload(value, modulus);
     std::cout << "should be 2: " << x << std::endl;
   }
   // Using a floating point type.
   {
     auto const value = 1.5f;
     auto const modulus = 1.0f;
-    auto const x = generic_mod(value, modulus);
+    auto const x = generic_mod_overload(value, modulus);
     std::cout << "should be 0.5: " << x << std::endl;
   }
 }
@@ -1950,15 +1962,13 @@ static int task_divide(int a, int b) {
 
 [[maybe_unused]] static void stop_token()
 {
-#ifdef __cpp_lib_jthread
-  
   const auto print = [] (std::stop_token stoken) -> void {
     while (!stoken.stop_requested()) {
       std::cout << std::this_thread::get_id() << '\n';
       std::this_thread::sleep_for(std::chrono::seconds{1});
     }
     std::cout << "Stop requested" << std::endl;
-  }
+  };
 
   auto joinable_thread = std::jthread(print);
   std::cout << "Main: goes to sleep" << std::endl;
@@ -1966,7 +1976,6 @@ static int task_divide(int a, int b) {
   std::cout << "Main: request jthread to stop" << std::endl;
   joinable_thread.request_stop();
   
-#endif
 }
 
 // The resumable return object.
@@ -2192,7 +2201,7 @@ struct ScopedNanoResults
   }
 };
 
-static void scoped_nano_timer ()
+[[maybe_unused]] void scoped_nano_timer ()
 {
   ScopedNanoResults scoped_nano_results;
   ScopedNanoTimer scoped_nano_timer(scoped_nano_results);
@@ -2207,6 +2216,12 @@ static void scoped_nano_timer ()
 
 int main()
 {
-  scoped_nano_timer();
+  test_lambda_capture();
+  assign_two_lambdas_to_same_function_object();
+  std_function_with_button_class();
+  stateless_lambdas();
+  lambda_auto_typename();
+  test_contains();
+  sum_scores_compare_processing_time();
   return EXIT_SUCCESS;
 }
