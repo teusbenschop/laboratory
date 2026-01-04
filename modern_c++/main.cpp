@@ -1,34 +1,33 @@
-#include <version>
-#include <iostream>
-#include <functional>
-#include <chrono>
-#include <array>
-#include <set>
 #include <algorithm>
-#include <ranges>
-#include <list>
-#include <numeric>
-#include <sstream>
-#include <memory>
-#include <cstdint>
-#include <type_traits>
-#include <cmath>
-#include <concepts>
-#include <unordered_map>
-#include <optional>
-#include <tuple>
-#include <future>
-#include <random>
+#include <array>
 #include <atomic>
 #include <barrier>
-#include <condition_variable>
-#include <queue>
-#include <latch>
-#include <semaphore>
-#include <coroutine>
-#include <limits>
 #include <cassert>
+#include <chrono>
+#include <cmath>
+#include <concepts>
+#include <condition_variable>
+#include <coroutine>
+#include <cstdint>
+#include <functional>
+#include <future>
 #include <iomanip>
+#include <iostream>
+#include <latch>
+#include <limits>
+#include <list>
+#include <memory>
+#include <numeric>
+#include <optional>
+#include <queue>
+#include <random>
+#include <ranges>
+#include <semaphore>
+#include <set>
+#include <sstream>
+#include <tuple>
+#include <type_traits>
+#include <version>
 
 [[maybe_unused]] void test_lambda_capture ()
 {
@@ -45,7 +44,7 @@
     lambda();
     std::cout << "Original v = " << v << std::endl;
   }
-  
+
   // Capture by reference.
   {
     auto v = 7;
@@ -459,7 +458,7 @@ auto sum_scores(const std::vector<T>& objects) {
 [[maybe_unused]] void algorithm_projections()
 {
   auto names = std::vector<std::string>{"Ralph", "Lisa", "Homer", "Maggie", "Apu", "Bart"};
-  std::ranges::sort(names, std::less<>{}, &std::string::size);
+  std::ranges::sort(names, std::less{}, &std::string::size);
   std::cout << "Input data: ";
   print_ranges_for_each(names);
   // The names are now: "Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"
@@ -781,7 +780,8 @@ auto pow_n_abbreviated (const auto&v, int n) {
   return product;
 }
 
-auto pow_n_remove_cfref (const auto&v, int n) {
+
+auto pow_n_remove_const_volatile_reference (const auto&v, int n) {
   typename std::remove_cvref<decltype(v)>::type product {1};
   for (int i = 0; i < n; i++) {
     product *= v;
@@ -792,87 +792,92 @@ auto pow_n_remove_cfref (const auto&v, int n) {
 [[maybe_unused]] void template_or_auto_or_remove_cvref_methods()
 {
   {
-    auto result = pow_n_traditional<float>(2.0f, 3);
+    const auto result = pow_n_traditional<float>(3.0f, 3);
     std::cout << "Traditional float: " << result << std::endl;
   }
   {
-    auto result = pow_n_traditional<int>(3, 3);
+    const auto result = pow_n_traditional<int>(3, 3);
     std::cout << "Traditional int: " << result << std::endl;
   }
-  auto z = pow_n_abbreviated(3.0, 3);
-  std::cout << z << std::endl;
   {
-    auto pow_n_func = []<class T>(const T& v, int n) {
+    const auto result = pow_n_abbreviated(3.0f, 3);
+    std::cout << "Abbreviated float: " << result << std::endl;
+  }
+  {
+    const auto input {3.0f};
+    const auto result = pow_n_remove_const_volatile_reference(input, 3);
+    std::cout << "Remove const/volatile/reference float: " << result << std::endl;
+  }
+  {
+    auto pow_n_function = []<class T>(const T& v, int n) {
       auto product = T{1};
       for (int i = 0; i < n; ++i) {
         product *= v;
       }
       return product;
     };
-    auto a = pow_n_func(3, 3); // x is an int
-    std::cout << a << std::endl;
+    auto result = pow_n_function(3, 3); // x is an int
+    std::cout << "Lambda function with T& int: " << result << std::endl;
   }
 }
 
-template <typename T>
-auto sign_func(const T& v) -> int {
-  if (std::is_unsigned_v<T>) {
-    return 1;
-  }
-  return v < 0 ? -1 : 1;
-}
 
-[[maybe_unused]] static void demo_type_traits()
+[[maybe_unused]] void demo_type_traits()
 {
-  const auto same_type = std::is_same_v<uint8_t, unsigned char>;
-  static_assert(same_type);
-
-  const auto is_float_or_double = std::is_floating_point_v<decltype(3.f)>;
-  static_assert(is_float_or_double);
-
-  class Planet {};
-  class Mars : public Planet {};
-  class Sun {};
-  static_assert(std::is_base_of_v<Planet, Mars>);
-  static_assert(!std::is_base_of_v<Planet, Sun>);
+  {
+    const auto uint8t_type_equals_unsigned_char_type = std::is_same_v<uint8_t, unsigned char>;
+    static_assert(uint8t_type_equals_unsigned_char_type);
+  }
 
   {
-    auto unsigned_value = uint32_t{42};
-    auto sign = sign_func(unsigned_value);
-    std::cout << sign << std::endl; // 1
+    const auto is_float_or_double = std::is_floating_point_v<decltype(3.f)>;
+    static_assert(is_float_or_double);
   }
+
   {
-    auto signed_value = int32_t{-42};
-    auto sign = sign_func(signed_value);
-    std::cout << sign << std::endl; // -1
+    class Planet {};
+    class Mars : public Planet {};
+    class Sun {};
+    static_assert(std::is_base_of_v<Planet, Mars>);
+    static_assert(std::derived_from<Mars, Planet>);
+    static_assert(std::is_convertible_v<Mars, Planet>);
+    static_assert(not std::is_base_of_v<Planet, Sun>);
+    static_assert(not std::is_base_of_v<Mars, Planet>);
+  }
+
+  {
+    static_assert(std::is_unsigned_v<unsigned int>);
+    static_assert(not std::is_unsigned_v<int>);
   }
 }
 
-[[maybe_unused]] static consteval auto consteval_sum (int x, int y)
-{
-  return x + y;
-}
 
-[[maybe_unused]] static void demo_consteval()
+[[maybe_unused]] void demo_consteval()
 {
-  [[maybe_unused]] constexpr auto sum = consteval_sum(1, 2);
-  [[maybe_unused]] auto x = 1;
+  const auto consteval_sum = [](int x, int y) {
+    return x + y;
+  };
+  constexpr const auto sum = consteval_sum(1, 2);
+  static_assert(sum == 3);
+  [[maybe_unused]] auto x {1};
   // auto sum2 = consteval_sum(x, 2); // Fails to compile.
 }
 
+
 struct Bear {
-  auto roar() const { std::cout << "roar\n"; }
+  auto roar() const { std::cout << "roar" << std::endl; }
 };
 struct Duck {
-  auto quack() const { std::cout << "quack\n"; }
+  auto quack() const { std::cout << "quack" << std::endl; }
 };
 
-// The function speak can't be used with Bear and Duck class
+// The function speak can't be used with both Bear and Duck classes.
 template <typename Animal>
 auto speak(const Animal& a) {
   if (std::is_same_v<Animal, Bear>) {
     a.roar();
-  } else if (std::is_same_v<Animal, Duck>) {
+  }
+  if (std::is_same_v<Animal, Duck>) {
     a.quack();
   }
 }
@@ -881,7 +886,8 @@ template <typename Animal>
 void constexpr_if_speak(const Animal& a) {
   if constexpr (std::is_same_v<Animal, Bear>) {
     a.roar();
-  } else if constexpr (std::is_same_v<Animal, Duck>) {
+  }
+  if constexpr (std::is_same_v<Animal, Duck>) {
     a.quack();
   }
 }
@@ -897,67 +903,69 @@ auto generic_modulus_combined(const T v, const T n) -> T {
   }
 }
 
-[[maybe_unused]] static void demo_if_constexpr()
+[[maybe_unused]] void demo_if_constexpr()
 {
   {
     Bear bear;
     Duck duck;
-    constexpr_if_speak(bear);
-    constexpr_if_speak(duck);
-    // Won't compile because constexpr if is not used.
+    // Won't compile because if constexpr is not used.
     // speak(bear);
     // speak(duck);
+    std::cout << "Bear: ";
+    constexpr_if_speak(bear);
+    std::cout << "Duck: ";
+    constexpr_if_speak(duck);
   }
   {
     auto const value = 7;
     auto const modulus = 5;
     auto const result = generic_modulus_combined(value, modulus);
-    std::cout << result << std::endl;
+    std::cout << "Integer modulus: " << result << std::endl;
   }
   {
     auto const value = 1.5f;
     auto const modulus = 1.0f;
     auto const result = generic_modulus_combined(value, modulus);
-    std::cout << result << std::endl;
+    std::cout << "Floating pointer modulus: " << result << std::endl;
   }
 }
+
 
 template <typename T>
 class Point2D {
 public:
-  Point2D(T x, T y) : x_{x}, y_{y} {}
-  auto x() { return x_; }
-  auto y() { return y_; }
+  Point2D(T x, T y) : m_x{x}, m_y{y} {}
+  auto x() { return m_x; }
+  auto y() { return m_y; }
 private:
-  T x_{};
-  T y_{};
+  T m_x{};
+  T m_y{};
 };
 
-template <typename T>
-auto dist(T point1, T point2) {
-  auto a = point1.x() - point2.x();
-  auto b = point1.y() - point2.y();
-  return std::sqrt(a * a + b * b);
-};
-
-[[maybe_unused]] static void point_template_unconstrained()
+[[maybe_unused]] void demo_unconstrained_templates()
 {
+  const auto distance = [](auto point1, auto point2) {
+    auto a = point1.x() - point2.x();
+    auto b = point1.y() - point2.y();
+    return std::sqrt(a * a + b * b);
+  };
+  
   {
     auto p1 = Point2D{2, 2};
     auto p2 = Point2D{6, 5};
-    auto d = dist(p1, p2);
-    std::cout << d << std::endl;
+    auto d = distance(p1, p2);
+    std::cout << "Distance: " << d << std::endl;
   }
   // The code below doesn't compile because type int doesn't have x() and y() functions.
   // Needed is better error messages when trying to instantiate this function template.
-  // dist(3, 4);
+  //distance(3, 4);
   {
     // We don't want this to compile: Point2D<const char*>
     auto from = Point2D{"2.0", "2.0"};
     auto to = Point2D{"6.0", "5.0"};
-    auto d = dist(from, to);
+    auto d = distance(from, to);
     // Prints nonsense.
-    std::cout << d << std::endl;
+    std::cout << "Nonsense: " << d << std::endl;
   }
 }
 
@@ -969,8 +977,8 @@ concept number = floating_point<T> || std::is_integral_v<T>;
 
 template <typename T>
 concept range = requires(T& t) {
-  begin(t);
-  end(t);
+  std::begin(t);
+  std::end(t);
 };
 
 // Constraining types with concepts.
@@ -1003,41 +1011,42 @@ T generic_mod_overload(T v, T n) { // Floating point version.
   return std::fmod(v, n);
 }
 
-[[maybe_unused]] static void constraints_and_concepts()
+[[maybe_unused]] void demo_constraints_and_concepts()
 {
   {
     auto x = mod(5, 2); // OK: Integral types
-    std::cout << "should be 1: " << x << std::endl;
+    std::cout << "Integral type modulus: " << x << std::endl;
     // Compilation error, not integral types
     // auto y = mod(5.f, 2.f);
   }
   {
     auto x = mod_abbreviated(5, 2); // OK: Integral types
-    std::cout << "should be 1: " << x << std::endl;
+    std::cout << "Integral type mod abbreviated: " << x << std::endl;
     // Compilation error, not integral types
     // auto y = mod_abbreviated(5.f, 2.f);
   }
   {
-    //auto x = struct_foo<int>{5};
+    [[maybe_unused]] auto x = struct_foo<int>{5};
     //std::cout << "should be 1: " << x << std::endl;
-    // Compilation error, not integral types
-    // auto y = Foo{5.f};
+    // Compilation error, not integral type.
+    // auto y = struct_foo{5.f};
   }
   // Using an integral type.
   {
     auto const value = 7;
     auto const modulus = 5;
     auto const x = generic_mod_overload(value, modulus);
-    std::cout << "should be 2: " << x << std::endl;
+    std::cout << "Modulus of integral types: " << x << std::endl;
   }
   // Using a floating point type.
   {
     auto const value = 1.5f;
     auto const modulus = 1.0f;
     auto const x = generic_mod_overload(value, modulus);
-    std::cout << "should be 0.5: " << x << std::endl;
+    std::cout << "Modulus of floating point types: " << x << std::endl;
   }
 }
+
 
 template <typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
@@ -1048,7 +1057,7 @@ concept point = requires(T p) {
   requires arithmetic<decltype(p.x())>;
 };
 
-std::floating_point auto dist (point auto p1, point auto p2) {
+std::floating_point auto get_distance (point auto p1, point auto p2) {
   auto a = p1.x() - p2.x();
   auto b = p1.y() - p2.y();
   return std::sqrt(a * a + b * b);
@@ -1057,24 +1066,24 @@ std::floating_point auto dist (point auto p1, point auto p2) {
 template <arithmetic T> // T is now constrained.
 class Point2D_v2 {
 public:
-  Point2D_v2 (T x, T y) : x_{x}, y_{y} {}
-  auto x() { return x_; }
-  auto y() { return y_; }
-  // …
+  Point2D_v2 (T x, T y) : m_x{x}, m_y{y} {}
+  auto x() { return m_x; }
+  auto y() { return m_y; }
 private:
-  T x_{};
-  T y_{};
+  T m_x{};
+  T m_y{};
 };
 
-[[maybe_unused]] static void point2d_concepts()
+[[maybe_unused]] void demo_point2d_concepts()
 {
-  auto p1 = Point2D_v2{2, 2};
-  auto p2 = Point2D_v2{6, 5};
-  auto d = dist(p1, p2);
-  std::cout << d << std::endl;
-  // Trying to instatiate Point2D with unrelevant types is no longer possible.
-  // auto p = Point2D_v2{"2.0", "2.0"};
+  const auto p1 = Point2D_v2{2, 2};
+  const auto p2 = Point2D_v2{6, 5};
+  auto d = get_distance(p1, p2);
+  std::cout << "Concepts demo: distance: " << d << std::endl;
+  // Trying to instantiate Point2D with unrelevant types is no longer possible.
+  //auto p = Point2D_v2{"2.0", "2.0"};
 }
+
 
 template <typename T>
 constexpr auto make_false() {
@@ -1084,16 +1093,16 @@ constexpr auto make_false() {
 template <typename Dst, typename Src>
 auto safe_cast(const Src& v) -> Dst {
   constexpr auto is_same_type = std::is_same_v<Src, Dst>;
-  constexpr auto is_pointer_to_pointer = std::is_pointer_v<Src> && std::is_pointer_v<Dst>;
-  constexpr auto is_float_to_float = std::is_floating_point_v<Src> && std::is_floating_point_v<Dst>;
-  constexpr auto is_number_to_number = std::is_arithmetic_v<Src> && std::is_arithmetic_v<Dst>;
-  constexpr auto is_intptr_to_ptr = (std::is_same_v<uintptr_t, Src> || std::is_same_v<intptr_t, Src>) && std::is_pointer_v<Dst>;
-  constexpr auto is_ptr_to_intptr = std::is_pointer_v<Src> && (std::is_same_v<uintptr_t, Dst> || std::is_same_v<intptr_t, Dst>);
+  constexpr auto is_pointer_to_pointer = std::is_pointer_v<Src> and std::is_pointer_v<Dst>;
+  constexpr auto is_float_to_float = std::is_floating_point_v<Src> and std::is_floating_point_v<Dst>;
+  constexpr auto is_number_to_number = std::is_arithmetic_v<Src> and std::is_arithmetic_v<Dst>;
+  constexpr auto is_intptr_to_ptr = (std::is_same_v<uintptr_t, Src> or std::is_same_v<intptr_t, Src>) and std::is_pointer_v<Dst>;
+  constexpr auto is_ptr_to_intptr = std::is_pointer_v<Src> and (std::is_same_v<uintptr_t, Dst> or std::is_same_v<intptr_t, Dst>);
   
   if constexpr (is_same_type) {
     return v;
   }
-  else if constexpr (is_intptr_to_ptr || is_ptr_to_intptr) {
+  else if constexpr (is_intptr_to_ptr or is_ptr_to_intptr) {
     return reinterpret_cast<Dst>(v);
   }
   else if constexpr (is_pointer_to_pointer) {
@@ -1103,7 +1112,7 @@ auto safe_cast(const Src& v) -> Dst {
   else if constexpr (is_float_to_float) {
     auto casted = static_cast<Dst>(v);
     auto casted_back = static_cast<Src>(v);
-    assert(!isnan(casted_back) && !isinf(casted_back));
+    assert(!isnan(casted_back) and !isinf(casted_back));
     return casted;
   }
   else if constexpr (is_number_to_number) {
@@ -1118,13 +1127,14 @@ auto safe_cast(const Src& v) -> Dst {
   }
 }
 
-[[maybe_unused]] static void demo_safe_cast()
+[[maybe_unused]] void demo_safe_cast()
 {
-  auto x = safe_cast<int>(42.0f);
-  std::cout << x << std::endl;
+  const auto x = safe_cast<int>(42.6f);
+  std::cout << "Safe cast from float to int: " << x << std::endl;
   // Only compiles on a 16-bits system.
   //auto y = safe_cast<int*>(int16_t{42});
 }
+
 
 constexpr auto hash_function(const char* str) -> size_t {
   auto sum = size_t{0};
@@ -1160,39 +1170,56 @@ struct std::hash<PrehashedString> {
   }
 };
 
-[[maybe_unused]] static void compile_time_hash()
+[[maybe_unused]] void demo_compile_time_string_hash()
 {
-  const auto& hash_fn = std::hash<PrehashedString>{};
-  const auto& str = PrehashedString("abc");
-  std::cout << hash_fn(str) << std::endl;
-  std::cout << hash_function("abc") << std::endl;
+  constexpr const auto hash_fn = std::hash<PrehashedString>{};
+  constexpr const auto str = PrehashedString("abc");
+  constexpr const auto hash_fn_str = hash_fn(str);
+  std::cout << "hash_fn(str): " << hash_fn_str << std::endl;
+  constexpr const auto hash_function_abc = hash_function("abc");
+  std::cout << "hash_function_abc: " << hash_function_abc << std::endl;
 }
 
-[[maybe_unused]] static void demo_optional()
+
+[[maybe_unused]] void demo_optional()
 {
-  auto c = std::vector<std::optional<int>>{{3}, {}, {1}, {}, {2}};
-  std::sort(c.begin(), c.end());
-  const auto sorted = std::vector<std::optional<int>>{{}, {}, {1}, {2}, {3}};
-  std::cout << "vectors are equal: " << std::boolalpha << (c==sorted) << std::endl;
+  auto input = std::vector<std::optional<int>> {{3}, {}, {1}, {}, {2}, {0}, {-1}};
+  std::ranges::sort(input);
+  const auto sorted = decltype(input) {{}, {}, {-1}, {0}, {1}, {2}, {3}};
+  std::cout << "vectors are equal: " << std::boolalpha << (input == sorted) << std::endl;
 }
 
-[[maybe_unused]] static auto make_saturn() { return std::tuple{"Saturn", 82, true}; }
 
-// Automatic type deduction by defining the struct within the function itself.
-[[maybe_unused]] static auto make_earth() {
-  struct Planet { std::string name; int n_moons; bool rings; };
-  return Planet{"Earth", 1, false};
+[[maybe_unused]] void demo_automatic_type_deduction()
+{
+  // Automatic type deduction by defining the struct within the function itself.
+  const auto make_earth = []() {
+    struct Planet {
+      std::string name{};
+      int n_moons{};
+      bool rings{};
+    };
+    return Planet{"Earth", 1, false};
+  };
+
+  const auto p = make_earth();
+  std::cout << "Planet name: " << std::quoted(p.name) << ", number of moons: " << p.n_moons << ", has rings: " << std::boolalpha << p.rings << std::endl;
 }
 
-[[maybe_unused]] static void demo_tuple()
+
+[[maybe_unused]] void demo_tuple()
 {
+  const auto make_saturn = []() {
+    return std::tuple{"Saturn", 82, true};
+  };
+  
   {
     // Using std::get<N>
-    auto t = make_saturn();
-    auto name = std::get<0>(t);
-    auto n_moons = std::get<1>(t);
-    auto rings = std::get<2>(t);
-    std::cout << name << ' ' << n_moons << ' ' << rings << std::endl;
+    constexpr const auto planet = make_saturn();
+    constexpr const auto name = std::get<0>(planet);
+    constexpr const auto n_moons = std::get<1>(planet);
+    constexpr const auto rings = std::get<2>(planet);
+    std::cout << "Planet name: " << std::quoted(name) << ", number of moons: " << n_moons << ", has rings: " << std::boolalpha << rings << std::endl;
     // Output: Saturn 82 true
   }
   {
@@ -1201,23 +1228,23 @@ struct std::hash<PrehashedString> {
     auto n_moons = int{};
     auto rings = bool{};
     std::tie(name, n_moons, rings) = make_saturn();
-    std::cout << name << ' ' << n_moons << ' ' << rings << std::endl;
+    std::cout << "Planet name: " << std::quoted(name) << ", number of moons: " << n_moons << ", has rings: " << std::boolalpha << rings << std::endl;
   }
   {
     const auto& [name, n_moons, rings] = make_saturn();
-    std::cout << name << ' ' << n_moons << ' ' << rings << '\n';
+    std::cout << "Planet name: " << std::quoted(name) << ", number of moons: " << n_moons << ", has rings: " << std::boolalpha << rings << std::endl;
   }
   {
-    auto planets = {std::tuple{"Mars", 2, false}, std::tuple{"Neptune", 14, true}};
+    const auto planets = {
+      std::tuple{"Mars", 2, false},
+      std::tuple{"Neptune", 14, true}
+    };
     for (auto&& [name, n_moons, rings] : planets) {
-      std::cout << name << ' ' << n_moons << ' ' << rings << std::endl;
+      std::cout << "Planet name: " << std::quoted(name) << ", number of moons: " << n_moons << ", has rings: " << std::boolalpha << rings << std::endl;
     }
   }
-  {
-    auto p = make_earth();
-    std::cout << p.name << ' ' << p.n_moons << ' ' << p.rings << std::endl;
-  }
 }
+
 
 template <size_t Index, typename TupleType, typename Functor>
 auto tuple_at(const TupleType& tpl, const Functor& func) -> void {
@@ -1234,72 +1261,75 @@ auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
   }
 }
 
-template <typename... Ts> auto make_string(const Ts&... values) {
-  auto sstr = std::ostringstream{};
-  // Create a tuple of the variadic parameter pack.
-  auto tuple = std::tie(values...);
-  // Iterate the tuple.
-  tuple_for_each(tuple, [&sstr](const auto& v) { sstr << std::boolalpha << v << " "; });
-  return sstr.str();
+[[maybe_unused]] void demo_variadic_pack()
+{
+  const auto make_string = [](const auto&... values) {
+    auto sstr = std::ostringstream{};
+    // Create a tuple of the variadic parameter pack.
+    const auto tuple = std::tie(values...);
+    // Iterate the tuple.
+    tuple_for_each(tuple, [&sstr](const auto& v) {
+      sstr << std::boolalpha << v << " ";
+    });
+    return sstr.str();
+  };
+  
+  const auto str = make_string(123, "hi", true, false, 12.3f);
+  std::cout << "Variadic pack output: " << str << std::endl;
 }
 
-[[maybe_unused]] static void demo_variadic_pack()
-{
-  auto str = make_string(42, "hi", true, false, 42.0f);
-  std::cout << str << std::endl;
-}
 
-[[maybe_unused]] static void heterogenous_collections_with_variant()
+
+[[maybe_unused]] void heterogenous_collections_with_variant()
 {
+  using variant_t = std::variant<int, std::string, bool>;
   {
-    using namespace std::string_literals;
-    using VariantType = std::variant<int, std::string, bool>;
-    auto container = std::vector<VariantType>{};
-    container.push_back(false);
-    container.push_back("I am a string"s);
-    container.push_back("I am also a string"s);
-    container.push_back(13);
-    container.pop_back();
-    std::reverse(container.begin(), container.end());
+    auto container = std::vector<variant_t> { false, "hello", "world", 13 };
+    std::ranges::reverse(container);
   }
   {
-    using namespace std::string_literals;
-    using VariantType = std::variant<int, std::string, bool>;
-    auto v = std::vector<VariantType>{42, "needle"s, true};
+    constexpr const auto needle {"needle"};
+    const auto v = std::vector<variant_t>{42, needle, true};
     for (const auto& item : v) {
-      std::visit([](const auto& x) { std::cout << x << std::endl; }, item);
+      std::visit([](const auto& x) { std::cout << "Variant has: " << x << std::endl; }, item);
     }
-    auto num_bools = std::count_if(v.begin(), v.end(), [](const auto& item) {
+    const auto num_bools = std::ranges::count_if(v, [](const auto& item) {
       return std::holds_alternative<bool>(item);
     });
-    std::cout << "num_bools: " << num_bools << std::endl;
-    auto contains_needle_string =
-    std::any_of(v.begin(), v.end(), [](const auto& item) {
-      return std::holds_alternative<std::string>(item) &&
-      std::get<std::string>(item) == "needle";
+    std::cout << "Number of booleans: " << num_bools << std::endl;
+    auto contains_needle_string = std::ranges::any_of(v, [](const auto& item) {
+      return std::holds_alternative<std::string>(item) and std::get<std::string>(item) == needle;
     });
-    std::cout << "contains_needle_string " << std::boolalpha << contains_needle_string << std::endl;
+    std::cout << "Contains " << std::quoted(needle) << ": " << std::boolalpha << contains_needle_string << std::endl;
   }
 }
 
 
-[[maybe_unused]] static void projections_and_comparison_operators()
+[[maybe_unused]] void projections_and_comparison_operators()
 {
   struct Player {
     std::string name{};
     int level{};
     int score{};
   };
-  
-  constexpr auto create_players = []() {
+
+  constexpr const auto i34    {34};
+  constexpr const auto i12981 {12981};
+
+  constexpr const auto create_players = []() {
     return std::vector<Player>{
-      {"Kai", 34, 23092},
-      {"Ali", 56, 43423},
-      {"Mel", 34, 12981}
+      {"Kai", i34,  23092},
+      {"Ali",  56,  43423},
+      {"Mel", i34, i12981}
     };
   };
 
-  // Manually written comparison function.
+  const auto print_first_player = [](const auto& players) {
+    std::cout << "First player level should be " << i34 << ": " << players.front().level << std::endl;
+    std::cout << "First player score should be " << i12981 << ": " << players.front().score << std::endl;
+  };
+
+  // Sort the players through a manually written comparison function.
   {
     auto players = create_players();
     
@@ -1311,12 +1341,11 @@ template <typename... Ts> auto make_string(const Ts&... values) {
       }
     };
     
-    std::sort(players.begin(), players.end(), cmp);
-    std::cout << "should be 34: " << players.front().level << std::endl;
-    std::cout << "should be 12981: " << players.front().score << std::endl;
+    std::ranges::sort(players, cmp);
+    print_first_player(players);
   }
 
-  // Comparison function via std::tie.
+  // Sort the players through a comparison function via std::tie.
   {
     auto players = create_players();
     
@@ -1325,72 +1354,79 @@ template <typename... Ts> auto make_string(const Ts&... values) {
       auto p2 = std::tie(rhs.level, rhs.score); // Projection
       return p1 < p2;
     };
-    std::sort(players.begin(), players.end(), cmp);
-    std::cout << "should be 34: " << players.front().level << std::endl;
-    std::cout << "should be 12981: " << players.front().score << std::endl;
+    std::ranges::sort(players, cmp);
+    print_first_player(players);
   }
 
-  // Comparison using std::tie and std::ranges.
+  // Sort the players through comparison using std::tie and std::ranges.
   {
     auto players = create_players();
     std::ranges::sort(players, std::less{}, [](const Player& p) {
       return std::tie(p.level, p.score);
     });
-    std::cout << "should be 34: " << players.front().level << std::endl;
-    std::cout << "should be 12981: " << players.front().score << std::endl;
+    print_first_player(players);
   }
 }
 
-[[maybe_unused]] static void lazy_evaluation()
+
+[[maybe_unused]] void lazy_evaluation()
 {
-  // This is to postpone or not execute parts not needed for obtaining the result.
+  // Lazy evaluation is to postpone or not execute parts not needed for obtaining the result.
   // If for example finding which distance is larger,
   // then the formula is square root from the square,
   // but for finding the larger one, the square root is not needed,
   // it is enough to calculate the square of the two values.
 }
 
-[[maybe_unused]] static void pipe_operator()
+
+[[maybe_unused]] void pipe_operator()
 {
-  {
-    const auto r = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
-    auto odd_positive_numbers = r | std::views::filter([](auto v) { return v > 0; }) | std::views::filter([](auto v) { return (v % 2) == 1; });
-    auto it = std::begin(odd_positive_numbers);
-    std::cout << *it << std::endl;
-    it++;
-    std::cout << *it << std::endl;
-    it++;
-    std::cout << *it << std::endl;
-  }
+  const auto range = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
+  auto odd_positive_numbers = range | std::views::filter([](const auto v) { return v > 0; }) | std::views::filter([](const auto v) { return (v % 2) == 1; });
+  auto it = odd_positive_numbers.begin();
+  std::cout << "Odd positive number: " << *it << std::endl;
+  it++;
+  std::cout << "Odd positive number: " << *it << std::endl;
+  it++;
+  std::cout << "Odd positive number: " << *it << std::endl;
 }
 
-template <typename T> struct ContainsProxy { const T& m_value; };
+
+template <typename T>
+struct ContainsProxy {
+  const T& m_value;
+};
 
 template <typename Range, typename T>
-auto operator|(const Range& r, const ContainsProxy<T>& proxy) {
+auto operator | (const Range& r, const ContainsProxy<T>& proxy) {
   const auto& v = proxy.m_value;
   return std::find(r.begin(), r.end(), v) != r.end();
 }
 
-template <typename T> auto contains(const T& v) { return ContainsProxy<T>{v}; }
+template <typename T>
+auto contains(const T& v) {
+  return ContainsProxy<T>{v};
+}
 
-[[maybe_unused]] static void proxy_objects()
+[[maybe_unused]] void demo_proxy_objects()
 {
   {
-    auto numbers = std::vector<int>{1, 3, 5, 7, 9};
-    auto seven = 7;
-    auto proxy = ContainsProxy<decltype(seven)>{seven};
-    bool has_seven = numbers | proxy;
-    std::cout << std::boolalpha << has_seven << std::endl;
+    constexpr const auto seven = 7;
+    const auto numbers = {1, 3, 5, seven, 9};
+    const auto proxy = ContainsProxy<decltype(seven)>{seven};
+    const bool has_seven = numbers | proxy;
+    std::cout << "Has " << seven << ": " << std::boolalpha << has_seven << std::endl;
   }
   {
-    auto penguins = std::vector<std::string>{"Ping", "Roy", "Silo"};
-    bool has_silo = penguins | contains("Silo");
-    std::cout << std::boolalpha << has_silo << std::endl;
+    constexpr const auto silo {"Silo"};
+    const auto penguins = {"Ping", "Roy", silo};
+    const bool has_silo = penguins | contains(silo);
+    std::cout << "Has " << std::quoted(silo) << ": " << std::boolalpha << has_silo << std::endl;
   }
 }
 
-[[maybe_unused]] static void test_async()
+
+[[maybe_unused]] void test_async()
 {
   auto divide = [](int a, int b) -> int {
     if (!b) throw std::runtime_error("Cannot divide by zero");
@@ -1401,142 +1437,76 @@ template <typename T> auto contains(const T& v) { return ContainsProxy<T>{v}; }
   std::cout << "Main running on thread id " << std::this_thread::get_id() << std::endl;
   std::future future = std::async(divide, 45, 5);
   int result = future.get();
-  std::cout << 45 / 5 << " " << result << std::endl;
+  std::cout << "45 / 5 = " << result << std::endl;
 }
 
-struct Stats {
-  int heads{};
-  int tails{};
-};
 
-/* Does not compile yet on macOS Ventura
-auto random_int(int min, int max) {
-  // One engine instance per thread
-  static thread_local auto engine =
-  std::default_random_engine{std::random_device{}()};
-  
-  auto dist = std::uniform_int_distribution<>{min, max};
-  return dist(engine);
-}
-
-void flip_coin(std::size_t n, Stats& outcomes) {
-  auto flip = [&outcomes](auto n) {
-    auto heads = std::atomic_ref<int>{outcomes.heads};
-    auto tails = std::atomic_ref<int>{outcomes.tails};
-    for (auto i = 0u; i < n; ++i) {
-      random_int(0, 1) == 0 ? ++heads : ++tails;
-    }
-  };
-  auto t1 = std::jthread{flip, n / 2};       // First half
-  auto t2 = std::jthread{flip, n - (n / 2)}; // The rest
-}
- */
-
-[[maybe_unused]] static void atomic_references()
+[[maybe_unused]] void atomic_references()
 {
+  struct Stats {
+    int heads{};
+    int tails{};
+  };
   auto stats = Stats{};
-  //flip_coin(5000, stats); // Flip 5000 times
+
+  const auto random_int = [](int min, int max) {
+    // One engine instance per thread.
+    static thread_local auto engine = std::default_random_engine{std::random_device{}()};
+    auto distribution = std::uniform_int_distribution<>{min, max};
+    return distribution(engine);
+  };
+
+  const auto flip_coin = [&](std::size_t n, auto& outcomes) {
+    auto flip = [&](auto n) {
+      auto heads = std::atomic_ref<int>{outcomes.heads};
+      auto tails = std::atomic_ref<int>{outcomes.tails};
+      for (auto i = 0u; i < n; ++i) {
+        random_int(0, 1) == 0 ? ++heads : ++tails;
+      }
+    };
+    auto t1 = std::jthread{flip, n / 2};       // First half.
+    auto t2 = std::jthread{flip, n - (n / 2)}; // The rest.
+  };
+
+  flip_coin(5000, stats); // Flip 5000 times
   std::cout << "heads: " << stats.heads << ", tails: " << stats.tails << std::endl;
 }
 
-// No compiler support yet.
-/*
-namespace SpinLock {
 
-class SimpleMutex {
-  std::atomic_flag is_locked{}; // Cleared by default
-public:
-  auto lock() noexcept {
-    while (is_locked.test_and_set()) {
-      while (is_locked.test()) // C++20
-        ;                      // Spin here
-    }
-  }
-  auto unlock() noexcept { is_locked.clear(); }
-};
+void atomics_simple_spin_lock()
+{
+  constexpr auto n {1'000'000};
+  auto counter {0};
+  std::mutex mutex{};
 
-TEST(Atomics, SimpleSpinLock) {
-  
-  constexpr auto n = 1'000'000;
-  auto counter = 0; // Counter will be protected by mutex
-  auto counter_mutex = SimpleMutex{};
-  
-  auto increment_counter = [&] {
-    for (int i = 0; i < n; ++i) {
-      counter_mutex.lock();
-      ++counter;
-      counter_mutex.unlock();
-    }
+  const auto run = [&]() {
+    const auto increment_counter = [&] {
+      for (int i = 0; i < n; ++i) {
+        std::lock_guard lock (mutex);
+        ++counter;
+      }
+    };
+    std::jthread{increment_counter};
+    std::jthread{increment_counter};
   };
+
+  run();
   
-  auto t1 = std::thread{increment_counter};
-  auto t2 = std::thread{increment_counter};
-  
-  t1.join(); // Or use std::jthread
-  t2.join();
-  
-  std::cout << counter << '\n';
-  // If we don't have a data race, this assert should hold:
-  ASSERT_EQ(n * 2, counter);
+  // If we don't have a data race, this assert should hold.
+  std::cout << "Counter is " << counter << " which should be double of " << n << std::endl;
 }
 
-} // namespace SpinLock
 
-namespace WaitAndNotify {
-
-class SimpleMutex {
-  std::atomic_flag is_locked{};
-  
-public:
-  auto lock() noexcept {
-    while (is_locked.test_and_set())
-      is_locked.wait(true); // Don’t spin, wait
-  }
-  
-  auto unlock() noexcept {
-    is_locked.clear();
-    is_locked.notify_one(); // Notify blocked thread
-  }
-};
-
-TEST(Atomics, WaitAndNotify) {
-  
-  constexpr auto n = 1000000;
-  auto counter = 0; // Counter will be protected by mutex
-  auto counter_mutex = SimpleMutex{};
-  
-  auto increment_counter = [&] {
-    for (int i = 0; i < n; ++i) {
-      counter_mutex.lock();
-      ++counter;
-      counter_mutex.unlock();
-    }
-  };
-  
-  auto t1 = std::thread{increment_counter};
-  auto t2 = std::thread{increment_counter};
-  t1.join();
-  t2.join();
-  
-  std::cout << counter << '\n';
-  // If we don't have a data race, this assert should hold:
-  ASSERT_EQ(n * 2, counter);
-}
-
-} // namespace WaitAndNotify
-*/
-
-
-// This demonstrates how to use std::lock to lock multiple locks at the simultaneously.
+// This demonstrates how to use std::lock to lock multiple locks at once simultaneously.
 // This avoids the risk of having deadlocks in the transfer function.
-[[maybe_unused]] static void avoid_deadlock()
+[[maybe_unused]] void demo_lock_multiple_simultaneously()
 {
   struct account {
     int m_balance{0};
     std::mutex m_mutex{};
   };
 
-  auto transfer_money = [](account& from, account& to, int amount) -> void {
+  const auto transfer_money = [](account& from, account& to, int amount) -> void {
     // Define two deferred unique locks.
     auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
     auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
@@ -1555,10 +1525,11 @@ TEST(Atomics, WaitAndNotify) {
   std::cout << "Account 2: " << account2.m_balance << std::endl;
 }
 
-[[maybe_unused]] static void barriers()
+
+[[maybe_unused]] void barriers()
 {
-  auto random_int = [] (int min, int max) -> int {
-    // One engine instance per thread
+  const auto random_int = [] (const int min, const int max) -> int {
+    // One engine instance per thread.
     thread_local static auto engine = std::default_random_engine{std::random_device{}()};
     auto distribution = std::uniform_int_distribution<>{min, max};
     return distribution(engine);
@@ -1575,9 +1546,10 @@ TEST(Atomics, WaitAndNotify) {
   auto check_result = [&] {
     ++n_turns;
     auto is_six = [](auto i) { return i == 6; };
-    done = std::all_of(dice.begin(), dice.end(), is_six);
+    done = std::ranges::all_of(dice, is_six);
   };
 
+  // Barriers are reusable after all arriving threads are unblocked.
   auto barrier = std::barrier{n_dice, check_result};
   for (size_t i = 0; i < n_dice; ++i) {
     threads.emplace_back([&, i] () {
@@ -1593,10 +1565,11 @@ TEST(Atomics, WaitAndNotify) {
   for (auto&& t : threads) {
     t.join();
   }
-  std::cout << "number of turns: " << n_turns << std::endl;
+  std::cout << "Number of turns to have all dice on 6: " << n_turns << std::endl;
 }
 
-[[maybe_unused]] static void condition_variables()
+
+[[maybe_unused]] void condition_variables()
 {
   auto condition_variable = std::condition_variable{};
   auto queue = std::queue<int>{};
@@ -1630,7 +1603,7 @@ TEST(Atomics, WaitAndNotify) {
   
   auto generate_ints = [&] () -> void {
     for (auto i : {1, 2, 3, sentinel}) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(300));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
       {
         auto lock = std::scoped_lock{mutex};
         queue.push(i);
@@ -1639,15 +1612,16 @@ TEST(Atomics, WaitAndNotify) {
     }
   };
 
-  std::thread producer(generate_ints);
-  std::thread consumer(print_ints);
+  {
+    std::jthread producer(generate_ints);
+    std::jthread consumer(print_ints);
+  }
   
-  producer.join();
-  consumer.join();
-
-  for (auto i : result) std::cout << i << " ";
+  for (auto i : result)
+    std::cout << i << " ";
   std::cout << std::endl;
 }
+
 
 [[maybe_unused]] static void data_race_demo()
 {
@@ -2256,5 +2230,28 @@ int main()
   algorithm_views_stream();
   memory_placement_new();
   template_or_auto_or_remove_cvref_methods();
+  demo_type_traits();
+  demo_consteval();
+  demo_if_constexpr();
+  demo_unconstrained_templates();
+  demo_constraints_and_concepts();
+  demo_point2d_concepts();
+  demo_safe_cast();
+  demo_compile_time_string_hash();
+  demo_optional();
+  demo_automatic_type_deduction();
+  demo_tuple();
+  demo_variadic_pack();
+  heterogenous_collections_with_variant();
+  projections_and_comparison_operators();
+  lazy_evaluation();
+  pipe_operator();
+  demo_proxy_objects();
+  test_async();
+  atomic_references();
+  atomics_simple_spin_lock();
+  demo_lock_multiple_simultaneously();
+  barriers();
+  condition_variables();
   return EXIT_SUCCESS;
 }

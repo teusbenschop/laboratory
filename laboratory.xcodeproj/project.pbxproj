@@ -229,13 +229,13 @@
 			path = torch;
 			sourceTree = "<group>";
 		};
-		CA6743852A5DAB2E006769F9 /* high_performance */ = {
+		CA6743852A5DAB2E006769F9 /* modern_c++ */ = {
 			isa = PBXGroup;
 			children = (
 				CA6744582A5DAC18006769F9 /* main.cpp */,
 				CA60B6D82F066CF400CD9D7E /* Makefile */,
 			);
-			path = high_performance;
+			path = "modern_c++";
 			sourceTree = "<group>";
 		};
 		CA7937FA2A49FA8100B460A5 /* c++20 */ = {
@@ -382,7 +382,7 @@
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
 				CA6E11BF266D3B8200C5CBBB /* haak-bible */,
-				CA6743852A5DAB2E006769F9 /* high_performance */,
+				CA6743852A5DAB2E006769F9 /* modern_c++ */,
 				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
@@ -469,7 +469,7 @@
 			buildPhases = (
 			);
 			buildToolPath = make;
-			buildWorkingDirectory = /Users/teus/dev/laboratory/high_performance;
+			buildWorkingDirectory = "/Users/teus/dev/laboratory/modern_c++";
 			dependencies = (
 			);
 			name = bibledit;
