@@ -41,8 +41,6 @@
 		CA4926952905557E00FEB6D3 /* tidy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tidy; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
 		CA57C716297543F900D86BE7 /* freetype */ = {isa = PBXFileReference; lastKnownFileType = folder; path = freetype; sourceTree = "<group>"; };
-		CA5DD4DC277EF2F000E50FF7 /* run */ = {isa = PBXFileReference; lastKnownFileType = text; path = run; sourceTree = "<group>"; };
-		CA5DD4DD277EF31D00E50FF7 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		CA5DD4DE277EF31D00E50FF7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -213,8 +211,6 @@
 			isa = PBXGroup;
 			children = (
 				CA5DD4DE277EF31D00E50FF7 /* main.cpp */,
-				CA5DD4DD277EF31D00E50FF7 /* main.h */,
-				CA5DD4DC277EF2F000E50FF7 /* run */,
 			);
 			path = "c++17";
 			sourceTree = "<group>";

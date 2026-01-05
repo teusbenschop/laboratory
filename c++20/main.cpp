@@ -279,7 +279,6 @@ void attributes__no_unique_address__likely__unlikely()
   // Notes:
   // 1. On macOS the version without attributes is faster.
   // 2. On Debian sid on Intel the version without attributes was faster.
-  exit(0); // Todo
 }
 
 

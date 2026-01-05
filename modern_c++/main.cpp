@@ -28,6 +28,7 @@
 #include <tuple>
 #include <type_traits>
 #include <version>
+#include <filesystem>
 
 [[maybe_unused]] void test_lambda_capture ()
 {
@@ -1623,11 +1624,152 @@ void atomics_simple_spin_lock()
 }
 
 
-[[maybe_unused]] static void data_race_demo()
+namespace stream_insertion {
+
+class Object {
+public:
+  Object (std::string text, int number) {
+    m_text = std::move(text);
+    m_number = number;
+  };
+private:
+  std::string m_text{};
+  int m_number{};
+  friend std::ostream& operator<<(std::ostream& os, const Object&) noexcept;
+};
+
+std::ostream& operator<<(std::ostream& os, const Object&) noexcept;
+const std::string to_string(const Object&) noexcept;
+
+std::ostream& operator<<(std::ostream& os, const Object& object) noexcept
+{
+  os << object.m_text << " " << object.m_number;
+  return os;
+}
+
+const std::string to_string(const Object& object) noexcept
+{
+  std::ostringstream ss;
+  ss << object;
+  return std::move(ss).str();
+}
+
+void overloading_stream_insertion_operators()
+{
+  Object object { "hello world", 1 };
+  std::cout << "Stream Object " << object << std::endl;
+  std::cout << "Stream Object " << to_string(object) << std::endl;
+}
+
+}
+
+
+void demo_barrier_jthread_stop_token()
+{
+  return;
+  constexpr const auto marker {"Demo barrier / jthread / stop_token: "};
+  std::cout << marker << "Start" << std::endl;
+  
+  // This lambda starts the failing processes.
+  // On any failure, it restarts the processes.
+  const auto resilient_consumers = [](const std::stop_token stop_token) {
+    
+    // Protect the barrier from being arrived at multiple times
+    // due to multiple processes that may all fail simultaneously.
+    std::atomic<bool> barrier_active{false};
+    // As soon as the barrier is complete, clear the associated protecting flag.
+    auto on_barrier_completion = [&]() noexcept {
+      barrier_active = false;
+    };
+    // The barrier has count 2:
+    // One to allow arriving and waiting at the barrier after all processes have been created.
+    // The second one to use for the error callback.
+    std::barrier barrier(2, on_barrier_completion);
+    
+    // Allow the main program to interrupt the processes loop.
+    std::stop_callback stop_callback(stop_token, [&]() {
+      if (barrier_active) {
+        barrier_active = false;
+        [[maybe_unused]] const auto token = barrier.arrive();
+      }
+    });
+
+    bool slow_restart_down {false};
+
+    while (!stop_token.stop_requested()) {
+      try {
+
+        const auto on_event = [&](const std::string & error) {
+          std::cout << "Error event: " << error << std::endl;
+          // Arrive at the barrier.
+          // This will open the barrier, so all processes get recreated.
+          if (barrier_active) {
+            barrier_active = false;
+            [[maybe_unused]] const auto token = barrier.arrive();
+            slow_restart_down = true;
+          }
+        };
+        
+        // Wait shortly to avoid fast repeating error events.
+        if (slow_restart_down) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        }
+
+        std::cout << "Start process..." << std::endl;
+        barrier_active = true;
+
+        const auto generate_error = [&]() {
+          std::this_thread::sleep_for(std::chrono::milliseconds(10));
+          on_event("Error");
+        };
+        std::thread (generate_error).detach(); // Better not detach in production code.
+                
+        std::cout << "All processes started" << std::endl;
+        
+        // Wait here till an error occurs or the program shuts down.
+        barrier.arrive_and_wait();
+      }
+      catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+    }
+    std::cout << "Stopping processes" << std::endl;
+  };
+
+  std::jthread consumers_thread(resilient_consumers);
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  std::cout << marker << "Stop" << std::endl;
+}
+
+
+void demo_timer_with_timed_mutex_and_condition_variable()
+{
+  std::timed_mutex mx;
+  std::condition_variable_any cv;
+
+  const auto timer = [&](const std::stop_token stoken) {
+    constexpr const auto interval = std::chrono::milliseconds(1);
+    while (!stoken.stop_requested()) {
+      std::unique_lock ulk(mx);
+      if (cv.wait_for(ulk, stoken, interval, [&stoken]() { return stoken.stop_requested();}))
+        break;
+      std::cout << "timer cycle" << std::endl;
+    }
+  };
+
+  std::cout << "Timer start" << std::endl;
+  std::jthread thread(timer);
+  std::this_thread::sleep_for(std::chrono::milliseconds(4));
+  std::cout << "Timer stop" << std::endl;
+}
+
+
+[[maybe_unused]] void data_race_demo()
 {
   std::atomic<int> atomic_counter {};
   int normal_counter {};
-  // Counter protected by mutex.
   int mutex_counter {};
   std::mutex counter_mutex;
 
@@ -1635,14 +1777,14 @@ void atomics_simple_spin_lock()
     for (int i = 0; i < n; i++) {
       ++atomic_counter;
     }
-    std::cout << "atomic ready" << std::endl;
+    std::cout << "Atomic count ready" << std::endl;
   };
 
   const auto increment_normal_counter = [&] (int n) {
     for (int i = 0; i < n; i++) {
       ++normal_counter;
     }
-    std::cout << "normal ready" << std::endl;
+    std::cout << "Normal count ready" << std::endl;
   };
 
   const auto increment_mutex_counter = [&] (int n) {
@@ -1650,7 +1792,7 @@ void atomics_simple_spin_lock()
       auto lock = std::scoped_lock{counter_mutex};
       ++mutex_counter;
     }
-    std::cout << "mutex ready" << std::endl;
+    std::cout << "Mutex count ready" << std::endl;
   };
 
   constexpr auto n_times = 1'000'000;
@@ -1669,20 +1811,19 @@ void atomics_simple_spin_lock()
   thread6.join();
 
   // If we don't have a data race, this should hold:
-  std::cout << "without a data race the counters should be: " << n_times * 3 << std::endl;
-  std::cout << "atomic: " << atomic_counter << std::endl;;
-  std::cout << "normal: " << normal_counter << std::endl;;
-  std::cout << "mutex : " << mutex_counter << std::endl;;
+  std::cout << "Without a data race the counters should be: " << n_times * 2 << std::endl;
+  std::cout << "Atomic: " << atomic_counter << std::endl;;
+  std::cout << "Normal: " << normal_counter << std::endl;;
+  std::cout << "Mutex : " << mutex_counter << std::endl;;
 }
 
+
 // It should be possible to set an exception in a promise.
-[[maybe_unused]] static void future_and_promise_and_exception()
+[[maybe_unused]] void future_and_promise_and_exception()
 {
+  return; // Fails on macOS Sequoia.
   const auto divide = [] (int a, int b, std::promise<int>& promise) {
     try {
-      if (!b) {
-        throw std::runtime_error("Cannot divide by zero");
-      }
       const auto result = a / b;
       promise.set_value(result);
     } catch(...) {
@@ -1690,8 +1831,8 @@ void atomics_simple_spin_lock()
         // store anything thrown in the promise
         promise.set_exception(std::current_exception());
         // or throw a custom exception instead
-        // p.set_exception(std::make_exception_ptr(MyException("mine")));
-      } catch(...) {} // set_exception() may throw too
+        // promise.set_exception(std::make_exception_ptr(MyException("mine")));
+      } catch(...) {} // set_exception() may throw too.
     }
   };
 
@@ -1700,7 +1841,7 @@ void atomics_simple_spin_lock()
     std::thread thread {divide, 45, 5, std::ref(promise)};
     auto future = promise.get_future();
     auto result = future.get();
-    std::cout << "result should be " << 45 / 5 << " and it is " << result << std::endl;
+    std::cout << "Result should be " << 45 / 5 << " and it is " << result << std::endl;
     thread.join();
   }
   try {
@@ -1709,30 +1850,29 @@ void atomics_simple_spin_lock()
     auto future = promise.get_future();
     auto result = future.get();
     std::cout << result << std::endl;
-    std::cout << "result should give an exception" << std::endl;
+    std::cout << "Result should give an exception" << std::endl;
     thread.join();
   } catch (const std::exception& exception) {
     std::cout << exception.what() << std::endl;
   }
 }
 
-[[maybe_unused]] static void joinable_thread()
+
+
+[[maybe_unused]] void joinable_thread()
 {
   [[maybe_unused]] auto print = []() {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "Thread ID: " << std::this_thread::get_id() << '\n';
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::cout << "Thread ID: " << std::this_thread::get_id() << std::endl;
   };
-  std::cout << "main begin" << std::endl;
-#ifdef __cpp_lib_jthread
+  std::cout << "Main begin" << std::endl;
   auto joinable_thread = std::jthread{print};
-#else
-  std::cout << "no support for jthread" << std::endl;
-#endif
-  std::cout << "main end" << std::endl;
+  std::cout << "Main end" << std::endl;
   // OK: jthread will join automatically
 }
 
-[[maybe_unused]] static void latches()
+
+[[maybe_unused]] void latches()
 {
   auto prefault_stack = [] () {
     // We don't know the size of the stack.
@@ -1753,7 +1893,7 @@ void atomics_simple_spin_lock()
       latch.arrive_and_wait(); // Or just count_down();
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
       std::cout << "Thread is working" << std::endl;
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     });
   }
 
@@ -1764,84 +1904,8 @@ void atomics_simple_spin_lock()
   }
 }
 
-template <class T, size_t N> class lock_free_queue {
-  std::array<T, N> m_buffer{};   // Used by both threads
-  std::atomic<size_t> m_size{0}; // Used by both threads
-  size_t m_read_pos{0};          // Used by reader thread
-  size_t m_write_pos{0};         // Used by writer thread
-  static_assert(std::atomic<size_t>::is_always_lock_free);
   
-  bool do_push(T&& t) {
-    if (m_size.load() == N) {
-      return false;
-    }
-    m_buffer[m_write_pos] = std::forward<decltype(t)>(t);
-    m_write_pos = (m_write_pos + 1) % N;
-    m_size.fetch_add(1);
-    return true;
-  }
   
-public:
-  // Writer thread.
-  bool push(T&& t) { return do_push(std::move(t)); }
-  bool push(const T& t) { return do_push(t); }
-  
-  // Reader thread.
-  auto pop() -> std::optional<T> {
-    auto val = std::optional<T>{};
-    if (m_size.load() > 0) {
-      val = std::move(m_buffer[m_read_pos]);
-      m_read_pos = (m_read_pos + 1) % N;
-      m_size.fetch_sub(1);
-    }
-    return val;
-  }
-  auto size() const noexcept { return m_size.load(); }
-};
-
-[[maybe_unused]] static void demo_lock_free_queue()
-{
-  constexpr auto max_size = 5;
-
-  lock_free_queue<std::optional<int>, max_size> queue;
-  
-  auto writer = std::thread{[&queue]() {
-    for (auto i = 0; i < 10; ++i) {
-      bool pushed = queue.push({i});
-      if (!pushed) {
-        i--;
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      }
-    }
-    queue.push(std::nullopt);
-  }};
-
-  std::vector<int> result;
-
-  auto reader = std::thread{[&queue, &result]() {
-    for (;;) {
-      while (queue.size() == 0) {
-        // busy wait
-      }
-      auto element = *queue.pop();
-      if (element.has_value()) {
-        std::cout << "Got: " << *element << std::endl;
-        result.push_back(*element);
-      } else {
-        break;
-      }
-    }
-  }};
-  
-  writer.join();
-  reader.join();
-
-  std::cout << "Result: ";
-  for (auto i : result) std::cout << i << " ";
-  std::cout << std::endl;
-  // Should be std::vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}).
-}
-
 template <class T, int N> class bounded_buffer {
   std::array<T, N> m_buffer;
   std::size_t m_read_pos{};
@@ -1892,7 +1956,7 @@ public:
   }
 };
 
-[[maybe_unused]] static void semaphores()
+[[maybe_unused]] void semaphores_and_bounded_buffer()
 {
   auto buffer = bounded_buffer<std::string, 3>{};
   auto sentinel = std::string{""};
@@ -1911,7 +1975,7 @@ public:
     while (true) {
       auto s = buffer.pop();
       if (s == sentinel) return;
-      std::cout << "Got: " << s << '\n';
+      std::cout << "Got: " << s << std::endl;
     }
   }};
   
@@ -1919,16 +1983,20 @@ public:
   consumer.join();
 }
 
+
 // No need to pass a promise ref here.
-static int task_divide(int a, int b) {
-  if (b == 0) {
+int task_divide(int a, int b) {
+  if (!b)
     throw std::runtime_error{"Divide by zero exception"};
-  }
   return a / b;
 }
 
-[[maybe_unused]] static void tasks()
+
+[[maybe_unused]] void tasks()
 {
+
+
+
   std::packaged_task<decltype(task_divide)> task(task_divide);
   auto future = task.get_future();
   std::thread thread(std::move(task), 45, 5);
@@ -1941,23 +2009,24 @@ static int task_divide(int a, int b) {
   thread.join();
 }
 
-[[maybe_unused]] static void stop_token()
+
+[[maybe_unused]] void demo_stop_token()
 {
   const auto print = [] (std::stop_token stoken) -> void {
     while (!stoken.stop_requested()) {
       std::cout << std::this_thread::get_id() << '\n';
-      std::this_thread::sleep_for(std::chrono::seconds{1});
+      std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
     std::cout << "Stop requested" << std::endl;
   };
 
   auto joinable_thread = std::jthread(print);
   std::cout << "Main: goes to sleep" << std::endl;
-  std::this_thread::sleep_for(std::chrono::seconds{3});
+  std::this_thread::sleep_for(std::chrono::milliseconds{3});
   std::cout << "Main: request jthread to stop" << std::endl;
-  joinable_thread.request_stop();
-  
+  joinable_thread.request_stop(); // Same as when the jthread goes out of scope.
 }
+
 
 // The resumable return object.
 class Resumable {
@@ -2045,7 +2114,7 @@ public:
   auto end() { return Sentinel{}; }
 };
 
-[[maybe_unused]] static void simple_coroutine_example()
+[[maybe_unused]] void simple_coroutine_example()
 {
   auto iota = [] (int start) -> Generator<int> {
     for (int i = start; i < std::numeric_limits<int>::max(); ++i) {
@@ -2072,7 +2141,8 @@ public:
   std::cout << std::endl;
 }
 
-[[maybe_unused]] static void simple_resumable_demo()
+
+[[maybe_unused]] void simple_resumable_demo()
 {
   auto coroutine = []() -> Resumable {
     // Initial suspend.
@@ -2096,7 +2166,8 @@ public:
   // Destroy coroutine state
 }
 
-[[maybe_unused]] static void pass_coroutine_around()
+
+[[maybe_unused]] void pass_coroutine_around()
 {
   auto coroutine = []() -> Resumable {
     // Initial suspend.
@@ -2113,12 +2184,13 @@ public:
   
   auto thread = std::thread{[r = std::move(resumable)]() mutable {
     using namespace std::chrono_literals;
-    std::this_thread::sleep_for(500ms);
+    std::this_thread::sleep_for(5ms);
     // Resume from thread.
     r.resume();
   }};
   thread.join();
 }
+
 
 template <typename T>
 auto lin_value(T start, T stop, std::size_t index, std::size_t n) {
@@ -2145,7 +2217,7 @@ auto lineair_space_ranges(T start, T stop, std::size_t n) {
   });
 }
 
-[[maybe_unused]] static void linear_space_with_coroutines()
+[[maybe_unused]] void linear_space_with_coroutines()
 {
   for (auto v : lineair_space_coroutine(2.0, 3.0, 5)) {
     std::cout << v << " ";
@@ -2158,42 +2230,151 @@ auto lineair_space_ranges(T start, T stop, std::size_t n) {
   // Prints: 2, 2.25, 2.5, 2.75, 3,
 }
 
-struct ScopedNanoTimer
-{
-  std::chrono::high_resolution_clock::time_point timepoint0;
-  std::function<void(long)> callback;
-  
-  ScopedNanoTimer(std::function<void(long)> callback)
-  : timepoint0(std::chrono::high_resolution_clock::now())
-  , callback(callback) { }
-  ~ScopedNanoTimer()
-  {
-    const auto timepoint1 = std::chrono::high_resolution_clock::now();
-    const auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(timepoint1-timepoint0).count();
-    callback(nanos);
+
+// Template with a default type.
+template<typename D = std::chrono::nanoseconds>
+class ScopedTimer {
+  std::chrono::time_point<std::chrono::system_clock, D> m_started_at;
+public:
+  ScopedTimer() noexcept : m_started_at(std::chrono::time_point_cast<D>(std::chrono::system_clock::now())) {}
+  ~ScopedTimer() noexcept {
+    const auto destruction_time = std::chrono::time_point_cast<D>(std::chrono::system_clock::now());
+    std::cout << destruction_time - m_started_at << std::endl;
   }
 };
 
-struct ScopedNanoResults
-{
-  void operator()(long ns)
-  {
-    std::cout << "Elapsed time is " << ns << " nanoseconds" << std::endl;
-  }
-};
 
-[[maybe_unused]] void scoped_nano_timer ()
+[[maybe_unused]] void scoped_nano_timer()
 {
-  ScopedNanoResults scoped_nano_results;
-  ScopedNanoTimer scoped_nano_timer(scoped_nano_results);
+  ScopedTimer<std::chrono::microseconds> timer;
   
   // Do some work you want to time.
-  constexpr int N {100000};
-  long double sum {0.0};
-  for (int i {0}; i < N; i++)
-    sum += i * 45.678;
+  long double sum {};
+  for (int i {0}; i < 100'000; i++)
+    sum += i * 45.678f;
   std::cout << "The sum is " << sum << std::endl;
 }
+
+
+void demo_std_set_insert_iter_success()
+{
+  std::set <std::string> myset {"hello"};
+  int inserted {0}, skipped {0};
+  for (int i {2}; i; --i) {
+    if (auto [iter, success] = myset.insert("Hello"); success) {
+      std::cout << "Inserted: " << *iter << std::endl;
+      inserted++;
+    }
+    else
+      skipped++;
+  }
+  std::cout << "Inserted: " << inserted << std::endl;
+  std::cout << "Skipped: " << skipped << std::endl;
+}
+
+
+void demo_structured_binding()
+{
+  struct fields {
+    int a {1}, b {2}, c {3}, d {4};
+  };
+  {
+    const auto [w, x, y, z] = fields{};
+    std::cout << w << " " << x << " " << y << " " << z << std::endl;
+    // 1 2 3 4
+  }
+  {
+    const auto [b, d, p, q] = [] {
+      return fields{4, 3, 2, 1};
+    } ();
+    std::cout << b << " " << d << " " << p << " " << q << std::endl;
+    // 4 3 2 1
+  }
+  {
+    struct cpp17_struct {
+      mutable int x1 : 2;
+      mutable std::string y1;
+    };
+    const auto [x, y] = [] {
+      return cpp17_struct {1, "2"};
+    } ();
+    std::cout << x << " " << y << std::endl;
+  }
+  static_assert(true);
+  {
+    [[maybe_unused]] auto x1 = { 1, 2 };
+    [[maybe_unused]] auto x2 = { 1.0, 2.0 };
+    [[maybe_unused]] auto x3 { 2 };
+    [[maybe_unused]] auto x4 = { 3 };
+  }
+  {
+    float f {1.1};
+    char  c {'a'};
+    int   i {1};
+    const std::tuple<float&, char&&, int> tpl (f, std::move(c), i);
+    [[maybe_unused]] const auto& [ff,cc,ii] = tpl;
+    // ff is a structured binding that refers to f; decltype(ff) is float&
+    // cc is a structured binding that refers to c; decltype(cc) is char&&
+    // ii is a structured binding that refers to the 3rd element of tpl; decltype(ii) is const int
+  }
+}
+
+
+void demo_initializer_in_if_and_switch()
+{
+  std::set<std::string> myset {};
+  if (const auto [iter, success] = myset.insert("hello"); success) {
+    if (*iter != "hello") std::cout << "Inserted: " << " " << *iter << std::endl;
+  }
+  switch (auto i = 1; i) {
+    case 0:
+      break;
+    case 1:
+      break;
+    default:
+      break;
+  }
+}
+
+
+void demo_filesystem()
+{
+  {
+    std::string url = "/var/log/app";
+    std::filesystem::path p (url);
+    const auto dirname = p.parent_path().string();
+    std::cout << dirname << std::endl;
+  }
+  
+  std::cout << std::filesystem::path::preferred_separator << std::endl;
+  
+  try {
+    std::filesystem::path p ("log");
+    std::filesystem::remove (p);
+  } catch (const std::exception& ex) {
+    std::cout << ex.what() << std::endl;
+  }
+  
+  try {
+    std::filesystem::path path ("/tmp/hi.txt");
+    bool exists = std::filesystem::exists (path);
+    std::cout << "exists: " << exists << std::endl;
+  } catch (const std::exception& ex) {
+    std::cout << ex.what() << std::endl;
+  }
+  
+  try {
+    std::filesystem::path path (R"(/tmp)");
+    for (const auto& directory_entry : std::filesystem::directory_iterator {path}) {
+      std::filesystem::path path = directory_entry.path();
+      std::cout << path.string() << std::endl;
+    }
+  } catch (const std::exception& ex) {
+    std::cout << ex.what() << std::endl;
+  }
+
+}
+
 
 int main()
 {
@@ -2253,5 +2434,24 @@ int main()
   demo_lock_multiple_simultaneously();
   barriers();
   condition_variables();
+  stream_insertion::overloading_stream_insertion_operators();
+  demo_barrier_jthread_stop_token();
+  demo_timer_with_timed_mutex_and_condition_variable();
+  data_race_demo();
+  future_and_promise_and_exception();
+  joinable_thread();
+  latches();
+  semaphores_and_bounded_buffer();
+  tasks();
+  demo_stop_token();
+  simple_coroutine_example();
+  simple_resumable_demo();
+  pass_coroutine_around();
+  linear_space_with_coroutines();
+  scoped_nano_timer();
+  demo_std_set_insert_iter_success();
+  demo_structured_binding();
+  demo_initializer_in_if_and_switch();
+  demo_filesystem();
   return EXIT_SUCCESS;
 }
