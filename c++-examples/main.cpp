@@ -29,6 +29,7 @@
 #include <type_traits>
 #include <version>
 #include <filesystem>
+#include <source_location>
 
 [[maybe_unused]] void test_lambda_capture ()
 {
@@ -2372,7 +2373,51 @@ void demo_filesystem()
   } catch (const std::exception& ex) {
     std::cout << ex.what() << std::endl;
   }
+}
 
+
+void demo_source_location()
+{
+  std::cout << "File "      << std::source_location::current().file_name();
+  std::cout << " function " << std::source_location::current().function_name();
+  std::cout << " line "     << std::source_location::current().line();
+  std::cout << std::endl;
+}
+
+
+void demo_quotes()
+{
+  // Quotes in ordinary string literal.
+  std::cout << "'hello world'" << std::endl;
+  // Quotes in raw string literal. Example: R"(text)".
+  std::cout << R"("hello world")" << std::endl;
+  // Clean way to insert quotes.
+  std::cout << std::quoted ("hello world") << std::endl;
+}
+
+
+void demo_byte_to_integer()
+{
+  // Example "03 02 01 00 00"
+  using octet_stream = std::vector <unsigned char>;
+  octet_stream characters { 3, 2, 1, 0, 0 };
+  std::vector<std::byte> bytes {
+    std::byte{3}, std::byte{2}, std::byte{1}, std::byte{0}, std::byte{0}
+  };
+  std::cout << static_cast<int>(characters[0]) << std::endl;
+  std::cout << std::to_integer<int>(bytes[0]) << std::endl;
+  
+  std::cout << "Should be 513:" << std::endl;
+  std::cout << (static_cast<int>(characters[1]) << 8) + static_cast<int>(characters[2]) << std::endl;
+  std::cout << (std::to_integer<int>(bytes[1]) << 8) + std::to_integer<int>(bytes[2]) << std::endl;
+  
+  int number1 {0};
+  {
+    std::stringstream ss;
+    ss << 256 * static_cast<int>(characters[1]) + static_cast<int>(characters[2]);
+    ss >> std::dec >> number1;
+  }
+  std::cout << number1 << std::endl;
 }
 
 
@@ -2453,5 +2498,8 @@ int main()
   demo_structured_binding();
   demo_initializer_in_if_and_switch();
   demo_filesystem();
+  demo_source_location();
+  demo_quotes();
+  demo_byte_to_integer();
   return EXIT_SUCCESS;
 }

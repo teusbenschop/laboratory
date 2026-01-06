@@ -41,7 +41,6 @@
 		CA4926952905557E00FEB6D3 /* tidy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tidy; sourceTree = "<group>"; };
 		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
 		CA57C716297543F900D86BE7 /* freetype */ = {isa = PBXFileReference; lastKnownFileType = folder; path = freetype; sourceTree = "<group>"; };
-		CA5DD4DE277EF31D00E50FF7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -207,14 +206,6 @@
 			path = "chrome-app";
 			sourceTree = "<group>";
 		};
-		CA5DD4DA277EF2F000E50FF7 /* c++17 */ = {
-			isa = PBXGroup;
-			children = (
-				CA5DD4DE277EF31D00E50FF7 /* main.cpp */,
-			);
-			path = "c++17";
-			sourceTree = "<group>";
-		};
 		CA5EB3111DDF5B0000565FA2 /* torch */ = {
 			isa = PBXGroup;
 			children = (
@@ -225,13 +216,13 @@
 			path = torch;
 			sourceTree = "<group>";
 		};
-		CA6743852A5DAB2E006769F9 /* modern_c++ */ = {
+		CA6743852A5DAB2E006769F9 /* c++-examples */ = {
 			isa = PBXGroup;
 			children = (
 				CA6744582A5DAC18006769F9 /* main.cpp */,
 				CA60B6D82F066CF400CD9D7E /* Makefile */,
 			);
-			path = "modern_c++";
+			path = "c++-examples";
 			sourceTree = "<group>";
 		};
 		CA7937FA2A49FA8100B460A5 /* c++20 */ = {
@@ -360,7 +351,7 @@
 			isa = PBXGroup;
 			children = (
 				CAB396D12988DF330035E25E /* boost */,
-				CA5DD4DA277EF2F000E50FF7 /* c++17 */,
+				CA6743852A5DAB2E006769F9 /* c++-examples */,
 				CA7937FA2A49FA8100B460A5 /* c++20 */,
 				CAC13CEB2DA263EF008D1113 /* c++23 */,
 				CA3294652C304ECF0048FD22 /* certificates */,
@@ -378,7 +369,6 @@
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
 				CA6E11BF266D3B8200C5CBBB /* haak-bible */,
-				CA6743852A5DAB2E006769F9 /* modern_c++ */,
 				CA2971C122A0438900E373A4 /* intervalmap */,
 				CA98E2101DA8D14000F43F4B /* ipv6 */,
 				CAEF740722945DB900F16631 /* lambdas */,
@@ -465,7 +455,7 @@
 			buildPhases = (
 			);
 			buildToolPath = make;
-			buildWorkingDirectory = "/Users/teus/dev/laboratory/modern_c++";
+			buildWorkingDirectory = "/Users/teus/dev/laboratory/c++-examples";
 			dependencies = (
 			);
 			name = bibledit;
