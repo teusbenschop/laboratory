@@ -30,6 +30,8 @@
 #include <version>
 #include <filesystem>
 #include <source_location>
+#include <bit>
+#include <format>
 
 [[maybe_unused]] void test_lambda_capture ()
 {
@@ -854,18 +856,6 @@ auto pow_n_remove_const_volatile_reference (const auto&v, int n) {
 }
 
 
-[[maybe_unused]] void demo_consteval()
-{
-  const auto consteval_sum = [](int x, int y) {
-    return x + y;
-  };
-  constexpr const auto sum = consteval_sum(1, 2);
-  static_assert(sum == 3);
-  [[maybe_unused]] auto x {1};
-  // auto sum2 = consteval_sum(x, 2); // Fails to compile.
-}
-
-
 struct Bear {
   auto roar() const { std::cout << "roar" << std::endl; }
 };
@@ -1013,6 +1003,40 @@ T generic_mod_overload(T v, T n) { // Floating point version.
   return std::fmod(v, n);
 }
 
+// Declaration of the concept "hashable", which is satisfied by any type 'T'
+// such that for values 'a' of type 'T', the expression std::hash<T>{}(a)
+// compiles and its result is convertible to std::size_t
+template<typename T>
+concept hashable = requires(T a)
+{
+  { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+};
+
+
+// Constrained C++20 function template.
+template<hashable T>
+void constrained_func1(T) {}
+
+// Alternative ways to apply the same constraint:
+template<typename T>
+requires hashable<T>
+void constrained_func2(T) {}
+
+template<typename T>
+void constrained_func3(T) requires hashable<T> {}
+
+void constrained_func4(hashable auto /*parameterName*/) {}
+
+
+// https://en.cppreference.com/w/cpp/language/constraints
+// Class templates, function templates, and non-template functions
+// (typically members of class templates)
+// may be associated with a constraint,
+// which specifies the requirements on template arguments,
+// which can be used to select the most appropriate function overloads and template specializations.
+// Named sets of such requirements are called concepts.
+// Each concept is a predicate, evaluated at compile time,
+// and becomes a part of the interface of a template where it is used as a constraint.
 [[maybe_unused]] void demo_constraints_and_concepts()
 {
   {
@@ -1046,6 +1070,12 @@ T generic_mod_overload(T v, T n) { // Floating point version.
     auto const modulus = 1.0f;
     auto const x = generic_mod_overload(value, modulus);
     std::cout << "Modulus of floating point types: " << x << std::endl;
+  }
+  {
+    constrained_func1("abc");    // OK, std::string satisfies Hashable
+    constrained_func1(std::string("abc"));
+    //struct meow {};
+    //constrained_func1(meow{}); // Error: meow does not satisfy Hashable
   }
 }
 
@@ -2029,209 +2059,6 @@ int task_divide(int a, int b) {
 }
 
 
-// The resumable return object.
-class Resumable {
-  struct Promise {
-    auto get_return_object() {
-      using Handle = std::coroutine_handle<Promise>;
-      return Resumable{Handle::from_promise(*this)};
-    }
-    auto initial_suspend() { return std::suspend_always{}; }
-    auto final_suspend() noexcept { return std::suspend_always{}; }
-    void return_void() {}
-    void unhandled_exception() { std::terminate(); }
-  };
-  std::coroutine_handle<Promise> m_coroutine_handle;
-  explicit Resumable(std::coroutine_handle<Promise> handle) : m_coroutine_handle{handle} {}
-  
-public:
-  using promise_type = Promise;
-  Resumable(Resumable&& r) : m_coroutine_handle{std::exchange(r.m_coroutine_handle, {})} {}
-  ~Resumable() { if (m_coroutine_handle) m_coroutine_handle.destroy(); }
-  bool resume() {
-    if (!m_coroutine_handle.done()) m_coroutine_handle.resume();
-    return !m_coroutine_handle.done();
-  }
-};
-
-template <typename T>
-struct Generator {
-  
-private:
-  struct Promise {
-    T m_value;
-    auto get_return_object() -> Generator {
-      using Handle = std::coroutine_handle<Promise>;
-      return Generator{Handle::from_promise(*this)};
-    }
-    auto initial_suspend() { return std::suspend_always{}; }
-    auto final_suspend() noexcept { return std::suspend_always{}; }
-    void return_void() {}
-    void unhandled_exception() { throw; }
-    auto yield_value(T&& value) {
-      m_value = std::move(value);
-      return std::suspend_always{};
-    }
-    auto yield_value(const T& value) {
-      m_value = value;
-      return std::suspend_always{};
-    }
-  };
-  
-  struct Sentinel {};
-  
-  struct Iterator {
-    
-    using iterator_category = std::input_iterator_tag;
-    using value_type = T;
-    using difference_type = ptrdiff_t;
-    using pointer = T*;
-    using reference = T&;
-    
-    std::coroutine_handle<Promise> m_coroutine_handle;
-    Iterator& operator++() {
-      m_coroutine_handle.resume();
-      return *this;
-    }
-    void operator++(int) { (void)operator++(); }
-    T operator*() const { return  m_coroutine_handle.promise().m_value; }
-    pointer operator->() const { return std::addressof(operator*()); }
-    bool operator==(Sentinel) const { return m_coroutine_handle.done(); }
-  };
-  
-  std::coroutine_handle<Promise> m_coroutine_handle;
-  explicit Generator(std::coroutine_handle<Promise> co_handle) : m_coroutine_handle(co_handle) {}
-  
-public:
-  using promise_type = Promise;
-  
-  Generator(Generator&& g) : m_coroutine_handle(std::exchange(g.m_coroutine_handle, {})) {}
-  ~Generator() { if (m_coroutine_handle) { m_coroutine_handle.destroy();  } }
-  
-  auto begin() {
-    m_coroutine_handle.resume();
-    return Iterator{m_coroutine_handle};
-  }
-  auto end() { return Sentinel{}; }
-};
-
-[[maybe_unused]] void simple_coroutine_example()
-{
-  auto iota = [] (int start) -> Generator<int> {
-    for (int i = start; i < std::numeric_limits<int>::max(); ++i) {
-      co_yield i;
-    }
-  };
-
-  auto take_until = [](Generator<int>& generator, int until) -> Generator<int> {
-    for (auto value : generator) {
-      if (value > until) {
-        co_return;
-      }
-      co_yield value;
-    }
-  };
-  
-  Generator<int> int_generator = iota(2);
-  auto values = take_until (int_generator, 5);
-  // Pull values lazily.
-  for (const auto value : values) {
-    std::cout << value << " ";
-    // Prints: 2 3 4 5
-  }
-  std::cout << std::endl;
-}
-
-
-[[maybe_unused]] void simple_resumable_demo()
-{
-  auto coroutine = []() -> Resumable {
-    // Initial suspend.
-    std::cout << "3 ";
-    // Explicit suspend.
-    co_await std::suspend_always{};
-    std::cout << "5 ";
-  };
-
-  std::cout << "1 ";
-  // Create coroutine state.
-  auto resumable = coroutine();
-  std::cout << "2 ";
-  // Resume.
-  resumable.resume();
-  std::cout << "4 ";
-  // Resume.
-  resumable.resume();
-  std::cout << "6 " << std::endl;
-  // Prints: 1 2 3 4 5 6
-  // Destroy coroutine state
-}
-
-
-[[maybe_unused]] void pass_coroutine_around()
-{
-  auto coroutine = []() -> Resumable {
-    // Initial suspend.
-    std::cout << "c1" << std::endl;
-    // Explicit suspend.
-    co_await std::suspend_always{};
-    std::cout << "c2 " << std::endl;
-  };
-
-  auto resumable = coroutine();
-
-  // Resume from main.
-  resumable.resume();
-  
-  auto thread = std::thread{[r = std::move(resumable)]() mutable {
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(5ms);
-    // Resume from thread.
-    r.resume();
-  }};
-  thread.join();
-}
-
-
-template <typename T>
-auto lin_value(T start, T stop, std::size_t index, std::size_t n) {
-  assert(n > 1 && index < n);
-  const auto amount = static_cast<T>(index) / (n - 1);
-  const auto v = start + amount * (stop - start);
-  return v;
-}
-
-
-template <typename T>
-auto lineair_space_coroutine(T start, T stop, std::size_t n) -> Generator<T> {
-  for (auto i = 0u; i < n; ++i) {
-    co_yield lin_value(start, stop, i, n);
-  }
-}
-
-template <typename T>
-auto lineair_space_ranges(T start, T stop, std::size_t n) {
-  return std::views::iota(0ul, n)
-  |
-  std::views::transform([=](auto i) {
-    return lin_value(start, stop, i, n);
-  });
-}
-
-[[maybe_unused]] void linear_space_with_coroutines()
-{
-  for (auto v : lineair_space_coroutine(2.0, 3.0, 5)) {
-    std::cout << v << " ";
-  }
-  std::cout << std::endl;
-  for (auto v : lineair_space_ranges(2.0, 3.0, 5)) {
-    std::cout << v << " ";
-  }
-  std::cout << std::endl;
-  // Prints: 2, 2.25, 2.5, 2.75, 3,
-}
-
-
 // Template with a default type.
 template<typename D = std::chrono::nanoseconds>
 class ScopedTimer {
@@ -2376,15 +2203,6 @@ void demo_filesystem()
 }
 
 
-void demo_source_location()
-{
-  std::cout << "File "      << std::source_location::current().file_name();
-  std::cout << " function " << std::source_location::current().function_name();
-  std::cout << " line "     << std::source_location::current().line();
-  std::cout << std::endl;
-}
-
-
 void demo_quotes()
 {
   // Quotes in ordinary string literal.
@@ -2418,6 +2236,531 @@ void demo_byte_to_integer()
     ss >> std::dec >> number1;
   }
   std::cout << number1 << std::endl;
+}
+
+
+void feature_testing_macros()
+{
+  // https://en.cppreference.com/w/cpp/feature_test
+  // Preprocessor macros to detect the presence of C++ features introduced since C++11.
+#ifdef __has_include
+#  if __has_include(<optional>)
+  std::cout << "Has include <optional> so that is great" << std::endl;
+#  endif
+#endif
+#ifdef __has_include
+#  if __has_include(<bad>)
+  std::cout << "Has include <bad> but that looks unlikely" << std::endl;
+#  else
+  std::cout << "Does not have include <bad> which is expected" << std::endl;
+#  endif
+#endif
+  std::cout << "C++ version " <<  __cplusplus << std::endl;
+}
+
+
+void three_way_comparison_operator()
+{
+  // https://en.cppreference.com/w/cpp/language/operator_comparison#Three-way_comparison
+  std::cout << "Three-way comparison operator <=> ";
+  constexpr double foo {-0.0f};
+  constexpr double bar {+0.0f};
+  const std::partial_ordering result {foo <=> bar};
+  if (result == std::partial_ordering::less)
+    std::cout << foo << " is less than " << bar << std::endl;
+  if (result == std::partial_ordering::greater)
+    std::cout << foo << " is greater than " << bar << std::endl;
+  if (result == std::partial_ordering::equivalent)
+    std::cout << foo << " and " << bar << " are equal" << std::endl;
+  if (result == std::partial_ordering::unordered)
+    std::cout << foo << " and " << bar << " are unordered" << std::endl;
+}
+
+
+void init_statements_in_range_based_for_loops()
+{
+  // https://en.cppreference.com/w/cpp/language/range-for
+  std::cout << "init statements in range-based for loops" << std::endl;
+  
+  const std::vector v {0, 1, 2, 3, 4, 5};
+  
+  // Init statement since C++20.
+  for ([[maybe_unused]] auto n = v.size(); auto i : v)
+    std::cout << i << " ";
+  std::cout << std::endl;
+  
+  // A typedef declaration as init-statement (C++20).
+  for (typedef decltype(v)::value_type elem_t; elem_t i : v)
+    std::cout << i << " ";
+  std::cout << std::endl;
+}
+
+
+void demo_char_8_t()
+{
+  std::cout << "type char_8_t" << std::endl;
+  const char* character1 {"Hello"};
+  // Error in C++20:
+  //const char* character1 {u8"Hello"};
+  const char8_t* character8 = u8"Hello";
+  const char* chars = reinterpret_cast<const char*>(character8);
+  std::cout << chars << std::endl;
+  std::cout << sizeof(character8) << std::endl;
+  std::cout << sizeof(character1) << std::endl;
+}
+
+
+void demo_attribute_no_unique_address()
+{
+  std::cout << "demo of attribute no_unique_address" << std::endl;
+
+  // https://en.cppreference.com/w/cpp/language/attributes/no_unique_address
+  
+  struct Empty {}; // The size of any object of empty class type is at least 1.
+  std::cout << "size: " << sizeof(Empty) << std::endl; // 1 byte
+  
+  struct X
+  {
+    int i;
+    Empty e; // At least one more byte is needed to give ‘e’ a unique address
+  };
+  std::cout << "size: " << sizeof(X) << std::endl; // 8 bytes
+  
+  struct Y
+  {
+    int i;
+    [[no_unique_address]] Empty e; // Empty member optimized out.
+  };
+  std::cout << "size: " << sizeof(Y) << std::endl; // 4 bytes
+  
+  struct Z
+  {
+    char c;
+    // e1 and e2 cannot share the same address because they have the
+    // same type, even though they are marked with [[no_unique_address]].
+    // However, either may share address with ‘c’.
+    [[no_unique_address]] Empty e1, e2;
+  };
+  std::cout << "size: " << sizeof(Z) << std::endl; // 2 bytes
+
+  struct W
+  {
+    char c[2];
+    // e1 and e2 cannot have the same address, but one of
+    // them can share with c[0] and the other with c[1]:
+    [[no_unique_address]] Empty e1, e2;
+  };
+  std::cout << "size: " << sizeof(Z) << std::endl; // 2 bytes
+}
+
+
+namespace with_attributes {
+
+constexpr double pow(double x, long long n) noexcept
+{
+  if (n > 0) [[likely]]
+    return x * pow(x, n - 1);
+  else [[unlikely]]
+    return 1;
+}
+
+constexpr long long fact(long long n) noexcept
+{
+  if (n > 1) [[likely]]
+    return n * fact(n - 1);
+  else [[unlikely]]
+    return 1;
+}
+
+constexpr double cos(double x) noexcept
+{
+  constexpr long long precision{16LL};
+  double y{};
+  for (auto n{0LL}; n < precision; n += 2LL) [[likely]]
+    y += pow(x, n) / (n & 2LL ? -fact(n) : fact(n));
+  return y;
+}
+
+} // namespace with_attributes
+
+namespace no_attributes {
+
+constexpr double pow(double x, long long n) noexcept
+{
+  if (n > 0)
+    return x * pow(x, n - 1);
+  else
+    return 1;
+}
+
+constexpr long long fact(long long n) noexcept
+{
+  if (n > 1)
+    return n * fact(n - 1);
+  else
+    return 1;
+}
+
+constexpr double cos(double x) noexcept
+{
+  constexpr long long precision{16LL};
+  double y{};
+  for (auto n{0LL}; n < precision; n += 2LL)
+    y += pow(x, n) / (n & 2LL ? -fact(n) : fact(n));
+  return y;
+}
+
+} // namespace no_attributes
+
+
+void demo_attribute_likely_unlikely()
+{
+  // https://en.cppreference.com/w/cpp/language/attributes/likely
+  // Attribute to hint the compiler for the likely or unlikely path of execution,
+  // allowing the compiler to optimize the code.
+
+  static const auto gen_random = []() noexcept -> double
+  {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_real_distribution<double> dis(-1.0, 1.0);
+    return dis(gen);
+  };
+  
+  volatile double sink{}; // ensures a side effect
+
+  const auto benchmark = [&sink](auto fun, auto rem)
+  {
+    const auto start = std::chrono::high_resolution_clock::now();
+    for (auto size{1ULL}; size != 10'000ULL; ++size)
+      sink = fun(gen_random());
+    const std::chrono::duration<double> diff = std::chrono::high_resolution_clock::now() - start;
+    std::cout << "Time: " << std::fixed << std::setprecision(6) << diff.count()
+    << " sec " << rem << std::endl;
+  };
+  
+  benchmark(with_attributes::cos, "(with attributes)");
+  benchmark(no_attributes::cos, "(without attributes)");
+  benchmark([](double t) { return std::cos(t); }, "(std::cos)");
+}
+
+
+namespace const_evaluation {
+
+// This constexpr function might be evaluated at compile-time
+// if the input is known at compile-time.
+// Otherwise, it is executed at run-time.
+constexpr unsigned factorial(unsigned n)
+{
+  return (n < 2) ? 1 : (n * factorial(n - 1));
+}
+
+// With consteval we enforce that the function will be evaluated at compile-time.
+consteval unsigned combination(unsigned m, unsigned n)
+{
+  return factorial(n) / factorial(m) / factorial(n - m);
+}
+
+static_assert(factorial(6) == 720);
+static_assert(combination(4, 8) == 70);
+
+}
+
+[[maybe_unused]] void demo_consteval()
+{
+  // https://en.cppreference.com/w/cpp/language/consteval
+  constexpr unsigned x{const_evaluation::factorial(4)};
+  std::cout << x << std::endl;
+  
+  unsigned y = const_evaluation::factorial(4); // OK
+  std::cout << y << std::endl;
+
+  const int i {1};
+  unsigned z = const_evaluation::combination(i, 7);
+  // If 'i' is not const: compile error: 'i' is not a constant expression.
+  std::cout << z << std::endl;
+}
+
+
+namespace const_init {
+const char* di() { return "dynamic initialization"; }
+constexpr const char* ci(bool p) { return p ? "constant initializer" : di(); }
+constinit const char* c = ci(true);     // OK
+//constinit const char* d = ci(false); // error
+}
+
+void demo_constinit()
+{
+  // https://en.cppreference.com/w/cpp/language/constinit
+  // Using const_init ensures that the variable is initialized at compile-time,
+  // and that the static initialization order fiasco cannot take place.
+  std::cout << const_init::di() << std::endl;
+  std::cout << const_init::ci(true) << std::endl;
+}
+
+
+void designated_initializers()
+{
+  // https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers
+  {
+    struct S {
+      const int x{};
+      const int y{};
+      const int z{};
+    };
+    // OK although designator order does not match declaration order.
+    const S a {.y = 2, .x = 1};
+    // Ok, b.y initialized to 0.
+    const S b {.x = 1, .z = 2};
+    std::cout << a.x << " " << a.y << " " << a.z << std::endl;
+    std::cout << b.x << " " << b.y << " " << b.z << std::endl;
+  }
+  {
+    struct S {
+      const std::string s {"s"};
+      const int n {42};
+      const int m {-1};
+    };
+    const S a {.m = 21};
+    // Initializes s with {}, which calls the default constructor.
+    // Then initializes n with = 42.
+    // Then initializes m with = 21.
+    std::cout << a.s << " " << a.n << " " << a.m << std::endl;
+  }
+}
+
+
+// https://en.cppreference.com/w/cpp/language/aggregate_initialization
+void aggregate_initialization()
+{
+  struct S
+  {
+    int x{};
+    struct Foo
+    {
+      int i{};
+      int j{};
+      int a[3];
+    } foo;
+  };
+  
+  const auto print = [](const S s) {
+    std::cout << s.x << " " << s.foo.i << " " << s.foo.j << std::endl;
+    for (const int a : s.foo.a)
+      std::cout << a << " ";
+    std::cout << std::endl;
+  };
+  
+  // Using direct-list-initialization syntax.
+  S s1 =
+  {
+    1,
+    {
+      2, 3,
+      {
+        4, 5, 6
+      }
+    }
+  };
+  print(s1);
+  
+  // Same, but with brace elision.
+  // The compiler suggest braces around subobject initialization, rightly so.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+  S s2 = {1, 2, 3, 4, 5, 6};
+#pragma GCC diagnostic pop
+  print(s2);
+  
+  // Brace elision only allowed with equals sign
+  [[maybe_unused]] int ar[] = {1, 2, 3}; // ar is int[3]
+  
+  // Too many initializer clauses
+  // char cr[3] = {'a', 'b', 'c', 'd'};
+  
+  // Array initialized as {'a', '\0', '\0'}
+  [[maybe_unused]] char cr[3] = {'a'};
+  
+  // Fully-braced 2D array: {1, 2}
+  [[maybe_unused]] int ar2d1[2][2] = {{1, 2}, {3, 4}};
+  // Compiler suggests braces around subobject.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+  [[maybe_unused]] int ar2d2[2][2] = {3, 4};
+#pragma GCC diagnostic pop
+  // Brace elision.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+  [[maybe_unused]] int ar2d3[2][2] = {1, 2, 3, 4}; // brace elision: {1, 2}
+#pragma GCC diagnostic pop
+  // Only first column: {1, 0}
+  [[maybe_unused]] int ar2d4[2][2] = {{1}, {2}};
+  
+  [[maybe_unused]] std::array<int, 3> std_ar2{{1, 2, 3}};  // std::array is an aggregate
+  [[maybe_unused]] std::array<int, 3> std_ar1 = {1, 2, 3}; // brace-elision okay
+  
+  // int ai[] = {1, 2.0}; // narrowing conversion from double to int:
+  // error in C++11, okay in C++03
+  
+  std::string ars[] = {
+    std::string("one"), // copy-initialization
+    "two",              // conversion, then copy-initialization
+    {'t', 'h', 'r', 'e', 'e'} // list-initialization
+  };
+  
+  union U
+  {
+    int a;
+    const char* b;
+  };
+  [[maybe_unused]] U u1 = {1};   // OK, first member of the union
+  // U u2 = {0, "asdf"}; // error: too many initializers for union
+  // U u3 = {"asdf"};    // error: invalid conversion to int
+}
+
+
+// https://en.cppreference.com/w/cpp/language/coroutines
+// Coroutines are designed to be performing as lightweight threads.
+// Coroutines provide concurrency but not parallelism [Important!].
+// Switching between coroutines need not involve any system/blocking calls
+// so no need for synchronization primitives such as mutexes, semaphores.
+
+namespace coroutines {
+
+struct return_object {
+  struct promise_type {
+    return_object get_return_object() { return {}; }
+    std::suspend_never initial_suspend() { return {}; }
+    std::suspend_never final_suspend() noexcept { return {}; }
+    void unhandled_exception() {}
+  };
+};
+
+struct awaiter {
+  std::coroutine_handle<> *hp_;
+  constexpr bool await_ready() const noexcept { return false; }
+  void await_suspend(std::coroutine_handle<> h) { *hp_ = h; }
+  constexpr void await_resume() const noexcept {}
+};
+
+// This function runs forever. It increases and prints the value.
+// The variable i maintains its value even as control switches repeatedly
+// between this function and the function that invoked it.
+return_object infinite_counter(std::coroutine_handle<>* continuation) {
+  awaiter a{continuation};
+  for (int i {0}; ; i++) {
+    co_await a;
+    std::cout << "in coroutine " << i << std::endl;
+  }
+}
+
+} // Namespace.
+
+void demo_coroutines()
+{
+  std::coroutine_handle<> h;
+  coroutines::infinite_counter(&h);
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "in main function" << std::endl;
+    h();
+  }
+  h.destroy();
+}
+
+
+// https://en.cppreference.com/w/cpp/language/modules
+// Modules are a language feature to share declarations and definitions across translation units.
+// They are an alternative to some use cases of headers.
+// Modules are orthogonal to namespaces.
+// export module hello_world;
+// C++20 'module' only available with '-fmodules-ts', which is not yet enabled with '-std=c++20'
+
+
+// https://en.cppreference.com/w/cpp/header/bit
+void demo_header_bit()
+{
+  {
+    constexpr auto endian {std::endian::native};
+    if (endian == std::endian::big)
+      std::cout << "The system is big-endian" << std::endl;
+    if (endian == std::endian::little)
+      std::cout << "The system is little-endian" << std::endl;
+  }
+  {
+    // Copy bit by bit from one variable to the other variable.
+    unsigned int ui8 {3};
+    const int i8 = std::bit_cast<int>(ui8);
+    std::cout << "Use std::bit_cast: " << i8 << std::endl;
+  }
+  {
+    for (auto u = 0u; u != 10; ++u) {
+      std::cout << "u = " << u << " = " << std::bitset<4>(u);
+      if (std::has_single_bit(u)) {
+        std::cout << " = 2^" << std::log2(u) << " (is power of two)";
+      }
+      std::cout << std::endl;
+    }
+  }
+  // bit_ceil
+  // Finds the smallest integral power of two not less than the given value.
+  // bit_floor
+  // Finds the largest integral power of two not greater than the given value.
+  // bit_width
+  // Finds the smallest number of bits needed to represent the given value.
+  // rotl - Rotate bits to the left.
+  // rotr - Rotate bits to the right.
+  // countl_zero
+  // Counts the number of consecutive 0 bits, starting from the most significant bit.
+  // countl_one
+  // Counts the number of consecutive 1 bits, starting from the most significant bit.
+  // countr_zero
+  // Counts the number of consecutive 0 bits, starting from the least significant bit.
+  // countr_one
+  // Counts the number of consecutive 1 bits, starting from the least significant bit.
+  // popcount - Counts the number of 1 bits in an unsigned integer.
+}
+
+
+// https://en.cppreference.com/w/cpp/header/compare
+void demo_header_compare()
+{
+}
+
+
+// https://en.cppreference.com/w/cpp/utility/format
+void formatting_library()
+{
+  std::cout << std::format("std::format demo: A={} B={} C={}", "a", std::string("b"), 3) << std::endl;
+}
+
+
+// https://en.cppreference.com/w/cpp/chrono#Calendar
+void calendar_library_in_chrono()
+{
+  constexpr auto year_month_day {std::chrono::year(2021)/8/2};
+  std::cout << "year " << year_month_day.year() << " month " << year_month_day.month() << " day " << year_month_day.day() << std::endl;
+  const auto utc = std::chrono::system_clock::now();
+  std::cout << "UTC time: " << utc << std::endl;
+  std::time_t time = std::chrono::system_clock::to_time_t(utc);
+  std::string time_str = std::ctime(&time);
+  std::cout << "Local time: " << time_str << std::endl;
+  //std::cout << std::chrono::current_zone()->to_local(utc) << std::endl;
+}
+
+
+// https://en.cppreference.com/w/cpp/utility/source_location
+void demo_source_location()
+{
+  const auto log = [] (const std::string_view message,
+                       const std::source_location location = std::source_location::current())
+  {
+    std::clog
+    << location.file_name()
+    << '(' << location.line() << ':' << location.column() << ") "
+    << location.function_name() << ": "
+    << message << std::endl;
+  };
+  log("hello world");
 }
 
 
@@ -2457,7 +2800,6 @@ int main()
   memory_placement_new();
   template_or_auto_or_remove_cvref_methods();
   demo_type_traits();
-  demo_consteval();
   demo_if_constexpr();
   demo_unconstrained_templates();
   demo_constraints_and_concepts();
@@ -2489,17 +2831,28 @@ int main()
   semaphores_and_bounded_buffer();
   tasks();
   demo_stop_token();
-  simple_coroutine_example();
-  simple_resumable_demo();
-  pass_coroutine_around();
-  linear_space_with_coroutines();
   scoped_nano_timer();
   demo_std_set_insert_iter_success();
   demo_structured_binding();
   demo_initializer_in_if_and_switch();
   demo_filesystem();
-  demo_source_location();
   demo_quotes();
   demo_byte_to_integer();
+  feature_testing_macros();
+  three_way_comparison_operator();
+  init_statements_in_range_based_for_loops();
+  demo_char_8_t();
+  demo_attribute_no_unique_address();
+  demo_attribute_likely_unlikely();
+  demo_consteval();
+  demo_constinit();
+  designated_initializers();
+  aggregate_initialization();
+  demo_coroutines();
+  demo_header_bit();
+  demo_header_compare();
+  formatting_library();
+  calendar_library_in_chrono();
+  demo_source_location();
   return EXIT_SUCCESS;
 }

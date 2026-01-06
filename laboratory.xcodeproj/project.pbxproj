@@ -53,7 +53,6 @@
 		CA741F801E017182004EA723 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA74AB20282041380051E815 /* cpp-core-guidelines */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "cpp-core-guidelines"; sourceTree = "<group>"; };
 		CA76BE992019FA6A00B16C72 /* miniz */ = {isa = PBXFileReference; lastKnownFileType = folder; path = miniz; sourceTree = "<group>"; };
-		CA7937FB2A49FA8100B460A5 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		CA7937FD2A49FA8100B460A5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA7BA6911DDCEA3C00719C36 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA7BA6921DDCEA3C00719C36 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
@@ -91,7 +90,6 @@
 		CA98E2441DA8D17000F43F4B /* vfork */ = {isa = PBXFileReference; lastKnownFileType = text; path = vfork; sourceTree = "<group>"; };
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
-		CAA726EF2DC74E2E00129852 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		CAACE86B2C346FF300F684A9 /* ldap */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ldap; sourceTree = "<group>"; };
 		CAB396D12988DF330035E25E /* boost */ = {isa = PBXFileReference; lastKnownFileType = folder; path = boost; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -228,9 +226,7 @@
 		CA7937FA2A49FA8100B460A5 /* c++20 */ = {
 			isa = PBXGroup;
 			children = (
-				CA7937FB2A49FA8100B460A5 /* main.h */,
 				CA7937FD2A49FA8100B460A5 /* main.cpp */,
-				CAA726EF2DC74E2E00129852 /* Makefile */,
 			);
 			path = "c++20";
 			sourceTree = "<group>";
