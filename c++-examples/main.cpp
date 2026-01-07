@@ -32,9 +32,24 @@
 #include <source_location>
 #include <bit>
 #include <format>
+#include <syncstream>
 
-[[maybe_unused]] void test_lambda_capture ()
+// Template with a default type.
+template<typename D = std::chrono::nanoseconds>
+class scoped_timer {
+  std::chrono::time_point<std::chrono::system_clock, D> m_started_at;
+public:
+  scoped_timer() noexcept : m_started_at(std::chrono::time_point_cast<D>(std::chrono::system_clock::now())) {}
+  ~scoped_timer() noexcept {
+    const auto destruction_time = std::chrono::time_point_cast<D>(std::chrono::system_clock::now());
+    std::cout << destruction_time - m_started_at << std::endl;
+  }
+};
+
+
+void test_lambda_capture ()
 {
+  return;
   // Capture by value.
   {
     auto v = 7;
@@ -63,8 +78,9 @@
 }
 
 
-[[maybe_unused]] void assign_two_lambdas_to_same_function_object ()
+void assign_two_lambdas_to_same_function_object ()
 {
+  return;
   // Create an unassigned std::function object.
   auto func = std::function<void(int)>{};
   
@@ -108,8 +124,9 @@ static auto create_buttons() {
 }
 
 
-[[maybe_unused]] void std_function_with_button_class()
+void std_function_with_button_class()
 {
+  return;
   const auto buttons = create_buttons();
   for (const auto& b : buttons) {
     b.on_click();
@@ -149,8 +166,9 @@ static auto create_buttons() {
 }
 
 
-[[maybe_unused]] void lambda_auto_typename()
+void lambda_auto_typename()
 {
+  return;
   // Using auto.
   auto x = [](auto v) { return v + 1; };
   
@@ -168,30 +186,9 @@ static auto create_buttons() {
 }
 
 
-class scoped_timer {
-  
-public:
-  using clock_type = std::chrono::steady_clock;
-  scoped_timer(const char* func) : function_{func}, m_start{clock_type::now()} {}
-  scoped_timer(const scoped_timer&) = delete;
-  scoped_timer(scoped_timer&&) = delete;
-  auto operator=(const scoped_timer&) -> scoped_timer& = delete;
-  auto operator=(scoped_timer &&) -> scoped_timer& = delete;
-  ~scoped_timer() {
-    using namespace std::chrono;
-    auto stop = clock_type::now();
-    auto duration = (stop - m_start);
-    auto ms = duration_cast<nanoseconds>(duration).count();
-    std::cout << ms << " nanoseconds " << function_ << '\n';
-  }
-private:
-  const char* function_ = {};
-  const clock_type::time_point m_start = {};
-};
-
-
-[[maybe_unused]] void benchmarking_function()
+void benchmarking_function()
 {
+  return;
   {
     [[maybe_unused]] auto scoped_timer ("test");
     for (unsigned int i = 0; i < 10000; i++) {
@@ -235,8 +232,9 @@ using matrix_type = std::array<std::array<int, k_size>, k_size>;
 matrix_type m;
 
 
-[[maybe_unused]] void test_contains()
+void test_contains()
 {
+  return;
   auto bag = std::multiset<std::string>{};
   std::string word {"word"};
   bag.insert(word);
@@ -263,7 +261,7 @@ struct big_object {
 
 template <class T>
 auto sum_scores(const std::vector<T>& objects) {
-  scoped_timer t{"sum_scores"};
+  scoped_timer t{};
   auto sum = 0ul;
   for (const auto& obj : objects) {
     sum += static_cast<size_t>(obj.score_);
@@ -271,8 +269,9 @@ auto sum_scores(const std::vector<T>& objects) {
   return sum;
 }
 
-[[maybe_unused]] void sum_scores_compare_processing_time ()
+void sum_scores_compare_processing_time ()
 {
+  return;
   std::cout << "sizeof(small_object): " << sizeof(small_object) << " bytes" << std::endl;
   std::cout << "sizeof(big_object): " << sizeof(big_object) << " bytes" << std::endl;
   
@@ -300,8 +299,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void sorting ()
+void sorting ()
 {
+  return;
   const auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
   const auto print = [](const auto& values) {
     std::ranges::for_each(values, [](const auto& v) {std::cout << v << " ";});
@@ -317,7 +317,8 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void print_ranges_for_each (auto&& r) {
+void print_ranges_for_each (auto&& r)
+{
   std::ranges::for_each(r, [](auto&& i) {
     std::cout << i << ' ';
   });
@@ -325,8 +326,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_transform()
+void algorithm_transform()
 {
+  return;
   auto input = std::vector<int>{1, 2, 3, 4};
   auto output = std::vector<int>(input.size());
   auto lambda = [](auto&& i) { return i * i; };
@@ -336,8 +338,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_fill()
+void algorithm_fill()
 {
+  return;
   std::vector<int> v(5);
   std::ranges::fill(v, -123);
   std::cout << "std::ranges::fill: ";
@@ -345,8 +348,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_generate()
+void algorithm_generate()
 {
+  return;
   std::vector<int> v(4);
   std::ranges::generate(v, std::rand);
   std::cout << "std::ranges::generate: ";
@@ -354,8 +358,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_iota()
+void algorithm_iota()
 {
+  return;
   auto v = std::vector<int>(6);
   std::iota(v.begin(), v.end(), 0);
   std::cout << "std::iota: ";
@@ -364,8 +369,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_find()
+void algorithm_find()
 {
+  return;
   {
     const auto numbers = std::list{2, 4, 3, 2, 3, 1};
     auto it = std::ranges::find(numbers, 2);
@@ -388,8 +394,10 @@ auto sum_scores(const std::vector<T>& objects) {
   }
 }
 
-[[maybe_unused]] void algorithm_binary_search()
+
+void algorithm_binary_search()
 {
+  return;
   auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
   // A binary search works if the container is sorted.
   std::cout << "container for binary search is sorted: " << std::boolalpha << std::ranges::is_sorted(v) << std::endl;
@@ -398,8 +406,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_lower_upper_bound()
+void algorithm_lower_upper_bound()
 {
+  return;
   const auto v = std::vector<int>{2, 2, 3, 3, 3, 4, 5};
   if (const auto it = std::ranges::lower_bound(v, 3);
       it != v.cend()) {
@@ -414,8 +423,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_all_any_none_of()
+void algorithm_all_any_none_of()
 {
+  return;
   const auto numbers = std::vector{3, 2, 2, 1, 0, 2, 1};
   std::cout << "Input data: ";
   print_ranges_for_each(numbers);
@@ -430,8 +440,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_count()
+void algorithm_count()
 {
+  return;
   const auto numbers = std::list{3, 3, 2, 1, 3, 1, 3};
   std::cout << "Input data: ";
   print_ranges_for_each(numbers);
@@ -440,8 +451,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_min_max_clamp()
+void algorithm_min_max_clamp()
 {
+  return;
   const auto twohundred = []() { return 200; };
   const auto ten = 10;
   const auto hundred = 100;
@@ -451,16 +463,18 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_minmax()
+void algorithm_minmax()
 {
+  return;
   const auto values = std::vector{4, 2, 1, 7, 3, 1, 5};
   const auto [min, max] = std::ranges::minmax(values);
   std::cout << "min=" << min << " max=" << max << std::endl; // Output: 1 7
 }
 
 
-[[maybe_unused]] void algorithm_projections()
+void algorithm_projections()
 {
+  return;
   auto names = std::vector<std::string>{"Ralph", "Lisa", "Homer", "Maggie", "Apu", "Bart"};
   std::ranges::sort(names, std::less{}, &std::string::size);
   std::cout << "Input data: ";
@@ -472,8 +486,9 @@ auto sum_scores(const std::vector<T>& objects) {
 }
 
 
-[[maybe_unused]] void algorithm_lambda_projections()
+void algorithm_lambda_projections()
 {
+  return;
   struct Player {
     std::string name{};
     int level{};
@@ -514,18 +529,19 @@ auto contains_duplicates_allocating(Iterator first, Iterator last) {
 }
 
 
-[[maybe_unused]] void algorithm_contains_duplicates()
+void algorithm_contains_duplicates()
 {
+  return;
   auto vals = std::vector{1,4,2,5,3,6,4,7,5,8,6,9,0};
   std::cout << "Input values: ";
   print_ranges_for_each(vals);
   {
-    scoped_timer ("a");
+    scoped_timer();
     auto a = contains_duplicates_n2(vals.begin(), vals.end());
     std::cout << "Contains duplicates: " << std::boolalpha << a << std::endl;
   }
   {
-    scoped_timer ("b");
+    scoped_timer();
     auto b = contains_duplicates_allocating(vals.begin(), vals.end());
     std::cout << "Contains duplicates: " << std::boolalpha << b << std::endl;
   }
@@ -538,7 +554,7 @@ struct student {
   std::string name{};
 };
 
-[[maybe_unused]] auto get_max_score_copy(const std::vector<student>& students, int year)
+auto get_max_score_copy(const std::vector<student>& students, int year)
 {
   const auto by_year = [year](const auto& s) { return s.year == year; };
   // The student list needs to be copied in order to filter on the year.
@@ -548,7 +564,7 @@ struct student {
   return it != v.end() ? it->score : 0;
 }
 
-[[maybe_unused]] auto get_max_score_for_loop(const std::vector<student>& students, int year) {
+auto get_max_score_for_loop(const std::vector<student>& students, int year) {
   auto max_score {0};
   for (const auto& student : students)
     if (student.year == year)
@@ -556,18 +572,18 @@ struct student {
   return max_score;
 }
 
-[[maybe_unused]] auto max_value(auto&& range) {
+auto max_value(auto&& range) {
   const auto it = std::ranges::max_element(range);
   return it != range.end() ? *it : 0;
 }
 
-[[maybe_unused]] auto get_max_score(const std::vector<student>& students, int year)
+auto get_max_score(const std::vector<student>& students, int year)
 {
   const auto by_year = [year](auto&& s) { return s.year == year; };
   return max_value(students | std::views::filter(by_year) | std::views::transform(&student::score));
 }
 
-[[maybe_unused]] auto get_max_score_explicit_views(const std::vector<student>& s, int year) {
+auto get_max_score_explicit_views(const std::vector<student>& s, int year) {
   auto by_year = [year](const auto& s) { return s.year == year; };
   const auto v1 = std::ranges::ref_view{s}; // Wrap container in a view.
   const auto v2 = std::ranges::filter_view{v1, by_year};
@@ -576,8 +592,9 @@ struct student {
   return it != v3.end() ? *it : 0;
 }
 
-[[maybe_unused]] void algorithm_composability()
+void algorithm_composability()
 {
+  return;
   const auto students = std::vector<student>{
     {3, 120, "A"},
     {2, 140, "B"},
@@ -587,30 +604,31 @@ struct student {
     {3, 130, "F"},
   };
   {
-    scoped_timer ("copy");
+    scoped_timer ();
     auto score = get_max_score_copy(students, 2); // score is 140
     std::cout << score << std::endl;
   }
   {
-    scoped_timer ("for loop");
+    scoped_timer ();
     auto score = get_max_score_for_loop(students, 2); // score is 140
     std::cout << score << std::endl;
   }
   {
-    scoped_timer ("composed");
+    scoped_timer ();
     auto score = get_max_score(students, 2);
     std::cout << score << std::endl;
   }
   {
-    scoped_timer ("explicit");
+    scoped_timer ();
     auto score = get_max_score_explicit_views(students, 2);
     std::cout << score << std::endl;
   }
 }
 
 
-[[maybe_unused]] void algorithm_views_transform()
+void algorithm_views_transform()
 {
+  return;
   const auto numbers = std::vector {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   std::cout << "Input numbers: ";
   print_ranges_for_each(numbers);
@@ -624,8 +642,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_filter()
+void algorithm_views_filter()
 {
+  return;
   const auto v = std::vector{4, 5, 6, 7, 6, 5, 4};
   std::cout << "Input numbers: ";
   print_ranges_for_each(v);
@@ -637,8 +656,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_join()
+void algorithm_views_join()
 {
+  return;
   const auto list_of_lists = std::vector<std::vector<int>>{{1, 2}, {3, 4, 5}, {5}, {4, 3, 2, 1}};
   const auto flattened_view = std::views::join(list_of_lists);
   std::cout << "Flattened view: ";
@@ -655,7 +675,7 @@ struct student {
 
 // Materialize the range r into a std::vector.
 // See also https://timur.audio/how-to-make-a-container-from-a-c20-range
-[[maybe_unused]] auto to_vector(auto&& r) {
+auto to_vector(auto&& r) {
   std::vector<std::ranges::range_value_t<decltype(r)>> v;
   if constexpr (std::ranges::sized_range<decltype(r)>) {
     v.reserve(std::ranges::size(r));
@@ -665,8 +685,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_materialize()
+void algorithm_views_materialize()
 {
+  return;
   auto ints = std::list{2, 3, 4, 2, 1};
   std::cout << "Input numbers: ";
   print_ranges_for_each (ints);
@@ -677,8 +698,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_take()
+void algorithm_views_take()
 {
+  return;
   auto vec = std::vector{4, 2, 7, 1, 2, 6, 1, 5};
   std::cout << "Input numbers: ";
   print_ranges_for_each (vec);
@@ -690,8 +712,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_split_join()
+void algorithm_views_split_join()
 {
+  return;
   auto csv = std::string{"10,11,12"};
   std::cout << "CSV: " << csv << std::endl;
   auto digits = csv | std::ranges::views::split(',');
@@ -711,8 +734,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_sampling()
+void algorithm_views_sampling()
 {
+  return;
   auto vec = std::vector{1, 2, 3, 4, 5, 4, 3, 2, 1};
   std::cout << "Input numbers: ";
   print_ranges_for_each (vec);
@@ -725,8 +749,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void algorithm_views_stream()
+void algorithm_views_stream()
 {
+  return;
   const auto s{"1.4142 1.618 2.71828 3.14159 6.283"};
   std::cout << "Input: " << s << std::endl;
   auto iss = std::istringstream{s};
@@ -736,8 +761,9 @@ struct student {
 }
 
 
-[[maybe_unused]] void memory_placement_new()
+void memory_placement_new()
 {
+  return;
   struct User {
     User(const std::string& name) : m_name(name) { }
     std::string m_name;
@@ -793,8 +819,9 @@ auto pow_n_remove_const_volatile_reference (const auto&v, int n) {
   return product;
 }
 
-[[maybe_unused]] void template_or_auto_or_remove_cvref_methods()
+void template_or_auto_or_remove_cvref_methods()
 {
+  return;
   {
     const auto result = pow_n_traditional<float>(3.0f, 3);
     std::cout << "Traditional float: " << result << std::endl;
@@ -826,8 +853,9 @@ auto pow_n_remove_const_volatile_reference (const auto&v, int n) {
 }
 
 
-[[maybe_unused]] void demo_type_traits()
+void demo_type_traits()
 {
+  return;
   {
     const auto uint8t_type_equals_unsigned_char_type = std::is_same_v<uint8_t, unsigned char>;
     static_assert(uint8t_type_equals_unsigned_char_type);
@@ -853,6 +881,22 @@ auto pow_n_remove_const_volatile_reference (const auto&v, int n) {
     static_assert(std::is_unsigned_v<unsigned int>);
     static_assert(not std::is_unsigned_v<int>);
   }
+  
+  struct foo
+  {
+    void m() { std::cout << "non-const non-volatile" << std::endl; }
+    void m() const { std::cout << "const" << std::endl; }
+    void m() volatile { std::cout << "volatile" << std::endl; }
+    void m() const volatile { std::cout << "const volatile" << std::endl; }
+  };
+  foo{}.m();
+  std::add_const<foo>::type{}.m();
+  std::add_volatile<foo>::type{}.m();
+  std::add_cv<foo>::type{}.m(); // Add const volatile.
+  
+  int bar {10};
+  std::cout << bar << std::endl;
+
 }
 
 
@@ -895,8 +939,9 @@ auto generic_modulus_combined(const T v, const T n) -> T {
   }
 }
 
-[[maybe_unused]] void demo_if_constexpr()
+void demo_if_constexpr()
 {
+  return;
   {
     Bear bear;
     Duck duck;
@@ -934,8 +979,9 @@ private:
   T m_y{};
 };
 
-[[maybe_unused]] void demo_unconstrained_templates()
+void demo_unconstrained_templates()
 {
+  return;
   const auto distance = [](auto point1, auto point2) {
     auto a = point1.x() - point2.x();
     auto b = point1.y() - point2.y();
@@ -1037,8 +1083,9 @@ void constrained_func4(hashable auto /*parameterName*/) {}
 // Named sets of such requirements are called concepts.
 // Each concept is a predicate, evaluated at compile time,
 // and becomes a part of the interface of a template where it is used as a constraint.
-[[maybe_unused]] void demo_constraints_and_concepts()
+ void demo_constraints_and_concepts()
 {
+   return;
   {
     auto x = mod(5, 2); // OK: Integral types
     std::cout << "Integral type modulus: " << x << std::endl;
@@ -1106,8 +1153,9 @@ private:
   T m_y{};
 };
 
-[[maybe_unused]] void demo_point2d_concepts()
+void demo_point2d_concepts()
 {
+  return;
   const auto p1 = Point2D_v2{2, 2};
   const auto p2 = Point2D_v2{6, 5};
   auto d = get_distance(p1, p2);
@@ -1159,8 +1207,9 @@ auto safe_cast(const Src& v) -> Dst {
   }
 }
 
-[[maybe_unused]] void demo_safe_cast()
+void demo_safe_cast()
 {
+  return;
   const auto x = safe_cast<int>(42.6f);
   std::cout << "Safe cast from float to int: " << x << std::endl;
   // Only compiles on a 16-bits system.
@@ -1202,8 +1251,9 @@ struct std::hash<PrehashedString> {
   }
 };
 
-[[maybe_unused]] void demo_compile_time_string_hash()
+void demo_compile_time_string_hash()
 {
+  return;
   constexpr const auto hash_fn = std::hash<PrehashedString>{};
   constexpr const auto str = PrehashedString("abc");
   constexpr const auto hash_fn_str = hash_fn(str);
@@ -1213,8 +1263,9 @@ struct std::hash<PrehashedString> {
 }
 
 
-[[maybe_unused]] void demo_optional()
+void demo_optional()
 {
+  return;
   auto input = std::vector<std::optional<int>> {{3}, {}, {1}, {}, {2}, {0}, {-1}};
   std::ranges::sort(input);
   const auto sorted = decltype(input) {{}, {}, {-1}, {0}, {1}, {2}, {3}};
@@ -1222,8 +1273,9 @@ struct std::hash<PrehashedString> {
 }
 
 
-[[maybe_unused]] void demo_automatic_type_deduction()
+void demo_automatic_type_deduction()
 {
+  return;
   // Automatic type deduction by defining the struct within the function itself.
   const auto make_earth = []() {
     struct Planet {
@@ -1239,8 +1291,9 @@ struct std::hash<PrehashedString> {
 }
 
 
-[[maybe_unused]] void demo_tuple()
+void demo_tuple()
 {
+  return;
   const auto make_saturn = []() {
     return std::tuple{"Saturn", 82, true};
   };
@@ -1293,8 +1346,9 @@ auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
   }
 }
 
-[[maybe_unused]] void demo_variadic_pack()
+void demo_variadic_pack()
 {
+  return;
   const auto make_string = [](const auto&... values) {
     auto sstr = std::ostringstream{};
     // Create a tuple of the variadic parameter pack.
@@ -1312,8 +1366,9 @@ auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
 
 
 
-[[maybe_unused]] void heterogenous_collections_with_variant()
+void heterogenous_collections_with_variant()
 {
+  return;
   using variant_t = std::variant<int, std::string, bool>;
   {
     auto container = std::vector<variant_t> { false, "hello", "world", 13 };
@@ -1337,8 +1392,9 @@ auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
 }
 
 
-[[maybe_unused]] void projections_and_comparison_operators()
+void projections_and_comparison_operators()
 {
+  return;
   struct Player {
     std::string name{};
     int level{};
@@ -1401,7 +1457,7 @@ auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
 }
 
 
-[[maybe_unused]] void lazy_evaluation()
+void lazy_evaluation()
 {
   // Lazy evaluation is to postpone or not execute parts not needed for obtaining the result.
   // If for example finding which distance is larger,
@@ -1411,8 +1467,9 @@ auto tuple_for_each(const TupleType& tpl, const Functor& ifunctor) -> void {
 }
 
 
-[[maybe_unused]] void pipe_operator()
+void pipe_operator()
 {
+  return;
   const auto range = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
   auto odd_positive_numbers = range | std::views::filter([](const auto v) { return v > 0; }) | std::views::filter([](const auto v) { return (v % 2) == 1; });
   auto it = odd_positive_numbers.begin();
@@ -1440,8 +1497,9 @@ auto contains(const T& v) {
   return ContainsProxy<T>{v};
 }
 
-[[maybe_unused]] void demo_proxy_objects()
+void demo_proxy_objects()
 {
+  return;
   {
     constexpr const auto seven = 7;
     const auto numbers = {1, 3, 5, seven, 9};
@@ -1458,8 +1516,9 @@ auto contains(const T& v) {
 }
 
 
-[[maybe_unused]] void test_async()
+void test_async()
 {
+  return;
   auto divide = [](int a, int b) -> int {
     if (!b) throw std::runtime_error("Cannot divide by zero");
     std::cout << "Lambda running on thread id " << std::this_thread::get_id() << std::endl;
@@ -1473,8 +1532,9 @@ auto contains(const T& v) {
 }
 
 
-[[maybe_unused]] void atomic_references()
+void atomic_references()
 {
+  return;
   struct Stats {
     int heads{};
     int tails{};
@@ -1507,6 +1567,7 @@ auto contains(const T& v) {
 
 void atomics_simple_spin_lock()
 {
+  return;
   constexpr auto n {1'000'000};
   auto counter {0};
   std::mutex mutex{};
@@ -1531,8 +1592,9 @@ void atomics_simple_spin_lock()
 
 // This demonstrates how to use std::lock to lock multiple locks at once simultaneously.
 // This avoids the risk of having deadlocks in the transfer function.
-[[maybe_unused]] void demo_lock_multiple_simultaneously()
+void demo_lock_multiple_simultaneously()
 {
+  return;
   struct account {
     int m_balance{0};
     std::mutex m_mutex{};
@@ -1558,8 +1620,10 @@ void atomics_simple_spin_lock()
 }
 
 
-[[maybe_unused]] void barriers()
+// https://en.cppreference.com/w/cpp/thread/barrier
+void demo_barriers()
 {
+  return;
   const auto random_int = [] (const int min, const int max) -> int {
     // One engine instance per thread.
     thread_local static auto engine = std::default_random_engine{std::random_device{}()};
@@ -1574,15 +1638,16 @@ void atomics_simple_spin_lock()
   auto threads = std::vector<std::thread>{};
   auto n_turns = 0;
   
-  // Completion function.
-  auto check_result = [&] {
+  // A function to run on completion of a barrier.
+  auto on_barrier_completion = [&] {
     ++n_turns;
     auto is_six = [](auto i) { return i == 6; };
     done = std::ranges::all_of(dice, is_six);
   };
 
+  // Define the barrier to use with the completion callback.
   // Barriers are reusable after all arriving threads are unblocked.
-  auto barrier = std::barrier{n_dice, check_result};
+  auto barrier = std::barrier{n_dice, on_barrier_completion};
   for (size_t i = 0; i < n_dice; ++i) {
     threads.emplace_back([&, i] () {
       while (!done) {
@@ -1601,8 +1666,9 @@ void atomics_simple_spin_lock()
 }
 
 
-[[maybe_unused]] void condition_variables()
+void condition_variables()
 {
+  return;
   auto condition_variable = std::condition_variable{};
   auto queue = std::queue<int>{};
   // Protect the shared queue.
@@ -1687,6 +1753,7 @@ const std::string to_string(const Object& object) noexcept
 
 void overloading_stream_insertion_operators()
 {
+  return;
   Object object { "hello world", 1 };
   std::cout << "Stream Object " << object << std::endl;
   std::cout << "Stream Object " << to_string(object) << std::endl;
@@ -1777,6 +1844,7 @@ void demo_barrier_jthread_stop_token()
 
 void demo_timer_with_timed_mutex_and_condition_variable()
 {
+  return;
   std::timed_mutex mx;
   std::condition_variable_any cv;
 
@@ -1797,8 +1865,9 @@ void demo_timer_with_timed_mutex_and_condition_variable()
 }
 
 
-[[maybe_unused]] void data_race_demo()
+void data_race_demo()
 {
+  return;
   std::atomic<int> atomic_counter {};
   int normal_counter {};
   int mutex_counter {};
@@ -1850,7 +1919,7 @@ void demo_timer_with_timed_mutex_and_condition_variable()
 
 
 // It should be possible to set an exception in a promise.
-[[maybe_unused]] void future_and_promise_and_exception()
+void future_and_promise_and_exception()
 {
   return; // Fails on macOS Sequoia.
   const auto divide = [] (int a, int b, std::promise<int>& promise) {
@@ -1889,22 +1958,163 @@ void demo_timer_with_timed_mutex_and_condition_variable()
 }
 
 
-
-[[maybe_unused]] void joinable_thread()
+// https://en.cppreference.com/w/cpp/io/basic_osyncstream
+// The class template std::basic_osyncstream is a convenience wrapper for std::basic_syncbuf.
+// It provides a mechanism to synchronize threads writing to the same stream.
+void demo_sync_stream()
 {
-  [[maybe_unused]] auto print = []() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    std::cout << "Thread ID: " << std::this_thread::get_id() << std::endl;
+  return;
+  
+  const auto stream_worker = [](int id) {
+    using namespace std::literals::chrono_literals;
+    for (int i = 0; i < 2; i++) {
+      std::this_thread::sleep_for(1ms);
+      std::osyncstream synced_out(std::cout);
+      synced_out << "worker " << id << std::endl;
+    }
   };
-  std::cout << "Main begin" << std::endl;
-  auto joinable_thread = std::jthread{print};
-  std::cout << "Main end" << std::endl;
-  // OK: jthread will join automatically
+
+  std::jthread threads [4];
+  for (int i = 0; i < 4; ++i) {
+    threads[i] = std::jthread(stream_worker, i);
+  }
 }
 
 
-[[maybe_unused]] void latches()
+// https://en.cppreference.com/w/cpp/thread/jthread
+// It has the same general behavior as std::thread,
+// except that jthread automatically joins on destruction,
+// and can be cancelled/stopped in certain situations.
+void demo_jthread_joinable_thread()
 {
+  return;
+  const auto worker = []() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::cout << "Within thread with ID " << std::this_thread::get_id() << std::endl;
+  };
+  std::cout << "Main before jthread is started" << std::endl;
+  {
+    auto joinable_thread = std::jthread{worker};
+    // The jthread will join automatically when it goes out of scope.
+  }
+  std::cout << "Main after jthread is out of scope" << std::endl;
+  
+  std::cout << std::endl << "Start stoppable jthread" << std::endl;
+  {
+    using namespace std::literals::chrono_literals;
+    std::jthread stoppable_thread { [] (std::stop_token stoptoken) {
+      while (!stoptoken.stop_requested()) {
+        std::cout << "." << std::flush;
+        std::this_thread::sleep_for(1ms);
+      }
+    }};
+    std::this_thread::sleep_for(25ms);
+    std::cout << std::endl << "Request stop" << std::endl;
+    stoppable_thread.request_stop();
+    //  stoppable_thread.join(); // Not needed here.
+  }
+  std::cout << "Stopped" << std::endl;
+
+  {
+    using namespace std::literals::chrono_literals;
+    
+    std::mutex mutex{};
+    std::jthread threads [4];
+    
+    const auto print = [](const std::stop_source &source)
+    {
+      std::cout << std::boolalpha
+      << "stop_source stop_possible = " << source.stop_possible() << std::endl
+      << "stop_requested = " << source.stop_requested() << std::endl;
+    };
+    
+    // Common stop source.
+    std::stop_source stop_source;
+    print(stop_source);
+    
+    const auto joinable_thread_worker = [&mutex] (const int id, std::stop_source stop_source)
+    {
+      using namespace std::literals::chrono_literals;
+      std::stop_token stoken = stop_source.get_token();
+      while (true) {
+        std::this_thread::sleep_for(3ms);
+        std::lock_guard lock (mutex);
+        if (stoken.stop_requested()) {
+          std::cout << "worker " << id << " is requested to stop" << std::endl;
+          return;
+        }
+        std::cout << "worker " << id << " goes back to sleep" << std::endl;
+      }
+    };
+    
+    // Create worker threads.
+    for (int i = 0; i < 4; ++i) {
+      threads[i] = std::jthread(joinable_thread_worker, i+1, stop_source);
+    }
+    
+    std::this_thread::sleep_for(7ms);
+    
+    std::cout << "request stop" << std::endl;
+    stop_source.request_stop();
+    
+    print(stop_source);
+    // Note: destructor of jthreads will call join so no need for explicit calls
+  }
+  
+  {
+    std::cout << "Advanced jthread use" << std::endl;
+    // A worker thread.
+    // It will wait until it is requested to stop.
+    std::jthread worker_till_stop_request([] (std::stop_token stoptoken) {
+      std::cout << "Worker thread id: " << std::this_thread::get_id() << std::endl;
+      std::mutex mutex;
+      std::unique_lock lock(mutex);
+      std::condition_variable_any().wait(lock, stoptoken, [&stoptoken] {
+        return stoptoken.stop_requested();
+      });
+    });
+    
+    // Register a stop callback on the worker thread.
+    std::stop_callback callback(worker_till_stop_request.get_stop_token(), [] {
+      std::cout << "Stop callback executed by thread: " << std::this_thread::get_id() << std::endl;
+    });
+    
+    // The stop_callback objects can be destroyed prematurely to prevent execution.
+    {
+      std::stop_callback scoped_callback(worker_till_stop_request.get_stop_token(), [] {
+        // This will not be executed.
+        std::cout<< "Scoped stop callback executed by thread: " << std::this_thread::get_id() << std::endl;
+      });
+    }
+    
+    // Demonstrate which thread executes the stop_callback and when.
+    // Define a stopper function
+    auto stopper_func = [&worker_till_stop_request] {
+      if(worker_till_stop_request.request_stop())
+        std::cout << "Stop request executed by thread: " << std::this_thread::get_id() << std::endl;
+      else
+        std::cout << "Stop request not executed by thread: " << std::this_thread::get_id() << std::endl;
+    };
+    
+    // Let multiple threads compete for stopping the worker thread.
+    {
+      std::jthread stopper1(stopper_func);
+      std::jthread stopper2(stopper_func);
+    }
+    
+    // After a stop has already been requested, a new stop_callback executes immediately.
+    std::cout << "Main thread: " << std::this_thread::get_id() << std::endl;
+    std::stop_callback callback_after_stop(worker_till_stop_request.get_stop_token(), [] {
+      std::cout << "Stop callback executed by thread: " << std::this_thread::get_id() << std::endl;
+    });
+  }
+}
+
+
+// https://en.cppreference.com/w/cpp/thread/latch
+void demo_latches()
+{
+  return;
   auto prefault_stack = [] () {
     // We don't know the size of the stack.
     constexpr auto stack_size = 500u * 1024u;
@@ -1934,84 +2144,49 @@ void demo_timer_with_timed_mutex_and_condition_variable()
     thread.join();
   }
 }
-
   
   
-template <class T, int N> class bounded_buffer {
-  std::array<T, N> m_buffer;
-  std::size_t m_read_pos{};
-  std::size_t m_write_pos{};
-  std::mutex m_mutex;
-  std::counting_semaphore<N> m_n_empty_slots{N};
-  std::counting_semaphore<N> m_n_full_slots{0};
-  
-  void do_push(auto&& item) {
-    // Take one of the empty slots.
-    // Atomically decrements the internal counter by 1 if it is greater than ​0.
-    // Otherwise blocks until it is greater than ​0​.
-    m_n_empty_slots.acquire();
-    try {
-      auto lock = std::unique_lock{m_mutex};
-      m_buffer[m_write_pos] = std::forward<decltype(item)>(item);
-      m_write_pos = (m_write_pos + 1) % N;
-    } catch (...) {
-      // Atomically increments the internal counter by 1.
-      // Any thread(s) waiting for the counter to be greater than ​0​,
-      // such as ones being blocked in acquire, will subsequently be unblocked.
-      m_n_empty_slots.release();
-      throw;
-    }
-    // Increment the counter and signal that there is one more full slot.
-    m_n_full_slots.release(); // New
-  }
-  
-public:
-  void push(const T& item) { do_push(item); }
-  void push(T&& item) { do_push(std::move(item)); }
-  
-  auto pop() {
-    // Take one of the full slots (might block).
-    m_n_full_slots.acquire();
-    auto item = std::optional<T>{};
-    try {
-      auto lock = std::unique_lock{m_mutex};
-      item = std::move(m_buffer[m_read_pos]);
-      m_read_pos = (m_read_pos + 1) % N;
-    } catch (...) {
-      m_n_full_slots.release();
-      throw;
-    }
-    // Increment and signal that there is one more empty slot.
-    m_n_empty_slots.release();
-    return std::move(*item);
-  }
-};
-
-[[maybe_unused]] void semaphores_and_bounded_buffer()
+// https://en.cppreference.com/w/cpp/thread/counting_semaphore
+void demo_semaphores()
 {
-  auto buffer = bounded_buffer<std::string, 3>{};
-  auto sentinel = std::string{""};
+  return;
+  // The semaphore counts are set to zero.
+  // The semaphore is in a non-signaled state.
+  // The counting_semaphore contains an internal counter initialized by the constructor.
+  // This counter is decremented by calls to acquire() and related methods,
+  // and is incremented by calls to release().
+  // When the counter is zero, acquire() blocks until the counter is incremented.
+  // The binary_semaphore is a counting_semaphore with max count = 1.
+  std::binary_semaphore signal_main_to_thread_semaphore{0};
+  std::binary_semaphore signal_thread_to_main_semaphore{0};
   
-  auto producer = std::thread{[&]() {
-    buffer.push("1");
-    buffer.push("2");
-    buffer.push("3");
-    buffer.push("4");
-    buffer.push("5");
-    buffer.push("6");
-    buffer.push(sentinel);
-  }};
+  const auto thread_processor = [&]() {
+    // Wait for a signal from the main process by attempting to decrement the semaphore.
+    // This call blocks until the semaphore's count is increased from the main process.
+    signal_main_to_thread_semaphore.acquire();
+    std::cout << "Thread got the signal" << std::endl;
+    
+    // Wait shortly to imitate some work being done by the thread.
+    using namespace std::literals;
+    std::this_thread::sleep_for(10ms);
+    
+    // Signal the main process back.
+    std::cout << "Thread sends the signal" << std::endl;
+    signal_thread_to_main_semaphore.release();
+  };
   
-  auto consumer = std::thread{[&]() {
-    while (true) {
-      auto s = buffer.pop();
-      if (s == sentinel) return;
-      std::cout << "Got: " << s << std::endl;
-    }
-  }};
+  // Create a worker thread
+  std::jthread worker_thread(thread_processor);
   
-  producer.join();
-  consumer.join();
+  // Signal the worker thread to start working by increasing the semaphore's count.
+  std::cout << "Main sends the signal" << std::endl;
+  signal_main_to_thread_semaphore.release();
+  
+  // Wait until the worker thread is done doing the work
+  // by attempting to decrement the semaphore's count.
+  signal_thread_to_main_semaphore.acquire();
+  
+  std::cout << "Main got the signal" << std::endl;
 }
 
 
@@ -2023,11 +2198,9 @@ int task_divide(int a, int b) {
 }
 
 
-[[maybe_unused]] void tasks()
+void tasks()
 {
-
-
-
+  return;
   std::packaged_task<decltype(task_divide)> task(task_divide);
   auto future = task.get_future();
   std::thread thread(std::move(task), 45, 5);
@@ -2041,8 +2214,9 @@ int task_divide(int a, int b) {
 }
 
 
-[[maybe_unused]] void demo_stop_token()
+void demo_stop_token()
 {
+  return;
   const auto print = [] (std::stop_token stoken) -> void {
     while (!stoken.stop_requested()) {
       std::cout << std::this_thread::get_id() << '\n';
@@ -2059,22 +2233,10 @@ int task_divide(int a, int b) {
 }
 
 
-// Template with a default type.
-template<typename D = std::chrono::nanoseconds>
-class ScopedTimer {
-  std::chrono::time_point<std::chrono::system_clock, D> m_started_at;
-public:
-  ScopedTimer() noexcept : m_started_at(std::chrono::time_point_cast<D>(std::chrono::system_clock::now())) {}
-  ~ScopedTimer() noexcept {
-    const auto destruction_time = std::chrono::time_point_cast<D>(std::chrono::system_clock::now());
-    std::cout << destruction_time - m_started_at << std::endl;
-  }
-};
-
-
-[[maybe_unused]] void scoped_nano_timer()
+void scoped_nano_timer()
 {
-  ScopedTimer<std::chrono::microseconds> timer;
+  return;
+  scoped_timer<std::chrono::microseconds> timer;
   
   // Do some work you want to time.
   long double sum {};
@@ -2086,6 +2248,7 @@ public:
 
 void demo_std_set_insert_iter_success()
 {
+  return;
   std::set <std::string> myset {"hello"};
   int inserted {0}, skipped {0};
   for (int i {2}; i; --i) {
@@ -2103,6 +2266,7 @@ void demo_std_set_insert_iter_success()
 
 void demo_structured_binding()
 {
+  return;
   struct fields {
     int a {1}, b {2}, c {3}, d {4};
   };
@@ -2150,6 +2314,7 @@ void demo_structured_binding()
 
 void demo_initializer_in_if_and_switch()
 {
+  return;
   std::set<std::string> myset {};
   if (const auto [iter, success] = myset.insert("hello"); success) {
     if (*iter != "hello") std::cout << "Inserted: " << " " << *iter << std::endl;
@@ -2167,6 +2332,7 @@ void demo_initializer_in_if_and_switch()
 
 void demo_filesystem()
 {
+  return;
   {
     std::string url = "/var/log/app";
     std::filesystem::path p (url);
@@ -2205,6 +2371,7 @@ void demo_filesystem()
 
 void demo_quotes()
 {
+  return;
   // Quotes in ordinary string literal.
   std::cout << "'hello world'" << std::endl;
   // Quotes in raw string literal. Example: R"(text)".
@@ -2216,6 +2383,7 @@ void demo_quotes()
 
 void demo_byte_to_integer()
 {
+  return;
   // Example "03 02 01 00 00"
   using octet_stream = std::vector <unsigned char>;
   octet_stream characters { 3, 2, 1, 0, 0 };
@@ -2241,6 +2409,7 @@ void demo_byte_to_integer()
 
 void feature_testing_macros()
 {
+  return;
   // https://en.cppreference.com/w/cpp/feature_test
   // Preprocessor macros to detect the presence of C++ features introduced since C++11.
 #ifdef __has_include
@@ -2261,6 +2430,7 @@ void feature_testing_macros()
 
 void three_way_comparison_operator()
 {
+  return;
   // https://en.cppreference.com/w/cpp/language/operator_comparison#Three-way_comparison
   std::cout << "Three-way comparison operator <=> ";
   constexpr double foo {-0.0f};
@@ -2279,6 +2449,7 @@ void three_way_comparison_operator()
 
 void init_statements_in_range_based_for_loops()
 {
+  return;
   // https://en.cppreference.com/w/cpp/language/range-for
   std::cout << "init statements in range-based for loops" << std::endl;
   
@@ -2298,6 +2469,7 @@ void init_statements_in_range_based_for_loops()
 
 void demo_char_8_t()
 {
+  return;
   std::cout << "type char_8_t" << std::endl;
   const char* character1 {"Hello"};
   // Error in C++20:
@@ -2312,6 +2484,7 @@ void demo_char_8_t()
 
 void demo_attribute_no_unique_address()
 {
+  return;
   std::cout << "demo of attribute no_unique_address" << std::endl;
 
   // https://en.cppreference.com/w/cpp/language/attributes/no_unique_address
@@ -2415,6 +2588,7 @@ constexpr double cos(double x) noexcept
 
 void demo_attribute_likely_unlikely()
 {
+  return;
   // https://en.cppreference.com/w/cpp/language/attributes/likely
   // Attribute to hint the compiler for the likely or unlikely path of execution,
   // allowing the compiler to optimize the code.
@@ -2466,8 +2640,9 @@ static_assert(combination(4, 8) == 70);
 
 }
 
-[[maybe_unused]] void demo_consteval()
+void demo_consteval()
 {
+  return;
   // https://en.cppreference.com/w/cpp/language/consteval
   constexpr unsigned x{const_evaluation::factorial(4)};
   std::cout << x << std::endl;
@@ -2491,6 +2666,7 @@ constinit const char* c = ci(true);     // OK
 
 void demo_constinit()
 {
+  return;
   // https://en.cppreference.com/w/cpp/language/constinit
   // Using const_init ensures that the variable is initialized at compile-time,
   // and that the static initialization order fiasco cannot take place.
@@ -2501,6 +2677,7 @@ void demo_constinit()
 
 void designated_initializers()
 {
+  return;
   // https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers
   {
     struct S {
@@ -2533,6 +2710,7 @@ void designated_initializers()
 // https://en.cppreference.com/w/cpp/language/aggregate_initialization
 void aggregate_initialization()
 {
+  return;
   struct S
   {
     int x{};
@@ -2658,6 +2836,7 @@ return_object infinite_counter(std::coroutine_handle<>* continuation) {
 
 void demo_coroutines()
 {
+  return;
   std::coroutine_handle<> h;
   coroutines::infinite_counter(&h);
   for (int i = 0; i < 3; ++i) {
@@ -2679,6 +2858,7 @@ void demo_coroutines()
 // https://en.cppreference.com/w/cpp/header/bit
 void demo_header_bit()
 {
+  return;
   {
     constexpr auto endian {std::endian::native};
     if (endian == std::endian::big)
@@ -2724,12 +2904,14 @@ void demo_header_bit()
 // https://en.cppreference.com/w/cpp/header/compare
 void demo_header_compare()
 {
+  return;
 }
 
 
 // https://en.cppreference.com/w/cpp/utility/format
 void formatting_library()
 {
+  return;
   std::cout << std::format("std::format demo: A={} B={} C={}", "a", std::string("b"), 3) << std::endl;
 }
 
@@ -2737,12 +2919,14 @@ void formatting_library()
 // https://en.cppreference.com/w/cpp/chrono#Calendar
 void calendar_library_in_chrono()
 {
+  return;
   constexpr auto year_month_day {std::chrono::year(2021)/8/2};
   std::cout << "year " << year_month_day.year() << " month " << year_month_day.month() << " day " << year_month_day.day() << std::endl;
   const auto utc = std::chrono::system_clock::now();
   std::cout << "UTC time: " << utc << std::endl;
-  std::time_t time = std::chrono::system_clock::to_time_t(utc);
+  const std::time_t time = std::chrono::system_clock::to_time_t(utc);
   std::string time_str = std::ctime(&time);
+  time_str.pop_back(); // Remove the \n.
   std::cout << "Local time: " << time_str << std::endl;
   //std::cout << std::chrono::current_zone()->to_local(utc) << std::endl;
 }
@@ -2751,6 +2935,7 @@ void calendar_library_in_chrono()
 // https://en.cppreference.com/w/cpp/utility/source_location
 void demo_source_location()
 {
+  return;
   const auto log = [] (const std::string_view message,
                        const std::source_location location = std::source_location::current())
   {
@@ -2761,6 +2946,61 @@ void demo_source_location()
     << message << std::endl;
   };
   log("hello world");
+}
+
+
+// https://en.cppreference.com/w/cpp/container/span
+void demo_span()
+{
+  return;
+  std::cout << "Demo std::span" << std::endl;
+  const auto slice = [](auto s, std::size_t offset, std::size_t width) {
+    return s.subspan(offset, offset + width <= s.size() ? width : 0);
+  };
+  constexpr int a[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  for (std::size_t offset{}; ; ++offset) {
+    constexpr std::size_t width {5};
+    const auto subspan = slice(std::span{a}, offset, width);
+    if (subspan.empty())
+      break;
+    for (const auto& elem : subspan)
+      std::cout << elem << ' ';
+    std::cout << std::endl;
+  }
+}
+
+
+// https://en.cppreference.com/w/cpp/string/basic_string/starts_with
+// https://en.cppreference.com/w/cpp/string/basic_string/ends_with
+void demo_starts_with_and_ends_with()
+{
+  const std::string hello_world {"hello world"};
+  
+  const auto test_starts_width = [&hello_world](const auto prefix)
+  {
+    std::cout << std::quoted(hello_world) << " starts with " << prefix << ": ";
+    std::cout << std::boolalpha << hello_world.starts_with(prefix) << std::endl;
+  };
+  
+  const auto test_ends_width = [&hello_world] (const auto prefix)
+  {
+    std::cout << std::quoted(hello_world) << " ends with " << prefix << ": ";
+    std::cout << std::boolalpha << hello_world.ends_with(prefix) << std::endl;
+  };
+  
+  using namespace std::literals;
+  
+  test_starts_width(std::string_view("hello"));
+  test_starts_width(std::string_view("goodbye"));
+  test_starts_width('h');
+  test_starts_width('x');
+  test_starts_width("h");
+  test_starts_width("x");
+  test_ends_width("ld"sv);
+  test_ends_width("ld"s);
+  test_ends_width('d');
+  test_ends_width('e');
+  test_ends_width("d");
 }
 
 
@@ -2819,16 +3059,17 @@ int main()
   atomic_references();
   atomics_simple_spin_lock();
   demo_lock_multiple_simultaneously();
-  barriers();
+  demo_barriers();
   condition_variables();
   stream_insertion::overloading_stream_insertion_operators();
   demo_barrier_jthread_stop_token();
   demo_timer_with_timed_mutex_and_condition_variable();
   data_race_demo();
   future_and_promise_and_exception();
-  joinable_thread();
-  latches();
-  semaphores_and_bounded_buffer();
+  demo_sync_stream();
+  demo_jthread_joinable_thread();
+  demo_latches();
+  demo_semaphores();
   tasks();
   demo_stop_token();
   scoped_nano_timer();
@@ -2854,5 +3095,7 @@ int main()
   formatting_library();
   calendar_library_in_chrono();
   demo_source_location();
+  demo_span();
+  demo_starts_with_and_ends_with();
   return EXIT_SUCCESS;
 }
