@@ -33,6 +33,9 @@
 #include <bit>
 #include <format>
 #include <syncstream>
+#include <thread>
+#include <mutex>
+
 
 // Template with a default type.
 template<typename D = std::chrono::nanoseconds>
@@ -2407,11 +2410,12 @@ void demo_byte_to_integer()
 }
 
 
-void feature_testing_macros()
+// https://en.cppreference.com/w/cpp/feature_test
+// Preprocessor macros to detect the presence of C++ features introduced since C++11.
+void demo_feature_testing_macros()
 {
   return;
-  // https://en.cppreference.com/w/cpp/feature_test
-  // Preprocessor macros to detect the presence of C++ features introduced since C++11.
+  std::cout << "feature testing macros" << std::endl;
 #ifdef __has_include
 #  if __has_include(<optional>)
   std::cout << "Has include <optional> so that is great" << std::endl;
@@ -2425,6 +2429,24 @@ void feature_testing_macros()
 #  endif
 #endif
   std::cout << "C++ version " <<  __cplusplus << std::endl;
+  
+  if(__has_cpp_attribute(assume))
+    std::cout << "Has attribute assume" << std::endl;
+  else
+    std::cout << "Does not have attribute assume" << std::endl;
+  if(__has_cpp_attribute(likely))
+    std::cout << "Has attribute likely" << std::endl;
+  else
+    std::cout << "Does not have attribute likely" << std::endl;
+  if(__cpp_auto_cast)
+    std::cout << "Supports auto cast" << std::endl;
+  if(__cpp_consteval)
+    std::cout << "Supports consteval" << std::endl;
+#ifdef __cpp_contracts
+  std::cout << "Supports contracts" << std::endl;
+#else
+  std::cout << "Does not support contracts" << std::endl;
+#endif
 }
 
 
@@ -2974,6 +2996,8 @@ void demo_span()
 // https://en.cppreference.com/w/cpp/string/basic_string/ends_with
 void demo_starts_with_and_ends_with()
 {
+  return;
+  
   const std::string hello_world {"hello world"};
   
   const auto test_starts_width = [&hello_world](const auto prefix)
@@ -3001,6 +3025,192 @@ void demo_starts_with_and_ends_with()
   test_ends_width('d');
   test_ends_width('e');
   test_ends_width("d");
+}
+
+
+// https://en.cppreference.com/w/cpp/utility/functional/bind_front
+void demo_bind_front_bind_back()
+{
+  return;
+  // Function templates std::bind_front and std::bind_back generate
+  // a perfect forwarding call wrapper which allows to invoke the callable target
+  // with its first or last sizeof...(Args) parameters bound to args.
+
+  const auto minus = [] (const int a, const int b) -> int {
+    return a - b;
+  };
+  
+  constexpr const auto fifty_minus_value = std::bind_front(minus, 50);
+  std::cout << fifty_minus_value(3) << std::endl; // equivalent to `minus(50, 3)`: 47.
+  
+  struct S
+  {
+    int val;
+    int minus(int arg) const noexcept { return val - arg; }
+  };
+  
+  constexpr auto member_minus = std::bind_front(&S::minus, S{50});
+  std::cout << member_minus(3) << std::endl; // equivalent to `S tmp{50}; tmp.minus(3)`: 47.
+  
+  // The noexcept specification is preserved.
+  static_assert(!noexcept(fifty_minus_value(3)));
+  static_assert(noexcept(member_minus(3)));
+  
+  // Binding of a lambda.
+  constexpr const auto plus = [](int a, int b) { return a + b; };
+  constexpr const auto forty_plus = std::bind_front(plus, 40);
+  std::cout << forty_plus(7) << std::endl; // equivalent to `plus(40, 7)`: 47.
+  
+  auto multiply_add = [](int a, int b, int c) { return a * b + c; };
+  auto multiply_plus_seven = std::__bind_back(multiply_add, 7);
+  std::cout << multiply_plus_seven(4, 10) << std::endl; // equivalent to `madd(4, 10, 7)`: 47.
+}
+
+
+void demo_distribution()
+{
+  return;
+  std::cout << "demo distribution" << std::endl;
+  
+  constexpr const int nrolls = 10000; // number of experiments
+  constexpr const int nstars = 100;   // maximum number of stars to distribute
+  
+  // Define a Mersenne-Twister pseudo random number generator, only once in the application:
+  std::mt19937 generator1;
+  
+  std::default_random_engine generator;
+  
+  std::poisson_distribution<int> distribution(4.1);
+  
+  int p[10]={};
+  
+  for (int i=0; i<nrolls; ++i) {
+    int number = distribution(generator);
+    if (number<10) ++p[number];
+  }
+  
+  for (int i = 0; i < 10; ++i)
+    std::cout << i << ": " << std::string(p[i]*nstars/nrolls,'*') << std::endl;
+  {
+    // Define the Poisson distribution engine with the desired mean value:
+    std::poisson_distribution<int> distrib(1);
+    // Generate a 50-piece sample of integers and print on stdout:
+    for (int i=0 ; i<50; i++)
+      std::cout << distrib(generator1) << " ";
+    std::cout << std::endl;
+  }
+}
+
+
+struct ExplicitObjectParameter
+{
+  // OK.
+  // Same as void foo(int i) const &;
+  void f1(this ExplicitObjectParameter const& self, int i);
+  
+  // Error: already declared.
+  //void f1(int i) const &;
+  
+  // Also OK for templates.
+  // For member function templates,
+  // explicit object parameter allows deduction of type and value category,
+  // this language feature is called “deducing this”.
+  template<typename Self>
+  void f2(this Self&& self);
+  
+  // Pass object by value: makes a copy of “*this”.
+  void f3(this ExplicitObjectParameter self, int i);
+  
+  // Error: “const” not allowed here
+  // void p(this ExplicitObjectParameter) const;
+  
+  // Error: “static” not allowed here
+  // static void q(this ExplicitObjectParameter);
+  
+  // Error: an explicit object parameter can only be the first parameter
+  // void r(int, this ExplicitObjectParameter);
+  
+  // Inside the body of an explicit object member function,
+  // the "this" pointer cannot be used.
+  // All member access must be done through the first parameter,
+  // like in static member functions.
+  void f4(this ExplicitObjectParameter object)
+  {
+    // invalid use of 'this' in a function with an explicit object parameter
+    // auto x = this;
+    
+    // There's no implicit "this": use of undeclared identifier 'bar'
+    // bar();
+    
+    object.f3(1);
+  }
+};
+
+
+void demo_explicit_object_parameter_this()
+{
+  return;
+  
+  std::cout << "explicit object parameter" << std::endl;
+
+  // A parameter declaration with the specifier "this" declares an explicit object parameter.
+  
+  // An explicit object parameter cannot be a function parameter pack,
+  // and it can only appear as the first parameter of the parameter list
+  // in the following declarations:
+  // 1. A declaration of a member function or member function template.
+  // 2. An explicit instantiation or explicit specialization of a templated member function.
+  // 3. A lambda declaration.
+  
+  // A member function with an explicit object parameter has the following restrictions:
+  // 1. The function is not static.
+  // 2. The function is not virtual.
+  // 3. The declarator of the function does not contain cv and ref.
+  
+  // Error: non-member functions cannot have an explicit object parameter
+  // void func(this ExplicitObjectParameter& self);
+  
+  // A pointer to an explicit object member function is an ordinary pointer to function,
+  // not a pointer to member.
+  
+  struct Y
+  {
+    int f(int, int) const& {return 1;};
+    int g(this Y const& self, int, int) {
+      if (&self == &self)
+        return 1;
+      return 1;
+    };
+  };
+  
+  Y y{};
+  
+  const auto pf = &Y::f;
+  std::cout << pf << std::endl;
+  
+  // error: pointers to member functions are not callable
+  // called object type 'int (Y::*)(int, int) const &' is not a function or function pointer
+  //pf(y, 1, 2);
+  
+  (y.*pf)(1, 2);            // ok
+  std::invoke(pf, y, 1, 2); // ok
+  
+  auto pg = &Y::g;
+  pg(y, 3, 4);              // ok
+  
+  // error: “pg” is not a pointer to member function
+  // right hand operand to .* has non-pointer-to-member type 'int (*)(const Y &, int, int)'
+  //(y.*pg)(3, 4);
+  
+  std::invoke(pg, y, 3, 4); // ok
+}
+
+
+void demo_multidimensional_subscript_operator()
+{
+  int array3d[4][3][2]{};
+  array3d[3][2][1] = 42;
+  std::cout << "array3d[3][2][1] = " << array3d[3][2][1] << std::endl;
 }
 
 
@@ -3079,7 +3289,7 @@ int main()
   demo_filesystem();
   demo_quotes();
   demo_byte_to_integer();
-  feature_testing_macros();
+  demo_feature_testing_macros();
   three_way_comparison_operator();
   init_statements_in_range_based_for_loops();
   demo_char_8_t();
@@ -3097,5 +3307,9 @@ int main()
   demo_source_location();
   demo_span();
   demo_starts_with_and_ends_with();
+  demo_bind_front_bind_back();
+  demo_distribution();
+  demo_explicit_object_parameter_this();
+  demo_multidimensional_subscript_operator();
   return EXIT_SUCCESS;
 }
