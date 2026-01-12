@@ -38,6 +38,8 @@
 #include <expected>
 #include <charconv>
 //#include <stacktrace>
+#include <regex>
+#include <complex>
 
 
 // Template with a default type.
@@ -238,13 +240,31 @@ using matrix_type = std::array<std::array<int, k_size>, k_size>;
 matrix_type m;
 
 
-void test_contains()
+void demo_contains()
 {
   return;
-  auto bag = std::multiset<std::string>{};
-  std::string word {"word"};
-  bag.insert(word);
-  std::cout << "Multiset bag contains word: " << std::boolalpha << bag.contains(word) << std::endl;
+  {
+    auto bag = std::multiset<std::string>{};
+    std::string word {"word"};
+    bag.insert(word);
+    std::cout << "Multiset bag contains word: " << std::boolalpha << bag.contains(word) << std::endl;
+  }
+
+  {
+    constexpr auto haystack = std::array{3, 1, 4, 1, 5};
+    constexpr auto needle = std::array{1, 4, 1};
+    constexpr auto bodkin = std::array{2, 5, 2};
+    
+    static_assert (std::ranges::contains(haystack, 4));
+    static_assert (not std::ranges::contains(haystack, 6));
+    static_assert (std::ranges::contains_subrange(haystack, needle));
+    static_assert (not std::ranges::contains_subrange(haystack, bodkin));
+    
+    [[maybe_unused]] constexpr std::array<std::complex<double>, 3> nums{{{1, 2}, {3, 4}, {5, 6}}};
+//    static_assert(std::ranges::contains(nums, {3, 4}));
+//    static_assert(std::ranges::contains(nums, std::complex<double>{3, 4}));
+  }
+
 }
 
 
@@ -429,20 +449,31 @@ void algorithm_lower_upper_bound()
 }
 
 
+// https://en.cppreference.com/w/cpp/algorithm/all_any_none_of.html
 void algorithm_all_any_none_of()
 {
   return;
+  
   const auto numbers = std::vector{3, 2, 2, 1, 0, 2, 1};
   std::cout << "Input data: ";
   print_ranges_for_each(numbers);
 
   const auto is_negative = [](int i) { return i < 0; };
   
-  std::cout << "Contains only natural numbers: " << std::boolalpha << std::ranges::none_of(numbers, is_negative) << std::endl;
+  std::cout << "Contains only natural numbers: " << std::boolalpha
+  << std::ranges::none_of(numbers, is_negative) << " "
+  << std::none_of(numbers.cbegin(), numbers.cend(), is_negative)
+  << std::endl;
 
-  std::cout << "Contains only negative numbers: " << std::boolalpha << std::ranges::all_of(numbers, is_negative) << std::endl;
+  std::cout << "Contains only negative numbers: " << std::boolalpha
+  << std::ranges::all_of(numbers, is_negative) << " "
+  << std::all_of(numbers.cbegin(), numbers.cend(), is_negative)
+  << std::endl;
 
-  std::cout << "Contains at least one negative number: " << std::boolalpha << std::ranges::any_of(numbers, is_negative) << std::endl;
+  std::cout << "Contains at least one negative number: " << std::boolalpha
+  << std::ranges::any_of(numbers, is_negative) << " "
+  << std::any_of(numbers.cbegin(), numbers.cend(), is_negative)
+  << std::endl;
 }
 
 
@@ -3141,6 +3172,8 @@ void demo_span()
 
 // https://en.cppreference.com/w/cpp/string/basic_string/starts_with
 // https://en.cppreference.com/w/cpp/string/basic_string/ends_with
+// https://en.cppreference.com/w/cpp/algorithm/ranges/starts_with
+// https://en.cppreference.com/w/cpp/algorithm/ranges/ends_with.html
 void demo_starts_with_and_ends_with()
 {
   return;
@@ -3172,6 +3205,46 @@ void demo_starts_with_and_ends_with()
   test_ends_width('d');
   test_ends_width('e');
   test_ends_width("d");
+  
+  using namespace std::literals;
+  
+  constexpr auto ascii_upper = [](char8_t c)
+  {
+    return u8'a' <= c && c <= u8'z' ? static_cast<char8_t>(c + u8'A' - u8'a') : c;
+  };
+  
+  [[maybe_unused]] constexpr auto cmp_ignore_case = [=](char8_t x, char8_t y)
+  {
+    return ascii_upper(x) == ascii_upper(y);
+  };
+  
+  static_assert(std::ranges::starts_with("const_cast", "const"sv));
+  static_assert(std::ranges::starts_with("constexpr", "const"sv));
+  static_assert(!std::ranges::starts_with("volatile", "const"sv));
+  
+  std::cout << std::boolalpha
+  << std::ranges::starts_with(u8"Constantinopolis", u8"constant"sv,
+                              {}, ascii_upper, ascii_upper) << ' '
+  << std::ranges::starts_with(u8"Istanbul", u8"constant"sv,
+                              {}, ascii_upper, ascii_upper) << ' '
+  << std::ranges::starts_with(u8"Metropolis", u8"metro"sv,
+                              cmp_ignore_case) << ' '
+  << std::ranges::starts_with(u8"Acropolis", u8"metro"sv,
+                              cmp_ignore_case) << '\n';
+  
+  [[maybe_unused]] constexpr static auto v = { 1, 3, 5, 7, 9 };
+  [[maybe_unused]] constexpr auto odd = [](int x) { return x % 2; };
+  static_assert(std::ranges::starts_with(v, std::views::iota(1)
+                                         | std::views::filter(odd)
+                                         | std::views::take(3)));
+
+  static_assert (not std::ranges::ends_with("for", "cast"));
+  static_assert (std::ranges::ends_with("dynamic_cast", "cast"));
+  static_assert (not std::ranges::ends_with("as_const", "cast"));
+  static_assert (std::ranges::ends_with("bit_cast", "cast"));
+  static_assert (not std::ranges::ends_with("to_underlying", "cast"));
+  static_assert (std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{3, 4}));
+  static_assert (not std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{4, 5}));
 }
 
 
@@ -4274,6 +4347,8 @@ void views_repeat()
 
 void views_slide()
 {
+  return;
+  
   [[maybe_unused]] const auto print_subrange = [](std::ranges::viewable_range auto&& r)
   {
     std::cout << '[';
@@ -4304,6 +4379,259 @@ void views_slide()
 }
 
 
+void views_stride()
+{
+  return;
+  
+  using namespace std::literals;
+  
+  const auto print = [](std::ranges::viewable_range auto&& v, std::string_view separator = " ")
+  {
+    for (auto const& x : v)
+      std::cout << x << separator;
+    std::cout << std::endl;
+  };
+  
+  print(std::views::iota(1, 13));
+  
+  //  print(std::views::iota(1, 13) | std::views::stride(3));
+  //  print(std::views::iota(1, 13) | std::views::stride(3) | std::views::reverse);
+  //  print(std::views::iota(1, 13) | std::views::reverse | std::views::stride(3));
+  //
+  //  print("0x0!133713337*x//42/A$@"sv | std::views::stride(0B11) |
+  //        std::views::transform([](char O) -> char { return 0100 | O; }),
+  //        "");
+  // Output:
+  // 1 2 3 4 5 6 7 8 9 10 11 12
+  // 1 4 7 10
+  // 10 7 4 1
+  // 12 9 6 3
+  // password
+}
+
+
+void views_zip()
+{
+  return;
+  
+  const auto print = [] (auto const remark, auto const& range) {
+    std::cout << remark;
+    for (auto const& element : range)
+      std::cout << element << ' ';
+    std::cout << std::endl;
+  };
+  
+  auto x = std::vector{1, 2, 3, 4};
+  auto y = std::list<std::string>{"α", "β", "γ", "δ", "ε"};
+  auto z = std::array{'A', 'B', 'C', 'D', 'E', 'F'};
+  
+  print("Source views:", "");
+  print("x: ", x);
+  print("y: ", y);
+  print("z: ", z);
+  
+  std::cout << std::endl;
+  
+  print("zip(x,y,z):", "");
+  
+  for (std::tuple<int&, std::string&, char&> element : std::views::zip(x, y, z))
+  {
+    std::cout
+    << std::get<0>(element) << ' '
+    << std::get<1>(element) << ' '
+    << std::get<2>(element) << std::endl;
+    
+    std::get<char&>(element) += ('a' - 'A'); // modifies the element of z
+  }
+  
+  std::cout << std::endl;
+  
+  print("After modification, z: ", z);
+}
+
+
+void views_zip_transform()
+{
+  return;
+  
+  const auto print = [](auto const rem, auto const& r) {
+    std::cout << rem << '{';
+    for (char o[]{0,' ',0}; auto const& e : r)
+      std::cout << o << e, *o = ',';
+    std::cout << "}" << std::endl;
+  };
+  
+  auto v1 = std::vector<float>{1, 2, 3};
+  auto v2 = std::list<short>{1, 2, 3, 4};
+  auto v3 = std::to_array({1, 2, 3, 4, 5});
+  
+  [[maybe_unused]] const auto add = [](auto a, auto b, auto c) { return a + b + c; };
+  
+  // auto sum = std::views::zip_transform(add, v1, v2, v3);
+  
+  print("v1:  ", v1);
+  print("v2:  ", v2);
+  print("v3:  ", v3);
+  //print("sum: ", sum);
+  
+  // Output:
+  // v1:  {1, 2, 3}
+  // v2:  {1, 2, 3, 4}
+  // v3:  {1, 2, 3, 4, 5}
+  // sum: {3, 6, 9}
+}
+
+
+// https://en.cppreference.com/w/cpp/ranges/range_adaptor_closure.html
+void range_adaptor_closure()
+{
+  // Define Slice as a range adaptor closure.
+  struct Slice : std::ranges::range_adaptor_closure<Slice>
+  {
+    std::size_t start {0};
+    std::size_t end {std::string_view::npos};
+    
+    constexpr std::string_view operator()(std::string_view sv) const
+    {
+      return sv.substr(start, end - start);
+    }
+  };
+  
+  constexpr std::string_view str = "0123456789";
+  
+  constexpr const auto start {1};
+  constexpr const auto width {5};
+  constexpr Slice slice {.start = start, .end = start + width};
+  
+  // Use slicer as a normal function object.
+  constexpr auto sv1 = slice(str);
+  static_assert(sv1 == "12345");
+  
+  // Use slicer as a range adaptor closure object.
+  constexpr auto sv2 = str | slice;
+  static_assert(sv2 == "12345");
+  
+  // Range adaptor closures can be composed.
+  constexpr auto slice_and_drop = slice | std::views::drop(2);
+  static_assert((str | slice_and_drop) == "345");
+}
+
+
+// Convert a range to a container like a vector, list, and so on.
+void ranges_to()
+{
+  return;
+  
+  {
+    std::println("{}", std::views::iota(1, 5));
+    
+    auto vec = std::views::iota(1, 5)
+    | std::views::transform([](int v){ return v * 2; })
+    | std::ranges::to<std::vector>();
+    
+    static_assert(std::same_as<decltype(vec), std::vector<int>>);
+    std::println("{}", vec);
+    
+    auto list = vec | std::views::take(3) | std::ranges::to<std::list<double>>();
+    
+    static_assert(std::same_as<decltype(list), std::list<double>>);
+    std::println("{}", list);
+  }
+  
+  // Direct init
+  {
+    char array[]{'a', 'b', '\0', 'c'};
+    
+    // Argument type is convertible to result value type:
+    auto str_to = std::ranges::to<std::string>(array);
+    std::println("{}, size {}", str_to, str_to.size());
+    
+    // Equivalent to
+    std::string str(array);
+    
+    // Result type is not an input range:
+    auto re_to = std::ranges::to<std::regex>(array);
+
+    // Equivalent to
+    std::regex re(array);
+  }
+}
+
+
+void ranges_find_last()
+{
+  return;
+  
+  [[maybe_unused]] constexpr static auto v = {1, 2, 3, 1, 2, 3, 1, 2};
+  
+  {
+    constexpr auto i1 = std::ranges::find_last(v.begin(), v.end(), 3);
+    constexpr auto i2 = std::ranges::find_last(v, 3);
+    static_assert(std::ranges::distance(v.begin(), i1.begin()) == 5);
+    static_assert(std::ranges::distance(v.begin(), i2.begin()) == 5);
+  }
+  {
+    constexpr auto i1 = std::ranges::find_last(v.begin(), v.end(), -3);
+    constexpr auto i2 = std::ranges::find_last(v, -3);
+    static_assert(i1.begin() == v.end());
+    static_assert(i2.begin() == v.end());
+  }
+  
+  constexpr const auto abs = [](int x) { return x < 0 ? -x : x; };
+  
+  {
+    constexpr const auto pred = [](int x) { return x == 3; };
+    constexpr auto i1 = std::ranges::find_last_if(v.begin(), v.end(), pred, abs);
+    constexpr auto i2 = std::ranges::find_last_if(v, pred, abs);
+    static_assert(std::ranges::distance(v.begin(), i1.begin()) == 5);
+    static_assert(std::ranges::distance(v.begin(), i2.begin()) == 5);
+  }
+  {
+    constexpr const auto pred = [](int x) { return x == -3; };
+    constexpr auto i1 = std::ranges::find_last_if(v.begin(), v.end(), pred, abs);
+    constexpr auto i2 = std::ranges::find_last_if(v, pred, abs);
+    static_assert(i1.begin() == v.end());
+    static_assert(i2.begin() == v.end());
+  }
+  
+  {
+    constexpr const auto pred = [](int x) { return x == 1 or x == 2; };
+    constexpr auto i1 = std::ranges::find_last_if_not(v.begin(), v.end(), pred, abs);
+    constexpr auto i2 = std::ranges::find_last_if_not(v, pred, abs);
+    static_assert(std::ranges::distance(v.begin(), i1.begin()) == 5);
+    static_assert(std::ranges::distance(v.begin(), i2.begin()) == 5);
+  }
+  {
+    auto pred = [](int x) { return x == 1 or x == 2 or x == 3; };
+    constexpr auto i1 = std::ranges::find_last_if_not(v.begin(), v.end(), pred, abs);
+    constexpr auto i2 = std::ranges::find_last_if_not(v, pred, abs);
+    static_assert(i1.begin() == v.end());
+    static_assert(i2.begin() == v.end());
+  }
+
+  {
+    using P = std::pair<std::string_view, int>;
+    const std::forward_list<P> list {
+      {"one", 1}, {"two", 2}, {"three", 3},
+      {"one", 4}, {"two", 5}, {"three", 6},
+    };
+    [[maybe_unused]] auto cmp_one = [](const std::string_view &s) { return s == "one"; };
+    
+    // Find last elements that satisfy the comparator, and projecting pair::first
+    const auto subrange = std::ranges::find_last_if(list, cmp_one, &P::first);
+    
+    std::cout << "The found element and the tail after it are:" << std::endl;
+    for (P const& e : subrange)
+      std::cout << '{' << std::quoted(e.first) << ", " << e.second << "} ";
+    std::cout << std::endl;;
+    // Output:
+    //  The found element and the tail after it are:
+    //  {"one", 4} {"two", 5} {"three", 6}
+
+    const auto i3 = std::ranges::find_last(list, P{"three", 3});
+    assert(i3.begin()->first == "three" && i3.begin()->second == 3);
+  }
+}
 
 
 
@@ -4315,7 +4643,7 @@ int main()
   std_function_with_button_class();
   stateless_lambdas();
   lambda_auto_typename();
-  test_contains();
+  demo_contains();
   sum_scores_compare_processing_time();
   sorting();
   algorithm_transform();
@@ -4442,5 +4770,11 @@ int main()
   views_join_width();
   views_repeat();
   views_slide();
+  views_stride();
+  views_zip();
+  views_zip_transform();
+  range_adaptor_closure();
+  ranges_to();
+  ranges_find_last();
   return EXIT_SUCCESS;
 }
