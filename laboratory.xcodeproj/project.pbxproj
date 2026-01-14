@@ -104,13 +104,13 @@
 		CAD686A11E290470007CA7FC /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CAD686A41E290470007CA7FC /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
 		CADBACAF25937907000527CA /* synflood */ = {isa = PBXFileReference; lastKnownFileType = folder; path = synflood; sourceTree = "<group>"; };
+		CAE169532F1803D70053FDDC /* run */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run; sourceTree = "<group>"; };
 		CAE44BB91DE1D23C001F29D1 /* footnotes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = footnotes.css; sourceTree = "<group>"; };
 		CAE44BBA1DE1D23C001F29D1 /* footnotes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = footnotes.html; sourceTree = "<group>"; };
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
 		CAE7A88629633DEC00366467 /* concurrency */ = {isa = PBXFileReference; lastKnownFileType = folder; path = concurrency; sourceTree = "<group>"; };
 		CAE92415203B04F900D84B09 /* mbedtls */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mbedtls; sourceTree = "<group>"; };
 		CAEAADA129E6CADB00C9FC60 /* sqlite */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sqlite; sourceTree = "<group>"; };
-		CAEDFD832F1017DF00A05BFA /* 23.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = 23.cpp; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
 		CAEF740722945DB900F16631 /* lambdas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lambdas; sourceTree = "<group>"; };
@@ -217,8 +217,8 @@
 			isa = PBXGroup;
 			children = (
 				CA6744582A5DAC18006769F9 /* main.cpp */,
-				CAEDFD832F1017DF00A05BFA /* 23.cpp */,
 				CA60B6D82F066CF400CD9D7E /* Makefile */,
+				CAE169532F1803D70053FDDC /* run */,
 			);
 			path = "c++-examples";
 			sourceTree = "<group>";

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ~/scr/sid-ip
+rsync -av . $DEBIANSID:/tmp
+ssh $DEBIANSID "cd /tmp; make"
