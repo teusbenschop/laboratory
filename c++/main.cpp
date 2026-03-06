@@ -4887,6 +4887,7 @@ void flat_map()
 
 void demo_print()
 {
+  return;
   std::println("{2} {1}{0}!", 23, "C++", "Hello");  // overload (1)
   
   const auto tmp{std::filesystem::temp_directory_path() / "test.txt"};
@@ -4899,7 +4900,7 @@ void demo_print()
 }
 
 
-int main()
+int main([[maybe_unused]] const int argc, [[maybe_unused]] const char* argv[])
 {
   test_lambda_capture();
   assign_two_lambdas_to_same_function_object();
