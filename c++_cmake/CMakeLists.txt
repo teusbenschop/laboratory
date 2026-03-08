@@ -16,4 +16,5 @@ add_executable(cpp
         ranges_library/various_demos.cpp
         concurrency_support_library/mutual_exclusion/shared_and_unique_locks.cpp
         concurrency_support_library/mutual_exclusion/timed_mutex.cpp
+        concurrency_support_library/mutual_exclusion/latches_and_barriers.cpp
 )

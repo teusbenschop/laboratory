@@ -1641,52 +1641,6 @@ void demo_lock_multiple_simultaneously()
 }
 
 
-// https://en.cppreference.com/w/cpp/thread/barrier
-void demo_barriers()
-{
-  return;
-  const auto random_int = [] (const int min, const int max) -> int {
-    // One engine instance per thread.
-    thread_local static auto engine = std::default_random_engine{std::random_device{}()};
-    auto distribution = std::uniform_int_distribution<>{min, max};
-    return distribution(engine);
-  };
-
-  constexpr auto n_dice = 5;
-  
-  auto done = false;
-  auto dice = std::array<int, n_dice>{};
-  auto threads = std::vector<std::thread>{};
-  auto n_turns = 0;
-  
-  // A function to run on completion of a barrier.
-  auto on_barrier_completion = [&] {
-    ++n_turns;
-    auto is_six = [](auto i) { return i == 6; };
-    done = std::ranges::all_of(dice, is_six);
-  };
-
-  // Define the barrier to use with the completion callback.
-  // Barriers are reusable after all arriving threads are unblocked.
-  auto barrier = std::barrier{n_dice, on_barrier_completion};
-  for (size_t i = 0; i < n_dice; ++i) {
-    threads.emplace_back([&, i] () {
-      while (!done) {
-        // Roll dice.
-        dice[i] = random_int(1, 6);
-        // Decrement the count by 1, wait here till the barrier is 0,
-        // and then until the phase completion step of the current phase is run.
-        barrier.arrive_and_wait();
-      }
-    });
-  }
-  for (auto&& t : threads) {
-    t.join();
-  }
-  std::cout << "Number of turns to have all dice on 6: " << n_turns << std::endl;
-}
-
-
 void condition_variables()
 {
   return;

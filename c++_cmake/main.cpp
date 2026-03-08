@@ -19,7 +19,8 @@ int main() {
     // language::classes::design_idioms();
     // memory_management_library::pointer_types();
     // concurrency_support_library::mutual_exclusion::shared_and_unique_locks();
-    concurrency_support_library::mutual_exclusion::timed_mutex();
-
+    //concurrency_support_library::mutual_exclusion::timed_mutex();
+    // concurrency_support_library::mutual_exclusion::demo_latch();
+    concurrency_support_library::mutual_exclusion::demo_barrier();
     return EXIT_SUCCESS;
 }
