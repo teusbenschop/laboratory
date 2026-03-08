@@ -2,11 +2,13 @@
 #include "language_support_library/program_utilities/signals.h"
 #include "metaprogramming_library/automatic_unit_conversion.h"
 #include "ranges_library/introduction.h"
+#include "language/exceptions.h"
 
 int main() {
     // language_support_library::program_utilities::signals();
     // ranges_library::introduction();
-    metaprogramming_library::automatic_unit_conversion();
+    //metaprogramming_library::automatic_unit_conversion();
+    language::exceptions();
 
     return EXIT_SUCCESS;
 }
