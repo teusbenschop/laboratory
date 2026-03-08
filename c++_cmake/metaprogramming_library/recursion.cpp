@@ -1,8 +1,3 @@
-#include <iostream>
-#include <ostream>
-#include <type_traits>
-#include "functions.h"
-
 namespace metaprogramming_library {
 
 // What is template metaprogramming?

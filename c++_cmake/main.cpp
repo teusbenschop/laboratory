@@ -10,11 +10,11 @@ int main() {
     // language_support_library::program_utilities::signals();
     // ranges_library::introduction();
     // ranges_library::various_demos();
-    //metaprogramming_library::automatic_unit_conversion();
-    //language::exceptions();
+    // metaprogramming_library::automatic_unit_conversion();
+    // language::exceptions();
     // language::classes::design_principles();
     // language::classes::design_idioms();
-    memory_management_library::pointer_types();
+    // memory_management_library::pointer_types();
 
     return EXIT_SUCCESS;
 }
