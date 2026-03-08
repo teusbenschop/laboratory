@@ -9,4 +9,5 @@ add_executable(cpp
         ranges_library/introduction.cpp
         metaprogramming_library/automatic_unit_conversion.cpp
         language/exceptions.cpp
+        ranges_library/various_demos.cpp
 )

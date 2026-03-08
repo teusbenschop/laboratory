@@ -2,7 +2,7 @@
 #include <iostream>
 #include <signal.h>
 #include <string.h>
-#include "signals.h"
+#include "functions.h"
 
 
 namespace language_support_library::program_utilities {

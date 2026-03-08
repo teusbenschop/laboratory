@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ostream>
 #include <type_traits>
-#include "automatic_unit_conversion.h"
+#include "functions.h"
 
 namespace metaprogramming_library {
 

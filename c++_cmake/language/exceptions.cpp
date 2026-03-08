@@ -2,8 +2,7 @@
 #include <exception>
 #include <string_view>
 #include <string>
-
-#include "exceptions.h"
+#include "functions.h"
 
 namespace language {
 
@@ -15,16 +14,16 @@ namespace language {
 class BaseException : public std::exception {
     const std::string m_what;
 public:
-    explicit BaseException(std::string_view what) noexcept : m_what(what) {}
+    explicit BaseException(std::string_view what = "") noexcept : m_what(what) {}
     const char* what() const noexcept final override { return m_what.c_str(); }
 };
 
 struct Type1Exception : BaseException {
-    explicit Type1Exception(std::string_view what) noexcept : BaseException(what) {}
+    explicit Type1Exception(std::string_view what = "") noexcept : BaseException(what) {}
 };
 
 struct Type2Exception : BaseException {
-    explicit Type2Exception(std::string_view what) noexcept : BaseException(what) {}
+    explicit Type2Exception(std::string_view what = "") noexcept : BaseException(what) {}
 };
 
 // This template function gets passed an exception, throws it, and catches it.
@@ -76,19 +75,19 @@ void exceptions()
   // Throw different exceptions and print the exception caught via the exception handler.
   try {
     std::cout << "Throw Type1Exception" << std::endl;
-    throw Type1Exception("type1");
+    throw Type1Exception();
   } catch (const std::exception& e) {
     exception_handler(&e);
   }
   try {
     std::cout << "Throw Type2Exception" << std::endl;
-    throw Type2Exception("type2");
+    throw Type2Exception();
   } catch (const std::exception& e) {
     exception_handler(&e);
   }
   try {
     std::cout << "Throw BaseException" << std::endl;
-    throw BaseException("base");
+    throw BaseException();
   } catch (const std::exception& e) {
     exception_handler(&e);
   }
@@ -102,13 +101,13 @@ void exceptions()
   // Throw different types of exceptions.
   // The template function uses the standard try ... catch idiom.
   std::cout << "Throw Type1Exception" << std::endl;
-  demo_exception_catch_hierarchy(Type1Exception("type1"));
+  demo_exception_catch_hierarchy(Type1Exception());
   std::cout << "Throw Type2Exception" << std::endl;
-  demo_exception_catch_hierarchy(Type2Exception("type2"));
+  demo_exception_catch_hierarchy(Type2Exception());
   std::cout << "Throw BaseException" << std::endl;
-  demo_exception_catch_hierarchy(BaseException("base"));
+  demo_exception_catch_hierarchy(BaseException());
   std::cout << "Throw standard exception" << std::endl;
-  demo_exception_catch_hierarchy(std::runtime_error("standard"));
+  demo_exception_catch_hierarchy(std::runtime_error(""));
 }
 
 }
