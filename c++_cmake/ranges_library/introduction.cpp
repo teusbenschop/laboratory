@@ -12,7 +12,7 @@ void introduction()
     // One to the beginning and one to the end of a sequence.
 
     // Demonstration of how ranges make code simpler.
-    // First regular C++, then the same using ranges.
+    // First use regular C++, then the same using ranges.
     {
         // Start from a list of numbers.
         const auto numbers = std::vector{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
