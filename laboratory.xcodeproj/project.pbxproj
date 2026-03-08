@@ -113,6 +113,7 @@
 		CAEAADA129E6CADB00C9FC60 /* sqlite */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sqlite; sourceTree = "<group>"; };
 		CAEE92021DA8EE1C00DB5A5A /* child.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = child.cpp; sourceTree = "<group>"; };
 		CAEE92031DA8EE1C00DB5A5A /* parent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = parent.cpp; sourceTree = "<group>"; };
+		CAEF6AAB2F5B304600DA2729 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		CAEF740722945DB900F16631 /* lambdas */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lambdas; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -213,14 +214,15 @@
 			path = torch;
 			sourceTree = "<group>";
 		};
-		CA6743852A5DAB2E006769F9 /* c++-examples */ = {
+		CA6743852A5DAB2E006769F9 /* c++ */ = {
 			isa = PBXGroup;
 			children = (
+				CAEF6AAB2F5B304600DA2729 /* main.h */,
 				CA6744582A5DAC18006769F9 /* main.cpp */,
 				CA60B6D82F066CF400CD9D7E /* Makefile */,
 				CAE169532F1803D70053FDDC /* run */,
 			);
-			path = "c++-examples";
+			path = "c++";
 			sourceTree = "<group>";
 		};
 		CA7BA6901DDCEA3C00719C36 /* quill-mini */ = {
@@ -339,7 +341,7 @@
 			isa = PBXGroup;
 			children = (
 				CAB396D12988DF330035E25E /* boost */,
-				CA6743852A5DAB2E006769F9 /* c++-examples */,
+				CA6743852A5DAB2E006769F9 /* c++ */,
 				CA3294652C304ECF0048FD22 /* certificates */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,

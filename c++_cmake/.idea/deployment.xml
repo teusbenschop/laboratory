@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="10.211.55.103 (9510ba78-9059-43b2-a64a-5f0c2a9ea0c1)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/c++_cmake" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="10.211.55.57 (903667ed-298a-4483-a19e-28a0baf232a2)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.MgcrPBfwvW/c++_cmake" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
