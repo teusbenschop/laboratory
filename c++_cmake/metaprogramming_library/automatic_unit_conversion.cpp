@@ -28,7 +28,7 @@ class Weight {
 public:
     constexpr Weight() noexcept = default;
     // Constructor taking a float, so the weight is equal to the float passed.
-    constexpr explicit Weight(decltype(m_value) v) noexcept : m_value(v) {}
+    constexpr explicit Weight(const decltype(m_value) v) noexcept : m_value(v) {}
     template <weight_unit UU>
     // This constructor is a template, the compiler generates multiple constructors,
     // 1. Create a kilogram from a gram.

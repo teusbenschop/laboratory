@@ -18,8 +18,9 @@
 // Threads may block on the latch until the counter is decremented to zero.
 // There is no possibility to increase or reset the counter, the latch is single-use.
 
-// The std::barrier is similar to the std::latch but can be reused.
-// Unlike std::latch, barriers execute a possibly empty callable before unblocking threads.
+// The std::barrier is similar to the std::latch with these differences:
+// 1. It can be reused.
+// 2. It executes possibly empty callable before unblocking threads.
 
 
 namespace concurrency_support_library::mutual_exclusion {
@@ -78,7 +79,10 @@ void demo_barrier()
     };
 
     // Define the barrier to use with the completion callback.
-    // Barriers are reusable after all arriving threads are unblocked.
+    // After the barrier has counted down to zero,
+    // and after the completion callback has run,
+    // the barrier resets itself to its initial state.
+    // Then the barrier can be used again.
     auto barrier = std::barrier{n_dice, on_barrier_completion};
     for (size_t i = 0; i < n_dice; ++i) {
         threads.emplace_back([&, i]  {

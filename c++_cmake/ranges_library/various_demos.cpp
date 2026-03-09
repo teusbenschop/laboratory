@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <complex>
 #include <iostream>
 #include <list>
@@ -107,9 +108,21 @@ void demo_iota()
 void demo_shuffle()
 {
     std::cout << "std::ranges::shuffle: ";
+
+    // Numbers in sequential order.
     auto numbers = std::vector{1, 2, 3, 4, 5};
+
+    // Print the sequential numbers.
     print_range_values(numbers);
-    std::ranges::shuffle(numbers, std::mt19937 {std::random_device {}()});
+
+    // A Mersenne Twister generator.
+    std::random_device rd;
+    std::mt19937 mtg(rd());
+
+    // Shuffle the numbers.
+    std::ranges::shuffle(numbers, mtg);
+
+    // Print the result.
     print_range_values(numbers);
     print_range_is_sorted(numbers);
 }
@@ -139,7 +152,11 @@ void demo_find()
         };
         if (const auto it = std::ranges::find(persons, "Bob", &person::name);
             it != persons.cend())
-            std::cout << "std::ranges::find: " << it->uid << " " << it->name << " " << it->position << std::endl;
+        {
+            assert(it->uid == 1);
+            assert(it->name == "Bob");
+            assert(it->position == "cook");
+        }
     }
 }
 
