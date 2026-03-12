@@ -1,7 +1,11 @@
 #pragma once
 
-namespace language_support_library::program_utilities {
+namespace language_support_library {
+namespace program_utilities {
+void signals();
+}
 
-    void signals();
-
+namespace basic_memory_management {
+void demo();
+}
 }

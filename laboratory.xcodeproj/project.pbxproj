@@ -44,7 +44,6 @@
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		CA5EB3141DDF5B0000565FA2 /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
-		CA60B6D82F066CF400CD9D7E /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		CA6744582A5DAC18006769F9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CA6C24E62595E36D00505E9A /* macos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = macos; sourceTree = "<group>"; };
 		CA6C8CF72269F1200067F7BE /* stm32fo-discovery */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "stm32fo-discovery"; sourceTree = "<group>"; };
@@ -104,7 +103,6 @@
 		CAD686A11E290470007CA7FC /* index.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.js; sourceTree = "<group>"; };
 		CAD686A41E290470007CA7FC /* styles.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = styles.css; sourceTree = "<group>"; };
 		CADBACAF25937907000527CA /* synflood */ = {isa = PBXFileReference; lastKnownFileType = folder; path = synflood; sourceTree = "<group>"; };
-		CAE169532F1803D70053FDDC /* run */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run; sourceTree = "<group>"; };
 		CAE44BB91DE1D23C001F29D1 /* footnotes.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = footnotes.css; sourceTree = "<group>"; };
 		CAE44BBA1DE1D23C001F29D1 /* footnotes.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = footnotes.html; sourceTree = "<group>"; };
 		CAE44BBB1DE1D23C001F29D1 /* footnotes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = footnotes.js; sourceTree = "<group>"; };
@@ -217,8 +215,6 @@
 			isa = PBXGroup;
 			children = (
 				CA6744582A5DAC18006769F9 /* main.cpp */,
-				CA60B6D82F066CF400CD9D7E /* Makefile */,
-				CAE169532F1803D70053FDDC /* run */,
 			);
 			path = "c++";
 			sourceTree = "<group>";

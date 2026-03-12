@@ -11,15 +11,12 @@ add_executable(cpp
         language/classes/design_principles.cpp
         language/classes/design_idioms.cpp
         language_support_library/program_utilities/signals.cpp
+        language_support_library/program_utilities/memory.cpp
         memory_management_library/pointers.cpp
         metaprogramming_library/automatic_unit_conversion.cpp
         metaprogramming_library/recursion.cpp
         ranges_library/introduction.cpp
         ranges_library/various_demos.cpp
-        concurrency_support_library/mutual_exclusion/shared_and_unique_locks.cpp
-        concurrency_support_library/mutual_exclusion/timed_mutex.cpp
-        concurrency_support_library/mutual_exclusion/latches_and_barriers.cpp
-        concepts_library/constraints_concepts.cpp
         numerics_library/pseudo_random_number_generation.cpp
         snippets/jthread_timer_condition_variable.cpp
         language/templates.cpp
@@ -27,4 +24,6 @@ add_executable(cpp
         containers_library/containers.cpp
         snippets/scoped_timer.cpp
         snippets/performance.cpp
+        general_utilities_library/demos.cpp
+        metaprogramming_library/various_demos.cpp
 )

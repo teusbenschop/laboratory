@@ -9,16 +9,6 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="10.211.55.57 (903667ed-298a-4483-a19e-28a0baf232a2)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/tmp/tmp.MgcrPBfwvW/c++_cmake" local="$PROJECT_DIR$" />
-          </mappings>
-          <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
-          </excludedPaths>
-        </serverdata>
-      </paths>
     </serverData>
   </component>
 </project>
