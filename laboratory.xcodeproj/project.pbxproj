@@ -89,7 +89,6 @@
 		CA98E2451DA8D17000F43F4B /* vfork1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vfork1.cpp; sourceTree = "<group>"; };
 		CA9F72C2206D4ECD00250182 /* gsl */ = {isa = PBXFileReference; lastKnownFileType = folder; path = gsl; sourceTree = "<group>"; };
 		CAACE86B2C346FF300F684A9 /* ldap */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ldap; sourceTree = "<group>"; };
-		CAB396D12988DF330035E25E /* boost */ = {isa = PBXFileReference; lastKnownFileType = folder; path = boost; sourceTree = "<group>"; };
 		CABEE77A1DD5F645006D8D75 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CABEE77C1DD5F653006D8D75 /* bubble.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = bubble.html; sourceTree = "<group>"; };
 		CABEE77D1DD5F653006D8D75 /* full.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = full.html; sourceTree = "<group>"; };
@@ -334,7 +333,6 @@
 		CAB29AC01A4480CC00139BD7 = {
 			isa = PBXGroup;
 			children = (
-				CAB396D12988DF330035E25E /* boost */,
 				CA6743852A5DAB2E006769F9 /* c++ */,
 				CA3294652C304ECF0048FD22 /* certificates */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,

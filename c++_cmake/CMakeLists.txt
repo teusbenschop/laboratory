@@ -13,9 +13,6 @@ add_executable(cpp
         ranges_library/introduction.cpp
         ranges_library/various_demos.cpp
         numerics_library/pseudo_random_number_generation.cpp
-        snippets/jthread_timer_condition_variable.cpp
-        language/templates.cpp
-        snippets/scoped_timer.cpp
         snippets/performance.cpp
         metaprogramming_library/various_demos.cpp
 )

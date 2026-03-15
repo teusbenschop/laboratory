@@ -306,21 +306,6 @@ void demo_proxy_objects()
 }
 
 
-void test_async()
-{
-  return;
-  auto divide = [](int a, int b) -> int {
-    if (!b) throw std::runtime_error("Cannot divide by zero");
-    std::cout << "Lambda running on thread id " << std::this_thread::get_id() << std::endl;
-    return a / b;
-  };
-  
-  std::cout << "Main running on thread id " << std::this_thread::get_id() << std::endl;
-  std::future future = std::async(divide, 45, 5);
-  int result = future.get();
-  std::cout << "45 / 5 = " << result << std::endl;
-}
-
 
 void atomic_references()
 {
@@ -1682,77 +1667,6 @@ void demo_coroutines()
 // C++20 'module' only available with '-fmodules-ts', which is not yet enabled with '-std=c++20'
 
 
-// https://en.cppreference.com/w/cpp/header/bit
-void demo_header_bit()
-{
-  return;
-  {
-    constexpr auto endian {std::endian::native};
-    if (endian == std::endian::big)
-      std::cout << "The system is big-endian" << std::endl;
-    if (endian == std::endian::little)
-      std::cout << "The system is little-endian" << std::endl;
-  }
-  {
-    // Copy bit by bit from one variable to the other variable.
-    unsigned int ui8 {3};
-    const int i8 = std::bit_cast<int>(ui8);
-    std::cout << "Use std::bit_cast: " << i8 << std::endl;
-  }
-  {
-    for (auto u = 0u; u != 10; ++u) {
-      std::cout << "u = " << u << " = " << std::bitset<4>(u);
-      if (std::has_single_bit(u)) {
-        std::cout << " = 2^" << std::log2(u) << " (is power of two)";
-      }
-      std::cout << std::endl;
-    }
-  }
-  // bit_ceil
-  // Finds the smallest integral power of two not less than the given value.
-  // bit_floor
-  // Finds the largest integral power of two not greater than the given value.
-  // bit_width
-  // Finds the smallest number of bits needed to represent the given value.
-  // rotl - Rotate bits to the left.
-  // rotr - Rotate bits to the right.
-  // countl_zero
-  // Counts the number of consecutive 0 bits, starting from the most significant bit.
-  // countl_one
-  // Counts the number of consecutive 1 bits, starting from the most significant bit.
-  // countr_zero
-  // Counts the number of consecutive 0 bits, starting from the least significant bit.
-  // countr_one
-  // Counts the number of consecutive 1 bits, starting from the least significant bit.
-  // popcount - Counts the number of 1 bits in an unsigned integer.
-
-  // The std::byteswap reverses the bytes in the given integer value n.
-  {
-    const auto dump = [] (auto value){
-      std::cout << std::hex << std::uppercase << std::setfill('0') << std::setw(sizeof(value) * 2) << value << " : ";
-      for (std::size_t i{}; i != sizeof(value); i++, value >>= 8)
-        std::cout << std::setw(2) << static_cast<unsigned>(decltype(value)(0xFF) & value) << ' ';
-      std::cout << std::dec << std::endl;
-    };
-    
-    static_assert(std::byteswap('a') == 'a');
-    
-    std::cout << "byteswap for U16:" << std::endl;
-    constexpr auto x = std::uint16_t(0xCAFE);
-    dump(x);
-    dump(std::byteswap(x));
-    
-    std::cout << "\nbyteswap for U32:" << std::endl;
-    constexpr auto y = std::uint32_t(0xDEADBEEFu);
-    dump(y);
-    dump(std::byteswap(y));
-    
-    std::cout << "\nbyteswap for U64:" << std::endl;
-    constexpr auto z = std::uint64_t{0x0123456789ABCDEFull};
-    dump(z);
-    dump(std::byteswap(z));
-  }
-}
 
 
 // https://en.cppreference.com/w/cpp/header/compare
@@ -1899,51 +1813,6 @@ void demo_starts_with_and_ends_with()
   static_assert (not std::ranges::ends_with("to_underlying", "cast"));
   static_assert (std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{3, 4}));
   static_assert (not std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{4, 5}));
-}
-
-
-// https://en.cppreference.com/w/cpp/utility/functional/bind_front
-void demo_bind_front_bind_back()
-{
-  return;
-  
-  // Function templates std::bind_front and std::bind_back
-  // generate a perfect forwarding call wrapper
-  // which allows to invoke the callable target
-  // with its first or last sizeof...(Args) parameters bound to args.
-
-  const auto minus = [] (const int a, const int b) -> int {
-    return a - b;
-  };
-  
-  constexpr const auto fifty_minus_value = std::bind_front(minus, 50);
-  std::cout << fifty_minus_value(3) << std::endl; // equivalent to `minus(50, 3)`: 47.
-  
-  struct S
-  {
-    int val;
-    int minus(int arg) const noexcept { return val - arg; }
-  };
-  
-  constexpr auto member_minus = std::bind_front(&S::minus, S{50});
-  std::cout << member_minus(3) << std::endl; // equivalent to `S tmp{50}; tmp.minus(3)`: 47.
-  
-  // The noexcept specification is preserved.
-  static_assert(!noexcept(fifty_minus_value(3)));
-  static_assert(noexcept(member_minus(3)));
-  
-  // Binding of a lambda.
-  constexpr const auto plus = [](int a, int b) { return a + b; };
-  constexpr const auto forty_plus = std::bind_front(plus, 40);
-  std::cout << forty_plus(7) << std::endl; // equivalent to `plus(40, 7)`: 47.
-  
-  auto multiply_add = [](int a, int b, int c) { return a * b + c; };
-  auto multiply_plus_seven = std::__bind_back(multiply_add, 7);
-#if __cpp_lib_bind_back >= 202306L
-  auto test = std::bind_back(multiply_add, 7);
-#endif
-
-  std::cout << multiply_plus_seven(4, 10) << std::endl; // equivalent to `madd(4, 10, 7)`: 47.
 }
 
 

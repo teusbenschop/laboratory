@@ -214,7 +214,7 @@ void demo_find()
         assert(*iterator == "Lisa");
     }
 
-    // Demo of finding duplicats in a range.
+    // Demo of finding duplicates in a range.
     {
         const auto contains_duplicates_n2 = [](auto begin, auto end)
         {

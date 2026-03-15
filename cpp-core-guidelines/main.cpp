@@ -167,20 +167,6 @@ void print6 ()
   // vector<string> f8 ();
 }
 
-void print7 ()
-{
-  vector <int> values { 1, 2, 3 };
-  // Cpp Core Guidelines
-  // ES.1: Prefer the standard library to other libraries and to “handcrafted code”.
-  auto sum1 = accumulate(begin(values), end(values), 0);
-  int sum2 { 0 };
-  {
-    int max = values.size();   // bad: verbose, purpose unstated
-    for (int i = 0; i < max; ++i) sum2 = sum2 + values[i];
-  }
-  cout << sum1 << " " << sum2 << endl;
-}
-
 void print8 ()
 {
   // Cpp Core Guidelines.
