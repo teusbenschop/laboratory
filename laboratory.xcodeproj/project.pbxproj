@@ -39,7 +39,6 @@
 		CA3C9E4D1E000DF1007990B5 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
 		CA3DD73520DA64A500CD428E /* sortable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = sortable; sourceTree = "<group>"; };
 		CA4926952905557E00FEB6D3 /* tidy */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tidy; sourceTree = "<group>"; };
-		CA53424D25B6115D008E452A /* websocket-client-1 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "websocket-client-1"; sourceTree = "<group>"; };
 		CA57C716297543F900D86BE7 /* freetype */ = {isa = PBXFileReference; lastKnownFileType = folder; path = freetype; sourceTree = "<group>"; };
 		CA5EB3121DDF5B0000565FA2 /* index.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = index.css; sourceTree = "<group>"; };
 		CA5EB3131DDF5B0000565FA2 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -383,7 +382,6 @@
 				CA98E2431DA8D17000F43F4B /* vfork */,
 				CA0232062D2E947700908318 /* vms */,
 				CA0E92A2220F1D92007A52C3 /* webkit2gtk */,
-				CA53424D25B6115D008E452A /* websocket-client-1 */,
 				CA7BF1081E41E2F4008FF558 /* winsock */,
 			);
 			indentWidth = 2;
