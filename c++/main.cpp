@@ -1036,44 +1036,6 @@ void demo_initializer_in_if_and_switch()
 }
 
 
-void demo_filesystem()
-{
-  return;
-  {
-    std::string url = "/var/log/app";
-    std::filesystem::path p (url);
-    const auto dirname = p.parent_path().string();
-    std::cout << dirname << std::endl;
-  }
-  
-  std::cout << std::filesystem::path::preferred_separator << std::endl;
-  
-  try {
-    std::filesystem::path p ("log");
-    std::filesystem::remove (p);
-  } catch (const std::exception& ex) {
-    std::cout << ex.what() << std::endl;
-  }
-  
-  try {
-    std::filesystem::path path ("/tmp/hi.txt");
-    bool exists = std::filesystem::exists (path);
-    std::cout << "exists: " << exists << std::endl;
-  } catch (const std::exception& ex) {
-    std::cout << ex.what() << std::endl;
-  }
-  
-  try {
-    std::filesystem::path path (R"(/tmp)");
-    for (const auto& directory_entry : std::filesystem::directory_iterator {path}) {
-      std::filesystem::path path = directory_entry.path();
-      std::cout << path.string() << std::endl;
-    }
-  } catch (const std::exception& ex) {
-    std::cout << ex.what() << std::endl;
-  }
-}
-
 
 void demo_quotes()
 {
