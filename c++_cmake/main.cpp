@@ -22,9 +22,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <barrier>
 #include <bit>
 #include <cassert>
+#include <compare>
 #include <chrono>
 #include <complex>
 #include <condition_variable>
+#include <coroutine>
 #include <csignal>
 #include <cstdlib>
 #include <ctime>
@@ -43,8 +45,12 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <queue>
 #include <random>
 #include <ranges>
+#include <regex>
+#include <semaphore>
 #include <set>
 #include <shared_mutex>
+#include <source_location>
+#include <syncstream>
 #include <thread>
 #include <unordered_set>
 #include <vector>
@@ -75,19 +81,17 @@ void demo_scoped_timer()
 }
 
 // Materialize the range r into a std::vector.
-auto to_vector(auto&& r) {
+auto to_vector(auto&& r)
+{
     std::vector<std::ranges::range_value_t<decltype(r)>> v;
-    if constexpr (std::ranges::sized_range<decltype(r)>) {
+    if constexpr (std::ranges::sized_range<decltype(r)>)
+    {
         v.reserve(std::ranges::size(r));
     }
     std::ranges::copy(r, std::back_inserter(v));
     return v;
 }
-
-
 }
-
-
 
 
 // Demonstrate binary_search.
@@ -1467,6 +1471,15 @@ static_assert(Version(1, 1) <= Version(1, 2));
 static_assert(Version(1, 2) > Version(1, 1));
 static_assert(Version(1, 2) >= Version(1, 1));
 static_assert(Version(1, 1) == Version(1, 1));
+
+constexpr double foo{-0.0f};
+constexpr double bar{+0.0f};
+constexpr std::partial_ordering result{foo <=> bar};
+static_assert(result != std::partial_ordering::less);
+static_assert(result != std::partial_ordering::greater);
+static_assert(result == std::partial_ordering::equivalent);
+static_assert(result != std::partial_ordering::unordered);
+
 }
 
 
@@ -1744,6 +1757,7 @@ void demo()
 
 
 namespace demo_chrono_library {
+// https://en.cppreference.com/w/cpp/chrono
 // The chrono library defines five main types:
 // clocks
 // time points
@@ -1792,6 +1806,23 @@ void demo()
 
         // std::chrono::time_point<std::chrono::system_clock> tp;
         // iss >> std::chrono::parse(format, tp);
+    }
+
+    {
+        constexpr auto year_month_day {std::chrono::year(2021)/8/2};
+        static_assert(year_month_day.year() == std::chrono::year(2021));
+        static_assert(year_month_day.month() == std::chrono::month(8));
+        static_assert(year_month_day.day() == std::chrono::day(2));
+    }
+
+    {
+        const auto utc = std::chrono::system_clock::now();
+        //std::cout << "UTC time: " << utc << std::endl;
+        const std::time_t time = std::chrono::system_clock::to_time_t(utc);
+        std::string time_str = std::ctime(&time);
+        time_str.pop_back(); // Remove the \n.
+        //std::cout << "Local time: " << time_str << std::endl;
+        //std::cout << std::chrono::current_zone()->to_local(utc) << std::endl;
     }
 }
 }
@@ -2540,7 +2571,7 @@ void demo()
             std::cout << "Processing synchronized signal " << signal << " " << strsignal(signal) << std::endl;
         }
         */
-    }
+}
 }
 
 namespace meta_programming_recursive_calculation {
@@ -2552,13 +2583,15 @@ namespace meta_programming_recursive_calculation {
 
 // This template recursively calls itself to calculate its value.
 template <int N>
-struct Factorial {
+struct Factorial
+{
     static constexpr int value = N * Factorial<N - 1>::value;
 };
 
 // This template is specific for a passed value of 0.
 template <>
-struct Factorial<0> {
+struct Factorial<0>
+{
     static constexpr int value = 1;
 };
 
@@ -2566,13 +2599,16 @@ static_assert(Factorial<1>::value == 1);
 static_assert(Factorial<4>::value == 24);
 static_assert(Factorial<6>::value == 720);
 
+
+
 // Another example of recursive template calls.
-template<int N>
-struct Power {
-    enum { value = 2 * Power<N-1>::value };
+template <int N>
+struct Power
+{
+    enum { value = 2 * Power<N - 1>::value };
 };
 
-template<>
+template <>
 struct Power<0>
 {
     enum { value = 1 };
@@ -2588,12 +2624,10 @@ static_assert(Power<8>::value == 256);
 // 4. The compiler sees that the value from Power<7> is needed.
 // 5. The compiler keeps creating new instances of Power<n> till Power<0>.
 // 6. The compiler now can create Power<8>.
-
 }
 
 
 namespace remove_const_volatile_reference {
-
 // Demo of removing const, volatile, and reference.
 static_assert(std::is_same_v<std::remove_cvref_t<int>, int>);
 static_assert(std::is_same_v<std::remove_cvref_t<int&>, int>);
@@ -2603,7 +2637,7 @@ static_assert(std::is_same_v<std::remove_cvref_t<const int[2]>, int[2]>);
 static_assert(std::is_same_v<std::remove_cvref_t<const int(&)[2]>, int[2]>);
 static_assert(std::is_same_v<std::remove_cvref_t<int(int)>, int(int)>);
 
-void demo ()
+void demo()
 {
     auto power = [](const auto& v, int n)
     {
@@ -2618,12 +2652,10 @@ void demo ()
     };
     assert(power(2, 4) == 16);
 }
-
 }
 
 
 namespace demo_simple_type_traits {
-
 static_assert(std::is_same_v<uint8_t, unsigned char>);
 static_assert(std::is_floating_point_v<decltype(3.f)>);
 static_assert(std::is_unsigned_v<unsigned int>);
@@ -2632,12 +2664,15 @@ static_assert(not std::is_unsigned_v<int>);
 class Planet
 {
 };
+
 class Mars : public Planet
 {
 };
+
 class Sun
 {
 };
+
 static_assert(std::is_base_of_v<Planet, Mars>);
 static_assert(std::derived_from<Mars, Planet>);
 static_assert(std::is_convertible_v<Mars, Planet>);
@@ -2649,68 +2684,72 @@ static_assert(std::is_scoped_enum_v<int> == false);
 class A
 {
 };
+
 static_assert(not std::is_scoped_enum_v<A>);
 
 enum B { self_test = std::is_scoped_enum_v<B> };
+
 static_assert(not std::is_scoped_enum_v<B>);
 static_assert(!self_test);
 
 enum struct C
 {
 };
+
 static_assert(std::is_scoped_enum_v<C>);
 
 enum class D : int
 {
 };
+
 static_assert(std::is_scoped_enum_v<D>);
 
 enum class E;
 static_assert(std::is_scoped_enum_v<E>);
 
-        // The following types are collectively called implicit-lifetime types:
-        // * scalar types:
-        //     * arithmetic types
-        //     * enumeration types
-        //     * pointer types
-        //     * pointer-to-member types
-        //     * std::nullptr_t
-        // * implicit-lifetime class types
-        //     * is an aggregate whose destructor is not user-provided
-        //     * has at least one trivial eligible constructor and a trivial,
-        //       non-deleted destructor
-        // * array types
-        // * cv-qualified versions of these types.
-        // static_assert(std::is_implicit_lifetime_v<int>); // arithmetic type is a scalar type
-        // static_assert(std::is_implicit_lifetime_v<const int>); // cv-qualified a scalar type
+// The following types are collectively called implicit-lifetime types:
+// * scalar types:
+//     * arithmetic types
+//     * enumeration types
+//     * pointer types
+//     * pointer-to-member types
+//     * std::nullptr_t
+// * implicit-lifetime class types
+//     * is an aggregate whose destructor is not user-provided
+//     * has at least one trivial eligible constructor and a trivial,
+//       non-deleted destructor
+// * array types
+// * cv-qualified versions of these types.
+// static_assert(std::is_implicit_lifetime_v<int>); // arithmetic type is a scalar type
+// static_assert(std::is_implicit_lifetime_v<const int>); // cv-qualified a scalar type
 
-        // enum E { e };
-        //    static_assert(std::is_implicit_lifetime_v<E>); // enumeration type is a scalar type
-        //    static_assert(std::is_implicit_lifetime_v<int*>); // pointer type is a scalar type
-        //    static_assert(std::is_implicit_lifetime_v<std::nullptr_t>); // scalar type
+// enum E { e };
+//    static_assert(std::is_implicit_lifetime_v<E>); // enumeration type is a scalar type
+//    static_assert(std::is_implicit_lifetime_v<int*>); // pointer type is a scalar type
+//    static_assert(std::is_implicit_lifetime_v<std::nullptr_t>); // scalar type
 
-        // struct S
-        // {
-        //     int x, y;
-        // };
-        //    S is an implicit-lifetime class: an aggregate without user-provided destructor
-        //    static_assert(std::is_implicit_lifetime_v<S>);
-        //
-        //    static_assert(std::is_implicit_lifetime_v<int S::*>); // pointer-to-member
+// struct S
+// {
+//     int x, y;
+// };
+//    S is an implicit-lifetime class: an aggregate without user-provided destructor
+//    static_assert(std::is_implicit_lifetime_v<S>);
+//
+//    static_assert(std::is_implicit_lifetime_v<int S::*>); // pointer-to-member
 
-        // struct X { ~X() = delete; };
-        // X is not implicit-lifetime class due to deleted destructor
-        //    static_assert(!std::is_implicit_lifetime_v<X>);
-        //
-        //    static_assert(std::is_implicit_lifetime_v<int[8]>); // array type
-        //    static_assert(std::is_implicit_lifetime_v<volatile int[8]>); // cv-qualified array type
-        //
-        //    static_assert(std::reference_constructs_from_temporary_v<int&&, int> == true);
-        //    static_assert(std::reference_constructs_from_temporary_v<const int&, int> == true);
-        //    static_assert(std::reference_constructs_from_temporary_v<int&&, int&&> == false);
-        //    static_assert(std::reference_constructs_from_temporary_v<const int&, int&&> == false);
-        //    static_assert(std::reference_constructs_from_temporary_v<int&&, long&&> == true);
-        //    static_assert(std::reference_constructs_from_temporary_v<int&&, long> == true);
+// struct X { ~X() = delete; };
+// X is not implicit-lifetime class due to deleted destructor
+//    static_assert(!std::is_implicit_lifetime_v<X>);
+//
+//    static_assert(std::is_implicit_lifetime_v<int[8]>); // array type
+//    static_assert(std::is_implicit_lifetime_v<volatile int[8]>); // cv-qualified array type
+//
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, int> == true);
+//    static_assert(std::reference_constructs_from_temporary_v<const int&, int> == true);
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, int&&> == false);
+//    static_assert(std::reference_constructs_from_temporary_v<const int&, int&&> == false);
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, long&&> == true);
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, long> == true);
 
 
 void demo()
@@ -2742,8 +2781,6 @@ void demo()
 
 
 namespace pseudo_random_number_generation {
-
-
 void demo()
 {
     {
@@ -2756,13 +2793,14 @@ void demo()
         std::default_random_engine generator;
 
         // Store how often an event occurs.
-        constexpr const int array_size {10};
-        std::array<int,array_size> events {};
+        constexpr const int array_size{10};
+        std::array<int, array_size> events{};
 
-        constexpr const int number_of_experiments {1000};
-        constexpr const int number_of_stars {100};
+        constexpr const int number_of_experiments{1000};
+        constexpr const int number_of_stars{100};
 
-        for (int i = 0; i < number_of_experiments; ++i) {
+        for (int i = 0; i < number_of_experiments; ++i)
+        {
             const int number = distribution(generator);
             if (number < array_size) events[number]++;
         }
@@ -2801,9 +2839,7 @@ void demo()
             // The above will have a normal distribution like this:
             // 4 5 6 6 3 6 6 1 6 1 6 1 1 4 2 2 1 5 1 2
         }
-
     }
-
 }
 }
 
@@ -2910,16 +2946,16 @@ void demo()
     }
     {
         // views::transform.
-        const auto numbers = std::vector {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        const auto numbers = std::vector{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         const auto square = [](auto v) { return v * v; };
         // Create a view, but do not yet evaluate this view.
         auto squared_view = std::views::transform(numbers, square);
         // Iterate over the squared view, which invokes evaluation and so invokes the lambda.
-        int sum {0};
+        int sum{0};
         for (auto s : squared_view)
             sum += s;
         // The transformed output will be: 1 4 9 16 25 36 49 64 81 100
-        assert (sum == 385);
+        assert(sum == 385);
     }
     {
         // Demonstration of ranges fill.
@@ -2984,9 +3020,9 @@ void demo()
             const char* position;
         };
         const auto persons = std::list<person>{
-                {0, "Ana", "barber"},
-                {1, "Bob", "cook"},
-                {2, "Eve", "builder"}
+            {0, "Ana", "barber"},
+            {1, "Bob", "cook"},
+            {2, "Eve", "builder"}
         };
         if (const auto it = std::ranges::find(persons, "Bob", &person::name);
             it != persons.cend())
@@ -3004,6 +3040,7 @@ void demo()
         assert(iterator != names.cend());
         assert(*iterator == "Lisa");
     }
+
 
     // Demo of finding duplicates in a range.
     {
@@ -3028,6 +3065,15 @@ void demo()
         assert(a);
         const auto b = contains_duplicates_allocating(vals.cbegin(), vals.cend());
         assert(b);
+    }
+
+    // Demo of ranges::find_if
+    {
+        const auto v = {4, 1, 3, 2};
+        const auto is_even = [](int x) { return x % 2 == 0; };
+        const auto iter = std::ranges::find_if(v, is_even);
+        assert(iter != v.end());
+        assert(*iter == 4);
     }
 
     // Getting the max value
@@ -3151,6 +3197,1111 @@ void demo()
 }
 
 
+namespace regex {
+void demo()
+{
+    std::string s =
+        R"(Some people, when confronted with a problem, think "I know, I'll use regular expressions." Now they have two problems.)";
+
+    // Case-insensitive search for "regular expressions".
+    std::regex self_regex("REGULAR EXPRESSIONS", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    assert(std::regex_search(s, self_regex));
+
+    // Regex that finds words.
+    std::regex word_regex(R"((\w+))");
+    auto words_begin = std::sregex_iterator(s.begin(), s.end(), word_regex);
+    auto words_end = std::sregex_iterator();
+
+    // It found 20 words.
+    assert(std::distance(words_begin, words_end));
+
+    // Words it found:
+    // Some people when confronted with a problem think I know I ll use regular expressions Now they have two problems
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i)
+    {
+        std::smatch match = *i;
+        [[maybe_unused]] std::string match_str = match.str();
+    }
+
+    std::regex long_word_regex(R"((\w{7,}))");
+    std::string new_s = std::regex_replace(s, long_word_regex, "[$&]");
+    assert(
+        new_s ==
+        R"(Some people, when [confronted] with a [problem], think "I know, I'll use [regular] [expressions]." Now they have two [problems].)");
+}
+}
+
+
+namespace source_location {
+// https://en.cppreference.com/w/cpp/utility/source_location
+void demo()
+{
+    const int line = __LINE__;
+    const std::source_location location = std::source_location::current();
+    const std::string file_name = location.file_name();
+    assert (file_name.contains("main.cpp"));
+    assert (location.line() == line + 1);
+    assert(location.column() == 43);
+    assert(location.function_name() == std::string("void source_location::demo()"));
+}
+}
+
+
+namespace demo_barrier_jthread_stop_token {
+void demo()
+{
+    // This lambda starts the failing processes.
+    // On any failure, it restarts the processes.
+    const auto resilient_processes = [](const std::stop_token& stop_token)
+    {
+        // Protect the barrier from being arrived at multiple times
+        // due to multiple processes that may all fail simultaneously.
+        std::atomic<bool> barrier_active{false};
+        // As soon as the barrier is complete, clear the associated protecting flag.
+        auto on_barrier_completion = [&]() noexcept
+        {
+            barrier_active = false;
+        };
+        // The barrier has count 2:
+        // One to allow arriving and waiting at the barrier after all processes have been created.
+        // The second one to use for the error callback.
+        std::barrier barrier(2, on_barrier_completion);
+
+        // Allow the main program to interrupt the processes loop.
+        std::stop_callback stop_callback(stop_token, [&]()
+        {
+            if (barrier_active)
+            {
+                barrier_active = false;
+                [[maybe_unused]] const auto token = barrier.arrive();
+            }
+        });
+
+        bool slow_restart_down{false};
+
+        while (!stop_token.stop_requested())
+        {
+            try
+            {
+                const auto on_event = [&](const std::string& error)
+                {
+                    // Arrive at the barrier.
+                    // This will open the barrier, so all processes get recreated.
+                    if (barrier_active)
+                    {
+                        barrier_active = false;
+                        [[maybe_unused]] const auto token = barrier.arrive();
+                        slow_restart_down = true;
+                    }
+                };
+
+                // Wait shortly to avoid fast repeating error events.
+                if (slow_restart_down)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                }
+
+                // The processes start here.
+                barrier_active = true;
+
+                // Call the on_event callback to simulate an error.
+                const auto generate_error = [&]()
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    on_event("Error");
+                };
+                std::thread(generate_error).detach(); // Better not detach in production code.
+
+                // At this point all processes have started.
+
+                // Wait here till an error occurs or the program shuts down.
+                barrier.arrive_and_wait();
+            }
+            catch (const std::exception& ex)
+            {
+                std::cerr << ex.what() << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
+    };
+
+    std::jthread thread(resilient_processes);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // The thread goes out of scope here, so it gets the stop token.
+}
+}
+
+
+namespace heterogenous_collections_with_variant {
+void demo()
+{
+    using variant_t = std::variant<int, std::string, bool>;
+    {
+        auto container = std::vector<variant_t> { false, "hello", "world", 13 };
+        std::ranges::reverse(container);
+    }
+    {
+        constexpr const auto needle {"needle"};
+        const auto v = std::vector<variant_t>{42, needle, true};
+        for (const auto& item : v) {
+            std::visit([](const auto& x)
+            {
+                //std::cout << "Variant has: " << x << std::endl;
+            }, item);
+        }
+        const auto num_bools = std::ranges::count_if(v, [](const auto& item) {
+          return std::holds_alternative<bool>(item);
+        });
+        assert(num_bools == 1);
+        auto contains_needle_string = std::ranges::any_of(v, [](const auto& item) {
+          return std::holds_alternative<std::string>(item) and std::get<std::string>(item) == needle;
+        });
+        assert(contains_needle_string);
+    }
+
+}
+}
+
+
+namespace atomic_reference {
+void demo()
+{
+    struct Stats {
+        int heads{};
+        int tails{};
+    };
+    auto stats = Stats{};
+
+    const auto random_int = [](int min, int max) {
+        // One engine instance per thread.
+        static thread_local auto engine = std::default_random_engine{std::random_device{}()};
+        auto distribution = std::uniform_int_distribution<>{min, max};
+        return distribution(engine);
+    };
+
+    const auto flip_coin = [&](std::size_t n, auto& outcomes) {
+        auto flip = [&](auto n) {
+            auto heads = std::atomic_ref<int>{outcomes.heads};
+            auto tails = std::atomic_ref<int>{outcomes.tails};
+            for (auto i = 0u; i < n; ++i) {
+                random_int(0, 1) == 0 ? ++heads : ++tails;
+            }
+        };
+        auto t1 = std::jthread{flip, n / 2};       // First half.
+        auto t2 = std::jthread{flip, n - (n / 2)}; // The rest.
+    };
+
+    flip_coin(5000, stats); // Flip 5000 times
+    assert(stats.heads + stats.tails == 5000);
+}
+}
+
+
+namespace lock_multiple_simultaneously {
+// This demonstrates how to use std::lock to lock multiple locks at once simultaneously.
+// This avoids the risk of having deadlocks in the transfer function.
+void demo()
+{
+    struct account {
+        int m_balance{0};
+        std::mutex m_mutex{};
+    };
+
+    const auto transfer_money = [](account& from, account& to, int amount) -> void {
+        // Define two deferred unique locks.
+        auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
+        auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
+        // Lock both unique_locks at the same time to avoid a deadlock.
+        std::lock(lock1, lock2);
+        // Do the transfer.
+        from.m_balance -= amount;
+        to.m_balance += amount;
+        // End of scope releases locks.
+    };
+
+    auto account1 = account{100};
+    auto account2 = account{30};
+    transfer_money(account1, account2, 20);
+    assert (account1.m_balance == 80);
+    assert (account2.m_balance == 50);
+}
+}
+
+
+namespace future_and_promise_and_exception {
+// It is possible to set an exception in a promise.
+void demo()
+{
+    return; // Fails on macOS Tahoe
+    const auto divide = [] (int a, int b, std::promise<int>& promise) {
+        try {
+            const auto result = a / b;
+            promise.set_value(result);
+        } catch(...) {
+            try {
+                // store anything thrown in the promise
+                promise.set_exception(std::current_exception());
+                // or throw a custom exception instead
+                // promise.set_exception(std::make_exception_ptr(MyException("mine")));
+            } catch(...) {} // set_exception() may throw too.
+        }
+    };
+
+    {
+        std::promise<int> promise;
+        std::thread thread {divide, 45, 5, std::ref(promise)};
+        auto future = promise.get_future();
+        auto result = future.get();
+        std::cout << "Result should be " << 45 / 5 << " and it is " << result << std::endl;
+        thread.join();
+    }
+    try {
+        std::promise<int> promise;
+        std::thread thread {divide, 45, 0, std::ref(promise)};
+        auto future = promise.get_future();
+        auto result = future.get();
+        std::cout << result << std::endl;
+        std::cout << "Result should give an exception" << std::endl;
+        thread.join();
+    } catch (const std::exception& exception) {
+        std::cout << exception.what() << std::endl;
+    }
+}
+}
+
+
+namespace osyncstream {
+// https://en.cppreference.com/w/cpp/io/basic_osyncstream
+// The class template std::basic_osyncstream is a convenience wrapper for std::basic_syncbuf.
+// It provides a mechanism to synchronize threads writing to the same stream.
+void demo()
+{
+    const auto stream_worker = [](int id) {
+        using namespace std::literals::chrono_literals;
+        for (int i = 0; i < 2; i++) {
+            std::this_thread::sleep_for(1ms);
+            // std::osyncstream synced_out(std::cout);
+            // synced_out << "worker " << id << std::endl;
+        }
+    };
+
+    std::jthread threads [4];
+    for (int i = 0; i < 4; ++i) {
+        threads[i] = std::jthread(stream_worker, i);
+    }
+
+}
+}
+
+namespace jthread {
+// https://en.cppreference.com/w/cpp/thread/jthread
+// It has the same general behavior as std::thread,
+// except that jthread automatically joins on destruction,
+// and can be cancelled/stopped in certain situations.
+void demo()
+{
+    const auto worker = [] {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        //std::cout << "Within thread with ID " << std::this_thread::get_id() << std::endl;
+    };
+
+    {
+        auto jthread = std::jthread{worker};
+        // The jthread will join automatically when it goes out of scope.
+    }
+
+    {
+        using namespace std::literals::chrono_literals;
+        std::jthread stoppable_thread { [] (std::stop_token stoptoken) {
+            while (!stoptoken.stop_requested()) {
+                std::this_thread::sleep_for(1ms);
+            }
+        }};
+        std::this_thread::sleep_for(25ms);
+        stoppable_thread.request_stop();
+        //  stoppable_thread.join(); // Not needed here.
+    }
+
+    {
+        // Runs badly on macOS Tahoe: Commented out.
+        // using namespace std::literals::chrono_literals;
+        //
+        // std::mutex mutex{};
+        // std::jthread threads [4];
+        //
+        // const auto print = [](const std::stop_source &source)
+        // {
+        //     std::cout << std::boolalpha
+        //     << "stop_source stop_possible = " << source.stop_possible() << std::endl
+        //     << "stop_requested = " << source.stop_requested() << std::endl;
+        // };
+        //
+        // // Common stop source.
+        // std::stop_source stop_source;
+        // assert(stop_source.stop_requested() == false);
+        // assert(stop_source.stop_possible() == true);
+        // // print(stop_source);
+        //
+        // const auto joinable_thread_worker = [&mutex] (const int id, std::stop_source stop_source)
+        // {
+        //     using namespace std::literals::chrono_literals;
+        //     std::stop_token stoken = stop_source.get_token();
+        //     while (true) {
+        //         std::this_thread::sleep_for(3ms);
+        //         std::lock_guard lock (mutex);
+        //         if (stoken.stop_requested()) {
+        //             std::cout << "worker " << id << " is requested to stop" << std::endl;
+        //             return;
+        //         }
+        //         std::cout << "worker " << id << " goes back to sleep" << std::endl;
+        //     }
+        // };
+        //
+        // // Create worker threads.
+        // for (int i = 0; i < 4; ++i) {
+        //     threads[i] = std::jthread(joinable_thread_worker, i+1, stop_source);
+        // }
+        //
+        // std::this_thread::sleep_for(7ms);
+        //
+        // std::cout << "request stop" << std::endl;
+        // stop_source.request_stop();
+        //
+        // print(stop_source);
+        // // Note: destructor of jthreads will call join so no need for explicit calls
+    }
+}
+}
+
+namespace semaphores {
+void demo()
+{
+    // The semaphore counts are set to zero.
+    // The semaphore is in a non-signaled state.
+    // The counting_semaphore contains an internal counter initialized by the constructor.
+    // This counter is decremented by calls to acquire() and related methods,
+    // and is incremented by calls to release().
+    // When the counter is zero, acquire() blocks until the counter is incremented.
+    // The binary_semaphore is a counting_semaphore with max count = 1.
+    std::binary_semaphore signal_main_to_thread_semaphore{0};
+    std::binary_semaphore signal_thread_to_main_semaphore{0};
+
+    const auto thread_processor = [&]() {
+        // Wait for a signal from the main process by attempting to decrement the semaphore.
+        // This call blocks until the semaphore's count is increased from the main process.
+        signal_main_to_thread_semaphore.acquire();
+        std::cout << "Thread got the signal" << std::endl;
+
+        // Wait shortly to imitate some work being done by the thread.
+        using namespace std::literals;
+        std::this_thread::sleep_for(10ms);
+
+        // Signal the main process back.
+        std::cout << "Thread sends the signal" << std::endl;
+        signal_thread_to_main_semaphore.release();
+    };
+
+    // Create a worker thread
+    std::jthread worker_thread(thread_processor);
+
+    // Signal the worker thread to start working by increasing the semaphore's count.
+    std::cout << "Main sends the signal" << std::endl;
+    signal_main_to_thread_semaphore.release();
+
+    // Wait until the worker thread is done doing the work
+    // by attempting to decrement the semaphore's count.
+    signal_thread_to_main_semaphore.acquire();
+
+    std::cout << "Main got the signal" << std::endl;
+}
+}
+
+
+namespace demo_packaged_task {
+// A std::packaged_task wraps any Callable target so that it can be invoked asynchronously.
+// Its return value or exception thrown can be accessed through std::future objects.
+void demo()
+{
+    // No need to pass a promise reference here.
+    auto task_divide = [](int a, int b) {
+        if (!b)
+            throw std::runtime_error{"Divide by zero exception"};
+        return a / b;
+    };
+
+    // std::packaged_task<decltype(task_divide)> task(task_divide);
+    // auto future = task.get_future();
+    // std::thread thread(std::move(task), 45, 5);
+    // try {
+    //     auto result = future.get();
+    //     std::cout << result << std::endl;
+    // } catch (const std::exception& exception) {
+    //     std::cout << exception.what() << std::endl;
+    // }
+    // thread.join();
+}
+}
+
+
+namespace attribute_no_unique_address {
+// https://en.cppreference.com/w/cpp/language/attributes/no_unique_address
+
+struct Empty {}; // The size of any object of empty class type is at least 1.
+static_assert(sizeof(Empty) == 1);
+
+struct X
+{
+    int i;
+    Empty e; // At least one more byte is needed to give ‘e’ a unique address
+};
+static_assert(sizeof(X) == 8);
+
+// struct Y
+// {
+//     int i;
+//     [[no_unique_address]] Empty e; // Empty member optimized out.
+// };
+// static_assert(sizeof(Y) == 4);
+
+// struct Z
+// {
+//     char c;
+//     // e1 and e2 cannot share the same address because they have the
+//     // same type, even though they are marked with [[no_unique_address]].
+//     // However, either may share address with ‘c’.
+//     [[no_unique_address]] Empty e1, e2;
+// };
+// static_assert(sizeof(Z) == 2);
+
+// struct W
+// {
+//     char c[2];
+//     // e1 and e2 cannot have the same address, but one of
+//     // them can share with c[0] and the other with c[1]:
+//     [[no_unique_address]] Empty e1, e2;
+// };
+// static_assert(sizeof(W) == 3);
+
+void demo()
+{
+
+}
+}
+
+
+namespace attribute_likely_unlikely {
+// https://en.cppreference.com/w/cpp/language/attributes/likely
+// Attribute to hint the compiler for the likely or unlikely path of execution,
+// allowing the compiler to optimize the code.
+constexpr double pow(double x, long long n) noexcept
+{
+    if (n > 0) [[likely]]
+      return x * pow(x, n - 1);
+    else [[unlikely]]
+      return 1;
+}
+
+constexpr long long fact(long long n) noexcept
+{
+    if (n > 1) [[likely]]
+      return n * fact(n - 1);
+    else [[unlikely]]
+      return 1;
+}
+
+constexpr double cos(double x) noexcept
+{
+    constexpr long long precision{16LL};
+    double y{};
+    for (auto n{0LL}; n < precision; n += 2LL) [[likely]]
+      y += pow(x, n) / (n & 2LL ? -fact(n) : fact(n));
+    return y;
+}
+
+}
+
+namespace attribute_assume {
+// Specifies that the given expression is assumed to always evaluate to true
+// to allow compiler optimizations based on the information given.
+// Since assumptions cause runtime-undefined behavior if they do not hold,
+// they should be used sparingly.
+// https://en.cppreference.com/w/cpp/language/attributes/assume
+// One correct way to use them is to follow assertions with assumptions.
+
+auto f = [] (auto x) {
+    // Compiler may assume x is positive.
+    assert(x > 0);
+    [[assume(x > 0)]];
+};
+
+}
+
+namespace designated_initializers {
+// https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers
+
+struct S1 {
+    const int x{};
+    const int y{};
+    const int z{};
+};
+// Fails because designator order does not match declaration order.
+//constexpr S1 s1 {.y = 2, .x = 1};
+// Ok, s2.y initialized to 0.
+constexpr S1 s2 {.x = 1, .z = 2};
+static_assert(s2.x == 1 and s2.y == 0 and s2.z == 2);
+
+struct S2 {
+    const int o {33};
+    const int n {42};
+    const int m {-1};
+};
+constexpr S2 s3 {.m = 21};
+// Initializes o with 33.
+// Then initializes n with = 42.
+// Then initializes m with = 21.
+static_assert(s3.o == 33);
+static_assert(s3.n == 42);
+static_assert(s3.m == 21);
+
+void demo()
+{
+}
+}
+
+
+namespace aggregate_initialization {
+// https://en.cppreference.com/w/cpp/language/aggregate_initialization
+
+struct S
+{
+    int x{};
+    struct Foo
+    {
+        int i{};
+        int j{};
+        int a[3];
+    } foo;
+};
+
+// Using direct-list-initialization syntax.
+constexpr S s1 =
+{
+    1,
+    {
+        2, 3,
+        {
+            4, 5, 6
+          }
+    }
+};
+static_assert(s1.x == 1);
+static_assert(s1.foo.i == 2);
+static_assert(s1.foo.j == 3);
+static_assert(s1.foo.a[0] == 4);
+static_assert(s1.foo.a[1] == 5);
+static_assert(s1.foo.a[2] == 6);
+
+// Same, but with brace elision.
+// The compiler suggest braces around subobject initialization, rightly so.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+constexpr S s2 = {1, 2, 3, 4, 5, 6};
+#pragma GCC diagnostic pop
+static_assert(s2.x == 1);
+static_assert(s2.foo.i == 2);
+static_assert(s2.foo.j == 3);
+static_assert(s2.foo.a[0] == 4);
+static_assert(s2.foo.a[1] == 5);
+static_assert(s2.foo.a[2] == 6);
+
+// Brace elision only allowed with equals sign
+constexpr int ar[] = {1, 2, 3}; // ar is int[3]
+static_assert(ar[0] == 1);
+static_assert(ar[1] == 2);
+static_assert(ar[2] == 3);
+
+// Too many initializer clauses
+// char cr[3] = {'a', 'b', 'c', 'd'};
+
+// Array initialized as {'a', '\0', '\0'}
+constexpr char cr[3] = {'a'};
+static_assert(cr[0] == 'a');
+static_assert(cr[1] == '\0');
+static_assert(cr[2] == '\0');
+
+// Fully-braced 2D array: {1, 2}
+constexpr int ar2d1[2][2] = {{1, 2}, {3, 4}};
+static_assert(ar2d1[0][0] == 1);
+static_assert(ar2d1[0][1] == 2);
+static_assert(ar2d1[1][0] == 3);
+static_assert(ar2d1[1][1] == 4);
+
+// Compiler suggests braces around subobject.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+constexpr int ar2d2[2][2] = {3, 4};
+#pragma GCC diagnostic pop
+static_assert(ar2d2[0][0] == 3);
+static_assert(ar2d2[0][1] == 4);
+static_assert(ar2d2[1][0] == 0);
+static_assert(ar2d2[1][1] == 0);
+
+// Brace elision.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+constexpr int ar2d3[2][2] = {1, 2, 3, 4}; // brace elision: {1, 2}
+#pragma GCC diagnostic pop
+static_assert(ar2d3[0][0] == 1);
+static_assert(ar2d3[0][1] == 2);
+static_assert(ar2d3[1][0] == 3);
+static_assert(ar2d3[1][1] == 4);
+
+// Only first column: {1, 0}
+constexpr int ar2d4[2][2] = {{1}, {2}};
+static_assert(ar2d4[0][0] == 1);
+static_assert(ar2d4[0][1] == 0);
+static_assert(ar2d4[1][0] == 2);
+static_assert(ar2d4[1][1] == 0);
+
+constexpr std::array<int, 3> std_ar2{{1, 2, 3}};  // std::array is an aggregate
+static_assert(std_ar2[0] == 1);
+static_assert(std_ar2[1] == 2);
+static_assert(std_ar2[2] == 3);
+
+constexpr std::array<int, 3> std_ar1 = {1, 2, 3}; // brace-elision okay
+static_assert(std_ar1[0] == 1);
+static_assert(std_ar1[1] == 2);
+static_assert(std_ar1[2] == 3);
+
+// int ai[] = {1, 2.0}; // narrowing conversion from double to int:
+// error in C++11, okay in C++03
+
+std::string ars[] = {
+    std::string("one"), // copy-initialization
+    "two",              // conversion, then copy-initialization
+    {'t', 'h', 'r', 'e', 'e'} // list-initialization
+};
+
+union U
+{
+    int a;
+    const char* b;
+};
+constexpr U u1 = {1};   // OK, first member of the union
+static_assert(u1.a == 1);
+// U u2 = {0, "asdf"}; // error: too many initializers for union
+// U u3 = {"asdf"};    // error: invalid conversion to int
+
+void demo()
+{
+
+}
+}
+
+
+namespace coroutines {
+// https://en.cppreference.com/w/cpp/language/coroutines
+// Coroutines are designed to be performing as lightweight threads.
+// Coroutines provide concurrency but not parallelism.
+// Switching between coroutines need not involve any system/blocking calls
+// so no need for synchronization primitives such as mutexes, semaphores.
+// A coroutine does not have a stack, it stores its variables on the heap.
+// A coroutine suspends execution by returning to the caller.
+// The data needed to resume operations is on the heap.
+// A function is a coroutine if its definition contains any of the following:
+// * co_await: suspend execution until resumed.
+// * co_yield: suspend execution returning a value.
+// * co_return: complete execution returning a value.
+
+struct return_object {
+  struct promise_type {
+    return_object get_return_object() { return {}; }
+    std::suspend_never initial_suspend() { return {}; }
+    std::suspend_never final_suspend() noexcept { return {}; }
+    void unhandled_exception() {}
+  };
+};
+
+struct awaiter {
+  std::coroutine_handle<> *m_handle;
+  constexpr bool await_ready() const noexcept { return false; }
+  void await_suspend(std::coroutine_handle<> handle) { *m_handle = handle; }
+  constexpr void await_resume() const noexcept {}
+};
+
+// This function runs forever. It increases and prints the value.
+// The variable i maintains its value even as control switches repeatedly
+// between this function and the function that invoked it.
+return_object infinite_counter(std::coroutine_handle<>* continuation) {
+    awaiter a{continuation};
+    int i {0};
+    while (true)
+    {
+        // Suspend the coroutine and returns control to the caller.
+        co_await a;
+        std::cout << "in coroutine " << ++i << std::endl;
+    }
+}
+
+void demo()
+{
+    return;
+    std::coroutine_handle<> handle;
+    infinite_counter(&handle);
+    for (int i = 0; i < 3; ++i)
+    {
+        std::cout << "in main function" << std::endl;
+        handle();
+    }
+    handle.destroy();
+}
+}
+
+namespace modules {
+// https://en.cppreference.com/w/cpp/language/modules
+// Modules are a language feature to share declarations and definitions across translation units.
+// They are an alternative to some use cases of headers.
+// Modules are orthogonal to namespaces.
+// export module hello_world;
+// C++20 'module' only available with '-fmodules-ts', which is not yet enabled with '-std=c++20'
+void demo()
+{
+}
+}
+
+namespace header_compare {
+// https://en.cppreference.com/w/cpp/header/compare
+void demo()
+{
+
+}
+}
+
+
+namespace formatting_library {
+// https://en.cppreference.com/w/cpp/utility/format
+void demo()
+{
+    std::string result = std::format("A={} B={} C={}", "a", std::string("b"), 3);
+    assert(result == "A=a B=b C=3");
+
+    // Formats to an output iterator.
+    std::string buffer;
+    std::format_to
+    (
+        std::back_inserter(buffer), // the output iterator.
+        "Hello, C++{}!", // the format string.
+        20 // the argument(s).
+    );
+    assert(buffer == "Hello, C++20!");
+}
+}
+
+
+namespace span {
+// https://en.cppreference.com/w/cpp/container/span
+void demo()
+{
+    constexpr int container[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    const auto fullspan = std::span{container};
+    assert(fullspan.size() == 10);
+    const auto subspan = fullspan.subspan(3, 2);
+    // Result: 3 4
+    assert(subspan.size() == 2);
+}
+}
+
+
+namespace starts_with_and_ends_with {
+// https://en.cppreference.com/w/cpp/string/basic_string/starts_with
+// https://en.cppreference.com/w/cpp/string/basic_string/ends_with
+// https://en.cppreference.com/w/cpp/algorithm/ranges/starts_with
+// https://en.cppreference.com/w/cpp/algorithm/ranges/ends_with.html
+void demo()
+{
+    constexpr std::string_view hello_world{"hello world"};
+    static_assert(hello_world.starts_with("hello"));
+    static_assert(!hello_world.starts_with("world"));
+    static_assert(hello_world.ends_with('d'));
+    static_assert(!hello_world.ends_with("hello"));
+
+    using namespace std::literals;
+    static_assert(std::ranges::starts_with("const_cast", "const"sv));
+    static_assert(std::ranges::starts_with("constexpr", "const"sv));
+    static_assert(!std::ranges::starts_with("volatile", "const"sv));
+
+    constexpr auto ascii_upper = [](char8_t c)
+    {
+        return u8'a' <= c && c <= u8'z' ? static_cast<char8_t>(c + u8'A' - u8'a') : c;
+    };
+
+    constexpr auto cmp_ignore_case = [=](char8_t x, char8_t y)
+    {
+        return ascii_upper(x) == ascii_upper(y);
+    };
+
+    // Projection 1: the projection to apply to the elements of the range to examine.
+    // Projection 2: the projection to apply to the elements of the range to be used as the prefix.
+    static_assert(std::ranges::starts_with(u8"Constantinopolis", u8"constant"sv,{}, ascii_upper, ascii_upper));
+    static_assert(not std::ranges::starts_with(u8"Istanbul", u8"constant"sv,{}, ascii_upper, ascii_upper));
+    // The predicate: the binary predicate that compares the projected elements.
+    static_assert(std::ranges::starts_with(u8"Metropolis", u8"metro"sv,cmp_ignore_case));
+    static_assert(not std::ranges::starts_with(u8"Acropolis", u8"metro"sv,cmp_ignore_case));
+
+    constexpr static auto v = {1, 3, 5, 7, 9};
+    constexpr auto odd = [](int x) { return x % 2; };
+    assert(std::ranges::starts_with(v, std::views::iota(1) | std::views::filter(odd) | std::views::take(3)));
+
+    static_assert(not std::ranges::ends_with("for", "cast"));
+    static_assert(std::ranges::ends_with("dynamic_cast", "cast"));
+    static_assert(not std::ranges::ends_with("as_const", "cast"));
+    static_assert(std::ranges::ends_with("bit_cast", "cast"));
+    static_assert(not std::ranges::ends_with("to_underlying", "cast"));
+    static_assert(std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{3, 4}));
+    static_assert(not std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{4, 5}));
+}
+}
+
+
+namespace explicit_object_parameter_this {
+
+struct Struct
+{
+    // OK.
+    // Same as void foo(int i) const &;
+    void f1(this Struct const& self, int i);
+
+    // Error: already declared.
+    // void f1(int i) const &;
+
+    // Also OK for templates.
+    // For member function templates,
+    // explicit object parameter allows deduction of type and value category,
+    // this language feature is called “deducing this”.
+    template<typename Self>
+    void f2(this Self&& self);
+
+    // Pass object by value: makes a copy of “*this”.
+    void f3(this Struct self, int i);
+
+    // Error: “const” not allowed here
+    // void p(this ExplicitObjectParameter) const;
+
+    // Error: “static” not allowed here
+    // static void q(this ExplicitObjectParameter);
+
+    // Error: an explicit object parameter can only be the first parameter
+    // void r(int, this ExplicitObjectParameter);
+
+    // Inside the body of an explicit object member function,
+    // the "this" pointer cannot be used.
+    // All member access must be done through the first parameter,
+    // like in static member functions.
+    void f4(this Struct object)
+    {
+        // invalid use of 'this' in a function with an explicit object parameter
+        // auto x = this;
+
+        // There's no implicit "this": use of undeclared identifier 'bar'
+        // bar();
+
+        object.f3(1);
+    }
+};
+
+void demo()
+{
+    // A parameter declaration with the specifier "this" declares an explicit object parameter.
+
+    // An explicit object parameter cannot be a function parameter pack,
+    // and it can only appear as the first parameter of the parameter list
+    // in the following declarations:
+    // 1. A declaration of a member function or member function template.
+    // 2. An explicit instantiation or explicit specialization of a templated member function.
+    // 3. A lambda declaration.
+
+    // A member function with an explicit object parameter has the following restrictions:
+    // 1. The function is not static.
+    // 2. The function is not virtual.
+    // 3. The declarator of the function does not contain cv and ref.
+
+    // Error: non-member functions cannot have an explicit object parameter
+    // void func(this ExplicitObjectParameter& self);
+
+    // A pointer to an explicit object member function is an ordinary pointer to function,
+    // not a pointer to member.
+
+    struct Y
+    {
+        int f(int, int) const& {return 1;};
+        int g(this Y const& self, int, int) {
+            if (&self == &self)
+                return 1;
+            return 1;
+        };
+    };
+
+    Y y{};
+
+    const auto pf = &Y::f;
+
+    // error: pointers to member functions are not callable
+    // called object type 'int (Y::*)(int, int) const &' is not a function or function pointer
+    //pf(y, 1, 2);
+
+    (y.*pf)(1, 2);            // ok
+    std::invoke(pf, y, 1, 2); // ok
+
+    auto pg = &Y::g;
+    pg(y, 3, 4);              // ok
+
+    // error: “pg” is not a pointer to member function
+    // right hand operand to .* has non-pointer-to-member type 'int (*)(const Y &, int, int)'
+    //(y.*pg)(3, 4);
+
+    std::invoke(pg, y, 3, 4); // ok
+}
+}
+
+
+namespace multidimensional_subscript_operator {
+void demo()
+{
+    int array3d[4][3][2]{};
+    array3d[3][2][1] = 42;
+    assert(array3d[3][2][1] == 42);
+}
+}
+
+
+namespace static_operators_and_lambdas {
+
+struct Struct
+{
+    // Static operators: Can call them without the object instance.
+    static int operator()(int a, int b) { return a + b; }
+};
+
+void demo()
+{
+    Struct object;
+
+    // This creates an object (and perhaps the optimizer removes it again).
+    assert(Struct{}(1, 0) == 1);
+
+    // This does not create an object, just calls the static method.
+    assert(object(1, 0) == 1);
+
+    // Lambda's can be made static too.
+    int x {0};
+    const static auto lambda1 = [x] { return x;};
+    const auto lambda2 = [&x] {x+=10; return x;};
+    // But see https://godbolt.org/z/3qeqnEsh8 that static lambdas generate much more code.
+    // Consider that a static lambda does the capture (of variable x) once.
+    // And that may give unexpected output.
+    // The rule from R1 of this paper is basically:
+    // A static lambda shall have no lambda-capture.
+    // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1169r4.html#lambdas
+    assert (lambda1() == 0);
+    assert (lambda2() == 10);
+    assert (lambda1() == 0);
+    assert (lambda2() == 20);
+}
+}
+
+namespace auto_x_decay_copy {
+void demo()
+{
+    // A decay-copy is a copy of a variables which has lost some properties.
+    // How does auto(x) help?
+    // It is an easy way to make a copy of a variable.
+    // It clearly communicates that it makes a copy of a variable.
+
+    const auto pop_front = [] (auto& container) {
+        std::erase(container, auto(container.front())); // <- Make copy through auto(x)
+    };
+
+    std::vector vector {1, 2, 3};
+    assert (vector.size() == 3);
+    pop_front (vector);
+    assert (vector.size() == 2);
+    pop_front (vector);
+    assert (vector.size() == 1);
+}
+}
+
+
+namespace extended_floating_point_types {
+#ifdef __STDCPP_FLOAT32_T__
+std::float32_t f32 = 0.0;
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+std::float64_t f64 = 0.0;
+#endif
+#ifdef __STDCPP_FLOAT128_T__
+std::float128_t f128 = 0.0;
+#endif
+}
+
+
+namespace literal_suffix_z {
+void demo()
+{
+    // Avoid this warning:
+    // comparison of integers of different signs: 'int' and 'size_type' (aka 'unsigned long') [-Wsign-compare]
+    const std::vector<int> v{2, 4, 6, 8};
+    for (auto i = 0uz; i < v.size(); ++i) {
+        assert((v.at(i)));
+    }
+}
+}
+
+namespace alias_declarations_in_init_statements {
+void demo()
+{
+    std::vector v {1, 2, 3};
+    for (using T = int; T& e : v)
+        assert((e));
+}
+}
+
+
+namespace brackets_are_optional_for_lambdas {
+void demo()
+{
+    std::string s1 = "s1";
+    auto with_parenthesis = [s1 = std::move(s1)] () {
+        assert(not s1.empty());
+    };
+
+    std::string s2 = "s1";
+    auto without_parenthesis = [s2 = std::move(s2)]  {
+        assert(not s2.empty());
+    };
+}
+}
+
+
+namespace character_sets_encodings_escape_sequences {
+void demo()
+{
+    // Consistent character literal encoding.
+    static_assert('A' == '\x41');
+    static_assert('A' == 0x41);
+
+    // Named universal character escapes.
+    // https://www.unicode.org/Public/14.0.0/ucd/NamesList.txt
+    assert("\N{CAT FACE}" == "🐱");
+    assert("\N{COW FACE}" == "🐮");
+    assert("\N{NATIONAL PARK}" == "🏞");
+
+    // Delimited escape sequences.
+    assert("\o{111}" == "I");
+    assert("\x{A0}" != "");
+    assert("\u{CAFE}" == "쫾");
+}
+}
+
 int main()
 {
     algorithms_lower_bound_and_upper_bound::demo();
@@ -3206,5 +4357,32 @@ int main()
     demo_contains_and_contains_subrange::demo();
     ranges_sorting_demo::demo();
     demo_ranges_or_views::demo();
+    regex::demo();
+    source_location::demo();
+    demo_barrier_jthread_stop_token::demo();
+    heterogenous_collections_with_variant::demo();
+    //atomic_reference::demo();
+    //lock_multiple_simultaneously::demo();
+    // future_and_promise_and_exception::demo();
+    //osyncstream::demo();
+    // jthread::demo();
+    // semaphores::demo();
+    //demo_packaged_task::demo();
+    //attribute_no_unique_address::demo();
+    designated_initializers::demo();
+    aggregate_initialization::demo();
+    coroutines::demo();
+    modules::demo();
+    header_compare::demo();
+    formatting_library::demo();
+    span::demo();
+    starts_with_and_ends_with::demo();
+    explicit_object_parameter_this::demo();
+    multidimensional_subscript_operator::demo();
+    static_operators_and_lambdas::demo();
+    literal_suffix_z::demo();
+    alias_declarations_in_init_statements::demo();
+    brackets_are_optional_for_lambdas::demo();
+    character_sets_encodings_escape_sequences::demo();
     return EXIT_SUCCESS;
 }
