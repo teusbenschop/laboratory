@@ -115,6 +115,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CA0232062D2E947700908318 /* vms */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = vms; sourceTree = "<group>"; };
 		CAABBB0D2D538F40000C75CD /* trv */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = trv; sourceTree = "<group>"; };
+		CAFE3C642F6FEA690078C8CE /* c++23 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "c++23"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXGroup section */
@@ -333,6 +334,7 @@
 			isa = PBXGroup;
 			children = (
 				CA6743852A5DAB2E006769F9 /* c++ */,
+				CAFE3C642F6FEA690078C8CE /* c++23 */,
 				CA3294652C304ECF0048FD22 /* certificates */,
 				CA3C9E491E000DF1007990B5 /* chrome-app */,
 				CA3792E11DF6FA5A008F8164 /* chrome-wakelock */,
