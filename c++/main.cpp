@@ -1360,29 +1360,28 @@ void demo()
 namespace stateless_lambda_function {
 // A stateless lambda function does not retain any data or memory
 // from one execution to the next.
-const auto stateless = []
+constexpr auto stateless1 = []
 {
 };
 // It is assignable.
-[[maybe_unused]] const auto stateless2 = stateless;
+constexpr auto stateless2 = stateless1;
 // Default-constructible (i.e. constructor without parameters, or with default parameters).
-static_assert(std::is_default_constructible_v<decltype(stateless)>); // passes
-[[maybe_unused]] const decltype(stateless) stateless3;
-static_assert(std::is_same_v<decltype(stateless), decltype(stateless2)>); // passes
-static_assert(std::is_same_v<decltype(stateless), decltype(stateless3)>); // passes
+static_assert(std::is_default_constructible_v<decltype(stateless1)>); // passes
+constexpr decltype(stateless1) stateless3;
+static_assert(std::is_same_v<decltype(stateless1), decltype(stateless2)>); // passes
+static_assert(std::is_same_v<decltype(stateless1), decltype(stateless3)>); // passes
 static_assert(std::is_same_v<decltype(stateless2), decltype(stateless3)>); // passes
 }
 
 
 namespace keyword_auto_for_lambdas {
-// Using keyword "auto" for lambda functions.
-constexpr auto lambda_typename = []<typename T>(T v) { return v + 1; };
-[[maybe_unused]]constexpr auto lambda_type_template = []<typename T> (T value) {
-    T result = value;
-    decltype(value) resul2 = value;
-    return result;
+// Can use "typename T" or "auto" for lambda functions.
+constexpr auto lambda_typename = []<typename T>(T value) -> T {
+    T val2 = value;
+    decltype(value) val3 = value;
+    return value + 1;
 };
-constexpr auto lambda_auto = [](auto v) { return v + 1; };
+constexpr auto lambda_auto = [](auto v) -> auto { return v + 1; };
 static_assert(lambda_typename('a') == 'b');
 static_assert(lambda_auto('a') == 'b');
 static_assert(lambda_typename(1) == 2);
@@ -1462,6 +1461,7 @@ void demo()
 }
 }
 
+
 namespace space_ship_operator {
 // Demo of the spaceship ( <=> ) operator in C++20.
 struct Version
@@ -1498,7 +1498,7 @@ static_assert(result != std::partial_ordering::unordered);
 
 
 namespace template_with_default_type {
-// Template with a default type.
+
 template <typename T = int>
 constexpr auto sum(T a, T b) -> T
 {
@@ -1526,7 +1526,7 @@ void demo()
     const auto concat = std::accumulate(strings.cbegin(), strings.cend(), init);
     assert(concat == "initab");
 
-    auto dash_fold = [](std::string a, int b)
+    const auto dash_fold = [](std::string a, int b)
     {
         return std::move(a) + '-' + std::to_string(b);
     };
@@ -1538,18 +1538,18 @@ void demo()
 }
 
 
-namespace demo_adjacent_find {
+namespace adjacent_find {
 constexpr auto increasing = {1, 2, 3};
 constexpr auto is_less = [](const auto& l, const auto& r) { return l > r; };
 constexpr auto iter1 = std::ranges::adjacent_find(increasing, is_less);
 static_assert(iter1 == increasing.end());
-[[maybe_unused]]constexpr auto decreasing = {3, 2, 1};
-constexpr auto iter2 = std::ranges::adjacent_find(increasing, is_less);
-static_assert(iter2 != increasing.begin());
+constexpr auto decreasing = {3, 2, 1};
+constexpr auto iter2 = std::ranges::adjacent_find(decreasing, is_less);
+static_assert(iter2 == decreasing.begin());
 }
 
 
-namespace demo_async_and_future {
+namespace async_and_future {
 void demo()
 {
     std::thread::id divide_thread_id;
@@ -1575,7 +1575,7 @@ void demo()
 }
 }
 
-namespace demo_at_exit {
+namespace at_exit {
 void demo()
 {
     const auto fn = []() -> void
@@ -1587,7 +1587,7 @@ void demo()
 }
 
 
-namespace demo_variant {
+namespace variant {
 void demo()
 {
     // Initialized with the monostate as that is the first variant.
@@ -1612,7 +1612,7 @@ void demo()
 }
 
 
-namespace demo_bind {
+namespace bind_and_bind_front_and_bind_back {
 // Demo of std::bind, including bind_front and bind_back.
 // https://cppreference.com/w/cpp/utility/functional/bind.html
 void demo()
@@ -1624,7 +1624,7 @@ void demo()
 
     struct Foo
     {
-        int minus(int a, int b) const noexcept
+        constexpr int minus(int a, int b) const noexcept
         {
             return a - b;
         }
@@ -1768,7 +1768,7 @@ void demo()
 }
 
 
-namespace demo_chrono_library {
+namespace chrono_library {
 // https://en.cppreference.com/w/cpp/chrono
 // The chrono library defines five main types:
 // clocks
@@ -1778,10 +1778,10 @@ namespace demo_chrono_library {
 // time zone information
 void demo()
 {
-    // A clock consists of a starting point, or epoch, and a tick rate.
+    // A clock consists of a starting point (epoch) and a tick rate.
     // E.g. a clock may have an epoch of 1st January 1970 UTC and tick every second.
     // The system_clock is the real-time wall clock.
-    // The steady_clock is monotonic and never gets adjusted
+    // The steady_clock is monotonic and never gets adjusted.
     // The high_resolution_clock is a clock with the shortest possible tick period.
 
     // A time point is a duration of time that has passed since the epoch of a specific clock.
@@ -1839,22 +1839,23 @@ void demo()
 }
 }
 
-namespace demo_copy {
+namespace copy {
 void demo()
 {
-    constexpr auto values = std::array<int, 3>{1, 2, 3};
+    const auto values = std::array<int, 3>{1, 2, 3};
     {
-        std::vector<int> copied{};
-        std::copy(values.begin(), values.end(), std::back_inserter(copied));
-        assert(copied.size() == 3);
+        std::vector<int> copy{};
+        std::copy(values.begin(), values.end(), std::back_inserter(copy));
+        assert(copy.size() == 3);
     }
     {
-        std::vector<int> copied{};
-        std::ranges::copy(values, std::back_inserter(copied));
-        assert(copied.size() == 3);
+        std::vector<int> copy{};
+        std::ranges::copy(values, std::back_inserter(copy));
+        assert(copy.size() == 3);
     }
 }
 }
+
 
 namespace reference_wrappers {
 void demo()
@@ -4543,15 +4544,15 @@ int main()
     assign_two_lambdas_to_same_function_object::demo();
     operator_overloading::demo();
     demo_accumulate::demo();
-    demo_async_and_future::demo();
-    demo_at_exit::demo();
-    demo_variant::demo();
-    demo_bind::demo();
+    async_and_future::demo();
+    at_exit::demo();
+    variant::demo();
+    bind_and_bind_front_and_bind_back::demo();
     demo_bit_operations::demo();
     stream_manipulation::demo();
     common_mathematical_functions::demo();
-    demo_chrono_library::demo();
-    demo_copy::demo();
+    chrono_library::demo();
+    copy::demo();
     reference_wrappers::demo();
     timer_with_jthread_and_timed_mutex_and_condition_variable::demo();
     condition_variables::demo();
