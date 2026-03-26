@@ -82,15 +82,14 @@ void demo_scoped_timer()
     std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
+
 // Materialize the range r into a std::vector.
 // No longer needed in C++23.
 auto to_vector(auto&& r)
 {
     std::vector<std::ranges::range_value_t<decltype(r)>> v;
     if constexpr (std::ranges::sized_range<decltype(r)>)
-    {
         v.reserve(std::ranges::size(r));
-    }
     std::ranges::copy(r, std::back_inserter(v));
     return v;
 }
@@ -98,30 +97,44 @@ auto to_vector(auto&& r)
 
 
 // Demonstrate binary_search.
-namespace algorithm_binary_search {
+namespace binary_search {
 // A binary search works if the container is sorted.
 // It returns true if the value is found in the container.
+// It is also possible to pass a comparator.
 constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
 static_assert(std::ranges::is_sorted(container));
 static_assert(std::ranges::binary_search(container, 3));
+void demo()
+{
+    using cd = std::complex<double>;
+    const std::vector<cd> complex_numbers = {
+        {1, 1},
+        {2, 3},
+        {4, 2},
+        {4, 3},
+    };
+    const auto comparator = [](const cd& a, const cd& b) {return std::abs(a) < std::abs(b);};
+    assert(std::ranges::is_sorted(complex_numbers, comparator));
+    assert(std::ranges::binary_search(complex_numbers, cd{4,2}, comparator));
+}
 }
 
 
 // Demonstrate lower_bound and upper_bound.
 namespace algorithms_lower_bound_and_upper_bound {
+constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
+// The lower_bound returns an iterator to the first element not less than the given value.
+static_assert(std::ranges::lower_bound(container, 3) != container.cend());
+// The upper_bound returns an iterator to the first element greater than a certain value.
+static_assert(std::ranges::upper_bound(container, 3) != container.cend());
 void demo()
 {
-    constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
-    // The lower_bound returns an iterator to the first element not less than the given value.
-    static_assert(std::ranges::lower_bound(container, 3) != container.cend());
     if (auto it = std::ranges::lower_bound(container, 3);
         it != container.cend())
     {
         auto index = std::distance(container.begin(), it);
         assert(index == 2);
     }
-    // The upper_bound returns an iterator to the first element greater than a certain value.
-    static_assert(std::ranges::upper_bound(container, 3) != container.cend());
     if (auto it = std::ranges::upper_bound(container, 3);
         it != container.cend())
     {
@@ -133,16 +146,16 @@ void demo()
 
 
 // Demonstrate any_of / all_of / none_of.
-namespace algorithms_any_of_all_of_none_of {
+namespace any_of_all_of_none_of {
 // Input of positive numbers.
 constexpr auto numbers = std::array<int, 7>{3, 2, 2, 1, 0, 2, 1};
 // Function testing negative number.
 constexpr auto is_negative = [](int i) { return i < 0; };
 // None of the numbers is negative.
 static_assert(std::ranges::none_of(numbers, is_negative));
-static_assert(!std::ranges::all_of(numbers, is_negative));
+static_assert(not std::ranges::all_of(numbers, is_negative));
 // Not any of the numbers is negative.
-static_assert(!std::ranges::any_of(numbers, is_negative));
+static_assert(not std::ranges::any_of(numbers, is_negative));
 }
 
 
@@ -157,17 +170,16 @@ static_assert(std::ranges::count_if(numbers, [](int i) { return i == 3; }) == 4)
 
 // Demonstrate: min / max / clamp / ranges::minmax.
 namespace min_max_clamp_ranges_minmax {
+constexpr auto i200 = []() { return 200; };
+constexpr auto i10 = 10;
+constexpr auto i100 = 100;
+static_assert(std::min(i200(), i100) == i100);
+static_assert(std::max(i200(), i10) == i200());
+static_assert(std::clamp(i200(), i10, i100) == i100);
+constexpr auto values = std::array<int, 7>{4, 2, 1, 7, 3, 1, 5};
 void demo()
 {
-    constexpr auto i200 = []() { return 200; };
-    constexpr auto i10 = 10;
-    constexpr auto i100 = 100;
-    static_assert(std::min(i200(), i100) == i100);
-    static_assert(std::max(i200(), i10) == i200());
-    static_assert(std::clamp(i200(), i10, i100) == i100);
-
-    constexpr auto values = std::array<int, 7>{4, 2, 1, 7, 3, 1, 5};
-    const auto [min, max] = std::ranges::minmax(values);
+    auto [min, max] = std::ranges::minmax(values);
     assert(min == 1);
     assert(max == 7);
 }
@@ -187,19 +199,18 @@ namespace why_constraints_are_needed {
 
 // An unconstrained template function.
 template <typename T>
-// The constexpr makes the static_assert possible below.
-constexpr auto basic_sum(T one, T two)
+constexpr auto basic_plus(T one, T two)
 {
     return one + two;
 }
 
 // Call the template with numbers: OK.
-static_assert(basic_sum(1, 2) == 3);
+static_assert(basic_plus(1, 2) == 3);
 
 // Call the template with strings:
 // Oops, it works, but not as intended, it concatenates instead of summing.
 // It would help if the passed types could be constrained.
-static_assert(basic_sum(std::string("a"), std::string("b")) == "ab");
+static_assert(basic_plus(std::string("a"), std::string("b")) == "ab");
 
 // Call the template with chars:
 // OK, it fails:
@@ -221,12 +232,12 @@ struct Derived : Base
 
 struct Unrelated
 {
-    static constexpr int value{20};
+    static constexpr int value{10};
 };
 
 template <typename Type>
 // This template has a constraint to make sure the correct type is passed.
-// The template function requires that the parameter is derived from the Base struct.
+// The template function requires that the parameter type is derived from the Base struct.
     requires std::derived_from<Type, Base>
 constexpr int get_value(Type object)
 {
@@ -235,15 +246,15 @@ constexpr int get_value(Type object)
 
 static_assert(get_value(Base()) == 10); // This compiles.
 static_assert(get_value(Derived()) == 10); // This compiles.
-// static_assert(get_value(Unrelated() == 10);
+// static_assert(get_value(Unrelated()) == 10);
 // The above fails to compile due to the constraint:
-// error: no matching function for call to 'get_value(template_with_constraint::Unrelated&)'
+// error: no matching function for call to 'get_value' ... and so on, multiple diagnostic errors.
 
 // Define a basic concept.
 template <typename T>
 concept floating_point = std::is_floating_point_v<T>;
 
-// Define a concept consisting of another concept and a type trait.
+// Define a concept consisting of another concept or a type trait.
 template <typename T>
 concept number = floating_point<T> || std::is_integral_v<T>;
 
@@ -300,7 +311,7 @@ void constrained_func3(T) requires hashable<T>
 {
 }
 
-void constrained_func4(hashable auto /*parameterName*/)
+void constrained_func4(hashable auto a)
 {
 }
 
@@ -319,7 +330,7 @@ void variadic_template_print(T t, Args... args)
 {
     // The "if constexpr" is evaluated at compile time.
     // Here, if no arguments are passed, it no longer does recursion.
-    if constexpr (!sizeof ...(args))
+    if constexpr (not sizeof ...(args))
     {
         std::cout << t << std::endl;
     }
@@ -330,13 +341,11 @@ void variadic_template_print(T t, Args... args)
     }
 }
 
-// The above as an abbreviated variadic template function.
+// The same as above, now as an abbreviated variadic template function.
 void variadic_abbreviated_print(auto t, auto... args)
 {
-    if constexpr (!sizeof ...(args))
-    {
+    if constexpr (not sizeof ...(args))
         std::cout << t << std::endl;
-    }
     else
     {
         std::cout << t << ", ";
@@ -376,12 +385,13 @@ namespace latches_and_barriers {
 // 2. It executes possibly empty callable before unblocking threads.
 
 constexpr auto n_threads = 3;
-// The std::latch starts with a given count.
-static auto latch = std::latch{n_threads};
 
 void demo_latch()
 {
     return;
+    // The std::latch starts with a given count.
+    auto latch = std::latch{n_threads};
+
     auto threads = std::vector<std::thread>{};
 
     for (auto i = 0; i < n_threads; ++i)
@@ -399,11 +409,9 @@ void demo_latch()
 
     std::cout << "Main thread waits at latch till threads have counted it down to zero" << std::endl;
     latch.wait();
-    std::cout << "Threads have been initialized, starting to work" << std::endl;
+    std::cout << "Main thread get past the latch" << std::endl;
     for (auto&& thread : threads)
-    {
         thread.join();
-    }
     std::cout << "All threads have completed" << std::endl;
 }
 
@@ -427,7 +435,7 @@ void demo_barrier()
 
     // A function to run on completion of a barrier.
     // It checks whether all dice have rolled to six simultaneously.
-    auto on_barrier_completion = [&]
+    auto on_barrier_completion = [&] -> void
     {
         ++n_turns;
         const auto is_six = [](auto i) { return i == 6; };
@@ -440,7 +448,7 @@ void demo_barrier()
     // the barrier resets itself to its initial state.
     // Then the barrier can be used again.
     auto barrier = std::barrier{n_dice, on_barrier_completion};
-    for (size_t i = 0; i < n_dice; ++i)
+    for (size_t i = 0; i < n_dice; i++)
     {
         threads.emplace_back([&, i]
         {
@@ -448,7 +456,7 @@ void demo_barrier()
             {
                 // Roll dice.
                 dice[i] = get_random_int(1, 6);
-                // Decrement the count by 1, wait here till the barrier is 0,
+                // Decrement the barrier count by 1, wait here till the barrier is 0,
                 // and then until the phase completion step of the current phase is run.
                 barrier.arrive_and_wait();
             }
@@ -462,16 +470,16 @@ void demo_barrier()
 }
 }
 
-namespace mutual_exclusion {
+namespace shared_and_unique_locks {
 // This example code features a queue.
 // Some code writes to it, and some code reads from it.
 // To synchronize the read and write operations, the following locks are used:
 // 1. A shared lock to enable one or more processes to read from the queue simultaneously.
 // 2. A unique lock so only one bit of code can write to the queue.
 
-static std::queue<int> the_queue;
-static std::shared_mutex the_mutex;
-static std::condition_variable_any the_cv;
+std::queue<int> the_queue;
+std::shared_mutex the_shared_mutex;
+std::condition_variable_any the_cv;
 
 void print_queue(const std::stop_token& stoken)
 {
@@ -479,7 +487,7 @@ void print_queue(const std::stop_token& stoken)
     {
         // Wait for something to be broadcast or for a stop request.
         // This uses a unique lock because it might modify the queue.
-        std::unique_lock lock(the_mutex);
+        std::unique_lock lock(the_shared_mutex);
         the_cv.wait_for(lock, stoken, std::chrono::seconds(1), [&stoken]
         {
             return stoken.stop_requested() || !the_queue.empty();
@@ -499,21 +507,21 @@ void print_queue(const std::stop_token& stoken)
 bool queue_empty()
 {
     // This uses a shared lock because it does not modify the queue.
-    std::shared_lock lock(the_mutex);
+    std::shared_lock lock(the_shared_mutex);
     return the_queue.empty();
 }
 
-
-void shared_and_unique_locks()
+void demo()
 {
     return;
+
     std::jthread printer(print_queue);
 
     for (int i{1}; i <= 5; i++)
     {
         // This uses a unique lock because it modifies the queue.
         std::cout << "Attempt to obtain a unique lock" << std::endl;
-        std::unique_lock lock(the_mutex);
+        std::unique_lock lock(the_shared_mutex);
         std::cout << "The unique lock was obtained" << std::endl;
         std::cout << "Push " << i << " onto queue" << std::endl;
         the_queue.push(i);
@@ -526,30 +534,26 @@ void shared_and_unique_locks()
 }
 
 
-namespace timed_mutex_demo {
+namespace timed_mutex {
 // If a normal mutex cannot be obtained, this leads to a deadlock.
 // A timed mutex will assist in such a case.
 // If a lock is requested on a timed mutex, a timeout can be passed too.
 // If the lock cannot be obtained in time, it falls in a timeout, not in a deadlock.
 
-static std::timed_mutex the_mutex;
+std::timed_mutex the_timed_mutex;
 
-void timed_mutex()
+void demo()
 {
     return;
     std::cout << "Obtain first lock on the timed mutex" << std::endl;
-    const std::unique_lock lock1(the_mutex, std::chrono::seconds(1));
+    const std::unique_lock lock1(the_timed_mutex, std::chrono::seconds(1));
     std::cout << "Obtained first lock" << std::endl;
     std::cout << "Obtain second lock on the same timed mutex" << std::endl;
-    const std::unique_lock lock2(the_mutex, std::chrono::milliseconds(10));
-    if (!lock2)
-    {
-        std::cout << "Failed to obtain second lock within 10 milliseconds second" << std::endl;
-    }
-    else
-    {
+    const std::unique_lock lock2(the_timed_mutex, std::chrono::milliseconds(10));
+    if (lock2)
         std::cout << "Obtained second lock" << std::endl;
-    }
+    else
+        std::cout << "Failed to obtain second lock within 10 milliseconds" << std::endl;
 }
 }
 
@@ -557,10 +561,10 @@ namespace containers_library {
 void demo_contains()
 {
     constexpr auto word{"word"};
-    auto bag = std::multiset<std::string>{};
+    std::multiset<std::string> bag;
     bag.insert(word);
     assert(bag.contains(word));
-    assert(!bag.contains(""));
+    assert(not bag.contains(""));
 }
 
 // If a std::vector gets resized, it moves all of its data to another memory location.
@@ -574,11 +578,8 @@ void demo_vector_vs_list_allocation()
     list.resize(10);
     const auto address_vector = std::addressof(vector.front());
     const auto address_list = std::addressof(list.front());
-    for (auto i{0}; i < 100; ++i)
-    {
-        vector.push_back(1);
-        list.push_back(1);
-    }
+    vector.resize(100);
+    list.resize(100);
     assert(address_vector != std::addressof(vector.front()));
     assert(address_list == std::addressof(list.front()));
 }
@@ -615,7 +616,7 @@ void demo_set_with_hash_key_and_comparator()
         }
     };
 
-    // An unordered set with hash function to generate the key, and an equal operator.
+    // An unordered set, with hash function to generate the key, and an equal operator.
     std::unordered_set<Display, DisplayHash, DisplayEquals> display_set{};
 
     // Insert three Displays into the set.
@@ -644,8 +645,8 @@ void demo_set_with_hash_key_and_comparator()
 void demo_forward_list()
 {
     std::forward_list<int> list = {3, 1, 2, 3, 3};
-    // Support fast insertion and removal anywhere.
     // Singly linked list.
+    // Supports fast insertion and removal anywhere.
     list.sort();
     list.unique();
     const auto standard = std::forward_list<int>{1, 2, 3};
@@ -654,28 +655,30 @@ void demo_forward_list()
 }
 
 
-namespace demo_piecewise_construct {
+namespace piecewise_construct {
+
+enum Construction { none, from_tuple, from_int_float };
+
+struct Foo
+{
+    Construction construction {none};
+
+    // Constructor from a tuple.
+    constexpr explicit Foo(std::tuple<int, float>)
+    {
+        construction = from_tuple;
+    }
+
+    // Constructor from an int and a float.
+    constexpr explicit Foo(int, float)
+    {
+        construction = from_int_float;
+    }
+};
+
+
 void demo()
 {
-    enum Construction { from_tuple, from_int_float };
-
-    struct Foo
-    {
-        Construction construction;
-
-        // Constructor from a tuple.
-        explicit Foo(std::tuple<int, float>)
-        {
-            construction = from_tuple;
-        }
-
-        // Constructor from an int and a float.
-        explicit Foo(int, float)
-        {
-            construction = from_int_float;
-        }
-    };
-
     const std::tuple<int, float> tuple(1, 1.0f);
 
     // This creates a pair of Foo objects from a tuple.
@@ -690,28 +693,28 @@ void demo()
 }
 }
 
-namespace demo_forward_as_tuple {
+
+namespace forward_as_tuple {
+// The helper "forward_as_tuple" takes a variadic pack of arguments
+// and creates a tuple out of them.
+// It determines the types of the elements of the arguments:
+// if it receives an lvalue then it will have an lvalue reference,
+// and if it receives an rvalue then it will have an rvalue reference.
 void demo()
 {
-    // The helper "forward_as_tuple" takes a variadic pack of arguments
-    // and creates a tuple out of them.
-    // It determines the types of the elements of the arguments:
-    // if it receives an lvalue then it will have an lvalue reference,
-    // and if it receives an rvalue then it will have an rvalue reference.
-
     // Function returns an rvalue.
-    const auto universe = [] -> std::string
+    const auto rvalue = [] -> std::string
     {
         return "universe";
     };
 
     // The variable i is a lvalue.
-    int i = 42;
+    int lvalue = 42;
 
-    [[maybe_unused]] auto tuple = std::forward_as_tuple(i, universe());
+    auto tuple = std::forward_as_tuple(lvalue, rvalue());
 
     // An lvalue reference binds to an lvalue. Marked with one ampersand (&).
-    // An rvalue reference binds to an rvalue. Marked with two ampersands(&&)
+    // An rvalue reference binds to an rvalue. Marked with two ampersands (&&).
     static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, std::string&&>>);
 }
 }
@@ -785,7 +788,6 @@ public:
     {
         value++;
     }
-
     int value{};
 };
 
@@ -899,7 +901,7 @@ namespace open_closed_principle {
 // ------------------------
 // Open for extension, closed for modification.
 // Add new functionality without altering existing functionality.
-// Existing code: Class aave to database.
+// Existing code: Class save to database.
 // New code: Class save to file.
 // Solution:
 // 1. Base class with virtual "save" method.
@@ -1113,12 +1115,13 @@ void declarations()
     static_assert(constexpr_add(i1, i2) == 20);
 
     // Variable i3 is assigned at runtime.
-    [[maybe_unused]] int i3 = 2;
+    int i3 = 2;
     // Compile error: the value of 'i3' is not usable in a constant expression
     // static_assert(constexpr_add(i3,i3) == 4);
+    assert(i3 == 2);
 
     // The variable is initialized at runtime although the function is constexpr.
-    [[maybe_unused]] int i4 = constexpr_add(i3, i3);
+    int i4 = constexpr_add(i3, i3);
     assert(i4 == 4);
 
     // OK, evaluated at compile-time.
@@ -1128,11 +1131,6 @@ void declarations()
     // Compile error:
     // call to consteval function 'consteval_add(i3, i3)' is not a constant expression
     // int i5 = consteval_add(i3, i3);
-    // Can all be evaluated at compile time.
-    static_assert(i1 == 10);
-    static_assert(i2 == 10);
-    static_assert(constexpr_add(1, 2) == 3);
-    static_assert(constexpr_add(i1, i2) == 20);
 
     // Cannot be evaluated at compile-time.
     // Compile error:
@@ -1152,7 +1150,7 @@ void declarations()
         constexpr const auto xdigit = [](int n) -> char
         {
             // This is a constexpr variable in a constexpr lambda function: OK in C++23.
-            constexpr const char digits[] = "0123456789abcdef";
+            constexpr const char digits[] = "0123456789";
             return digits[n];
         };
         static_assert(xdigit(2) == '2');
@@ -1231,7 +1229,7 @@ void demo()
     return;
     // One exception handling function to be used in several places.
     // It uses dynamic casting to handle the different exceptions.
-    const auto exception_handler = [](const std::exception* exception)
+    const auto dynamic_exception_handler = [](const std::exception* exception)
     {
         if (const auto* e = dynamic_cast<const Type1Exception*>(exception); e)
             std::cout << "Catch Type1Exception" << std::endl;
@@ -1253,7 +1251,7 @@ void demo()
     }
     catch (const std::exception& e)
     {
-        exception_handler(&e);
+        dynamic_exception_handler(&e);
     }
     try
     {
@@ -1262,7 +1260,7 @@ void demo()
     }
     catch (const std::exception& e)
     {
-        exception_handler(&e);
+        dynamic_exception_handler(&e);
     }
     try
     {
@@ -1271,7 +1269,7 @@ void demo()
     }
     catch (const std::exception& e)
     {
-        exception_handler(&e);
+        dynamic_exception_handler(&e);
     }
     try
     {
@@ -1280,7 +1278,7 @@ void demo()
     }
     catch (const std::exception& e)
     {
-        exception_handler(&e);
+        dynamic_exception_handler(&e);
     }
 
     // Throw different types of exceptions.
@@ -1296,7 +1294,7 @@ void demo()
 }
 }
 
-namespace lambda_capture_demo {
+namespace lambda_capture {
 void demo()
 {
     // Capture by value.
@@ -1323,7 +1321,7 @@ void demo()
     // Capture by reference.
     {
         auto v = 7;
-        auto lambda = [&v] mutable
+        auto lambda = [&v]
         {
             ++v;
         };
@@ -1360,7 +1358,7 @@ void demo()
 }
 
 namespace stateless_lambda_function {
-// A stateless lambda (function) does not retain any data or memory
+// A stateless lambda function does not retain any data or memory
 // from one execution to the next.
 const auto stateless = []
 {
@@ -4398,28 +4396,150 @@ void demo()
 }
 
 
+namespace move_only_function {
+// https://en.cppreference.com/w/cpp/utility/functional/move_only_function.html
+// C++23 introduces the std::move_only_function,
+// a new utility for handling callable objects that don't need to be copyable.
+// It's a streamlined alternative to std::function,
+// designed for cases where you're working with move-only types
+// like std::unique_ptr or other non-copyable resources.
+void demo()
+{
+    return;
+
+    std::packaged_task<double()> packaged_task([](){ return 3.14159; });
+
+    std::future<double> future = packaged_task.get_future();
+
+    auto lambda = [task = std::move(packaged_task)]() mutable { task(); };
+
+    //  std::function<void()> function = std::move(lambda); // Error
+
+    // std::move_only_function<void()> function = std::move(lambda); // OK does not yet compile on macOS 15.4.1
+
+    //function();
+
+    std::cout << future.get();
+
+}
+}
+
+
+namespace forward_like {
+// https://en.cppreference.com/w/cpp/utility/forward_like.html
+// Returns a reference to x which has similar properties to T&&.
+
+struct TypeTeller
+{
+    void operator()(this auto&& self)
+    {
+        using self_type = decltype(self);
+        using unref_self_type = std::remove_reference_t<self_type>;
+        if constexpr (std::is_lvalue_reference_v<self_type>)
+        {
+            if constexpr (std::is_const_v<unref_self_type>)
+                std::cout << "const lvalue" << std::endl;
+            else
+                std::cout << "mutable lvalue" << std::endl;
+        }
+        if constexpr (std::is_rvalue_reference_v<self_type>) {
+            if constexpr (std::is_const_v<unref_self_type>)
+                std::cout << "const rvalue" << std::endl;
+            else
+                std::cout << "mutable rvalue" << std::endl;
+        }
+    }
+};
+
+
+struct FarStates
+{
+    std::unique_ptr<TypeTeller> pointer;
+    std::optional<TypeTeller> optional;
+    std::vector<TypeTeller> container;
+
+    auto&& from_opt(this auto&& self)
+    {
+        return std::forward_like<decltype(self)>(self.optional.value());
+        // It is OK to use std::forward<decltype(self)>(self).opt.value(),
+        // because std::optional provides suitable accessors.
+    }
+
+    auto&& operator[](this auto&& self, std::size_t i)
+    {
+        return std::forward_like<decltype(self)>(self.container.at(i));
+        // It is not so good to use std::forward<decltype(self)>(self)[i], because
+        // containers do not provide rvalue subscript access, although they could.
+    }
+
+    auto&& from_ptr(this auto&& self)
+    {
+        if (!self.pointer)
+            throw std::bad_optional_access{};
+        return std::forward_like<decltype(self)>(*self.pointer);
+        // It is not good to use *std::forward<decltype(self)>(self).ptr, because
+        // std::unique_ptr<TypeTeller> always dereferences to a non-const lvalue.
+    }
+};
+
+void demo()
+{
+    return;
+
+    FarStates my_state
+    {
+        .pointer{std::make_unique<TypeTeller>()},
+        .optional{std::in_place, TypeTeller{}},
+        .container{std::vector<TypeTeller>(1)},
+      };
+
+    my_state.from_ptr()();
+    my_state.from_opt()();
+    my_state[0]();
+
+    std::cout << std::endl;
+
+    std::as_const(my_state).from_ptr()();
+    std::as_const(my_state).from_opt()();
+    std::as_const(my_state)[0]();
+
+    std::cout << std::endl;
+
+    std::move(my_state).from_ptr()();
+    std::move(my_state).from_opt()();
+    std::move(my_state)[0]();
+
+    std::cout << std::endl;
+
+    std::move(std::as_const(my_state)).from_ptr()();
+    std::move(std::as_const(my_state)).from_opt()();
+    std::move(std::as_const(my_state))[0]();
+}
+}
+
 
 int main()
 {
     tools::demo_scoped_timer();
+    binary_search::demo();
     algorithms_lower_bound_and_upper_bound::demo();
     min_max_clamp_ranges_minmax::demo();
     latches_and_barriers::demo_latch();
     latches_and_barriers::demo_barrier();
-    mutual_exclusion::shared_and_unique_locks();
-    timed_mutex_demo::timed_mutex();
+    shared_and_unique_locks::demo();
+    timed_mutex::demo();
     containers_library::demo_contains();
     containers_library::demo_vector_vs_list_allocation();
     containers_library::demo_set_with_hash_key_and_comparator();
     containers_library::demo_forward_list();
-    demo_piecewise_construct::demo();
-    demo_forward_as_tuple::demo();
+    piecewise_construct::demo();
+    forward_as_tuple::demo();
     class_design_idioms::raii_resource_acquisition_is_initialization();
     class_design_idioms::curiously_recurring_template_pattern();
     class_design_principles::liskov_substitution_principle::demo();
     language_declarations::declarations();
     language_exceptions::demo();
-    lambda_capture_demo::demo();
+    lambda_capture::demo();
     assign_two_lambdas_to_same_function_object::demo();
     operator_overloading::demo();
     demo_accumulate::demo();
@@ -4484,6 +4604,8 @@ int main()
     character_sets_encodings_escape_sequences::demo();
     expected_and_unexpected::demo();
     dangling_placeholder::demo();
+    move_only_function::demo();
+    forward_like::demo();
     return EXIT_SUCCESS;
 }
 
