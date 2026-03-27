@@ -2390,10 +2390,10 @@ void demo()
     assert(max_priority_queue.top() == 9);
 
     // The std::greater<int> makes the max priority queue act as a min priority queue.
-    std::priority_queue<int, std::vector<int>, std::greater<int>> min_priority_queue(data.begin(), data.end());
+    std::priority_queue<int, std::vector<int>, std::greater<int>> min_priority_queue1(data.begin(), data.end());
 
     // Check the top of the queue: contains the smallest element.
-    assert(min_priority_queue.top() == 0);
+    assert(min_priority_queue1.top() == 0);
 
     // Second way to define a min priority queue.
     std::priority_queue min_priority_queue2(data.begin(), data.end(), std::greater<int>());
@@ -2425,7 +2425,7 @@ void demo()
 }
 
 
-namespace time_manipulation {
+namespace time_formatting {
 void demo()
 {
     const std::time_t t = std::time(nullptr);
@@ -2447,7 +2447,6 @@ void demo()
         User(const std::string& name) : m_name(name)
         {
         }
-
         std::string m_name;
     };
     // Established way.
@@ -2472,6 +2471,7 @@ void demo()
         // Method 2:
         std::construct_at(user_ptr, User{"John"});
         assert(user_ptr->m_name == "John");
+        // And destroy / free again.
         std::destroy_at(user_ptr);
         std::free(memory);
     }
@@ -2481,18 +2481,16 @@ void demo()
 namespace linux_signals {
 void demo()
 {
-    [[maybe_unused]] sigset_t blocked_signals;
+    return;
+    sigset_t blocked_signals;
 
-    [[maybe_unused]] bool keep_going{true};
+    bool keep_going{true};
 
     // Sending a Linux signal can be handled in various ways.
-    // 1. A soon as the signal it sent, it gets handled right away.
-    // 2. When a signal is sent, the process ignores it, nothing happens.
-    // 3. When a signal is sent, the kernel keeps that signal pending,
+    // 1. It gets handled right away.
+    // 2. The process ignores it, nothing happens.
+    // 3. The kernel keeps that signal pending,
     //    and delivers it to the process when the process asks for it.
-
-
-    /* Works only on Linux like this
 
     // A set of signals that the kernel will not deliver to the process asynchronically.
     // The kernel will block those signals and deliver them when asked to do so.
@@ -2502,7 +2500,8 @@ void demo()
     const auto ignored_signals = {SIGALRM, SIGCHLD, SIGPIPE};
 
     // A set of signals processed asynchronically, that is, in real time.
-    const auto async_signals = {SIGRTMIN, SIGRTMAX};
+    // Commented out for macOS.
+    const std::initializer_list<int> async_signals = {/*SIGRTMIN, SIGRTMAX*/};
 
     // Initialize empty set of signals.
     sigemptyset(&blocked_signals);
@@ -2513,11 +2512,9 @@ void demo()
     pthread_sigmask(SIG_BLOCK, &blocked_signals, NULL);
 
     // Ignore the given signals.
-    const struct sigaction sa_ignore = {SIG_IGN, {}, {}, {}};
-    for (const int signal : ignored_signals)
-    {
-        sigaction(signal, &sa_ignore, nullptr);
-    }
+    // const struct sigaction sa_ignore = {SIG_IGN, {}, {}, {}};
+    // for (const int signal : ignored_signals)
+    //     sigaction(signal, &sa_ignore, nullptr);
 
     // Raise the synchronized signals.
     // Notice that the kernel will not deliver them to the process right away.
@@ -2535,17 +2532,17 @@ void demo()
     }
 
     // A real time handler for the asynchronically delivered signals.
-    const struct sigaction sa_async = {
-        [](const int signal)
-        {
-            std::cout << "Processing real time signal " << signal << " " << strsignal(signal) << std::endl;
-        },
-        {}, {}, {}
-    };
-    for (const int s : async_signals)
-    {
-        sigaction(s, &sa_async, nullptr);
-    }
+    // const struct sigaction sa_async = {
+    //     [](const int signal)
+    //     {
+    //         std::cout << "Processing real time signal " << signal << " " << strsignal(signal) << std::endl;
+    //     },
+    //     {}, {}, {}
+    // };
+    // for (const int s : async_signals)
+    // {
+    //     sigaction(s, &sa_async, nullptr);
+    // }
 
     // Raise the real time signals.
     for (const int signal : async_signals)
@@ -2559,8 +2556,9 @@ void demo()
     while (keep_going)
     {
         const timespec timespec{.tv_sec = 1, .tv_nsec = 0};
-        const int signal = sigtimedwait(&blocked_signals, nullptr, &timespec);
-        //    sigwait(&blocked_signals, &signal);
+        const int signal = -1;
+        //sigtimedwait(&blocked_signals, nullptr, &timespec);
+        //sigwait(&blocked_signals, &signal);
         if (signal == -1)
         {
             switch (errno)
@@ -2583,7 +2581,7 @@ void demo()
         {
             std::cout << "Processing synchronized signal " << signal << " " << strsignal(signal) << std::endl;
         }
-        */
+    }
 }
 }
 
@@ -2608,10 +2606,16 @@ struct Factorial<0>
     static constexpr int value = 1;
 };
 
-static_assert(Factorial<1>::value == 1);
-static_assert(Factorial<4>::value == 24);
-static_assert(Factorial<6>::value == 720);
+// A recursive template is very expensive to process by the compiler.
+// A recursive constexpr function is much cheaper.
+constexpr int factorial(int n) { return n <= 1 ? 1 : (n * factorial(n - 1));}
 
+static_assert(Factorial<1>::value == 1);
+static_assert(factorial(1) == 1);
+static_assert(Factorial<4>::value == 24);
+static_assert(factorial(4) == 24);
+static_assert(Factorial<6>::value == 720);
+static_assert(factorial(6) == 720);
 
 
 // Another example of recursive template calls.
@@ -2857,7 +2861,7 @@ void demo()
 }
 
 
-namespace demo_ranges_views_filter_drop_reverse {
+namespace ranges_views_filter_drop_reverse {
 void demo()
 {
     // Start from a list of numbers.
@@ -2875,7 +2879,7 @@ void demo()
 }
 
 
-namespace demo_contains_and_contains_subrange {
+namespace contains_and_contains_subrange {
 void demo()
 {
     constexpr auto haystack = std::array{3, 1, 4, 1, 5};
@@ -2894,9 +2898,9 @@ void demo()
         }
     };
     static_assert(std::ranges::contains(nums, std::complex<double>{3, 4}));
-    static_assert(std::ranges::contains(nums, std::complex<double>{3, 4}));
 }
 }
+
 
 namespace ranges_sorting_demo {
 void demo()
@@ -4426,6 +4430,46 @@ void demo()
 }
 
 
+namespace atomic_wait {
+// This performs atomic waiting operations.
+// An old value is passed to the ::wait.
+// It unblocks the thread if the atomic wait gets another value than the old value passed.
+void demo()
+{
+    std::atomic<bool> all_tasks_completed{false};
+    std::atomic<unsigned> completion_count{};
+    std::future<void> task_futures[16];
+    std::atomic<int> outstanding_task_count{16};
+
+    // Spawn several tasks which take different amounts of time,
+    // then decrement the outstanding task count.
+    for (std::future<void>& task_future : task_futures)
+        task_future = std::async([&]
+        {
+            // This sleep represents doing real work...
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(50ms);
+
+            ++completion_count;
+            --outstanding_task_count;
+
+            // When the task count falls to zero, notify
+            // the waiter (main thread in this case).
+            if (outstanding_task_count.load() == 0)
+            {
+                all_tasks_completed = true;
+                all_tasks_completed.notify_one();
+            }
+        });
+
+    // Wait here till the atomic variable has a value different from false.
+    all_tasks_completed.wait(false);
+
+    assert(completion_count.load() == 16);
+    // std::cout << "Tasks completed = " << completion_count.load() << std::endl;
+}
+}
+
 namespace forward_like {
 // https://en.cppreference.com/w/cpp/utility/forward_like.html
 // Returns a reference to x which has similar properties to T&&.
@@ -4566,14 +4610,14 @@ int main()
     inserter::demo();
     member_function::demo();
     priority_queue::demo();
-    time_manipulation::demo();
+    time_formatting::demo();
     basic_memory_management::demo();
     linux_signals::demo();
     remove_const_volatile_reference::demo();
     demo_simple_type_traits::demo();
     pseudo_random_number_generation::demo();
-    demo_ranges_views_filter_drop_reverse::demo();
-    demo_contains_and_contains_subrange::demo();
+    ranges_views_filter_drop_reverse::demo();
+    contains_and_contains_subrange::demo();
     ranges_sorting_demo::demo();
     demo_ranges_or_views::demo();
     regex::demo();
@@ -4607,6 +4651,7 @@ int main()
     dangling_placeholder::demo();
     move_only_function::demo();
     forward_like::demo();
+    atomic_wait::demo();
     return EXIT_SUCCESS;
 }
 
