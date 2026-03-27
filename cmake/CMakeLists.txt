@@ -9,7 +9,7 @@ add_library(library STATIC
         lib2.cpp
 )
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/build)
+link_directories(build)
 
 link_libraries(library)
 
