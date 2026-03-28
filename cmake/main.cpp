@@ -2,13 +2,13 @@
 #include <iostream>
 #include <ostream>
 
-#include "version.h"
-#include "lib1.h"
-#include "lib2.h"
+#include "config.h"
+#include "library1.h"
+#include "library2.h"
 
 int main() {
-    std::cout << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH << std::endl;
-    lib1();
-    lib2();
+    std::cout << "Version " << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH << std::endl;
+    library1();
+    library2();
     return EXIT_SUCCESS;
 }
