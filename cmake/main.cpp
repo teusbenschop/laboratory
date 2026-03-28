@@ -1,13 +1,14 @@
 #include <cstdlib>
 #include <iostream>
+#include <ostream>
 
+#include "version.h"
 #include "lib1.h"
 #include "lib2.h"
 
 int main() {
-    std::cout << "start" << std::endl;
+    std::cout << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH << std::endl;
     lib1();
     lib2();
-    std::cout << "complete" << std::endl;
     return EXIT_SUCCESS;
 }
