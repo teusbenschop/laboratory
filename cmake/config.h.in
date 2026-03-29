@@ -1,4 +1,5 @@
-#define VERSION_MAJOR @cmake_VERSION_MAJOR@
-#define VERSION_MINOR @cmake_VERSION_MINOR@
-#define VERSION_PATCH @cmake_VERSION_PATCH@
-#define VERSION @cmake_VERSION@
+#define VERSION_MAJOR @laboratory_VERSION_MAJOR@
+#define VERSION_MINOR @laboratory_VERSION_MINOR@
+#define VERSION_PATCH @laboratory_VERSION_PATCH@
+#define VERSION @laboratory_VERSION@
+#cmakedefine USE_LIBRARY1
