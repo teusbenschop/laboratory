@@ -57,7 +57,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <vector>
 
 
-namespace tools {
+namespace scoped_timer {
 template <typename D>
 class scoped_timer
 {
@@ -75,24 +75,13 @@ public:
     }
 };
 
-void demo_scoped_timer()
+void demo()
 {
     return;
     const auto timer = scoped_timer<std::chrono::microseconds>{};
     std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
-
-// Materialize the range r into a std::vector.
-// No longer needed in C++23.
-auto to_vector(auto&& r)
-{
-    std::vector<std::ranges::range_value_t<decltype(r)>> v;
-    if constexpr (std::ranges::sized_range<decltype(r)>)
-        v.reserve(std::ranges::size(r));
-    std::ranges::copy(r, std::back_inserter(v));
-    return v;
-}
 }
 
 
@@ -2907,14 +2896,13 @@ void demo()
 {
     {
         // Standard sorting demo.
-        const auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
+        auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
         assert(!std::ranges::is_sorted(values));
-        auto non_const_values = values;
         // Regular C++ sort: std::sort(non_const_values.begin(), non_const_values.end());
-        std::ranges::sort(non_const_values);
-        const auto sorted_values = std::vector{1, 2, 3, 4, 5, 6, 7};
-        assert(non_const_values == sorted_values);
-        assert(std::ranges::is_sorted(non_const_values));
+        std::ranges::sort(values);
+        const auto standard = std::vector{1, 2, 3, 4, 5, 6, 7};
+        assert(values == standard);
+        assert(std::ranges::is_sorted(values));
     }
     {
         // Demo of sorting on property, in this case, word length.
@@ -2935,9 +2923,9 @@ void demo()
             {"Nao", 2, 7.2f},
             {"Rei", 2, 3.3f}
         };
-        const auto level_and_health = [](const Player& p)
+        const auto level_and_health = [](const Player& player)
         {
-            return std::tie(p.level, p.health);
+            return std::tie(player.level, player.health);
         };
         // Order players by level, then by health.
         std::ranges::sort(players, std::less<>{}, level_and_health);
@@ -2948,25 +2936,26 @@ void demo()
 }
 }
 
-namespace demo_ranges_or_views {
+
+namespace demo_ranges_various {
 void demo()
 {
     {
         // ranges::transform.
-        auto input = std::vector{1, 2, 3, 4};
+        const auto input = std::vector{1, 2, 3, 4};
         auto output = std::vector<int>(input.size());
-        auto math_square = [](auto&& i) -> int { return i * i; };
-        std::ranges::transform(input, output.begin(), math_square);
+        auto square = [](auto&& i) -> int { return i * i; };
+        std::ranges::transform(input, output.begin(), square);
         // The output will be: 1 4 9 16
-        auto standard = std::vector<int>{1, 4, 9, 16};
+        const auto standard = std::vector<int>{1, 4, 9, 16};
         assert(output == standard);
     }
     {
-        // views::transform.
-        const auto numbers = std::vector{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        const auto square = [](auto v) { return v * v; };
+        // ranges::views::transform.
+        const auto input = std::vector{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        const auto square = [](auto i) { return i * i; };
         // Create a view, but do not yet evaluate this view.
-        auto squared_view = std::views::transform(numbers, square);
+        auto squared_view = std::ranges::views::transform(input, square);
         // Iterate over the squared view, which invokes evaluation and so invokes the lambda.
         int sum{0};
         for (auto s : squared_view)
@@ -2998,7 +2987,7 @@ void demo()
         //std::ranges::iota(v, 0);
 
         // A vector of iterators.
-        // Fill with iterators to consecutive list's elements
+        // Fill with iterators to consecutive list's elements.
         std::vector<std::list<int>::iterator> vec(v.size());
         std::iota(vec.begin(), vec.end(), v.begin());
         //std::ranges::iota(vec.begin(), vec.end(), list.begin());
@@ -3032,9 +3021,9 @@ void demo()
     {
         struct person
         {
-            unsigned uid;
+            unsigned id;
             const char* name;
-            const char* position;
+            const char* job;
         };
         const auto persons = std::list<person>{
             {0, "Ana", "barber"},
@@ -3044,9 +3033,9 @@ void demo()
         if (const auto it = std::ranges::find(persons, "Bob", &person::name);
             it != persons.cend())
         {
-            assert(it->uid == 1);
+            assert(it->id == 1);
             assert(it->name == std::string("Bob"));
-            assert(it->position == std::string("cook"));
+            assert(it->job == std::string("cook"));
         }
     }
 
@@ -3071,10 +3060,10 @@ void demo()
         const auto contains_duplicates_allocating = [](auto first, auto last)
         {
             // As (*first) returns a reference, we have to get the base type using std::decay_t
-            using ValueType = std::decay_t<decltype(*first)>;
-            auto copy = std::vector<ValueType>(first, last);
+            using value_type = std::decay_t<decltype(*first)>;
+            auto copy = std::vector<value_type>(first, last);
             std::sort(copy.begin(), copy.end());
-            // The std::adjacent_find searches the range for two consecutive equal elements.
+            // The std::adjacent_find searches the sorted range for two consecutive equal elements.
             return std::adjacent_find(copy.begin(), copy.end()) != copy.end();
         };
         const auto vals = std::vector{1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 0};
@@ -3086,14 +3075,14 @@ void demo()
 
     // Demo of ranges::find_if
     {
-        const auto v = {4, 1, 3, 2};
+        const auto values = {4, 1, 3, 2};
         const auto is_even = [](int x) { return x % 2 == 0; };
-        const auto iter = std::ranges::find_if(v, is_even);
-        assert(iter != v.end());
+        const auto iter = std::ranges::find_if(values, is_even);
+        assert(iter != values.end());
         assert(*iter == 4);
     }
 
-    // Getting the max value
+    // Getting the maximum value.
     {
         struct Student
         {
@@ -3142,7 +3131,7 @@ void demo()
             {3, 130, "F"},
         };
         {
-            auto score = get_max_score_copy(students, 2); // score is 140
+            auto score = get_max_score_copy(students, 2);
             assert(score == 140);
         }
         {
@@ -3165,7 +3154,7 @@ void demo()
         assert(result == standard);
     }
 
-    // Demo of take
+    // Demo of take.
     {
         auto vec = std::vector{4, 2, 7, 1, 2, 6, 1, 5};
         // Create a view of the first half of the container.
@@ -3196,7 +3185,7 @@ void demo()
         // beginning at the first element for which the predicate returns false.
         auto v = vec | std::views::drop_while([](auto i) { return i < 5; });
         // Result: 5 4 3 2 1
-        auto result = tools::to_vector(v);
+        auto result= v | std::ranges::to<std::vector<int>>();
         auto standard = std::vector<int>{5, 4, 3, 2, 1};
         assert(result == standard);
     }
@@ -3206,7 +3195,7 @@ void demo()
         const auto s{"1.4142 1.618 2.71828 3.14159 6.283"};
         auto iss = std::istringstream{s};
         auto floats = std::ranges::istream_view<float>(iss);
-        auto result = tools::to_vector(floats);
+        auto result = floats | std::ranges::to<std::vector<float>>();
         std::vector<float> standard = {1.4142, 1.618, 2.71828, 3.14159, 6.283};
         assert(result == standard);
     }
@@ -3218,7 +3207,7 @@ namespace regex {
 void demo()
 {
     std::string s =
-        R"(Some people, when confronted with a problem, think "I know, I'll use regular expressions." Now they have two problems.)";
+        R"(Some people, when confronted with a problem, think "I'll use regular expressions." Now they have two problems.)";
 
     // Case-insensitive search for "regular expressions".
     std::regex self_regex("REGULAR EXPRESSIONS", std::regex_constants::ECMAScript | std::regex_constants::icase);
@@ -3229,11 +3218,11 @@ void demo()
     auto words_begin = std::sregex_iterator(s.begin(), s.end(), word_regex);
     auto words_end = std::sregex_iterator();
 
-    // It found 20 words.
-    assert(std::distance(words_begin, words_end));
+    // The number of words found.
+    assert(std::distance(words_begin, words_end) == 18);
 
     // Words it found:
-    // Some people when confronted with a problem think I know I ll use regular expressions Now they have two problems
+    // Some people when confronted with a problem think I ll use regular expressions Now they have two problems
     for (std::sregex_iterator i = words_begin; i != words_end; ++i)
     {
         std::smatch match = *i;
@@ -3244,7 +3233,7 @@ void demo()
     std::string new_s = std::regex_replace(s, long_word_regex, "[$&]");
     assert(
         new_s ==
-        R"(Some people, when [confronted] with a [problem], think "I know, I'll use [regular] [expressions]." Now they have two [problems].)");
+        R"(Some people, when [confronted] with a [problem], think "I'll use [regular] [expressions]." Now they have two [problems].)");
 }
 }
 
@@ -3253,18 +3242,18 @@ namespace source_location {
 // https://en.cppreference.com/w/cpp/utility/source_location
 void demo()
 {
-    const int line = __LINE__;
+    constexpr int line = __LINE__;
     const std::source_location location = std::source_location::current();
     const std::string file_name = location.file_name();
-    assert (file_name.contains("main.cpp"));
-    assert (location.line() == line + 1);
+    assert(file_name.contains("main.cpp"));
+    assert(location.line() == line + 1);
     assert(location.column() == 43);
     assert(location.function_name() == std::string("void source_location::demo()"));
 }
 }
 
 
-namespace demo_barrier_jthread_stop_token {
+namespace barrier_jthread_stop_token {
 void demo()
 {
     // This lambda starts the failing processes.
@@ -3358,24 +3347,24 @@ void demo()
         std::ranges::reverse(container);
     }
     {
-        constexpr const auto needle {"needle"};
+        constexpr std::string needle {"needle"};
         const auto v = std::vector<variant_t>{42, needle, true};
         for (const auto& item : v) {
             std::visit([]([[maybe_unused]] const auto& x)
             {
-                //std::cout << "Variant has: " << x << std::endl;
+            //     assert ((x == 42) or (std::string(x) == needle) or (x == true));
+            //     //std::cout << "Variant has: " << x << std::endl;
             }, item);
         }
         const auto num_bools = std::ranges::count_if(v, [](const auto& item) {
           return std::holds_alternative<bool>(item);
         });
         assert(num_bools == 1);
-        auto contains_needle_string = std::ranges::any_of(v, [](const auto& item) {
+        auto contains_needle_string = std::ranges::any_of(v, [&](const auto& item) {
           return std::holds_alternative<std::string>(item) and std::get<std::string>(item) == needle;
         });
         assert(contains_needle_string);
     }
-
 }
 }
 
@@ -3383,11 +3372,11 @@ void demo()
 namespace atomic_reference {
 void demo()
 {
-    struct Stats {
+    struct Statistics {
         int heads{};
         int tails{};
     };
-    auto stats = Stats{};
+    auto stats = Statistics{};
 
     const auto random_int = [](int min, int max) {
         // One engine instance per thread.
@@ -3398,8 +3387,8 @@ void demo()
 
     const auto flip_coin = [&](std::size_t n, auto& outcomes) {
         auto flip = [&](auto n) {
-            auto heads = std::atomic_ref<int>{outcomes.heads};
-            auto tails = std::atomic_ref<int>{outcomes.tails};
+            const auto heads = std::atomic_ref<int>{outcomes.heads};
+            const auto tails = std::atomic_ref<int>{outcomes.tails};
             for (auto i = 0u; i < n; ++i) {
                 random_int(0, 1) == 0 ? ++heads : ++tails;
             }
@@ -3456,9 +3445,9 @@ void demo()
             promise.set_value(result);
         } catch(...) {
             try {
-                // store anything thrown in the promise
+                // Store anything thrown in the promise
                 promise.set_exception(std::current_exception());
-                // or throw a custom exception instead
+                // or throw a custom exception instead.
                 // promise.set_exception(std::make_exception_ptr(MyException("mine")));
             } catch(...) {} // set_exception() may throw too.
         }
@@ -3517,12 +3506,11 @@ namespace jthread {
 // and can be cancelled/stopped in certain situations.
 void demo()
 {
-    const auto worker = [] {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        //std::cout << "Within thread with ID " << std::this_thread::get_id() << std::endl;
-    };
-
     {
+        const auto worker = [] {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            //std::cout << "Within thread with ID " << std::this_thread::get_id() << std::endl;
+        };
         auto jthread = std::jthread{worker};
         // The jthread will join automatically when it goes out of scope.
     }
@@ -3590,9 +3578,11 @@ void demo()
 }
 }
 
+
 namespace semaphores {
 void demo()
 {
+    return;
     // The semaphore counts are set to zero.
     // The semaphore is in a non-signaled state.
     // The counting_semaphore contains an internal counter initialized by the constructor.
@@ -4565,7 +4555,7 @@ void demo()
 
 int main()
 {
-    tools::demo_scoped_timer();
+    scoped_timer::demo();
     binary_search::demo();
     algorithms_lower_bound_and_upper_bound::demo();
     min_max_clamp_ranges_minmax::demo();
@@ -4619,17 +4609,17 @@ int main()
     ranges_views_filter_drop_reverse::demo();
     contains_and_contains_subrange::demo();
     ranges_sorting_demo::demo();
-    demo_ranges_or_views::demo();
+    demo_ranges_various::demo();
     regex::demo();
     source_location::demo();
-    demo_barrier_jthread_stop_token::demo();
+    barrier_jthread_stop_token::demo();
     heterogenous_collections_with_variant::demo();
-    //atomic_reference::demo();
-    //lock_multiple_simultaneously::demo();
-    // future_and_promise_and_exception::demo();
+    atomic_reference::demo();
+    lock_multiple_simultaneously::demo();
+    future_and_promise_and_exception::demo();
     //osyncstream::demo();
     // jthread::demo();
-    // semaphores::demo();
+    semaphores::demo();
     //demo_packaged_task::demo();
     //attribute_no_unique_address::demo();
     designated_initializers::demo();
