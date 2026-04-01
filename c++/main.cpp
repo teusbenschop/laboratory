@@ -56,96 +56,10 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <unordered_set>
 #include <vector>
 
-
-namespace scoped_timer {
-template <typename D>
-class scoped_timer
-{
-    std::chrono::time_point<std::chrono::system_clock, D> m_started_at;
-
-public:
-    scoped_timer() noexcept : m_started_at(std::chrono::time_point_cast<D>(std::chrono::system_clock::now()))
-    {
-    }
-
-    ~scoped_timer() noexcept
-    {
-        const auto stopped_at = std::chrono::time_point_cast<D>(std::chrono::system_clock::now());
-        std::cout << "elapsed " << (stopped_at - m_started_at) << std::endl;
-    }
-};
-
-void demo()
-{
-    return;
-    const auto timer = scoped_timer<std::chrono::microseconds>{};
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
-}
-
-}
-
-
-// Demonstrate binary_search.
-namespace binary_search {
-// A binary search works if the container is sorted.
-// It returns true if the value is found in the container.
-// It is also possible to pass a comparator.
-constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
-static_assert(std::ranges::is_sorted(container));
-static_assert(std::ranges::binary_search(container, 3));
-void demo()
-{
-    using cd = std::complex<double>;
-    const std::vector<cd> complex_numbers = {
-        {1, 1},
-        {2, 3},
-        {4, 2},
-        {4, 3},
-    };
-    const auto comparator = [](const cd& a, const cd& b) {return std::abs(a) < std::abs(b);};
-    assert(std::ranges::is_sorted(complex_numbers, comparator));
-    assert(std::ranges::binary_search(complex_numbers, cd{4,2}, comparator));
-}
-}
-
-
-// Demonstrate lower_bound and upper_bound.
-namespace algorithms_lower_bound_and_upper_bound {
-constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
-// The lower_bound returns an iterator to the first element not less than the given value.
-static_assert(std::ranges::lower_bound(container, 3) != container.cend());
-// The upper_bound returns an iterator to the first element greater than a certain value.
-static_assert(std::ranges::upper_bound(container, 3) != container.cend());
-void demo()
-{
-    if (auto it = std::ranges::lower_bound(container, 3);
-        it != container.cend())
-    {
-        auto index = std::distance(container.begin(), it);
-        assert(index == 2);
-    }
-    if (auto it = std::ranges::upper_bound(container, 3);
-        it != container.cend())
-    {
-        auto index = std::distance(container.begin(), it);
-        assert(index == 5);
-    }
-}
-}
-
-
-// Demonstrate any_of / all_of / none_of.
-namespace any_of_all_of_none_of {
-// Input of positive numbers.
-constexpr auto numbers = std::array<int, 7>{3, 2, 2, 1, 0, 2, 1};
-// Function testing negative number.
-constexpr auto is_negative = [](int i) { return i < 0; };
-// None of the numbers is negative.
-static_assert(std::ranges::none_of(numbers, is_negative));
-static_assert(not std::ranges::all_of(numbers, is_negative));
-// Not any of the numbers is negative.
-static_assert(not std::ranges::any_of(numbers, is_negative));
-}
+#include "scoped_timer.h"
+#include "binary_search.h"
+#include "lower_upper_bound.h"
+#include "any_of_all_of_none_of.h"
 
 
 // Demonstrate ranges::count.
@@ -3583,8 +3497,6 @@ namespace semaphores {
 void demo()
 {
     return;
-    // The semaphore counts are set to zero.
-    // The semaphore is in a non-signaled state.
     // The counting_semaphore contains an internal counter initialized by the constructor.
     // This counter is decremented by calls to acquire() and related methods,
     // and is incremented by calls to release().
@@ -3594,8 +3506,8 @@ void demo()
     std::binary_semaphore signal_thread_to_main_semaphore{0};
 
     const auto thread_processor = [&]() {
-        // Wait for a signal from the main process by attempting to decrement the semaphore.
-        // This call blocks until the semaphore's count is increased from the main process.
+        // Wait for a signal from the main process by attempting to acquire (decrement) the semaphore.
+        // This call blocks until the semaphore is released (its count is increased) from the main process.
         signal_main_to_thread_semaphore.acquire();
         std::cout << "Thread got the signal" << std::endl;
 
@@ -3611,7 +3523,7 @@ void demo()
     // Create a worker thread
     std::jthread worker_thread(thread_processor);
 
-    // Signal the worker thread to start working by increasing the semaphore's count.
+    // Signal the worker thread to start working by releasing the semaphore (increasing its count).
     std::cout << "Main sends the signal" << std::endl;
     signal_main_to_thread_semaphore.release();
 
@@ -3700,7 +3612,7 @@ namespace attribute_likely_unlikely {
 // https://en.cppreference.com/w/cpp/language/attributes/likely
 // Attribute to hint the compiler for the likely or unlikely path of execution,
 // allowing the compiler to optimize the code.
-constexpr double pow(double x, long long n) noexcept
+constexpr double power(double x, long long n) noexcept
 {
     if (n > 0) [[likely]]
       return x * pow(x, n - 1);
@@ -3708,20 +3620,20 @@ constexpr double pow(double x, long long n) noexcept
       return 1;
 }
 
-constexpr long long fact(long long n) noexcept
+constexpr long long factorial(long long n) noexcept
 {
     if (n > 1) [[likely]]
-      return n * fact(n - 1);
+      return n * factorial(n - 1);
     else [[unlikely]]
       return 1;
 }
 
-constexpr double cos(double x) noexcept
+constexpr double cosine(double x) noexcept
 {
     constexpr long long precision{16LL};
     double y{};
     for (auto n{0LL}; n < precision; n += 2LL) [[likely]]
-      y += pow(x, n) / (n & 2LL ? -fact(n) : fact(n));
+      y += pow(x, n) / (n & 2LL ? -factorial(n) : factorial(n));
     return y;
 }
 
@@ -3755,7 +3667,9 @@ struct S1 {
 //constexpr S1 s1 {.y = 2, .x = 1};
 // Ok, s2.y initialized to 0.
 constexpr S1 s2 {.x = 1, .z = 2};
-static_assert(s2.x == 1 and s2.y == 0 and s2.z == 2);
+static_assert(s2.x == 1);
+static_assert(s2.y == 0);
+static_assert(s2.z == 2);
 
 struct S2 {
     const int o {33};
@@ -3796,9 +3710,7 @@ constexpr S s1 =
     1,
     {
         2, 3,
-        {
-            4, 5, 6
-          }
+        { 4, 5, 6 },
     }
 };
 static_assert(s1.x == 1);
@@ -3963,6 +3875,7 @@ void demo()
     handle.destroy();
 }
 }
+
 
 namespace modules {
 // https://en.cppreference.com/w/cpp/language/modules
@@ -4557,7 +4470,8 @@ int main()
 {
     scoped_timer::demo();
     binary_search::demo();
-    algorithms_lower_bound_and_upper_bound::demo();
+    lower_bound_and_upper_bound::demo();
+    any_of_all_of_none_of::demo();
     min_max_clamp_ranges_minmax::demo();
     latches_and_barriers::demo_latch();
     latches_and_barriers::demo_barrier();
