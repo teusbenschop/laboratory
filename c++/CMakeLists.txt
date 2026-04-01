@@ -7,6 +7,8 @@ add_executable(cpp
         main.cpp
         scoped_timer.cpp
         binary_search.cpp
-        lower_upper_bound.cpp
+        bounds_limits.cpp
         any_of_all_of_none_of.cpp
+        counting.cpp
+        latches_barriers.cpp
 )

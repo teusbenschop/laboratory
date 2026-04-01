@@ -16,8 +16,22 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include <algorithm>
+#include <array>
+#include "counting.h"
 
-namespace lower_bound_and_upper_bound {
-void demo();
+namespace counting {
+
+constexpr auto numbers = std::array<int, 7>{3, 3, 2, 1, 3, 1, 3};
+
+// Count how often number 3 occurs: Should be 4 times.
+static_assert(std::ranges::count(numbers, 3) == 4);
+
+constexpr auto predicate = [](int i) { return i == 3; };
+static_assert(std::ranges::count_if(numbers, predicate) == 4);
+
+void demo()
+{
+}
+
 }

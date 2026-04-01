@@ -58,35 +58,14 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "scoped_timer.h"
 #include "binary_search.h"
-#include "lower_upper_bound.h"
+#include "bounds_limits.h"
 #include "any_of_all_of_none_of.h"
+#include "counting.h"
+#include "latches_barriers.h"
 
 
-// Demonstrate ranges::count.
-namespace ranges_count {
-// Count how often number 3 occurs: Should be 4 times.
-constexpr auto numbers = std::array<int, 7>{3, 3, 2, 1, 3, 1, 3};
-static_assert(std::ranges::count(numbers, 3) == 4);
-static_assert(std::ranges::count_if(numbers, [](int i) { return i == 3; }) == 4);
-}
 
 
-// Demonstrate: min / max / clamp / ranges::minmax.
-namespace min_max_clamp_ranges_minmax {
-constexpr auto i200 = []() { return 200; };
-constexpr auto i10 = 10;
-constexpr auto i100 = 100;
-static_assert(std::min(i200(), i100) == i100);
-static_assert(std::max(i200(), i10) == i200());
-static_assert(std::clamp(i200(), i10, i100) == i100);
-constexpr auto values = std::array<int, 7>{4, 2, 1, 7, 3, 1, 5};
-void demo()
-{
-    auto [min, max] = std::ranges::minmax(values);
-    assert(min == 1);
-    assert(max == 7);
-}
-}
 
 
 namespace why_constraints_are_needed {
@@ -272,106 +251,6 @@ T generic_mod_overload(T v, T n)
 }
 }
 
-
-namespace latches_and_barriers {
-// Latches and barriers are thread coordination mechanisms
-// that allow any number of threads to block until an expected number of threads arrive.
-// A latch cannot be reused, while a barrier can be used repeatedly.
-
-// The std::latch is a downward counter which can be used to synchronize threads.
-// The value of the counter is initialized on creation.
-// Threads may block on the latch until the counter is decremented to zero.
-// There is no possibility to increase or reset the counter, the latch is single-use.
-
-// The std::barrier is similar to the std::latch with these differences:
-// 1. It can be reused.
-// 2. It executes possibly empty callable before unblocking threads.
-
-constexpr auto n_threads = 3;
-
-void demo_latch()
-{
-    return;
-    // The std::latch starts with a given count.
-    auto latch = std::latch{n_threads};
-
-    auto threads = std::vector<std::thread>{};
-
-    for (auto i = 0; i < n_threads; ++i)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        threads.emplace_back([&]
-        {
-            std::cout << "Thread " << std::this_thread::get_id() << " waits at latch and decreases it" << std::endl;
-            latch.arrive_and_wait(); // Or just count_down();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            std::cout << "Thread " << std::this_thread::get_id() << " gets past latch" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        });
-    }
-
-    std::cout << "Main thread waits at latch till threads have counted it down to zero" << std::endl;
-    latch.wait();
-    std::cout << "Main thread get past the latch" << std::endl;
-    for (auto&& thread : threads)
-        thread.join();
-    std::cout << "All threads have completed" << std::endl;
-}
-
-
-void demo_barrier()
-{
-    return;
-    auto done{false};
-    constexpr auto n_dice = 5;
-    auto dice = std::array<int, n_dice>{};
-    auto threads = std::vector<std::thread>{};
-    auto n_turns{0};
-
-    const auto get_random_int = [](const int min, const int max) -> int
-    {
-        // One engine instance per thread.
-        thread_local auto engine = std::default_random_engine{std::random_device{}()};
-        auto distribution = std::uniform_int_distribution{min, max};
-        return distribution(engine);
-    };
-
-    // A function to run on completion of a barrier.
-    // It checks whether all dice have rolled to six simultaneously.
-    auto on_barrier_completion = [&] -> void
-    {
-        ++n_turns;
-        const auto is_six = [](auto i) { return i == 6; };
-        done = std::ranges::all_of(dice, is_six);
-    };
-
-    // Define the barrier to use with the completion callback.
-    // After the barrier has counted down to zero,
-    // and after the completion callback has run,
-    // the barrier resets itself to its initial state.
-    // Then the barrier can be used again.
-    auto barrier = std::barrier{n_dice, on_barrier_completion};
-    for (size_t i = 0; i < n_dice; i++)
-    {
-        threads.emplace_back([&, i]
-        {
-            while (!done)
-            {
-                // Roll dice.
-                dice[i] = get_random_int(1, 6);
-                // Decrement the barrier count by 1, wait here till the barrier is 0,
-                // and then until the phase completion step of the current phase is run.
-                barrier.arrive_and_wait();
-            }
-        });
-    }
-    for (auto&& t : threads)
-    {
-        t.join();
-    }
-    std::cout << "Number of turns to have all dice on 6: " << n_turns << std::endl;
-}
-}
 
 namespace shared_and_unique_locks {
 // This example code features a queue.
@@ -4472,9 +4351,10 @@ int main()
     binary_search::demo();
     lower_bound_and_upper_bound::demo();
     any_of_all_of_none_of::demo();
+    counting::demo();
     min_max_clamp_ranges_minmax::demo();
-    latches_and_barriers::demo_latch();
-    latches_and_barriers::demo_barrier();
+    latches::demo();
+    barriers::demo();
     shared_and_unique_locks::demo();
     timed_mutex::demo();
     containers_library::demo_contains();

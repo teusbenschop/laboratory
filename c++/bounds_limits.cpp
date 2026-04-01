@@ -18,9 +18,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <algorithm>
 #include <cassert>
+#include <list>
 #include <ranges>
 #include <vector>
-#include "lower_upper_bound.h"
+#include "bounds_limits.h"
+
 
 // Demonstrate lower_bound and upper_bound.
 namespace lower_bound_and_upper_bound {
@@ -43,5 +45,24 @@ void demo()
         auto index = std::distance(container.begin(), it);
         assert(index == 5);
     }
+}
+}
+
+
+// Demonstrate: min / max / clamp / ranges::minmax.
+namespace min_max_clamp_ranges_minmax {
+constexpr auto i200 = []() { return 200; };
+constexpr auto i10 = 10;
+constexpr auto i100 = 100;
+static_assert(std::min(i200(), i100) == i100);
+static_assert(std::max(i200(), i10) == i200());
+static_assert(std::clamp(i200(), i10, i100) == i100);
+
+void demo()
+{
+    const auto values = std::list<int>{4, 2, 1, 7, 3, 1, 5};
+    auto [min, max] = std::ranges::minmax(values);
+    assert(min == 1);
+    assert(max == 7);
 }
 }
