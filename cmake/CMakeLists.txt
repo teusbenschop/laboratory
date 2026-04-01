@@ -66,6 +66,24 @@ target_include_directories(laboratory PUBLIC
 )
 
 
+# Finding libraries.
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(LIBCURL REQUIRED libcurl>=7.20.0)
+
+if(LIBCURL_FOUND)
+#    message("-- Libcurl found")
+endif()
+
+target_link_libraries(laboratory ${LIBCURL_LIBRARIES})
+target_include_directories(laboratory PUBLIC ${LIBCURL_INCLUDE_DIRS})
+target_compile_options(laboratory PUBLIC ${LIBCURL_CFLAGS_OTHER})
+
+#Todo read and apply this:
+#https://stackoverflow.com/questions/29191855/what-is-the-proper-way-to-use-pkg-config-from-cmake
+
+
+
 # The target is conditionally linked against the given libraries.
 if(USE_LIBRARY1)
 target_link_libraries(laboratory
