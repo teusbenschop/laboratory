@@ -12,13 +12,13 @@ project(laboratory
 
 
 # Print info.
-message("-- Processing ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Processing ${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(laboratory_VERSION "${laboratory_VERSION_MAJOR}.${laboratory_VERSION_MINOR}.${laboratory_VERSION_PATCH}")
-message("-- Software version ${laboratory_VERSION}")
+message(STATUS "Software version ${laboratory_VERSION}")
 
 # Print the install prefix.
-message ("-- Install prefix ${CMAKE_INSTALL_PREFIX}")
+message (STATUS "Install prefix ${CMAKE_INSTALL_PREFIX}")
 # Set it during install: $ cmake --install . --prefix "/path"
 
 
@@ -66,13 +66,17 @@ target_include_directories(laboratory PUBLIC
 )
 
 
+# Finding executables.
+find_program(GZIP gzip REQUIRED)
+message(STATUS "Found ${GZIP}")
+
 # Finding libraries.
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(LIBCURL REQUIRED libcurl>=7.20.0)
 
 if(LIBCURL_FOUND)
-#    message("-- Libcurl found")
+    message(STATUS "Found libcurl ${LIBCURL_VERSION}")
 endif()
 
 target_link_libraries(laboratory ${LIBCURL_LIBRARIES})
