@@ -11,4 +11,6 @@ add_executable(cpp
         any_of_all_of_none_of.cpp
         counting.cpp
         latches_barriers.cpp
+        constraints.cpp
+
 )

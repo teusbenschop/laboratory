@@ -62,194 +62,13 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "any_of_all_of_none_of.h"
 #include "counting.h"
 #include "latches_barriers.h"
+#include "constraints.h"
 
 
 
+/// Todo
 
 
-
-namespace why_constraints_are_needed {
-// https://en.cppreference.com/w/cpp/language/constraints
-// Class templates, function templates, and non-template functions
-// (typically members of class templates)
-// may be associated with a constraint,
-// which specifies the requirements on template arguments,
-// which can be used to select the most appropriate function overloads and template specializations.
-// Named sets of such requirements are called concepts.
-// Each concept is a predicate, evaluated at compile time,
-// and becomes a part of the interface of a template where it is used as a constraint.
-
-// An unconstrained template function.
-template <typename T>
-constexpr auto basic_plus(T one, T two)
-{
-    return one + two;
-}
-
-// Call the template with numbers: OK.
-static_assert(basic_plus(1, 2) == 3);
-
-// Call the template with strings:
-// Oops, it works, but not as intended, it concatenates instead of summing.
-// It would help if the passed types could be constrained.
-static_assert(basic_plus(std::string("a"), std::string("b")) == "ab");
-
-// Call the template with chars:
-// OK, it fails:
-// invalid operands of types 'const char*' and 'const char*' to binary 'operator+'
-// static_assert(basic_sum("a", "b") == "?");
-}
-
-
-namespace demonstrate_constraints {
-// Three classes, two related, one unrelated, to demonstrate constraints.
-struct Base
-{
-    static constexpr int value{10};
-};
-
-struct Derived : Base
-{
-};
-
-struct Unrelated
-{
-    static constexpr int value{10};
-};
-
-template <typename Type>
-// This template has a constraint to make sure the correct type is passed.
-// The template function requires that the parameter type is derived from the Base struct.
-    requires std::derived_from<Type, Base>
-constexpr int get_value(Type object)
-{
-    return object.value;
-}
-
-static_assert(get_value(Base()) == 10); // This compiles.
-static_assert(get_value(Derived()) == 10); // This compiles.
-// static_assert(get_value(Unrelated()) == 10);
-// The above fails to compile due to the constraint:
-// error: no matching function for call to 'get_value' ... and so on, multiple diagnostic errors.
-
-// Define a basic concept.
-template <typename T>
-concept floating_point = std::is_floating_point_v<T>;
-
-// Define a concept consisting of another concept or a type trait.
-template <typename T>
-concept number = floating_point<T> || std::is_integral_v<T>;
-
-// Define a concept that requires the type to have the given class members.
-template <typename T>
-concept range = requires(T& t)
-{
-    std::begin(t);
-    std::end(t);
-};
-
-// Constraining a type with a concept.
-template <typename T>
-    requires number<T>
-constexpr auto add_both_template(T v, T n)
-{
-    return v + n;
-}
-
-static_assert(add_both_template(10, 11) == 21);
-
-// Using concepts ("number") with abbreviated function templates.
-constexpr number auto add_both_abbreviated(number auto v, number auto n)
-{
-    return v + n;
-}
-
-static_assert(add_both_abbreviated(10, 11) == 21);
-
-// Declaration of the concept "hashable", which is satisfied by any type 'T'
-// such that for values 'a' of type 'T', the expression std::hash<T>{}(a)
-// compiles and its result is convertible to std::size_t
-template <typename T>
-concept hashable = requires(T a)
-{
-    { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
-};
-
-// Constrained C++20 function template.
-template <hashable T>
-void constrained_func1(T)
-{
-}
-
-// Alternative ways to apply the same constraint:
-template <typename T>
-    requires hashable<T>
-void constrained_func2(T)
-{
-}
-
-template <typename T>
-void constrained_func3(T) requires hashable<T>
-{
-}
-
-void constrained_func4(hashable auto a)
-{
-}
-
-
-// A concept that tests whether a struct has a static member function.
-template <typename P>
-concept HasStaticMethod = requires {
-    { P::method_name() };
-    // The compiler attempts to instantiate this call at compile-time.
-    // If the function isn't static (or doesn't exist), this fails.
-};
-
-// A variadic template function takes a variable number of arguments.
-template <typename T, typename... Args>
-void variadic_template_print(T t, Args... args)
-{
-    // The "if constexpr" is evaluated at compile time.
-    // Here, if no arguments are passed, it no longer does recursion.
-    if constexpr (not sizeof ...(args))
-    {
-        std::cout << t << std::endl;
-    }
-    else
-    {
-        std::cout << t << ", ";
-        variadic_template_print(args...);
-    }
-}
-
-// The same as above, now as an abbreviated variadic template function.
-void variadic_abbreviated_print(auto t, auto... args)
-{
-    if constexpr (not sizeof ...(args))
-        std::cout << t << std::endl;
-    else
-    {
-        std::cout << t << ", ";
-        variadic_abbreviated_print(args...);
-    }
-}
-
-// Use function overloading.
-template <std::integral T>
-T generic_mod_overload(T v, T n)
-{
-    // Integral version.
-    return v % n;
-}
-
-template <std::floating_point T>
-T generic_mod_overload(T v, T n)
-{
-    // Floating point version.
-    return std::fmod(v, n);
-}
-}
 
 
 namespace shared_and_unique_locks {
@@ -4355,6 +4174,9 @@ int main()
     min_max_clamp_ranges_minmax::demo();
     latches::demo();
     barriers::demo();
+    unconstrained_errors::demo();
+    constraint_derived_from::demo();
+    demonstrate_constraints::demo();
     shared_and_unique_locks::demo();
     timed_mutex::demo();
     containers_library::demo_contains();
