@@ -1,15 +1,11 @@
 package org.bibledit.myapplication
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -21,9 +17,9 @@ class MainActivity : AppCompatActivity() {
         title = "KotlinApp"
         tabLayout = findViewById(R.id.tabLayout)
         viewPager = findViewById(R.id.viewPager)
-        tabLayout.addTab(tabLayout.newTab().setText("Football"))
-        tabLayout.addTab(tabLayout.newTab().setText("Cricket"))
-        tabLayout.addTab(tabLayout.newTab().setText("NBA"))
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 1"))
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 2"))
+        tabLayout.addTab(tabLayout.newTab().setText("Tab 3"))
         tabLayout.tabGravity = TabLayout.GRAVITY_FILL
         val adapter = MyAdapter(this, supportFragmentManager,
             tabLayout.tabCount)

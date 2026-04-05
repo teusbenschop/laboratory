@@ -5,9 +5,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 
-@Suppress("DEPRECATION")
-
-
 
 internal class MyAdapter(
     var context: Context,
@@ -18,13 +15,13 @@ internal class MyAdapter(
     override fun getItem(position: Int): Fragment {
         return when (position) {
             0 -> {
-                Football()
+                Tab1()
             }
             1 -> {
-                Cricket()
+                Tab2()
             }
             2 -> {
-                NBA()
+                Tab3()
             }
             else -> getItem(position)
         }

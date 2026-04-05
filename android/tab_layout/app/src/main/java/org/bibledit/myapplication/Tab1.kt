@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
-class Cricket : Fragment() {
+class Tab1 : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,7 +16,8 @@ class Cricket : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_cricket, container, false)
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_tab1, container, false)
     }
 
 }
