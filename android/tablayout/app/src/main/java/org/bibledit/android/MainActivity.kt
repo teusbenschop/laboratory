@@ -8,6 +8,7 @@ import android.widget.TabHost.TabContentFactory
 import android.widget.TabHost.TabSpec
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.tabs.TabLayout
 import java.util.Timer
 import kotlin.concurrent.schedule
 
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     var webview: WebView? = null
     var tabhost: TabHost? = null
+    var tablayout : TabLayout? = null
     lateinit var timer: Timer
     var viewState : Int = 0
 
@@ -52,6 +54,11 @@ class MainActivity : AppCompatActivity() {
                     startTabHostView()
                 }
             }
+            3 -> {
+                runOnUiThread {
+                    startTabLayoutView()
+                }
+            }
             else -> {
 
             }
@@ -61,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startSingleView()
     {
-        tabhost = null
+        nullAllWidgets()
         setContentView(R.layout.single_view)
         webview = findViewById<WebView>(R.id.singleview)
         applySettingsToWebView(webview)
@@ -124,9 +131,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun startTabHostView() {
-        webview = null
+        nullAllWidgets()
 
-        setContentView(R.layout.tabbed_view)
+        setContentView(R.layout.tabhost_view)
 
         tabhost = findViewById (R.id.tabhost)
         tabhost!!.setup ()
@@ -185,5 +192,17 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun startTabLayoutView()
+    {
+        nullAllWidgets()
+
+
+    }
+
+    private fun nullAllWidgets() {
+        webview = null
+        tabhost = null
+        tablayout = null
+    }
 
 }
