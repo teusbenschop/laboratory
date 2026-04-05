@@ -147,21 +147,21 @@ class MainActivity : AppCompatActivity() {
     private fun applySettingsToWebView (webView: WebView?)
     {
         @SuppressLint("SetJavaScriptEnabled")
-        webview!!.getSettings().setJavaScriptEnabled(true)
+        webView!!.getSettings().setJavaScriptEnabled(true)
 
         // No built-in zoom controls,
         // because these may cover clickable links,
         // which then can't be clicked anymore.
         // https://github.com/bibledit/cloud/issues/321
-        webview!!.getSettings().setBuiltInZoomControls(false)
-        webview!!.getSettings().setSupportZoom(false)
-        webview!!.getSettings().setDisplayZoomControls(false)
+        webView!!.getSettings().setBuiltInZoomControls(false)
+        webView!!.getSettings().setSupportZoom(false)
+        webView!!.getSettings().setDisplayZoomControls(false)
 
-        webview!!.getSettings().setDomStorageEnabled(true)
+        webView!!.getSettings().setDomStorageEnabled(true)
 
         // Without this line the URL will open in an external browser.
         // With this line, the URL will open within the app.
-        MyWebViewClient().also { webview!!.webViewClient = it }
+        MyWebViewClient().also { webView!!.webViewClient = it }
     }
 
 
