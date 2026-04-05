@@ -100,3 +100,4 @@ vms/vms
 /c++/build
 android/kotlin/gradle/wrapper/gradle-wrapper.jar
 android/TabLayout/gradle/wrapper/gradle-wrapper.jar
+android/MyApplication/gradle/wrapper/gradle-wrapper.jar
