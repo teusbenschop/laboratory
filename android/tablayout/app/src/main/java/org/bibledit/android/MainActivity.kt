@@ -1,17 +1,8 @@
 package org.bibledit.android
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.ActionMode
 import android.view.Menu
-import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.webkit.WebView
 import android.widget.TabHost
 import android.widget.TabHost.OnTabChangeListener
@@ -19,14 +10,6 @@ import android.widget.TabHost.TabContentFactory
 import android.widget.TabHost.TabSpec
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
-import androidx.core.content.edit
-import org.json.JSONArray
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
 import java.util.Timer
 import kotlin.concurrent.schedule
 
@@ -187,8 +170,8 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.tabbed_view)
 
-        tabhost = findViewById (R.id.tabhost);
-        tabhost!!.setup ();
+        tabhost = findViewById (R.id.tabhost)
+        tabhost!!.setup ()
 
         var tabspec: TabSpec?
         var factory: TabContentFactory?
@@ -207,8 +190,8 @@ class MainActivity : AppCompatActivity() {
                 url = "notes/index"
             if (i == 3)
                 url = "personalize/index"
-            tabspec = tabhost!!.newTabSpec (label);
-            tabspec.setIndicator (label);
+            tabspec = tabhost!!.newTabSpec (label)
+            tabspec.setIndicator (label)
 
             factory = TabHost.TabContentFactory () {
                 val webview = getNewWebViewWithSettings()
@@ -216,8 +199,8 @@ class MainActivity : AppCompatActivity() {
                 return@TabContentFactory webview
             }
 
-            tabspec.setContent(factory);
-            tabhost!!.addTab (tabspec);
+            tabspec.setContent(factory)
+            tabhost!!.addTab (tabspec)
 
             if (url.contains("resource"))
                 active = i
@@ -236,7 +219,7 @@ class MainActivity : AppCompatActivity() {
                 (tabhost!!.getTabWidget().getChildAt(i).getLayoutParams().height * 0.75).toInt()
         }
 
-        tabhost!!.setCurrentTab (active);
+        tabhost!!.setCurrentTab (active)
 
         tabhost!!.setOnTabChangedListener(object : OnTabChangeListener {
             override fun onTabChanged(tabId: String) {
@@ -258,8 +241,8 @@ class MainActivity : AppCompatActivity() {
     private fun stopTimer()
     {
         if (timer != null) {
-            timer!!.cancel();
-            timer = null;
+            timer!!.cancel()
+            timer = null
         }
     }
 
