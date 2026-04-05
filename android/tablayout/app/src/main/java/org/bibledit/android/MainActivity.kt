@@ -8,7 +8,10 @@ import android.widget.TabHost.TabContentFactory
 import android.widget.TabHost.TabSpec
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import java.util.Timer
 import kotlin.concurrent.schedule
 
@@ -17,7 +20,8 @@ class MainActivity : AppCompatActivity() {
 
     var webview: WebView? = null
     var tabhost: TabHost? = null
-    var tablayout : TabLayout? = null
+    var tabLayout : TabLayout? = null
+    var viewPager: ViewPager? = null
     lateinit var timer: Timer
     var viewState : Int = 0
 
@@ -34,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     fun onRepeatingTimeout ()
     {
         viewState += 1
-        if (viewState >= 3) {
+        if (viewState > 3) {
             viewState = 0
         }
 
@@ -196,13 +200,34 @@ class MainActivity : AppCompatActivity() {
     {
         nullAllWidgets()
 
+        setContentView(R.layout.tablayout_view)
+        tabLayout = findViewById(R.id.tabLayout)
+        viewPager = findViewById(R.id.viewPager)
+        tabLayout!!.addTab(tabLayout!!.newTab().setText("Tab 1"))
+        tabLayout!!.addTab(tabLayout!!.newTab().setText("Tab 2"))
+        tabLayout!!.addTab(tabLayout!!.newTab().setText("Tab 3"))
+        tabLayout!!.tabGravity = TabLayout.GRAVITY_FILL
+        val adapter = MyAdapter(this, supportFragmentManager,
+            tabLayout!!.tabCount)
+        viewPager!!.adapter = adapter
+        viewPager!!.addOnPageChangeListener(TabLayoutOnPageChangeListener(tabLayout))
+        tabLayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager!!.currentItem = tab.position
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
+
+
 
     }
 
     private fun nullAllWidgets() {
         webview = null
         tabhost = null
-        tablayout = null
+        tabLayout = null
+        viewPager = null
     }
 
 }
