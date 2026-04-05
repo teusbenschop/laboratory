@@ -1,8 +1,6 @@
 package org.bibledit.android
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.Menu
 import android.webkit.WebView
 import android.widget.TabHost
 import android.widget.TabHost.OnTabChangeListener
@@ -18,78 +16,44 @@ class MainActivity : AppCompatActivity() {
 
     var webview: WebView? = null
     var tabhost: TabHost? = null
-    var timer: Timer? = null
-    var previousTabsState: Boolean = false
-
+    lateinit var timer: Timer
+    var viewState : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_screen)
         WebView.setWebContentsDebuggingEnabled(true)
-
-    }
-
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Don't create the menu.
-        return false
-    }
-
-
-    // Function is called when the user starts the app.
-    override fun onStart() {
-        super.onStart()
-        startTimer()
-    }
-
-
-    // Function is called when the user returns to the activity.
-    override fun onRestart() {
-        super.onRestart()
-        startTimer()
-    }
-
-
-    // Function is called when the app is moved to the foreground again.
-    public override fun onResume() {
-        super.onResume()
-        startTimer()
-    }
-
-
-    // Function is called when the app is obscured.
-    public override fun onPause() {
-        super.onPause()
-        stopTimer()
-    }
-
-
-    // Function is called when the user completely leaves the activity.
-    override fun onStop() {
-        super.onStop()
-        stopTimer()
-    }
-
-
-    // Function is called when the app gets completely destroyed.
-    public override fun onDestroy() {
-        super.onDestroy()
-        stopTimer()
+        timer = Timer()
+        timer.schedule(1000L, 3000L) {
+            onRepeatingTimeout()
+        }
     }
 
     fun onRepeatingTimeout ()
     {
-        previousTabsState = !previousTabsState
-
-        if (!previousTabsState) {
-            runOnUiThread {
-                startSingleView()
-            }
+        viewState += 1
+        if (viewState >= 3) {
+            viewState = 0
         }
 
-        if (previousTabsState) {
-            runOnUiThread {
-                startTabbedView()
+        when (viewState) {
+            0 -> {
+                runOnUiThread {
+                    setContentView(R.layout.splash_screen)
+                }
+            }
+            1 -> {
+                runOnUiThread {
+                    startSingleView()
+                }
+            }
+            2 -> {
+                runOnUiThread {
+                    startTabHostView()
+                }
+            }
+            else -> {
+
             }
         }
     }
@@ -119,7 +83,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        @SuppressLint("SetJavaScriptEnabled")
         newWebview.getSettings().setJavaScriptEnabled(true)
 
         // No built-in zoom controls,
@@ -147,13 +110,7 @@ class MainActivity : AppCompatActivity() {
     // Changes inside the method affect the external object due to the shared reference.
     private fun applySettingsToWebView (webView: WebView?)
     {
-        @SuppressLint("SetJavaScriptEnabled")
         webView!!.getSettings().setJavaScriptEnabled(true)
-
-        // No built-in zoom controls,
-        // because these may cover clickable links,
-        // which then can't be clicked anymore.
-        // https://github.com/bibledit/cloud/issues/321
         webView!!.getSettings().setBuiltInZoomControls(false)
         webView!!.getSettings().setSupportZoom(false)
         webView!!.getSettings().setDisplayZoomControls(false)
@@ -166,7 +123,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun startTabbedView() {
+    private fun startTabHostView() {
         webview = null
 
         setContentView(R.layout.tabbed_view)
@@ -228,23 +185,5 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-
-    private fun startTimer()
-    {
-        stopTimer()
-        timer = Timer()
-        timer!!.schedule(1000L, 3000L) {
-            onRepeatingTimeout()
-        }
-    }
-
-
-    private fun stopTimer()
-    {
-        if (timer != null) {
-            timer!!.cancel()
-            timer = null
-        }
-    }
 
 }
