@@ -1,6 +1,7 @@
 package org.bibledit.android
 
 import android.os.Bundle
+import android.view.View
 import android.webkit.WebView
 import android.widget.TabHost
 import android.widget.TabHost.OnTabChangeListener
@@ -8,11 +9,12 @@ import android.widget.TabHost.TabContentFactory
 import android.widget.TabHost.TabSpec
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.viewpager.widget.ViewPager
+import androidx.transition.Visibility
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import java.util.Timer
+import kotlin.concurrent.schedule
 
 
 class MainActivity : AppCompatActivity() {
@@ -20,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     var webview: WebView? = null
     var tabhost: TabHost? = null
     var tablayout : TabLayout? = null
-    var viewpager: ViewPager? = null
+    var viewpager: MyViewPager? = null
     lateinit var timer: Timer
     var viewstate : Int = 0
 
@@ -28,15 +30,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_screen)
         WebView.setWebContentsDebuggingEnabled(true)
-        startTabLayoutView()
-//        timer = Timer()
-//        timer.schedule(1000L, 3000L) {
-//            onRepeatingTimeout()
-//        }
+        startTabLayoutView2()
+        timer = Timer()
+        timer.schedule(1000L, 3000L) {
+            onRepeatingTimeout()
+        }
     }
 
     fun onRepeatingTimeout ()
     {
+
+
+        return
+
+
         viewstate += 1
         if (viewstate > 3) {
             viewstate = 0
@@ -199,10 +206,46 @@ class MainActivity : AppCompatActivity() {
                 println("selected tab " + tab.position.toString())
             }
             override fun onTabUnselected(tab: TabLayout.Tab) {
-//                println("unselected tab " + tab.position.toString())
             }
             override fun onTabReselected(tab: TabLayout.Tab) {
-//                println("reselected tab " + tab.position.toString())
+            }
+        })
+    }
+
+
+    // This uses multiple Webviews showing only one. As a test.
+    private fun startTabLayoutView2()
+    {
+        nullAllWidgets()
+        setContentView(R.layout.tablayout_view2)
+        tablayout = findViewById(R.id.tabLayout2)
+        tablayout!!.addTab(tablayout!!.newTab().setText("Tab 1"))
+        tablayout!!.addTab(tablayout!!.newTab().setText("Tab 2"))
+        tablayout!!.addTab(tablayout!!.newTab().setText("Tab 3"))
+        tablayout!!.tabGravity = TabLayout.GRAVITY_FILL
+
+        val webview1 : WebView = findViewById<WebView>(R.id.testwebview1)
+        applySettingsToWebView(webview1)
+        webview1?.loadUrl("https://bibledit.org:8091/editone/index")
+        val webview2 : WebView = findViewById<WebView>(R.id.testwebview2)
+        applySettingsToWebView(webview2)
+        webview2?.loadUrl("https://bibledit.org:8091/notes/index")
+
+        tablayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                println("selected tab " + tab.position.toString())
+                if (tab.position == 0) {
+                    webview1.visibility = View.VISIBLE
+                    webview2.visibility = View.GONE
+                }
+                if (tab.position == 1) {
+                    webview1.visibility = View.GONE
+                    webview2.visibility = View.VISIBLE
+                }
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+            }
+            override fun onTabReselected(tab: TabLayout.Tab) {
             }
         })
     }
