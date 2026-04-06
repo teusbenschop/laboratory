@@ -5,12 +5,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 
-internal class MyAdapter(
+internal class TabAdapter(
     var context: Context,
-    fm: FragmentManager,
-    var totalTabs: Int
+    fragmentManager: FragmentManager,
+    var tabCount: Int
 ) :
-    FragmentPagerAdapter(fm) {
+    FragmentPagerAdapter(fragmentManager) {
     override fun getItem(position: Int): Fragment {
         return when (position) {
             0 -> {
@@ -26,6 +26,6 @@ internal class MyAdapter(
         }
     }
     override fun getCount(): Int {
-        return totalTabs
+        return tabCount
     }
 }

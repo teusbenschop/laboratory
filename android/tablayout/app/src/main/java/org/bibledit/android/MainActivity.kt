@@ -13,36 +13,36 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import java.util.Timer
-import kotlin.concurrent.schedule
 
 
 class MainActivity : AppCompatActivity() {
 
     var webview: WebView? = null
     var tabhost: TabHost? = null
-    var tabLayout : TabLayout? = null
-    var viewPager: ViewPager? = null
+    var tablayout : TabLayout? = null
+    var viewpager: ViewPager? = null
     lateinit var timer: Timer
-    var viewState : Int = 0
+    var viewstate : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.splash_screen)
         WebView.setWebContentsDebuggingEnabled(true)
-        timer = Timer()
-        timer.schedule(1000L, 3000L) {
-            onRepeatingTimeout()
-        }
+        startTabLayoutView()
+//        timer = Timer()
+//        timer.schedule(1000L, 3000L) {
+//            onRepeatingTimeout()
+//        }
     }
 
     fun onRepeatingTimeout ()
     {
-        viewState += 1
-        if (viewState > 3) {
-            viewState = 0
+        viewstate += 1
+        if (viewstate > 3) {
+            viewstate = 0
         }
 
-        when (viewState) {
+        when (viewstate) {
             0 -> {
                 runOnUiThread {
                     setContentView(R.layout.splash_screen)
@@ -115,23 +115,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    // Apply settings to the passed WebView.
-    // Kotlin always use pass-by-value.
-    // When passing objects or non-primitive types, the function copies the reference, simulating pass-by-reference.
-    // Changes inside the method affect the external object due to the shared reference.
-    private fun applySettingsToWebView (webView: WebView?)
-    {
-        webView!!.getSettings().setJavaScriptEnabled(true)
-        webView!!.getSettings().setBuiltInZoomControls(false)
-        webView!!.getSettings().setSupportZoom(false)
-        webView!!.getSettings().setDisplayZoomControls(false)
-
-        webView!!.getSettings().setDomStorageEnabled(true)
-
-        // Without this line the URL will open in an external browser.
-        // With this line, the URL will open within the app.
-        MyWebViewClient().also { webView!!.webViewClient = it }
-    }
 
 
     private fun startTabHostView() {
@@ -199,35 +182,36 @@ class MainActivity : AppCompatActivity() {
     private fun startTabLayoutView()
     {
         nullAllWidgets()
-
         setContentView(R.layout.tablayout_view)
-        tabLayout = findViewById(R.id.tabLayout)
-        viewPager = findViewById(R.id.viewPager)
-        tabLayout!!.addTab(tabLayout!!.newTab().setText("Tab 1"))
-        tabLayout!!.addTab(tabLayout!!.newTab().setText("Tab 2"))
-        tabLayout!!.addTab(tabLayout!!.newTab().setText("Tab 3"))
-        tabLayout!!.tabGravity = TabLayout.GRAVITY_FILL
-        val adapter = MyAdapter(this, supportFragmentManager,
-            tabLayout!!.tabCount)
-        viewPager!!.adapter = adapter
-        viewPager!!.addOnPageChangeListener(TabLayoutOnPageChangeListener(tabLayout))
-        tabLayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
+        tablayout = findViewById(R.id.tabLayout)
+        viewpager = findViewById(R.id.viewPager)
+        tablayout!!.addTab(tablayout!!.newTab().setText("Tab 1"))
+        tablayout!!.addTab(tablayout!!.newTab().setText("Tab 2"))
+        tablayout!!.addTab(tablayout!!.newTab().setText("Tab 3"))
+        tablayout!!.tabGravity = TabLayout.GRAVITY_FILL
+        val adapter = TabAdapter(this, supportFragmentManager,
+            tablayout!!.tabCount)
+        viewpager!!.adapter = adapter
+        viewpager!!.addOnPageChangeListener(TabLayoutOnPageChangeListener(tablayout))
+        tablayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                viewPager!!.currentItem = tab.position
+                viewpager!!.currentItem = tab.position
+                println("selected tab " + tab.position.toString())
             }
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+//                println("unselected tab " + tab.position.toString())
+            }
+            override fun onTabReselected(tab: TabLayout.Tab) {
+//                println("reselected tab " + tab.position.toString())
+            }
         })
-
-
-
     }
 
     private fun nullAllWidgets() {
         webview = null
         tabhost = null
-        tabLayout = null
-        viewPager = null
+        tablayout = null
+        viewpager = null
     }
 
 }
