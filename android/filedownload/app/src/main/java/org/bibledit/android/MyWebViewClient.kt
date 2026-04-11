@@ -12,8 +12,8 @@ class MyWebViewClient : WebViewClient() {
     override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean
     {
         if (Uri.parse(url).host == "www.example.com") {
-            // This is your website, so don't override. Let your WebView load
-            // the page.
+            // This is your website, so don't override.
+            // Let your WebView load the page.
             return false
         }
         // Don't override URL loading.
