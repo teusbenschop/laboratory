@@ -229,7 +229,7 @@ class MainActivity : AppCompatActivity() {
         webview1?.loadUrl("https://bibledit.org:8091/editone/index")
         val webview2 : WebView = findViewById<WebView>(R.id.testwebview2)
         applySettingsToWebView(webview2)
-        webview2?.loadUrl("https://bibledit.org:8091/notes/index")
+        webview2?.loadUrl("https://bibledit.org:8091/resource/index")
 
         tablayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
