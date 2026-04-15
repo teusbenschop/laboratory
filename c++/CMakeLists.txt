@@ -15,5 +15,7 @@ add_executable(cpp
         fold_expressions.cpp
         containers.cpp
         containers.h
+        alignment.cpp
+        templates.cpp
 
 )
