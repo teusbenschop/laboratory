@@ -42,8 +42,91 @@ static_assert(sum(1, 1) == 2);
 
 }
 
+namespace simple_template {
 
-namespace automatic_unit_conversion {
+struct Point
+{
+    int x, y;
+    Point operator+(const Point& s) const noexcept
+    {
+        return Point{x + s.x, y + s.y};
+    }
+};
+
+// A general template.
+template <typename T>
+T add (T a, T b) noexcept
+{
+    return a + b;
+}
+template <typename T>
+int signum (T a) noexcept
+{
+    if (a < 0) return -1;
+    if (a > 0) return 1;
+    return 0;
+}
+
+// A specialized template.
+template <> // This could be left out.
+Point add (const Point a, const Point b) noexcept
+{
+    return Point{a.x + b.x, a.y + b.y};
+}
+template <>
+int signum (const Point a) noexcept
+{
+    if (signum(a.x) < 0 and signum(a.y) < 0) return -1;
+    if (signum(a.x) > 0 and signum(a.y) > 0) return 1;
+    return 0;
+}
+
+void demo()
+{
+    add(1,1);
+    add(1.1,2.2);
+    Point p {1,1 };
+    add(p,p);
+    signum(Point{1,-2});
+}
+}
+
+namespace class_template {
+
+template <typename T>
+struct Cls
+{
+    T a;
+    Cls(T a) : a(a) {}
+};
+
+void demo()
+{
+}
+}
+
+
+namespace class_with_template_methods {
+template <typename T>
+struct Cls
+{
+    T a;
+    Cls(T a) : a(a) {}
+    std::string get()
+    {
+        return std::to_string(a);
+    };
+};
+void demo()
+{
+    Cls<float> cls1 (1.1);
+    assert(cls1.get() == "1.100000");
+}
+}
+
+
+
+namespace automatic_weight_unit_conversion {
 // These are strong types for weights.
 // The class automatically converts to the desired unit when it gets passed to a function.
 // For example if a function expects a weight in grams,
@@ -192,92 +275,111 @@ static_assert(weight_kg.value() == 0.01f);
 }
 
 
-namespace simple_template {
+namespace automatic_temperature_unit_conversion {
 
-struct Point
+// Write a template that automatically converts temperatures between different unit.
+// Kelvin = degrees Celsius + 273.5
+// Degrees Celsius = Kelvin - 273.5
+
+
+struct Kelvin
 {
-    int x, y;
-    Point operator+(const Point& s) const noexcept
+    // Calculator to go from Kelvin to Kelvin and vice versa.
+    static constexpr float convert_to_kelvin(const float value) noexcept
     {
-        return Point{x + s.x, y + s.y};
+        return value;
+    }
+    static constexpr float convert_from_kelvin(const float value) noexcept
+    {
+        return value;
+    }
+};
+struct Celsius
+{
+    // Calculator to go from degrees Celsius to Kelvin and vice versa.
+    static constexpr float convert_to_kelvin(const float value) noexcept
+    {
+        return value + 273.5f;
+    }
+    static constexpr float convert_from_kelvin(const float value) noexcept
+    {
+        return value - 273.5f;
     }
 };
 
-// A general template.
+// Concept to ensure passing a temperature unit.
 template <typename T>
-T add (T a, T b) noexcept
-{
-    return a + b;
-}
-template <typename T>
-int signum (T a) noexcept
-{
-    if (a < 0) return -1;
-    if (a > 0) return 1;
-    return 0;
-}
+concept temperature_unit = std::is_same_v<T, Kelvin> or std::is_same_v<T, Celsius>;
 
-// A specialized template.
-template <> // This could be left out.
-Point add (const Point a, const Point b) noexcept
+template <temperature_unit U>
+class Temperature
 {
-    return Point{a.x + b.x, a.y + b.y};
-}
-template <>
-int signum (const Point a) noexcept
-{
-    if (signum(a.x) < 0 and signum(a.y) < 0) return -1;
-    if (signum(a.x) > 0 and signum(a.y) > 0) return 1;
-    return 0;
-}
+    float m_value;
+public:
 
-void demo()
-{
-    add(1,1);
-    add(1.1,2.2);
-    Point p {1,1 };
-    add(p,p);
-    signum(Point{1,-2});
-}
-}
+    // Constructor from same value should be OK default.
+    Temperature(const Temperature&) = default;
 
-namespace class_template {
+    // Constructor for a given temperature unit using a float.
+    constexpr explicit Temperature(const decltype(m_value) value) noexcept : m_value(value) {};
 
-template <typename T>
-struct Cls
-{
-    T a;
-    Cls(T a) : a(a) {}
-};
-void demo()
-{
-}
-}
+    // Function to get/set the value
+    constexpr decltype(m_value) value() const noexcept { return m_value; };
+    constexpr void value(decltype(m_value) value) noexcept { m_value = value; };
 
+    // Operator to get the value: Supports static cast.
+    constexpr explicit operator decltype(m_value) () const noexcept { return m_value; };
 
-namespace class_with_template_methods {
-template <typename T>
-struct Cls
-{
-    T a;
-    Cls(T a) : a(a) {}
-    std::string get()
+    // Constructor to create this unit from another unit.
+    template <temperature_unit UU>
+    constexpr Temperature(const Temperature<UU>& temperature) noexcept
     {
-        return std::to_string(a);
-    };
+        // Because of the default copy constructor, the following is not needed:
+        // if constexpr (std::is_same_v<U, UU>)
+        //     m_value = temperature.value();
+
+        // Step 1: Convert the incoming temperature to Kelvin.
+        // Step 2: Convert the temperature in Kelvin to the current class's temperature unit.
+        m_value = U::convert_from_kelvin(UU::convert_to_kelvin(temperature.value()));
+    }
 };
+
+
+
+
 void demo()
 {
-    Cls<float> cls1 (1.1);
-    assert(cls1.get() == "1.100000");
+    {
+        const Temperature<Celsius> celsius (100);
+        std::cout << celsius.value() << std::endl;
+        const Temperature<Kelvin> kelvin = celsius;
+        std::cout << kelvin.value() << std::endl;
+    }
+    {
+        const Temperature<Kelvin> kelvin (100);
+        std::cout << kelvin.value() << std::endl;
+        const Temperature<Celsius> celsius = kelvin;
+        std::cout << celsius.value() << std::endl;
+    }
+    {
+        const Temperature<Celsius> celsius1 (100);
+        std::cout << celsius1.value() << std::endl;
+        const Temperature<Celsius> celsius2 = celsius1;
+        std::cout << celsius2.value() << std::endl;
+    }
+
+
 }
 }
+
+
 
 void demo()
 {
     simple_template::demo();
     class_template::demo();
     class_with_template_methods::demo();
+    automatic_temperature_unit_conversion::demo();
 }
 }
 
