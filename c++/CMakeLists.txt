@@ -19,5 +19,6 @@ add_executable(cpp
         templates.cpp
         shared_mutex.cpp
         forwarding.cpp
+        atomics.cpp
 
 )

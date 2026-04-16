@@ -84,7 +84,7 @@ struct FarStates
 
 void demo()
 {
-    // return;
+    return;
 
     FarStates my_state
     {
