@@ -30,6 +30,7 @@ namespace templates {
 namespace default_type {
 
 template <typename T = int>
+// ReSharper disable once CppDFAConstantParameter
 constexpr auto sum(T a, T b) -> T
 {
     return a + b;
@@ -307,7 +308,7 @@ struct Celsius
     }
 };
 
-// Concept to ensure passing a temperature unit.
+// Concept to ensure passing a temperature unit only.
 template <typename T>
 concept temperature_unit = std::is_same_v<T, Kelvin> or std::is_same_v<T, Celsius>;
 
@@ -317,24 +318,27 @@ class Temperature
     float m_value;
 public:
 
-    // Constructor from same value should be OK default.
+    // Copy constructor from same temperature unit should be OK default.
     Temperature(const Temperature&) = default;
 
     // Constructor for a given temperature unit using a float.
     constexpr explicit Temperature(const decltype(m_value) value) noexcept : m_value(value) {};
 
     // Function to get/set the value
-    constexpr decltype(m_value) value() const noexcept { return m_value; };
+    [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; };
     constexpr void value(decltype(m_value) value) noexcept { m_value = value; };
 
     // Operator to get the value: Supports static cast.
     constexpr explicit operator decltype(m_value) () const noexcept { return m_value; };
 
-    // Constructor to create this unit from another unit.
+    // Automatic comparison operators.
+    auto operator <=> (const Temperature&) const noexcept = default;
+
+    // Copy constructor template to create this unit from another unit.
     template <temperature_unit UU>
     constexpr Temperature(const Temperature<UU>& temperature) noexcept
     {
-        // Because of the default copy constructor, the following is not needed:
+        // Because of the default copy constructor above, the following is not needed:
         // if constexpr (std::is_same_v<U, UU>)
         //     m_value = temperature.value();
 
@@ -344,28 +348,26 @@ public:
     }
 };
 
+constexpr Temperature<Celsius> celsius100 (100);
+static_assert(celsius100.value() == 100);
+constexpr Temperature<Kelvin> kelvin1 = celsius100;
+static_assert(kelvin1.value() == 373.5);
 
+constexpr Temperature<Kelvin> kelvin100(100);
+static_assert(kelvin100.value() == 100);
+constexpr Temperature<Celsius> celsius1 = kelvin100;
+static_assert(celsius1.value() == -173.5);
+
+constexpr Temperature<Celsius> celsius150 (150);
+static_assert(celsius150.value() == 150);
+constexpr Temperature<Celsius> celsius2 = celsius150;
+static_assert(celsius2.value() == 150);
+static_assert(celsius150 == celsius2);
 
 
 void demo()
 {
     {
-        const Temperature<Celsius> celsius (100);
-        std::cout << celsius.value() << std::endl;
-        const Temperature<Kelvin> kelvin = celsius;
-        std::cout << kelvin.value() << std::endl;
-    }
-    {
-        const Temperature<Kelvin> kelvin (100);
-        std::cout << kelvin.value() << std::endl;
-        const Temperature<Celsius> celsius = kelvin;
-        std::cout << celsius.value() << std::endl;
-    }
-    {
-        const Temperature<Celsius> celsius1 (100);
-        std::cout << celsius1.value() << std::endl;
-        const Temperature<Celsius> celsius2 = celsius1;
-        std::cout << celsius2.value() << std::endl;
     }
 
 

@@ -17,5 +17,6 @@ add_executable(cpp
         containers.h
         alignment.cpp
         templates.cpp
+        shared_mutex.cpp
 
 )
