@@ -23,5 +23,6 @@ add_executable(cpp
         functional.cpp
         bad_coding.cpp
         expected.cpp
+        characters.cpp
 
 )

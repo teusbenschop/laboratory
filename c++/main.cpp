@@ -68,6 +68,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "alignment.h"
 #include "atomics.h"
 #include "bad_coding.h"
+#include "characters.h"
 #include "expected.h"
 #include "forwarding.h"
 #include "functional.h"
@@ -3587,29 +3588,6 @@ void demo()
 }
 
 
-namespace character_sets_encodings_escape_sequences {
-void demo()
-{
-    // Consistent character literal encoding.
-    static_assert('A' == '\x41');
-    static_assert('A' == 0x41);
-
-    // Named universal character escapes.
-    // https://www.unicode.org/Public/14.0.0/ucd/NamesList.txt
-    assert("\N{CAT FACE}" == std::string("🐱"));
-    assert("\N{COW FACE}" == std::string("🐮"));
-    assert("\N{NATIONAL PARK}" == std::string("🏞"));
-
-    // Delimited escape sequences.
-    assert("\o{111}" == std::string("I"));
-    assert("\x{A0}" != std::string(""));
-    assert("\u{CAFE}" == std::string("쫾"));
-}
-}
-
-
-
-
 
 
 
@@ -3699,7 +3677,6 @@ int main()
     literal_suffix_z::demo();
     alias_declarations_in_init_statements::demo();
     brackets_are_optional_for_lambdas::demo();
-    character_sets_encodings_escape_sequences::demo();
     atomics::demo();
     fold_expressions::demo();
     containers::demo();
@@ -3709,6 +3686,7 @@ int main()
     functional::demo();
     bad_coding::demo();
     expected::demo();
+    characters::demo();
 
 
     return EXIT_SUCCESS;
