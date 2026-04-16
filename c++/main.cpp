@@ -67,7 +67,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "containers.h"
 #include "alignment.h"
 #include "atomics.h"
+#include "bad_coding.h"
 #include "forwarding.h"
+#include "functional.h"
 #include "templates.h"
 #include "shared_mutex.h"
 
@@ -3674,45 +3676,8 @@ void demo()
 }
 
 
-namespace dangling_placeholder {
-
-void demo()
-{
-    auto dangling_iter = std::ranges::max_element(std::array{0, 1, 0, 1});
-    static_assert(std::is_same_v<std::ranges::dangling, decltype(dangling_iter)>);
-    // std::cout << *dangling_iter;
-    // compilation error: no match for 'operator*' (operand type is 'std::ranges::dangling')
-}
-}
 
 
-namespace move_only_function {
-// https://en.cppreference.com/w/cpp/utility/functional/move_only_function.html
-// C++23 introduces the std::move_only_function,
-// a new utility for handling callable objects that don't need to be copyable.
-// It's a streamlined alternative to std::function,
-// designed for cases where you're working with move-only types
-// like std::unique_ptr or other non-copyable resources.
-void demo()
-{
-    return;
-
-    std::packaged_task<double()> packaged_task([](){ return 3.14159; });
-
-    std::future<double> future = packaged_task.get_future();
-
-    auto lambda = [task = std::move(packaged_task)]() mutable { task(); };
-
-    //  std::function<void()> function = std::move(lambda); // Error
-
-    // std::move_only_function<void()> function = std::move(lambda); // OK does not yet compile on macOS 15.4.1
-
-    //function();
-
-    std::cout << future.get();
-
-}
-}
 
 
 
@@ -3803,14 +3768,14 @@ int main()
     brackets_are_optional_for_lambdas::demo();
     character_sets_encodings_escape_sequences::demo();
     expected_and_unexpected::demo();
-    dangling_placeholder::demo();
-    move_only_function::demo();
     atomics::demo();
     fold_expressions::demo();
     containers::demo();
     alignment::demo();
     templates::demo();
     forwarding::demo();
+    functional::demo();
+    bad_coding::demo();
 
 
     return EXIT_SUCCESS;

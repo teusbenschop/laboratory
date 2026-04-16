@@ -20,5 +20,7 @@ add_executable(cpp
         shared_mutex.cpp
         forwarding.cpp
         atomics.cpp
+        functional.cpp
+        bad_coding.cpp
 
 )
