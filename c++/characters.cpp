@@ -32,13 +32,13 @@ void demo() {
 
     // Named universal character escapes.
     // https://www.unicode.org/Public/14.0.0/ucd/NamesList.txt
-    assert("\N{CAT FACE}" == std::string("🐱"));
-    assert("\N{COW FACE}" == std::string("🐮"));
+    assert("\N{CAT FACE}"      == std::string("🐱"));
+    assert("\N{COW FACE}"      == std::string("🐮"));
     assert("\N{NATIONAL PARK}" == std::string("🏞"));
 
     // Delimited escape sequences.
-    assert("\o{111}" == std::string("I"));
-    assert("\x{A0}" != std::string(""));
+    assert("\o{111}"  == std::string("I"));
+    assert("\x{A0}"   != std::string(""));
     assert("\u{CAFE}" == std::string("쫾"));
 }
 }
