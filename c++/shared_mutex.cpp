@@ -64,7 +64,9 @@ namespace shared_mutex {
 
     void demo() {
 
-        std::jthread printer(consume_queue);
+        return;
+
+        std::jthread consumer(consume_queue);
 
         for (int i{1}; i <= 5; i++) {
             // This uses a unique lock because it modifies the queue.

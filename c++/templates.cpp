@@ -30,7 +30,6 @@ namespace templates {
 namespace default_type {
 
 template <typename T = int>
-// ReSharper disable once CppDFAConstantParameter
 constexpr auto sum(T a, T b) -> T
 {
     return a + b;
@@ -219,7 +218,7 @@ public:
 };
 
 template <weight_unit UL, weight_unit UR>
-constexpr Weight<UL> operator+(Weight<UL> l, const Weight<UR> r) noexcept { return l += r; }
+Weight<UL> operator+(Weight<UL> l, const Weight<UR> r) noexcept { return l += r; }
 
 template <weight_unit UL, weight_unit UR>
 constexpr Weight<UL> operator-(Weight<UL> l, const Weight<UR> r) noexcept { return l -= r; }

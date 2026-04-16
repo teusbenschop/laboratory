@@ -18,5 +18,6 @@ add_executable(cpp
         alignment.cpp
         templates.cpp
         shared_mutex.cpp
+        forwarding.cpp
 
 )

@@ -66,6 +66,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "fold_expressions.h"
 #include "containers.h"
 #include "alignment.h"
+#include "forwarding.h"
 #include "templates.h"
 #include "shared_mutex.h"
 
@@ -3753,97 +3754,6 @@ void demo()
 }
 }
 
-namespace forward_like {
-// https://en.cppreference.com/w/cpp/utility/forward_like.html
-// Returns a reference to x which has similar properties to T&&.
-
-struct TypeTeller
-{
-    void operator()(this auto&& self)
-    {
-        using self_type = decltype(self);
-        using unref_self_type = std::remove_reference_t<self_type>;
-        if constexpr (std::is_lvalue_reference_v<self_type>)
-        {
-            if constexpr (std::is_const_v<unref_self_type>)
-                std::cout << "const lvalue" << std::endl;
-            else
-                std::cout << "mutable lvalue" << std::endl;
-        }
-        if constexpr (std::is_rvalue_reference_v<self_type>) {
-            if constexpr (std::is_const_v<unref_self_type>)
-                std::cout << "const rvalue" << std::endl;
-            else
-                std::cout << "mutable rvalue" << std::endl;
-        }
-    }
-};
-
-
-struct FarStates
-{
-    std::unique_ptr<TypeTeller> pointer;
-    std::optional<TypeTeller> optional;
-    std::vector<TypeTeller> container;
-
-    auto&& from_opt(this auto&& self)
-    {
-        return std::forward_like<decltype(self)>(self.optional.value());
-        // It is OK to use std::forward<decltype(self)>(self).opt.value(),
-        // because std::optional provides suitable accessors.
-    }
-
-    auto&& operator[](this auto&& self, std::size_t i)
-    {
-        return std::forward_like<decltype(self)>(self.container.at(i));
-        // It is not so good to use std::forward<decltype(self)>(self)[i], because
-        // containers do not provide rvalue subscript access, although they could.
-    }
-
-    auto&& from_ptr(this auto&& self)
-    {
-        if (!self.pointer)
-            throw std::bad_optional_access{};
-        return std::forward_like<decltype(self)>(*self.pointer);
-        // It is not good to use *std::forward<decltype(self)>(self).ptr, because
-        // std::unique_ptr<TypeTeller> always dereferences to a non-const lvalue.
-    }
-};
-
-void demo()
-{
-    return;
-
-    FarStates my_state
-    {
-        .pointer{std::make_unique<TypeTeller>()},
-        .optional{std::in_place, TypeTeller{}},
-        .container{std::vector<TypeTeller>(1)},
-      };
-
-    my_state.from_ptr()();
-    my_state.from_opt()();
-    my_state[0]();
-
-    std::cout << std::endl;
-
-    std::as_const(my_state).from_ptr()();
-    std::as_const(my_state).from_opt()();
-    std::as_const(my_state)[0]();
-
-    std::cout << std::endl;
-
-    std::move(my_state).from_ptr()();
-    std::move(my_state).from_opt()();
-    std::move(my_state)[0]();
-
-    std::cout << std::endl;
-
-    std::move(std::as_const(my_state)).from_ptr()();
-    std::move(std::as_const(my_state)).from_opt()();
-    std::move(std::as_const(my_state))[0]();
-}
-}
 
 
 int main()
@@ -3933,12 +3843,12 @@ int main()
     expected_and_unexpected::demo();
     dangling_placeholder::demo();
     move_only_function::demo();
-    forward_like::demo();
     atomic_wait::demo();
     fold_expressions::demo();
     containers::demo();
     alignment::demo();
     templates::demo();
+    forwarding::demo();
 
 
     return EXIT_SUCCESS;
