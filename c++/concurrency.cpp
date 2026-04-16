@@ -16,16 +16,18 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "atomics.h"
+#include "concurrency.h"
 
 #include <atomic>
 #include <cassert>
 #include <future>
 #include <iostream>
+#include <mutex>
 #include <thread>
 
-namespace atomics {
-namespace wait {
+namespace concurrency {
+
+namespace atomic_wait {
 // The std::atomic::wait performs atomic waiting operations.
 // An old value is passed to the ::wait.
 // It unblocks the thread if the atomic wait gets another value than the old value passed.
@@ -63,7 +65,33 @@ void demo() {
 }
 
 
+namespace timed_mutex {
+// If a normal mutex cannot be obtained, this would lead to a deadlock.
+// A timed mutex will assist in such a case.
+// If a lock is requested on a timed mutex, a timeout can be passed too.
+// If the lock cannot be obtained in time, it falls in a timeout, not in a deadlock.
+
+std::timed_mutex timed_mutex;
+
+void demo()
+{
+    return;
+    std::cout << "Attempt to get first lock on timed mutex" << std::endl;
+    const std::unique_lock lock1(timed_mutex, std::chrono::seconds(1));
+    std::cout << "Got the first lock" << std::endl;
+    std::cout << "Attempt to get the second lock on the same timed mutex" << std::endl;
+    const std::unique_lock lock2(timed_mutex, std::chrono::milliseconds(10));
+    if (lock2)
+        std::cout << "Got second lock" << std::endl;
+    else
+        std::cout << "Failed to get second lock within 10 milliseconds" << std::endl;
+}
+}
+
+
+
 void demo() {
-    wait::demo();
+    atomic_wait::demo();
+    timed_mutex::demo();
 }
 }

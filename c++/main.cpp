@@ -66,432 +66,22 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "fold_expressions.h"
 #include "containers.h"
 #include "alignment.h"
-#include "atomics.h"
+#include "concurrency.h"
 #include "bad_coding.h"
 #include "characters.h"
+#include "classes.h"
 #include "expected.h"
-#include "forwarding.h"
+#include "variables.h"
 #include "functional.h"
 #include "templates.h"
 #include "shared_mutex.h"
 
 
 
-
-
-
-namespace shared_and_unique_locks {
-
-}
-
-
-namespace timed_mutex {
-// If a normal mutex cannot be obtained, this leads to a deadlock.
-// A timed mutex will assist in such a case.
-// If a lock is requested on a timed mutex, a timeout can be passed too.
-// If the lock cannot be obtained in time, it falls in a timeout, not in a deadlock.
-
-std::timed_mutex the_timed_mutex;
-
-void demo()
-{
-    return;
-    std::cout << "Obtain first lock on the timed mutex" << std::endl;
-    const std::unique_lock lock1(the_timed_mutex, std::chrono::seconds(1));
-    std::cout << "Obtained first lock" << std::endl;
-    std::cout << "Obtain second lock on the same timed mutex" << std::endl;
-    const std::unique_lock lock2(the_timed_mutex, std::chrono::milliseconds(10));
-    if (lock2)
-        std::cout << "Obtained second lock" << std::endl;
-    else
-        std::cout << "Failed to obtain second lock within 10 milliseconds" << std::endl;
-}
-}
-
-
-
-namespace piecewise_construct {
-
-enum Construction { none, from_tuple, from_int_float };
-
-struct Foo
-{
-    Construction construction {none};
-
-    // Constructor from a tuple.
-    constexpr explicit Foo(std::tuple<int, float>)
-    {
-        construction = from_tuple;
-    }
-
-    // Constructor from an int and a float.
-    constexpr explicit Foo(int, float)
-    {
-        construction = from_int_float;
-    }
-};
-
-
-void demo()
-{
-    const std::tuple<int, float> tuple(1, 1.0f);
-
-    // This creates a pair of Foo objects from a tuple.
-    const std::pair<Foo, Foo> p1{tuple, tuple};
-    assert(p1.first.construction == Construction::from_tuple);
-    assert(p1.second.construction == Construction::from_tuple);
-
-    // This creates the same as above but then piecewise, so from an int and a float.
-    const std::pair<Foo, Foo> p2{std::piecewise_construct, tuple, tuple};
-    assert(p2.first.construction == Construction::from_int_float);
-    assert(p2.second.construction == Construction::from_int_float);
-}
-}
-
-
-namespace forward_as_tuple {
-// The helper "forward_as_tuple" takes a variadic pack of arguments
-// and creates a tuple out of them.
-// It determines the types of the elements of the arguments:
-// if it receives an lvalue then it will have an lvalue reference,
-// and if it receives an rvalue then it will have an rvalue reference.
-void demo()
-{
-    // Function returns an rvalue.
-    const auto rvalue = [] -> std::string
-    {
-        return "universe";
-    };
-
-    // The variable i is a lvalue.
-    int lvalue = 42;
-
-    auto tuple = std::forward_as_tuple(lvalue, rvalue());
-
-    // An lvalue reference binds to an lvalue. Marked with one ampersand (&).
-    // An rvalue reference binds to an rvalue. Marked with two ampersands (&&).
-    static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, std::string&&>>);
-}
-}
-
-
-namespace class_design_idioms {
-// 1. RAII (Resource Acquisition Is Initialization)
-void raii_resource_acquisition_is_initialization()
-{
-    std::unique_ptr<int> ptr = std::make_unique<int>(10); // Resource acquired
-    // Use ptr
-    // Resource released automatically when ptr goes out of scope
-}
-
-// 2. Pimpl (Pointer to Implementation)
-// Public interface is in header file.
-// Private implementation is in another file.
-// The public interface has a pointer to the implementation.
-class PimplPublic
-{
-public:
-    PimplPublic();
-    ~PimplPublic();
-    void work() const;
-
-private:
-    class Pimpl; // Forward declaration.
-    Pimpl* m_pimpl; // Pointer to implementation;
-};
-
-class PimplPublic::Pimpl
-{
-public:
-    void internal_work() const
-    {
-        // Implementation details...
-    }
-};
-
-PimplPublic::PimplPublic() : m_pimpl(new Pimpl())
-{
-}
-
-PimplPublic::~PimplPublic() { delete m_pimpl; }
-
-void PimplPublic::work() const
-{
-    m_pimpl->internal_work();
-}
-
-
-// 3. CRTP (Curiously Recurring Template Pattern).
-
-template <typename Derived>
-class CrtpBase
-{
-public:
-    void common_function()
-    {
-        // Base class implementation.
-        static_cast<Derived*>(this)->specific_function(); // Call derived class method.
-    }
-
-    virtual ~CrtpBase() = default;
-};
-
-class DerivedClass : public CrtpBase<DerivedClass>
-{
-public:
-    void specific_function()
-    {
-        value++;
-    }
-    int value{};
-};
-
-void curiously_recurring_template_pattern()
-{
-    DerivedClass derived;
-    // Call function from base class -> calls the derived function.
-    derived.common_function();
-    // Call to the derived function.
-    derived.specific_function();
-    // Assert it ran "specific_function" in both cases.
-    assert(derived.value == 2);
-}
-
-// 4. Copy and Swap Idiom
-// It swaps the current object with a copy of the object being assigned.
-
-class CopySwapClass
-{
-public:
-    // Constructor.
-    CopySwapClass(size_t size) : m_size(size), m_data(new int(size))
-    {
-    }
-
-    // Destructor.
-    ~CopySwapClass() { delete m_data; }
-    // Copy constructor.
-    CopySwapClass(const CopySwapClass& other)
-        : m_size(other.m_size), m_data(new int(other.m_size))
-    {
-        std::copy(other.m_data, other.m_data + m_size, m_data);
-    }
-
-    // The swap function.
-    friend void swap(CopySwapClass& first, CopySwapClass& second) noexcept
-    {
-        std::swap(first.m_size, second.m_size);
-        std::swap(first.m_data, second.m_data);
-    }
-
-    // Copy assignment operator using copy and swap.
-    CopySwapClass& operator=(CopySwapClass other) noexcept
-    {
-        swap(*this, other);
-        return *this;
-    }
-
-private:
-    size_t m_size;
-    int* m_data;
-};
-}
-
 namespace class_design_principles {
-namespace single_responsibility_principle {
-// 1. Single Responsibility Principle
-// ----------------------------------
-// A class should have only one reason to change.
 
-// Class with 3 responsibilities, hence 3 reasons to change.
-class BadInvoice
-{
-    float calculate() { return 0.0f; }
-    void print() { std::cout << "Invoice" << std::endl; }
-    void save() { std::cout << "Save" << std::endl; }
-};
 
-// Good: Classes with each only one responsibility.
-class GoodInvoice
-{
-};
 
-class CalculateInvoice
-{
-    CalculateInvoice([[maybe_unused]] const GoodInvoice invoice)
-    {
-    };
-
-    void calculate()
-    {
-    }
-};
-
-class PrintInvoice
-{
-public:
-    PrintInvoice([[maybe_unused]] const GoodInvoice invoice)
-    {
-    };
-
-    void print()
-    {
-    }
-};
-
-class SaveInvoice
-{
-    SaveInvoice([[maybe_unused]] const GoodInvoice invoice)
-    {
-    };
-
-    void save()
-    {
-    }
-};
-}
-
-namespace open_closed_principle {
-// 2. Open-Closed Principle
-// ------------------------
-// Open for extension, closed for modification.
-// Add new functionality without altering existing functionality.
-// Existing code: Class save to database.
-// New code: Class save to file.
-// Solution:
-// 1. Base class with virtual "save" method.
-// 2. Database class that overrides "save".
-// 3. File class that overrides "save".
-// Hence, if database save already exists,
-// file save can be added without changing existing code.
-class Invoice
-{
-};
-
-class BaseSaveInvoice
-{
-public:
-    virtual void save(Invoice invoice) = 0;
-    virtual ~BaseSaveInvoice() = default;
-};
-
-class DatabaseSave : public BaseSaveInvoice
-{
-public:
-    void save([[maybe_unused]] Invoice invoice) override
-    {
-    };
-};
-
-class FileSave : public BaseSaveInvoice
-{
-public:
-    void save([[maybe_unused]] Invoice invoice) override
-    {
-    };
-};
-}
-
-namespace liskov_substitution_principle {
-// 3. Liskov Substitution Principle
-// --------------------------------
-// The derived (sub)class should be passable instead of the base (parent) class.
-// The derived class should extend the capabilities of the base class and not narrow it down.
-class Bike
-{
-public:
-    virtual void start_engine() const = 0;
-};
-
-class Motorcycle : public Bike
-{
-public:
-    void start_engine() const
-    {
-    };
-};
-
-class Bicycle : public Bike
-{
-public:
-    void start_engine() const { throw std::runtime_error("No engine available"); };
-};
-
-void demo()
-{
-    const auto start_engine = [](const Bike& bike)
-    {
-        bike.start_engine();
-    };
-    Motorcycle motorcycle;
-    Bicycle bicycle;
-    start_engine(motorcycle); // Works.
-    try
-    {
-        start_engine(bicycle); // Throws.
-    }
-    catch (const std::exception& exception)
-    {
-        assert(exception.what() == std::string("No engine available"));
-    }
-}
-}
-
-namespace interface_segregation_principle {
-// 4. Interface Segregation Principle
-// ----------------------------------
-// Split larger interfaces up into more specific ones.
-// Clients should only know about methods of interest to them.
-// Clients should not be forced to depend on methods it does not use.
-
-struct BadEmployee
-{
-    BadEmployee()
-    {
-    };
-    virtual void serve() = 0;
-    virtual void manage() = 0;
-};
-
-struct BadWaiter : BadEmployee
-{
-    void serve() override
-    {
-    };
-
-    void manage() override
-    {
-        /* not my work */
-    }
-};
-
-struct IGoodEmployee
-{
-    IGoodEmployee()
-    {
-    };
-};
-
-struct IGoodWaiter : IGoodEmployee
-{
-    virtual void serve() { std::cout << "serving" << std::endl; }
-};
-
-struct IGoodManager : IGoodEmployee
-{
-    virtual void manage() { std::cout << "managing" << std::endl; }
-};
-
-struct Waiter : IGoodWaiter
-{
-    void serve() override { std::cout << "waiting" << std::endl; };
-};
-
-struct Director : IGoodManager
-{
-    void manage() override { std::cout << "directing" << std::endl; };
-};
-}
 
 namespace dependency_inversion_principle {
 // 5. Dependency Inversion Principle
@@ -3608,12 +3198,6 @@ int main()
     constraint_derived_from::demo();
     demonstrate_constraints::demo();
     shared_mutex::demo();
-    timed_mutex::demo();
-    piecewise_construct::demo();
-    forward_as_tuple::demo();
-    class_design_idioms::raii_resource_acquisition_is_initialization();
-    class_design_idioms::curiously_recurring_template_pattern();
-    class_design_principles::liskov_substitution_principle::demo();
     language_declarations::declarations();
     language_exceptions::demo();
     lambda_capture::demo();
@@ -3677,17 +3261,17 @@ int main()
     literal_suffix_z::demo();
     alias_declarations_in_init_statements::demo();
     brackets_are_optional_for_lambdas::demo();
-    atomics::demo();
+    concurrency::demo();
     fold_expressions::demo();
     containers::demo();
     alignment::demo();
     templates::demo();
-    forwarding::demo();
+    variables::demo();
     functional::demo();
     bad_coding::demo();
     expected::demo();
     characters::demo();
-
+    classes::demo();
 
     return EXIT_SUCCESS;
 }

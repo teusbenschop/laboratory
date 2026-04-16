@@ -17,14 +17,17 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include "forwarding.h"
+#include "variables.h"
 
 #include <iostream>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
-namespace forwarding {
+namespace variables {
+
+
+namespace forward_like {
 
 // https://en.cppreference.com/w/cpp/utility/forward_like.html
 // Returns a reference to x which has similar properties to T&&.
@@ -115,4 +118,88 @@ void demo()
     std::move(std::as_const(my_state)).from_opt()();
     std::move(std::as_const(my_state))[0]();
 }
+}
+
+
+namespace piecewise_construct {
+
+enum Construction { none, from_tuple, from_int_float };
+
+struct Foo
+{
+    Construction construction {none};
+
+    // Constructor from a tuple.
+    constexpr explicit Foo(std::tuple<int, float>)
+    {
+        construction = from_tuple;
+    }
+
+    // Constructor from an int and a float.
+    constexpr explicit Foo(int, float)
+    {
+        construction = from_int_float;
+    }
+};
+
+
+constexpr std::tuple<int, float> tuple(1, 1.0f);
+
+// This creates a Foo object from a tuple.
+constexpr std::pair<Foo, Foo> p1{tuple, tuple};
+static_assert(p1.first.construction == Construction::from_tuple);
+static_assert(p1.second.construction == Construction::from_tuple);
+
+// This creates the same as above but then piecewise, so from an int and a float.
+constexpr std::pair<Foo, Foo> p2{std::piecewise_construct, tuple, tuple};
+static_assert(p2.first.construction == Construction::from_int_float);
+static_assert(p2.second.construction == Construction::from_int_float);
+
+
+void demo()
+{
+}
+}
+
+
+namespace forward_as_tuple {
+// The helper "forward_as_tuple" takes a variadic pack of arguments
+// and creates a tuple out of them.
+// It determines the types of the elements of the arguments.
+// - If it receives a lvalue then it will have a lvalue reference.
+// - If it receives a rvalue then it will have a rvalue reference.
+void demo()
+{
+    // The function returns a rvalue.
+    auto rvalue = [] -> std::string
+    {
+        return "100";
+    };
+
+    // The variable i is a lvalue.
+    int lvalue = 100;
+
+    [[maybe_unused]] auto tuple = std::forward_as_tuple(lvalue, rvalue());
+
+    // A lvalue reference binds to a lvalue. Marked with one ampersand (&).
+    // A rvalue reference binds to a rvalue. Marked with two ampersands (&&).
+    static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, std::string&&>>);
+}
+}
+
+
+
+
+
+
+
+void demo()
+{
+    forward_like::demo();
+    piecewise_construct::demo();
+    forward_as_tuple::demo();
+}
+
+
+
 }

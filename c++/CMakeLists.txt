@@ -18,11 +18,12 @@ add_executable(cpp
         alignment.cpp
         templates.cpp
         shared_mutex.cpp
-        forwarding.cpp
-        atomics.cpp
+        variables.cpp
+        concurrency.cpp
         functional.cpp
         bad_coding.cpp
         expected.cpp
         characters.cpp
+        classes.cpp
 
 )
