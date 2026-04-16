@@ -68,6 +68,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "alignment.h"
 #include "atomics.h"
 #include "bad_coding.h"
+#include "expected.h"
 #include "forwarding.h"
 #include "functional.h"
 #include "templates.h"
@@ -3607,74 +3608,6 @@ void demo()
 }
 
 
-namespace expected_and_unexpected {
-// The class template std::expected provides a way to represent either of two values:
-// an expected value of type T, or an unexpected value of type E.
-
-enum class parse_error
-{
-    invalid_input,
-    overflow
-};
-
-void demo()
-{
-    const auto parse_number = [] (std::string_view& str) -> std::expected<double, parse_error>
-    {
-        const char* begin = str.data();
-        char* end;
-        float number = std::strtof(begin, &end);
-
-        if (begin == end)
-            return std::unexpected(parse_error::invalid_input);
-        if (std::isinf(number))
-            return std::unexpected(parse_error::overflow);
-
-        str.remove_prefix(end - begin);
-        return number;
-    };
-
-    {
-        std::string_view input = "42.2";
-        const auto num = parse_number(input);
-        assert(num.has_value());
-        assert(*num == 42.2f);
-    }
-
-    {
-        std::string_view input = "42abc";
-        const auto num = parse_number(input);
-        assert(num.has_value());
-        assert(*num == 42);
-    }
-
-    {
-        std::string_view input = "meow";
-        const auto num = parse_number(input);
-        assert(not num.has_value());
-        // If num does not have a value, dereferencing it causes undefined behavior
-        // and accessing num.value() throws std::bad_expected_access (C++23)
-        // try
-        // {
-        //     assert(num.value() == 0);
-        // }
-        // catch (const std::exception& exception)
-        // {
-        //     std::cout << "exception: " << exception.what() << std::endl;
-        // }
-        assert(num.value_or(123) == 123);
-        assert(num.error() == parse_error::invalid_input);
-    }
-
-    {
-        std::string_view input = "inf";
-        const auto num = parse_number(input);
-        assert(not num.has_value());
-        assert(num.error() == parse_error::overflow);
-    }
-}
-}
-
 
 
 
@@ -3767,7 +3700,6 @@ int main()
     alias_declarations_in_init_statements::demo();
     brackets_are_optional_for_lambdas::demo();
     character_sets_encodings_escape_sequences::demo();
-    expected_and_unexpected::demo();
     atomics::demo();
     fold_expressions::demo();
     containers::demo();
@@ -3776,6 +3708,7 @@ int main()
     forwarding::demo();
     functional::demo();
     bad_coding::demo();
+    expected::demo();
 
 
     return EXIT_SUCCESS;

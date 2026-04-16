@@ -22,5 +22,6 @@ add_executable(cpp
         atomics.cpp
         functional.cpp
         bad_coding.cpp
+        expected.cpp
 
 )
