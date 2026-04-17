@@ -16,17 +16,8 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "modules.h"
+#pragma once
 
-// https://en.cppreference.com/w/cpp/language/modules
-// Modules are a language feature to share declarations and definitions across translation units.
-// They are an alternative to some use cases of headers.
-// Modules are orthogonal to namespaces.
-// export module hello_world;
-// C++20 'module' only available with '-fmodules-ts', which is not yet enabled with '-std=c++20'
-
-namespace modules {
-void demo() {
-
-}
+namespace coroutines {
+void demo();
 }

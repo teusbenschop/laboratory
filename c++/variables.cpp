@@ -212,6 +212,132 @@ void demo()
 
 
 
+namespace aggregate_initialization {
+// https://en.cppreference.com/w/cpp/language/aggregate_initialization
+
+struct S
+{
+    int x{};
+    struct Foo
+    {
+        int i{};
+        int j{};
+        int a[3];
+    } foo;
+};
+
+// Using direct-list-initialization syntax.
+constexpr S s1 =
+{
+    1,
+    {
+        2, 3,
+        { 4, 5, 6 },
+    }
+};
+static_assert(s1.x == 1);
+static_assert(s1.foo.i == 2);
+static_assert(s1.foo.j == 3);
+static_assert(s1.foo.a[0] == 4);
+static_assert(s1.foo.a[1] == 5);
+static_assert(s1.foo.a[2] == 6);
+
+// Same, but with brace elision.
+// The compiler suggest braces around subobject initialization, rightly so.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+constexpr S s2 = {1, 2, 3, 4, 5, 6};
+#pragma GCC diagnostic pop
+static_assert(s2.x == 1);
+static_assert(s2.foo.i == 2);
+static_assert(s2.foo.j == 3);
+static_assert(s2.foo.a[0] == 4);
+static_assert(s2.foo.a[1] == 5);
+static_assert(s2.foo.a[2] == 6);
+
+// Brace elision only allowed with equals sign
+constexpr int ar[] = {1, 2, 3}; // ar is int[3]
+static_assert(ar[0] == 1);
+static_assert(ar[1] == 2);
+static_assert(ar[2] == 3);
+
+// Too many initializer clauses
+// char cr[3] = {'a', 'b', 'c', 'd'};
+
+// Array initialized as {'a', '\0', '\0'}
+constexpr char cr[3] = {'a'};
+static_assert(cr[0] == 'a');
+static_assert(cr[1] == '\0');
+static_assert(cr[2] == '\0');
+
+// Fully-braced 2D array: {1, 2}, {3, 4}.
+constexpr int ar2d1[2][2] = {{1, 2}, {3, 4}};
+static_assert(ar2d1[0][0] == 1);
+static_assert(ar2d1[0][1] == 2);
+static_assert(ar2d1[1][0] == 3);
+static_assert(ar2d1[1][1] == 4);
+
+// Compiler suggests braces around subobject.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+constexpr int ar2d2[2][2] = {3, 4};
+#pragma GCC diagnostic pop
+static_assert(ar2d2[0][0] == 3);
+static_assert(ar2d2[0][1] == 4);
+static_assert(ar2d2[1][0] == 0);
+static_assert(ar2d2[1][1] == 0);
+
+// Brace elision.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+constexpr int ar2d3[2][2] = {1, 2, 3, 4}; // brace elision: {1, 2}, {3, 4}.
+#pragma GCC diagnostic pop
+static_assert(ar2d3[0][0] == 1);
+static_assert(ar2d3[0][1] == 2);
+static_assert(ar2d3[1][0] == 3);
+static_assert(ar2d3[1][1] == 4);
+
+// Only first column: {1, 0}
+constexpr int ar2d4[2][2] = {{1}, {2}};
+static_assert(ar2d4[0][0] == 1);
+static_assert(ar2d4[0][1] == 0);
+static_assert(ar2d4[1][0] == 2);
+static_assert(ar2d4[1][1] == 0);
+
+constexpr std::array<int, 3> std_ar2{{1, 2, 3}};  // std::array is an aggregate
+static_assert(std_ar2[0] == 1);
+static_assert(std_ar2[1] == 2);
+static_assert(std_ar2[2] == 3);
+
+constexpr std::array<int, 3> std_ar1 = {1, 2, 3}; // brace-elision okay
+static_assert(std_ar1[0] == 1);
+static_assert(std_ar1[1] == 2);
+static_assert(std_ar1[2] == 3);
+
+// int a[] = {1, 2.0}; // narrowing conversion from double to int:
+// error in C++11, okay in C++03
+
+std::string ars[] = {
+    std::string("one"),        // copy-initialization
+    "two",                    // conversion, then copy-initialization
+    {'t', 'h', 'r', 'e', 'e'} // list-initialization
+};
+
+union U
+{
+    int a;
+    const char* b;
+};
+constexpr U u1 = {1};   // OK, first member of the union
+static_assert(u1.a == 1);
+// U u2 = {0, "asdf"}; // error: too many initializers for union
+// U u3 = {"asdf"};    // error: invalid conversion to int
+
+void demo()
+{
+}
+}
+
 
 
 
@@ -221,6 +347,7 @@ void demo()
     piecewise_construct::demo();
     forward_as_tuple::demo();
     auto_x_decay_copy::demo();
+    aggregate_initialization::demo();
 }
 
 

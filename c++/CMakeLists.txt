@@ -25,5 +25,6 @@ add_executable(cpp
         text.cpp
         classes.cpp
         modules.cpp
+        coroutines.cpp
 
 )
