@@ -367,6 +367,49 @@ struct Director : IGoodManager
 }
 
 
+namespace dependency_inversion_principle {
+// 5. Dependency Inversion Principle
+// ---------------------------------
+// A class should depend on interfaces or abstract classes rather than on concrete types.
+// This makes the class more flexible.
+
+struct BadKeyboard
+{
+};
+
+struct BadLaptop
+{
+    BadLaptop(const BadKeyboard keyboard) : m_keyboard(keyboard)
+    {
+    }
+
+    BadKeyboard m_keyboard;
+};
+
+struct GoodKeyboard
+{
+    virtual ~GoodKeyboard() = default;
+    virtual int get_type() const = 0;
+};
+
+struct WiredKeyboard : GoodKeyboard
+{
+    int get_type() const override { return 1; }
+};
+
+struct GoodLaptop
+{
+    GoodLaptop(const GoodKeyboard* keyboard) : m_keyboard(keyboard)
+    {
+    }
+
+    const GoodKeyboard* m_keyboard;
+};
+
+// In the bad implementation only one keyboard type can be passed.
+// In the good implementation any keyboard type derived from the interface can be passed.
+}
+
 
 void demo()
 {
