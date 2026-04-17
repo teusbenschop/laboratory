@@ -25,6 +25,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <list>
 #include <queue>
 #include <set>
+#include <span>
 #include <stack>
 #include <unordered_set>
 #include <vector>
@@ -632,6 +633,22 @@ void demo()
 }
 
 
+namespace span {
+// https://en.cppreference.com/w/cpp/container/span
+
+constexpr int container[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+constexpr auto fullspan = std::span{container};
+static_assert(fullspan.size() == 10);
+constexpr auto subspan = fullspan.subspan(3, 2);
+// Result: 3 4
+static_assert(subspan.size() == 2);
+
+void demo()
+{
+}
+}
+
+
 void demo()
 {
     vectors::demo();
@@ -652,5 +669,6 @@ void demo()
     stacks::demo();
     queues::demo();
     priority_queues::demo();
+    span::demo();
 }
 }

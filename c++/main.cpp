@@ -57,9 +57,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <vector>
 
 #include "scoped_timer.h"
-#include "binary_search.h"
+#include "searching.h"
 #include "bounds_limits.h"
-#include "any_of_all_of_none_of.h"
 #include "counting.h"
 #include "latches_barriers.h"
 #include "constraints.h"
@@ -68,11 +67,12 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "language.h"
 #include "concurrency.h"
 #include "bad_coding.h"
-#include "characters.h"
+#include "text.h"
 #include "classes.h"
 #include "expected.h"
 #include "variables.h"
 #include "functional.h"
+#include "modules.h"
 #include "templates.h"
 #include "shared_mutex.h"
 
@@ -2804,332 +2804,6 @@ void demo()
 }
 
 
-namespace modules {
-// https://en.cppreference.com/w/cpp/language/modules
-// Modules are a language feature to share declarations and definitions across translation units.
-// They are an alternative to some use cases of headers.
-// Modules are orthogonal to namespaces.
-// export module hello_world;
-// C++20 'module' only available with '-fmodules-ts', which is not yet enabled with '-std=c++20'
-void demo()
-{
-}
-}
-
-namespace header_compare {
-// https://en.cppreference.com/w/cpp/header/compare
-void demo()
-{
-
-}
-}
-
-
-namespace formatting_library {
-// https://en.cppreference.com/w/cpp/utility/format
-void demo()
-{
-    std::string result = std::format("A={} B={} C={}", "a", std::string("b"), 3);
-    assert(result == "A=a B=b C=3");
-
-    // Formats to an output iterator.
-    std::string buffer;
-    std::format_to
-    (
-        std::back_inserter(buffer), // the output iterator.
-        "Hello, C++{}!", // the format string.
-        20 // the argument(s).
-    );
-    assert(buffer == "Hello, C++20!");
-}
-}
-
-
-namespace span {
-// https://en.cppreference.com/w/cpp/container/span
-void demo()
-{
-    constexpr int container[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    const auto fullspan = std::span{container};
-    assert(fullspan.size() == 10);
-    const auto subspan = fullspan.subspan(3, 2);
-    // Result: 3 4
-    assert(subspan.size() == 2);
-}
-}
-
-
-namespace starts_with_and_ends_with {
-// https://en.cppreference.com/w/cpp/string/basic_string/starts_with
-// https://en.cppreference.com/w/cpp/string/basic_string/ends_with
-// https://en.cppreference.com/w/cpp/algorithm/ranges/starts_with
-// https://en.cppreference.com/w/cpp/algorithm/ranges/ends_with.html
-void demo()
-{
-    constexpr std::string_view hello_world{"hello world"};
-    static_assert(hello_world.starts_with("hello"));
-    static_assert(!hello_world.starts_with("world"));
-    static_assert(hello_world.ends_with('d'));
-    static_assert(!hello_world.ends_with("hello"));
-
-    using namespace std::literals;
-    static_assert(std::ranges::starts_with("const_cast", "const"sv));
-    static_assert(std::ranges::starts_with("constexpr", "const"sv));
-    static_assert(!std::ranges::starts_with("volatile", "const"sv));
-
-    constexpr auto ascii_upper = [](char8_t c)
-    {
-        return u8'a' <= c && c <= u8'z' ? static_cast<char8_t>(c + u8'A' - u8'a') : c;
-    };
-
-    constexpr auto cmp_ignore_case = [=](char8_t x, char8_t y)
-    {
-        return ascii_upper(x) == ascii_upper(y);
-    };
-
-    // Projection 1: the projection to apply to the elements of the range to examine.
-    // Projection 2: the projection to apply to the elements of the range to be used as the prefix.
-    static_assert(std::ranges::starts_with(u8"Constantinopolis", u8"constant"sv,{}, ascii_upper, ascii_upper));
-    static_assert(not std::ranges::starts_with(u8"Istanbul", u8"constant"sv,{}, ascii_upper, ascii_upper));
-    // The predicate: the binary predicate that compares the projected elements.
-    static_assert(std::ranges::starts_with(u8"Metropolis", u8"metro"sv,cmp_ignore_case));
-    static_assert(not std::ranges::starts_with(u8"Acropolis", u8"metro"sv,cmp_ignore_case));
-
-    constexpr static auto v = {1, 3, 5, 7, 9};
-    constexpr auto odd = [](int x) { return x % 2; };
-    assert(std::ranges::starts_with(v, std::views::iota(1) | std::views::filter(odd) | std::views::take(3)));
-
-    static_assert(not std::ranges::ends_with("for", "cast"));
-    static_assert(std::ranges::ends_with("dynamic_cast", "cast"));
-    static_assert(not std::ranges::ends_with("as_const", "cast"));
-    static_assert(std::ranges::ends_with("bit_cast", "cast"));
-    static_assert(not std::ranges::ends_with("to_underlying", "cast"));
-    static_assert(std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{3, 4}));
-    static_assert(not std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{4, 5}));
-}
-}
-
-
-namespace explicit_object_parameter_this {
-
-struct Struct
-{
-    // OK.
-    // Same as void foo(int i) const &;
-    void f1(this Struct const& self, int i);
-
-    // Error: already declared.
-    // void f1(int i) const &;
-
-    // Also OK for templates.
-    // For member function templates,
-    // explicit object parameter allows deduction of type and value category,
-    // this language feature is called “deducing this”.
-    template<typename Self>
-    void f2(this Self&& self);
-
-    // Pass object by value: makes a copy of “*this”.
-    void f3(this Struct self, int i);
-
-    // Error: “const” not allowed here
-    // void p(this ExplicitObjectParameter) const;
-
-    // Error: “static” not allowed here
-    // static void q(this ExplicitObjectParameter);
-
-    // Error: an explicit object parameter can only be the first parameter
-    // void r(int, this ExplicitObjectParameter);
-
-    // Inside the body of an explicit object member function,
-    // the "this" pointer cannot be used.
-    // All member access must be done through the first parameter,
-    // like in static member functions.
-    void f4(this Struct object)
-    {
-        // invalid use of 'this' in a function with an explicit object parameter
-        // auto x = this;
-
-        // There's no implicit "this": use of undeclared identifier 'bar'
-        // bar();
-
-        object.f3(1);
-    }
-};
-
-void demo()
-{
-    // A parameter declaration with the specifier "this" declares an explicit object parameter.
-
-    // An explicit object parameter cannot be a function parameter pack,
-    // and it can only appear as the first parameter of the parameter list
-    // in the following declarations:
-    // 1. A declaration of a member function or member function template.
-    // 2. An explicit instantiation or explicit specialization of a templated member function.
-    // 3. A lambda declaration.
-
-    // A member function with an explicit object parameter has the following restrictions:
-    // 1. The function is not static.
-    // 2. The function is not virtual.
-    // 3. The declarator of the function does not contain cv and ref.
-
-    // Error: non-member functions cannot have an explicit object parameter
-    // void func(this ExplicitObjectParameter& self);
-
-    // A pointer to an explicit object member function is an ordinary pointer to function,
-    // not a pointer to member.
-
-    struct Y
-    {
-        int f(int, int) const& {return 1;};
-        int g(this Y const& self, int, int) {
-            if (&self == &self)
-                return 1;
-            return 1;
-        };
-    };
-
-    Y y{};
-
-    const auto pf = &Y::f;
-
-    // error: pointers to member functions are not callable
-    // called object type 'int (Y::*)(int, int) const &' is not a function or function pointer
-    //pf(y, 1, 2);
-
-    (y.*pf)(1, 2);            // ok
-    std::invoke(pf, y, 1, 2); // ok
-
-    auto pg = &Y::g;
-    pg(y, 3, 4);              // ok
-
-    // error: “pg” is not a pointer to member function
-    // right hand operand to .* has non-pointer-to-member type 'int (*)(const Y &, int, int)'
-    //(y.*pg)(3, 4);
-
-    std::invoke(pg, y, 3, 4); // ok
-}
-}
-
-
-namespace multidimensional_subscript_operator {
-void demo()
-{
-    int array3d[4][3][2]{};
-    array3d[3][2][1] = 42;
-    assert(array3d[3][2][1] == 42);
-}
-}
-
-
-namespace static_operators_and_lambdas {
-
-struct Struct
-{
-    // Static operators: Can call them without the object instance.
-    static int operator()(int a, int b) { return a + b; }
-};
-
-void demo()
-{
-    Struct object;
-
-    // This creates an object (and perhaps the optimizer removes it again).
-    assert(Struct{}(1, 0) == 1);
-
-    // This does not create an object, just calls the static method.
-    assert(object(1, 0) == 1);
-
-    // Lambda's can be made static too.
-    int x {0};
-    const static auto lambda1 = [x] { return x;};
-    const auto lambda2 = [&x] {x+=10; return x;};
-    // But see https://godbolt.org/z/3qeqnEsh8 that static lambdas generate much more code.
-    // Consider that a static lambda does the capture (of variable x) once.
-    // And that may give unexpected output.
-    // The rule from R1 of this paper is basically:
-    // A static lambda shall have no lambda-capture.
-    // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1169r4.html#lambdas
-    assert (lambda1() == 0);
-    assert (lambda2() == 10);
-    assert (lambda1() == 0);
-    assert (lambda2() == 20);
-}
-}
-
-namespace auto_x_decay_copy {
-void demo()
-{
-    // A decay-copy is a copy of a variables which has lost some properties.
-    // How does auto(x) help?
-    // It is an easy way to make a copy of a variable.
-    // It clearly communicates that it makes a copy of a variable.
-
-    const auto pop_front = [] (auto& container) {
-        std::erase(container, auto(container.front())); // <- Make copy through auto(x)
-    };
-
-    std::vector vector {1, 2, 3};
-    assert (vector.size() == 3);
-    pop_front (vector);
-    assert (vector.size() == 2);
-    pop_front (vector);
-    assert (vector.size() == 1);
-}
-}
-
-
-namespace extended_floating_point_types {
-#ifdef __STDCPP_FLOAT32_T__
-std::float32_t f32 = 0.0;
-#endif
-#ifdef __STDCPP_FLOAT64_T__
-std::float64_t f64 = 0.0;
-#endif
-#ifdef __STDCPP_FLOAT128_T__
-std::float128_t f128 = 0.0;
-#endif
-}
-
-
-namespace literal_suffix_z {
-void demo()
-{
-    // Avoid this warning:
-    // comparison of integers of different signs: 'int' and 'size_type' (aka 'unsigned long') [-Wsign-compare]
-    const std::vector<int> v{2, 4, 6, 8};
-    for (auto i = 0uz; i < v.size(); ++i) {
-        assert((v.at(i)));
-    }
-}
-}
-
-namespace alias_declarations_in_init_statements {
-void demo()
-{
-    std::vector v {1, 2, 3};
-    for (using T = int; T& e : v)
-        assert((e));
-}
-}
-
-
-namespace brackets_are_optional_for_lambdas {
-void demo()
-{
-    std::string s1 = "s1";
-    auto with_parenthesis = [s1 = std::move(s1)] () {
-        assert(not s1.empty());
-    };
-
-    std::string s2 = "s1";
-    auto without_parenthesis = [s2 = std::move(s2)]  {
-        assert(not s2.empty());
-    };
-}
-}
-
-
-
 
 
 
@@ -3138,9 +2812,8 @@ void demo()
 int main()
 {
     scoped_timer::demo();
-    binary_search::demo();
+    searching::demo();
     lower_bound_and_upper_bound::demo();
-    any_of_all_of_none_of::demo();
     counting::demo();
     min_max_clamp_ranges_minmax::demo();
     latches::demo();
@@ -3202,26 +2875,16 @@ int main()
     aggregate_initialization::demo();
     coroutines::demo();
     modules::demo();
-    header_compare::demo();
-    formatting_library::demo();
-    span::demo();
-    starts_with_and_ends_with::demo();
-    explicit_object_parameter_this::demo();
-    multidimensional_subscript_operator::demo();
-    static_operators_and_lambdas::demo();
-    literal_suffix_z::demo();
-    alias_declarations_in_init_statements::demo();
-    brackets_are_optional_for_lambdas::demo();
     concurrency::demo();
     fold_expressions::demo();
     containers::demo();
-    alignment::demo();
+    language::demo();
     templates::demo();
     variables::demo();
     functional::demo();
     bad_coding::demo();
     expected::demo();
-    characters::demo();
+    text::demo();
     classes::demo();
 
     return EXIT_SUCCESS;

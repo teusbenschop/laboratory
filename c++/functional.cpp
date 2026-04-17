@@ -18,6 +18,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "functional.h"
 
+#include <cassert>
 #include <future>
 #include <iostream>
 
@@ -50,12 +51,27 @@ void move_only_function() {
 }
 
 
+namespace brackets_are_optional_for_lambdas {
+void demo()
+{
+    std::string s1 = "s1";
+    auto with_parenthesis = [s1 = std::move(s1)] () {
+        assert(not s1.empty());
+    };
+    with_parenthesis();
+
+    std::string s2 = "s2";
+    auto without_parenthesis = [s2 = std::move(s2)]  {
+        assert(not s2.empty());
+    };
+    without_parenthesis();
+}
+}
+
+
 void demo() {
     //move_only_function();
-
-
-
-
+    brackets_are_optional_for_lambdas::demo();
 }
 }
 

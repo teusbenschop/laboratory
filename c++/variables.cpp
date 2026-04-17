@@ -19,6 +19,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "variables.h"
 
+#include <cassert>
 #include <iostream>
 #include <type_traits>
 #include <utility>
@@ -188,6 +189,27 @@ void demo()
 }
 
 
+namespace auto_x_decay_copy {
+void demo()
+{
+    // A decay-copy is a copy of a variable which has lost some properties.
+    // How does auto(x) help?
+    // It is an easy way to make a copy of a variable.
+    // It clearly communicates that it makes a copy of a variable.
+
+    const auto pop_front = [] (auto& container) {
+        std::erase(container, auto(container.front())); // <- Make copy through auto(x)
+    };
+
+    std::vector vector {1, 2, 3};
+    assert (vector.size() == 3);
+    pop_front (vector);
+    assert (vector.size() == 2);
+    pop_front (vector);
+    assert (vector.size() == 1);
+}
+}
+
 
 
 
@@ -198,6 +220,7 @@ void demo()
     forward_like::demo();
     piecewise_construct::demo();
     forward_as_tuple::demo();
+    auto_x_decay_copy::demo();
 }
 
 

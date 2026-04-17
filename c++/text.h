@@ -16,29 +16,8 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#pragma once
 
-#include "characters.h"
-
-#include <cassert>
-#include <string>
-
-namespace characters {
-void demo() {
-
-    // Consistent character literal encoding.
-    // ReSharper disable once CppIdenticalOperandsInBinaryExpression
-    static_assert('A' == '\x41');
-    static_assert('A' == 0x41);
-
-    // Named universal character escapes.
-    // https://www.unicode.org/Public/14.0.0/ucd/NamesList.txt
-    assert("\N{CAT FACE}"      == std::string("🐱"));
-    assert("\N{COW FACE}"      == std::string("🐮"));
-    assert("\N{NATIONAL PARK}" == std::string("🏞"));
-
-    // Delimited escape sequences.
-    assert("\o{111}"  == std::string("I"));
-    assert("\x{A0}"   != std::string(""));
-    assert("\u{CAFE}" == std::string("쫾"));
-}
+namespace text {
+void demo();
 }

@@ -18,7 +18,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #pragma once
 
-namespace any_of_all_of_none_of {
+namespace modules {
 void demo();
 }
-
