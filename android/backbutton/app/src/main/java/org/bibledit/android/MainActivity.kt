@@ -1,5 +1,6 @@
 package org.bibledit.android
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebView
@@ -11,6 +12,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var webView: WebView
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.web_view)
@@ -45,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Otherwise defer to the default behavior.
-        finish();
+        finish()
     }
 
 }
