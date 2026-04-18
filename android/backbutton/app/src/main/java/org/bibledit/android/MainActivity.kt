@@ -3,7 +3,9 @@ package org.bibledit.android
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,10 +23,20 @@ class MainActivity : AppCompatActivity() {
         webView.settings.domStorageEnabled = true
         MyWebViewClient().also { webView.webViewClient = it }
         webView.loadUrl("https://bibledit.org:8091")
+
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    handleBackPress()
+                }
+            })
     }
 
-    override fun onBackPressed() {
+
+    fun handleBackPress() {
         Log.i("Back", "on back pressed")
+
         // The Android back button navigates back in the web view.
         // This is the behavior people expect.
         if (webView.canGoBack()) {
@@ -32,8 +44,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Otherwise defer to system default behavior.
-        super.onBackPressed()
+        // Otherwise defer to the default behavior.
+        finish();
     }
 
 }
