@@ -30,6 +30,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <unordered_set>
 #include <vector>
 
+#include "scoped_timer.h"
+
 namespace containers {
 
 
@@ -259,6 +261,7 @@ void demo()
     elements2.pop_back();
 }
 }
+
 
 
 namespace iterators {
@@ -649,6 +652,45 @@ void demo()
 }
 
 
+namespace performance {
+void demo()
+{
+    return;
+    {
+        std::vector<int> c;
+        {
+            scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
+            for (int i = 0; i < 1000'000; ++i)
+                c.push_back(i);
+        }
+        {
+
+        }
+    }
+    {
+        std::deque<int> c;
+        {
+            scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
+            for (int i = 0; i < 1000'000; ++i)
+                c.push_back(i);
+        }
+    }
+    {
+        std::list<int> c;
+        {
+            scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
+            for (int i = 0; i < 1000'000; ++i)
+                c.push_back(i);
+        }
+    }
+    // vector: 46 ms
+    // deque:  34 ms
+    // list:   79 ms.
+}
+}
+
+
+
 void demo()
 {
     vectors::demo();
@@ -670,5 +712,6 @@ void demo()
     queues::demo();
     priority_queues::demo();
     span::demo();
+    performance::demo();
 }
 }

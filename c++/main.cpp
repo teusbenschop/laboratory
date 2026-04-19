@@ -23,15 +23,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <bit>
 #include <cassert>
 #include <chrono>
-#include <compare>
 #include <complex>
 #include <condition_variable>
-#include <coroutine>
 #include <csignal>
 #include <cstdlib>
-#include <ctime>
 #include <execution>
-#include <expected>
 #include <filesystem>
 #include <forward_list>
 #include <functional>
@@ -56,470 +52,35 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <unordered_set>
 #include <vector>
 
+#include "bad_coding.h"
+#include "bounds_limits.h"
+#include "classes.h"
+#include "concurrency.h"
+#include "constraints.h"
+#include "containers.h"
+#include "coroutines.h"
+#include "counting.h"
+#include "exceptions.h"
+#include "expected.h"
+#include "fold_expressions.h"
+#include "functional.h"
+#include "language.h"
+#include "latches_barriers.h"
+#include "modules.h"
 #include "scoped_timer.h"
 #include "searching.h"
-#include "bounds_limits.h"
-#include "counting.h"
-#include "latches_barriers.h"
-#include "constraints.h"
-#include "fold_expressions.h"
-#include "containers.h"
-#include "language.h"
-#include "concurrency.h"
-#include "bad_coding.h"
-#include "text.h"
-#include "classes.h"
-#include "coroutines.h"
-#include "expected.h"
-#include "variables.h"
-#include "functional.h"
-#include "modules.h"
-#include "templates.h"
 #include "shared_mutex.h"
-
-
-
-namespace language_declarations {
-// The keyword "const" indicates immutability.
-const int i1 = 10;
-
-// Keyword "constexpr":
-// If possible evaluate it at compile time.
-constexpr int i2 = 10;
-
-// Will be evaluated at compile time if the parameters "var1" and "var2" are known at compile time.
-// Will be evaluated at run time if the parameters are not known.
-constexpr int constexpr_add(int var1, int var2)
-{
-    return var1 + var2;
-}
-
-// consteval : Force evaluation of a function at compile time.
-consteval int consteval_add(int var1, int var2)
-{
-    return var1 + var2;
-}
-
-// constinit : Static initialization. Force evaluation at compile time. The variable is not const.
-constinit int i3 = 1;
-
-void declarations()
-{
-    // Can all be evaluated at compile time.
-    static_assert(i1 == 10);
-    static_assert(i2 == 10);
-    static_assert(constexpr_add(1, 2) == 3);
-    static_assert(constexpr_add(i1, i2) == 20);
-
-    // Variable i3 is assigned at runtime.
-    int i3 = 2;
-    // Compile error: the value of 'i3' is not usable in a constant expression
-    // static_assert(constexpr_add(i3,i3) == 4);
-    assert(i3 == 2);
-
-    // The variable is initialized at runtime although the function is constexpr.
-    int i4 = constexpr_add(i3, i3);
-    assert(i4 == 4);
-
-    // OK, evaluated at compile-time.
-    static_assert(consteval_add(1, 1) == 2);
-
-    // Cannot be evaluated at compile-time.
-    // Compile error:
-    // call to consteval function 'consteval_add(i3, i3)' is not a constant expression
-    // int i5 = consteval_add(i3, i3);
-
-    // Cannot be evaluated at compile-time.
-    // Compile error:
-    // call to consteval function 'consteval_add(i3, i3)' is not a constant expression
-    // int i5 = consteval_add(i3, i3);
-
-    constexpr auto if_constexpr_add = [](auto var1, auto var2)
-    {
-        // This section is compiled only if it passes, else it's omitted, and so cannot cause compiler errors.
-        if constexpr (std::is_same_v<decltype(var1), int>)
-            return var1 + var2;
-        return var1 + var2;
-    };
-    static_assert(if_constexpr_add(1, 2) == 3);
-
-    {
-        constexpr const auto xdigit = [](int n) -> char
-        {
-            // This is a constexpr variable in a constexpr lambda function: OK in C++23.
-            constexpr const char digits[] = "0123456789";
-            return digits[n];
-        };
-        static_assert(xdigit(2) == '2');
-    }
-}
-}
-
-namespace language_exceptions {
-// It is good practice to have a hierarchy of exception types.
-
-// Example: The base exception is derived from the standard exception.
-// The type 1 and type 2 exceptions are derived from the base exception.
-
-class BaseException : public std::exception
-{
-    const std::string m_what;
-
-public:
-    explicit BaseException(std::string_view what = "") noexcept : m_what(what)
-    {
-    }
-
-    const char* what() const noexcept final override { return m_what.c_str(); }
-};
-
-struct Type1Exception : BaseException
-{
-    explicit Type1Exception(std::string_view what = "") noexcept : BaseException(what)
-    {
-    }
-};
-
-struct Type2Exception : BaseException
-{
-    explicit Type2Exception(std::string_view what = "") noexcept : BaseException(what)
-    {
-    }
-};
-
-// This template function gets passed an exception, throws it, and catches it.
-// The "catch" clauses are put in the correct order:
-// 1. Catch the most derived types.
-// 2. Catch the base exception.
-// 3. Catch the standard exception.
-template <typename Exception>
-void demo_exception_catch_hierarchy(const Exception& e)
-{
-    try
-    {
-        throw e;
-    }
-    catch (const Type1Exception& exception)
-    {
-        std::cout << "Catch Type1Exception" << std::endl;
-    }
-    catch (const Type2Exception& exception)
-    {
-        std::cout << "Catch Type2Exception" << std::endl;
-    }
-    catch (const BaseException& exception)
-    {
-        std::cout << "Catch BaseException" << std::endl;
-    }
-    catch (const std::exception& exception)
-    {
-        std::cout << "Catch std::exception" << std::endl;
-    }
-    catch (...)
-    {
-        std::cout << "Catch unknown exception" << std::endl;
-    }
-}
-
-void demo()
-{
-    return;
-    // One exception handling function to be used in several places.
-    // It uses dynamic casting to handle the different exceptions.
-    const auto dynamic_exception_handler = [](const std::exception* exception)
-    {
-        if (const auto* e = dynamic_cast<const Type1Exception*>(exception); e)
-            std::cout << "Catch Type1Exception" << std::endl;
-        else if (const auto* e = dynamic_cast<const Type2Exception*>(exception); e)
-            std::cout << "Catch Type2Exception" << std::endl;
-        else if (const auto* e = dynamic_cast<const BaseException*>(exception); e)
-            std::cout << "Catch BaseException" << std::endl;
-        else if (const auto* e = dynamic_cast<const std::exception*>(exception); e)
-            std::cout << "Catch standard exception" << std::endl;
-        else
-            std::cout << "Catch unknown exception" << std::endl;
-    };
-
-    // Throw different exceptions and print the exception caught via the exception handler.
-    try
-    {
-        std::cout << "Throw Type1Exception" << std::endl;
-        throw Type1Exception();
-    }
-    catch (const std::exception& e)
-    {
-        dynamic_exception_handler(&e);
-    }
-    try
-    {
-        std::cout << "Throw Type2Exception" << std::endl;
-        throw Type2Exception();
-    }
-    catch (const std::exception& e)
-    {
-        dynamic_exception_handler(&e);
-    }
-    try
-    {
-        std::cout << "Throw BaseException" << std::endl;
-        throw BaseException();
-    }
-    catch (const std::exception& e)
-    {
-        dynamic_exception_handler(&e);
-    }
-    try
-    {
-        std::cout << "Throw standard exception" << std::endl;
-        throw std::runtime_error("standard");
-    }
-    catch (const std::exception& e)
-    {
-        dynamic_exception_handler(&e);
-    }
-
-    // Throw different types of exceptions.
-    // The template function uses the standard try ... catch idiom.
-    std::cout << "Throw Type1Exception" << std::endl;
-    demo_exception_catch_hierarchy(Type1Exception());
-    std::cout << "Throw Type2Exception" << std::endl;
-    demo_exception_catch_hierarchy(Type2Exception());
-    std::cout << "Throw BaseException" << std::endl;
-    demo_exception_catch_hierarchy(BaseException());
-    std::cout << "Throw standard exception" << std::endl;
-    demo_exception_catch_hierarchy(std::runtime_error(""));
-}
-}
-
-namespace lambda_capture {
-void demo()
-{
-    // Capture by value.
-    {
-        int captured_v_by_value;
-        auto v = 7;
-        // Note that the following lambda, via the capture, copies the current v = 7 into the lambda.
-        // Mark it mutable because it mutates the captured v.
-        // Note that it captures v once, and stores it in the lambda function.
-        // Hence, the increased v is kept and can be increased once more and so on.
-        auto lambda = [v](int& captured_v_by_value) mutable
-        {
-            v++;
-            captured_v_by_value = v;
-        };
-        lambda(captured_v_by_value);
-        assert(captured_v_by_value == v + 1);
-        lambda(captured_v_by_value);
-        assert(captured_v_by_value == v + 2);
-        // The original v remains unchanged.
-        assert(v == 7);
-    }
-
-    // Capture by reference.
-    {
-        auto v = 7;
-        auto lambda = [&v]
-        {
-            ++v;
-        };
-        lambda();
-        assert(v == 8);
-        lambda();
-        assert(v == 9);
-    }
-}
-}
-
-namespace assign_two_lambdas_to_same_function_object {
-void demo()
-{
-    return;
-    // Create an unassigned std::function object.
-    auto func = std::function<void(int)>{};
-
-    // Assign a lambda without capture to the std::function object.
-    func = [](int v)
-    {
-        std::cout << "Assigned lambda without capture: " << v << std::endl;
-    };
-    func(12); // Prints 12.
-
-    // Assign a lambda with capture to the same std::function object.
-    auto v42 = 42;
-    func = [v42](int v)
-    {
-        std::cout << "Assigned lambda with capture: " << (v + v42) << std::endl;
-    };
-    func(12); // Prints 54.
-}
-}
-
-namespace stateless_lambda_function {
-// A stateless lambda function does not retain any data or memory
-// from one execution to the next.
-constexpr auto stateless1 = []
-{
-};
-// It is assignable.
-constexpr auto stateless2 = stateless1;
-// Default-constructible (i.e. constructor without parameters, or with default parameters).
-static_assert(std::is_default_constructible_v<decltype(stateless1)>); // passes
-constexpr decltype(stateless1) stateless3;
-static_assert(std::is_same_v<decltype(stateless1), decltype(stateless2)>); // passes
-static_assert(std::is_same_v<decltype(stateless1), decltype(stateless3)>); // passes
-static_assert(std::is_same_v<decltype(stateless2), decltype(stateless3)>); // passes
-}
-
-
-namespace keyword_auto_for_lambdas {
-// Can use "typename T" or "auto" for lambda functions.
-constexpr auto lambda_typename = []<typename T>(T value) -> T {
-    T val2 = value;
-    decltype(value) val3 = value;
-    return value + 1;
-};
-constexpr auto lambda_auto = [](auto v) -> auto { return v + 1; };
-static_assert(lambda_typename('a') == 'b');
-static_assert(lambda_auto('a') == 'b');
-static_assert(lambda_typename(1) == 2);
-static_assert(lambda_auto(1) == 2);
-static_assert(lambda_typename(static_cast<std::uint64_t>(41)) == 42);
-static_assert(lambda_auto(static_cast<std::uint64_t>(41)) == 42);
-}
-
-
-namespace operator_overloading {
-// A struct with overloaded operators.
-
-struct Container
-{
-    constexpr Container(const int value) : value(value)
-    {
-    }
-
-    int value;
-
-    // Overload the "+" operator.
-    constexpr Container operator+(const Container& other)
-    {
-        return Container(value + other.value);
-    }
-
-    // Overload the "()" operator.
-    constexpr int operator()() { return value; }
-
-    // Overload the += and the -= and the %= operators.
-    constexpr Container& operator+=(const Container& c) noexcept
-    {
-        value += c.value;
-        return *this;
-    }
-
-    constexpr Container& operator-=(const Container& c) noexcept
-    {
-        value -= c.value;
-        return *this;
-    }
-
-    constexpr Container& operator%=(const Container& c) noexcept
-    {
-        value = value % c.value;
-        return *this;
-    }
-};
-
-// Overload the "<<" operator.
-std::ostream& operator<<(std::ostream& os, const Container& c) noexcept
-{
-    os << c.value;
-    return os;
-}
-
-// Overload the "==" operator.
-constexpr inline bool operator==(const Container& l, const Container& r) noexcept
-{
-    return l.value == r.value;
-}
-
-static_assert(Container(10) + Container(20) == 30);
-static_assert(Container(15)() == 15);
-static_assert(Container(10) != Container(20));
-static_assert(Container(10) == 10);
-
-void demo()
-{
-    Container container(10);
-    container += Container(5);
-    assert(container == 15);
-    container -= Container(1);
-    assert(container == 14);
-    container %= Container(5);
-    assert(container == 4);
-}
-}
-
-
-namespace space_ship_operator {
-// Demo of the spaceship ( <=> ) operator in C++20.
-struct Version
-{
-    unsigned short major{};
-    unsigned short minor{};
-
-    // Setting the spaceship operator to default causes the compiler to generate
-    // all comparison operators, like < <= == >= > != .
-    // The compiler considers all fields, in this case major and minor.
-    // If the first field is smaller than or greater than, the comparison is complete.
-    // If the first fields are the same,
-    // then it considers the second field, and so on,
-    // till it completes the comparison.
-    constexpr auto operator<=>(const Version&) const noexcept = default;
-};
-
-static_assert(Version(1, 1) != Version(1, 2));
-static_assert(Version(1, 1) < Version(1, 2));
-static_assert(Version(1, 1) <= Version(1, 2));
-static_assert(Version(1, 2) > Version(1, 1));
-static_assert(Version(1, 2) >= Version(1, 1));
-static_assert(Version(1, 1) == Version(1, 1));
-
-constexpr double foo{-0.0f};
-constexpr double bar{+0.0f};
-constexpr std::partial_ordering result{foo <=> bar};
-static_assert(result != std::partial_ordering::less);
-static_assert(result != std::partial_ordering::greater);
-static_assert(result == std::partial_ordering::equivalent);
-static_assert(result != std::partial_ordering::unordered);
-
-}
+#include "templates.h"
+#include "text.h"
+#include "transformations.h"
+#include "variables.h"
 
 
 
 
-namespace demo_accumulate {
-constexpr std::array<int, 3> integers{1, 2, 3};
-constexpr auto sum = std::accumulate(integers.cbegin(), integers.cend(), 0);
-static_assert(sum == 6);
-constexpr auto product = std::accumulate(integers.cbegin(), integers.cend(), 1, std::multiplies<int>());
-static_assert(product == 6);
 
-void demo()
-{
-    const auto strings = std::vector<std::string>{"a", "b"};
-    const std::string init{"init"};
-    const auto concat = std::accumulate(strings.cbegin(), strings.cend(), init);
-    assert(concat == "initab");
 
-    const auto dash_fold = [](std::string a, int b)
-    {
-        return std::move(a) + '-' + std::to_string(b);
-    };
-    std::string s = std::accumulate(std::next(integers.begin()), integers.end(),
-                                    std::to_string(integers.at(0)), // start with first element
-                                    dash_fold);
-    assert(s == "1-2-3");
-}
-}
+
 
 
 namespace adjacent_find {
@@ -2638,12 +2199,6 @@ int main()
     constraint_derived_from::demo();
     demonstrate_constraints::demo();
     shared_mutex::demo();
-    language_declarations::declarations();
-    language_exceptions::demo();
-    lambda_capture::demo();
-    assign_two_lambdas_to_same_function_object::demo();
-    operator_overloading::demo();
-    demo_accumulate::demo();
     async_and_future::demo();
     at_exit::demo();
     variant::demo();
@@ -2701,6 +2256,8 @@ int main()
     expected::demo();
     text::demo();
     classes::demo();
+    exceptions::demo();
+    transformations::demo();
 
     return EXIT_SUCCESS;
 }

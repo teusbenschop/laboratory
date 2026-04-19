@@ -26,13 +26,14 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "searching.h"
 
+
+namespace searching {
+
+
 // Demonstrate binary_search.
 // A binary search works if the container is sorted.
 // It returns true if the value is found in the container.
 // It is also possible to pass a comparator.
-
-namespace searching {
-
 namespace binary_search {
 constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
 static_assert(std::ranges::is_sorted(container));

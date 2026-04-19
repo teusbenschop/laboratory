@@ -26,5 +26,7 @@ add_executable(cpp
         classes.cpp
         modules.cpp
         coroutines.cpp
+        exceptions.cpp
+        transformations.cpp
 
 )

@@ -286,6 +286,189 @@ void demo()
 }
 }
 
+namespace const_types {
+
+// Immutable:
+const int i1 = 10;
+
+// If possible evaluate it at compile time.
+constexpr int i2 = 10;
+
+// Will be evaluated at compile time if the parameters "var1" and "var2" are known at compile time.
+// Will be evaluated at run time if the parameters are not known at compile time.
+constexpr int constexpr_add(int var1, int var2)
+{
+    return var1 + var2;
+}
+
+// Force evaluation of a function at compile time.
+consteval int consteval_add(int var1, int var2)
+{
+    return var1 + var2;
+}
+
+// Static initialization. Force evaluation at compile time. The variable is not const.
+constinit int i3 = 1;
+
+void demo()
+{
+    // Can all be evaluated at compile time.
+    static_assert(i1 == 10);
+    static_assert(i2 == 10);
+    static_assert(constexpr_add(1, 2) == 3);
+    static_assert(constexpr_add(i1, i2) == 20);
+
+    // Variable i3 is assigned at runtime.
+    int i3 = 2;
+    // Compile error: the value of 'i3' is not usable in a constant expression
+    // static_assert(constexpr_add(i3,i3) == 4);
+    assert(i3 == 2);
+
+    // The variable is initialized at runtime although the function is constexpr.
+    int i4 = constexpr_add(i3, i3);
+    assert(i4 == 4);
+
+    // OK, evaluated at compile-time.
+    static_assert(consteval_add(1, 1) == 2);
+
+    // Cannot be evaluated at compile-time.
+    // Compile error:
+    // call to consteval function 'consteval_add(i3, i3)' is not a constant expression
+    // int i5 = consteval_add(i3, i3);
+
+    // Cannot be evaluated at compile-time.
+    // Compile error:
+    // call to consteval function 'consteval_add(i3, i3)' is not a constant expression
+    // int i5 = consteval_add(i3, i3);
+
+    constexpr auto if_constexpr_add = [](auto var1, auto var2)
+    {
+        // This section is compiled only if it passes, else it's omitted, and so cannot cause compiler errors.
+        if constexpr (std::is_same_v<decltype(var1), int>)
+            return var1 + var2;
+        return var1 + var2;
+    };
+    static_assert(if_constexpr_add(1, 2) == 3);
+
+    {
+        constexpr const auto xdigit = [](int n) -> char
+        {
+            // This is a constexpr variable in a constexpr lambda function: OK in C++23.
+            constexpr const char digits[] = "0123456789";
+            return digits[n];
+        };
+        static_assert(xdigit(2) == '2');
+    }
+}
+}
+
+
+namespace operator_overloading {
+// A struct with overloaded operators.
+
+struct Struct
+{
+    constexpr Struct(const int value) : value(value)
+    {
+    }
+
+    int value;
+
+    // Overload the "+" operator.
+    constexpr Struct operator+(const Struct& other)
+    {
+        return Struct(value + other.value);
+    }
+
+    // Overload the function call "()" operator, this makes the struct a functor.
+    constexpr int operator()() { return value; }
+
+    // Overload the += and the -= and the %= operators.
+    constexpr Struct& operator+=(const Struct& c) noexcept
+    {
+        value += c.value;
+        return *this;
+    }
+
+    constexpr Struct& operator-=(const Struct& c) noexcept
+    {
+        value -= c.value;
+        return *this;
+    }
+
+    constexpr Struct& operator%=(const Struct& c) noexcept
+    {
+        value = value % c.value;
+        return *this;
+    }
+};
+
+// Overload the "<<" operator.
+std::ostream& operator<<(std::ostream& os, const Struct& c) noexcept
+{
+    os << c.value;
+    return os;
+}
+
+// Overload the "==" operator.
+constexpr inline bool operator==(const Struct& l, const Struct& r) noexcept
+{
+    return l.value == r.value;
+}
+
+static_assert(Struct(10) + Struct(20) == 30);
+static_assert(Struct(15)() == 15);
+static_assert(Struct(10) != Struct(20));
+static_assert(Struct(10) == 10);
+
+void demo()
+{
+    Struct s(10);
+    s += Struct(5);
+    assert(s == 15);
+    s -= Struct(1);
+    assert(s == 14);
+    s %= Struct(5);
+    assert(s == 4);
+}
+}
+
+
+
+namespace space_ship_operator {
+// Demo of the spaceship ( <=> ) operator in C++20.
+struct Version
+{
+    unsigned short major{};
+    unsigned short minor{};
+
+    // Setting the spaceship operator to default causes the compiler to generate
+    // all comparison operators, like < <= == >= > != .
+    // The compiler considers all fields, in this case major and minor.
+    // If the first field is smaller than or greater than, the comparison is complete.
+    // If the first fields are the same,
+    // then it considers the second field, and so on,
+    // till it completes the comparison.
+    constexpr auto operator<=>(const Version&) const noexcept = default;
+};
+
+static_assert(Version(1, 1) != Version(1, 2));
+static_assert(Version(1, 1) < Version(1, 2));
+static_assert(Version(1, 1) <= Version(1, 2));
+static_assert(Version(1, 2) > Version(1, 1));
+static_assert(Version(1, 2) >= Version(1, 1));
+static_assert(Version(1, 1) == Version(1, 1));
+
+constexpr double foo{-0.0f};
+constexpr double bar{+0.0f};
+constexpr std::partial_ordering result{foo <=> bar};
+static_assert(result != std::partial_ordering::less);
+static_assert(result != std::partial_ordering::greater);
+static_assert(result == std::partial_ordering::equivalent);
+static_assert(result != std::partial_ordering::unordered);
+
+void demo(){}
+}
 
 
 void demo() {
@@ -295,6 +478,9 @@ void demo() {
     static_operators_and_lambdas::demo();
     multidimensional_subscript_operator::demo();
     explicit_object_parameter_this::demo();
+    const_types::demo();
+    operator_overloading::demo();
+    space_ship_operator::demo();
 }
 
 }

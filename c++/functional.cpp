@@ -19,6 +19,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "functional.h"
 
 #include <cassert>
+#include <functional>
 #include <future>
 #include <iostream>
 
@@ -69,9 +70,118 @@ void demo()
 }
 
 
+namespace lambda_capture {
+void demo()
+{
+    // Capture by value.
+    {
+        int captured_v_by_value;
+        auto v = 7;
+        // Note that the following lambda, via the capture, copies the current v = 7 into the lambda.
+        // Mark it mutable because it mutates the captured v.
+        // Note that it captures v once, and stores it in the lambda function.
+        // Hence, the increased v is kept and can be increased once more and so on.
+        auto lambda = [v](int& captured_v_by_value) mutable
+        {
+            v++;
+            captured_v_by_value = v;
+        };
+        lambda(captured_v_by_value);
+        assert(captured_v_by_value == v + 1);
+        lambda(captured_v_by_value);
+        assert(captured_v_by_value == v + 2);
+        // The original v remains unchanged.
+        assert(v == 7);
+    }
+
+    // Capture by reference.
+    {
+        auto v = 7;
+        auto lambda = [&v]
+        {
+            ++v;
+        };
+        lambda();
+        assert(v == 8);
+        lambda();
+        assert(v == 9);
+    }
+}
+}
+
+
+namespace assign_two_lambdas_to_same_function_object {
+void demo()
+{
+    return;
+    // Create an unassigned std::function object.
+    std::function<void(int)> func = nullptr;
+
+    // Assign a lambda without capture to the std::function object.
+    func = [](int v)
+    {
+        std::cout << "Assigned lambda without capture: " << v << std::endl;
+    };
+    func(12); // Prints 12.
+
+    // Assign a lambda with capture to the same std::function object.
+    auto v42 = 42;
+    func = [v42](int v)
+    {
+        std::cout << "Assigned lambda with capture: " << (v + v42) << std::endl;
+    };
+    func(12); // Prints 54.
+}
+}
+
+
+namespace stateless_lambda_function {
+// A stateless lambda function does not retain any data or memory
+// from one execution to the next.
+constexpr auto stateless1 = []
+{
+};
+// It is assignable.
+constexpr auto stateless2 = stateless1;
+// Default-constructible (i.e. constructor without parameters, or with default parameters).
+static_assert(std::is_default_constructible_v<decltype(stateless1)>); // passes
+constexpr decltype(stateless1) stateless3;
+static_assert(std::is_same_v<decltype(stateless1), decltype(stateless2)>); // passes
+static_assert(std::is_same_v<decltype(stateless1), decltype(stateless3)>); // passes
+static_assert(std::is_same_v<decltype(stateless2), decltype(stateless3)>); // passes
+void demo()
+{
+}
+}
+
+
+namespace keyword_auto_for_lambdas {
+// Can use "typename T" or "auto" for lambda functions.
+constexpr auto lambda_typename = []<typename T>(T value) -> T {
+    T val2 = value;
+    decltype(value) val3 = value;
+    return value + 1;
+};
+constexpr auto lambda_auto = [](auto v) -> auto { return v + 1; };
+static_assert(lambda_typename('a') == 'b');
+static_assert(lambda_auto('a') == 'b');
+static_assert(lambda_typename(1) == 2);
+static_assert(lambda_auto(1) == 2);
+static_assert(lambda_typename(static_cast<std::uint64_t>(41)) == 42);
+static_assert(lambda_auto(static_cast<std::uint64_t>(41)) == 42);
+void demo(){}
+}
+
+
+
 void demo() {
     //move_only_function();
     brackets_are_optional_for_lambdas::demo();
+    lambda_capture::demo();
+    assign_two_lambdas_to_same_function_object::demo();
+    stateless_lambda_function::demo();
+    keyword_auto_for_lambdas::demo();
+
 }
 }
 
