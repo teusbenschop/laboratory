@@ -137,12 +137,27 @@ void demo()
 }
 
 
+namespace adjacent_find {
+// The std::adjacent_find searches for two consecutive elements that match the predicate.
+// It returns an iterator to the first element of the match.
+constexpr auto increasing = {1, 2, 3};
+constexpr auto is_less = [](const auto& l, const auto& r) { return l > r; };
+constexpr auto iter1 = std::ranges::adjacent_find(increasing, is_less);
+static_assert(iter1 == increasing.end());
+constexpr auto decreasing = {3, 2, 1};
+constexpr auto iter2 = std::ranges::adjacent_find(decreasing, is_less);
+static_assert(iter2 == decreasing.begin());
+void demo() {}
+}
+
+
 
 void demo() {
     binary_search::demo();
     any_of_all_of_none_of::demo();
     starts_with_and_ends_with::demo();
     header_compare::demo();
+    adjacent_find::demo();
 }
 
 

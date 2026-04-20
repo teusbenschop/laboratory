@@ -22,6 +22,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <format>
 #include <string>
+#include <sstream>
+
 
 namespace text {
 
@@ -72,9 +74,22 @@ void demo()
 }
 
 
+namespace stream_manipulation {
+void demo()
+{
+    {
+        std::stringstream oss;
+        oss << std::boolalpha << false << " " << std::noboolalpha << true;
+        assert(oss.str() == "false 1");
+    }
+}
+}
+
+
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
+    stream_manipulation::demo();
 }
 
 

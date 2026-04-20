@@ -53,6 +53,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <vector>
 
 #include "bad_coding.h"
+#include "bits.h"
 #include "bounds_limits.h"
 #include "classes.h"
 #include "concurrency.h"
@@ -83,226 +84,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 
-namespace adjacent_find {
-constexpr auto increasing = {1, 2, 3};
-constexpr auto is_less = [](const auto& l, const auto& r) { return l > r; };
-constexpr auto iter1 = std::ranges::adjacent_find(increasing, is_less);
-static_assert(iter1 == increasing.end());
-constexpr auto decreasing = {3, 2, 1};
-constexpr auto iter2 = std::ranges::adjacent_find(decreasing, is_less);
-static_assert(iter2 == decreasing.begin());
-}
 
 
-namespace async_and_future {
-void demo()
-{
-    std::thread::id divide_thread_id;
-    const auto divide = [&](int a, int b) -> int
-    {
-        if (!b) throw std::runtime_error("Cannot divide by zero");
-        divide_thread_id = std::this_thread::get_id();
-        return a / b;
-    };
-    {
-        std::thread::id main_thread_id = std::this_thread::get_id();
-        std::future future = std::async(divide, 45, 5); // Call the function in a thread.
-        const int result = future.get(); // Wait till the calculation is ready and get the result.
-        assert(result == 9);
-        assert(main_thread_id != divide_thread_id);
-    }
-    {
-        // Default launch policy (launch policy can be omitted).
-        std::future future = std::async(std::launch::async | std::launch::deferred, divide, 1, 2);
-        // std::launch::async: Run as soon as possible.
-        // std::launch::deferred: Wait till result is requested, then run.
-    }
-}
-}
 
-namespace at_exit {
-void demo()
-{
-    const auto fn = []() -> void
-    {
-        assert(true); // To see the effect on exit: Set to false.
-    };
-    std::atexit(fn); // Register "fn" to run at normal program exit.
-}
-}
-
-
-namespace variant {
-void demo()
-{
-    // Initialized with the monostate as that is the first variant.
-    std::variant<std::monostate, int, float> variant;
-
-    // Getting the wrong variant throws a bad_variant_access exception.
-    try
-    {
-        std::get<int>(variant);
-        assert(false);
-    }
-    catch (const std::bad_variant_access& e)
-    {
-        assert(true);
-    }
-
-    variant = 10;
-    assert(std::get<int>(variant) == 10);
-    assert(std::get<1>(variant) == 10); // Same as above.
-    assert(std::holds_alternative<int>(variant));
-}
-}
-
-
-namespace bind_and_bind_front_and_bind_back {
-// Demo of std::bind, including bind_front and bind_back.
-// https://cppreference.com/w/cpp/utility/functional/bind.html
-void demo()
-{
-    constexpr auto minus = [](int a, int b) -> int
-    {
-        return a - b;
-    };
-
-    struct Foo
-    {
-        constexpr int minus(int a, int b) const noexcept
-        {
-            return a - b;
-        }
-
-        int val10 = 10;
-    };
-
-    // Struct instance.
-    Foo foo;
-
-    // The function template std::bind generates a forwarding call wrapper for f.
-    // Calling this wrapper is equivalent to invoking f with some of its arguments bound to args.
-
-    const auto value1_minus_value2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
-    assert(value1_minus_value2(1, 2) == -1);
-
-    const auto value_minus_3 = std::bind(minus, std::placeholders::_1, 3);
-    assert(value_minus_3(1) == -2);
-
-    // Bind to a pointer to a member function.
-    const auto value1_minus_value2_via_member_fn = std::bind(&Foo::minus, &foo, std::placeholders::_1,
-                                                             std::placeholders::_2);
-    assert(value1_minus_value2_via_member_fn(1, 2) == -1);
-
-    // Bind to a pointer to a data member.
-    const auto get_value_from_struct = std::bind(&Foo::val10, std::placeholders::_1);
-    assert(get_value_from_struct(foo) == 10);
-
-    // Function templates std::bind_front and std::bind_back
-    // generate a perfect forwarding call wrapper
-    // which allows to invoke the callable target
-    // with its first or last sizeof...(Args) parameters bound to args.
-
-    const auto fifty_minus_value = std::bind_front(minus, 50);
-    assert(fifty_minus_value(3) == 47); // equivalent to `minus(50, 3)`: 47.
-
-    const auto value_minus_fifty = std::bind_back(minus, 50);
-    assert(value_minus_fifty(5) == -45);
-}
-}
-
-
-namespace demo_bit_operations {
-// https://en.cppreference.com/w/cpp/header/bit
-void demo()
-{
-    {
-        // The system's endian-ness.
-        constexpr auto endian{std::endian::native};
-        static_assert(endian != std::endian::big);
-        static_assert(endian == std::endian::little);
-    }
-    {
-        // Demo of std::bit_cast.
-        // Reinterpret the object representation of one type as that of another.
-        constexpr uint8_t ui8{255};
-        constexpr int8_t i8 = std::bit_cast<int8_t>(ui8);
-        static_assert(ui8 == 255);
-        static_assert(i8 == -1);
-    }
-
-    static_assert(std::bitset<4>(2u) == 0b0010);
-
-    static_assert(std::has_single_bit(2u));
-
-    static_assert(std::bitset<4>(2u).to_string() == "0010");
-
-    {
-        // rotl - Rotate bits to the left.
-        // rotr - Rotate bits to the right.
-        constexpr uint8_t ui2 = 0b0010;
-        static_assert(std::rotl(ui2, 1) == 0b0100);
-        static_assert(std::rotr(ui2, 1) == 0b0001);
-    }
-
-    // bit_ceil
-    // Finds the smallest integral power of two not less than the given value.
-    // bit_floor
-    // Finds the largest integral power of two not greater than the given value.
-    // bit_width
-    // Finds the smallest number of bits needed to represent the given value.
-    // countl_zero
-    // Counts the number of consecutive 0 bits, starting from the most significant bit.
-    // countl_one
-    // Counts the number of consecutive 1 bits, starting from the most significant bit.
-    // countr_zero
-    // Counts the number of consecutive 0 bits, starting from the least significant bit.
-    // countr_one
-    // Counts the number of consecutive 1 bits, starting from the least significant bit.
-    // popcount - Counts the number of 1 bits in an unsigned integer.
-
-    // The std::byteswap reverses the bytes in the given integer value n.
-    {
-        // const auto dump = [](auto value)
-        // {
-        //     std::cout << std::hex << std::uppercase << std::setfill('0') << std::setw(sizeof(value) * 2) << value <<
-        //         " : ";
-        //     for (std::size_t i{}; i != sizeof(value); i++, value >>= 8)
-        //         std::cout << std::setw(2) << static_cast<unsigned>(decltype(value)(0xFF) & value) << ' ';
-        //     std::cout << std::dec << std::endl;
-        // };
-        //
-        // static_assert(std::byteswap('a') == 'a');
-        //
-        // std::cout << "byteswap for U16:" << std::endl;
-        // constexpr auto x = std::uint16_t(0xCAFE);
-        // dump(x);
-        // dump(std::byteswap(x));
-        //
-        // std::cout << "\nbyteswap for U32:" << std::endl;
-        // constexpr auto y = std::uint32_t(0xDEADBEEFu);
-        // dump(y);
-        // dump(std::byteswap(y));
-        //
-        // std::cout << "\nbyteswap for U64:" << std::endl;
-        // constexpr auto z = std::uint64_t{0x0123456789ABCDEFull};
-        // dump(z);
-        // dump(std::byteswap(z));
-    }
-}
-}
-
-
-namespace stream_manipulation {
-void demo()
-{
-    {
-        std::ostringstream oss;
-        oss << std::boolalpha << false << std::noboolalpha << true;
-        assert(oss.str() == "false1");
-    }
-}
-}
 
 
 namespace common_mathematical_functions {
@@ -2199,12 +1983,6 @@ int main()
     constraint_derived_from::demo();
     demonstrate_constraints::demo();
     shared_mutex::demo();
-    async_and_future::demo();
-    at_exit::demo();
-    variant::demo();
-    bind_and_bind_front_and_bind_back::demo();
-    demo_bit_operations::demo();
-    stream_manipulation::demo();
     common_mathematical_functions::demo();
     chrono_library::demo();
     copy::demo();
@@ -2258,6 +2036,7 @@ int main()
     classes::demo();
     exceptions::demo();
     transformations::demo();
+    bits::demo();
 
     return EXIT_SUCCESS;
 }

@@ -89,9 +89,36 @@ void demo()
 }
 
 
+namespace async_and_future {
+void demo()
+{
+    std::thread::id async_thread_id;
+    const auto sum = [&](int a, int b) -> int
+    {
+        async_thread_id = std::this_thread::get_id();
+        return a + b;
+    };
+    {
+        std::thread::id main_thread_id = std::this_thread::get_id();
+        std::future future = std::async(sum, 1, 2); // Call the function in a thread.
+        const int result = future.get(); // Wait till the calculation is ready and get the result.
+        assert(result == 3);
+        assert(main_thread_id != async_thread_id);
+    }
+    {
+        // Default launch policy (launch policy can be omitted).
+        std::future future = std::async(std::launch::async | std::launch::deferred, sum, 1, 2);
+        // std::launch::async: Run as soon as possible.
+        // std::launch::deferred: Wait till result is requested, then run.
+    }
+}
+}
+
+
 
 void demo() {
     atomic_wait::demo();
     timed_mutex::demo();
+    async_and_future::demo();
 }
 }

@@ -26,14 +26,16 @@ Copyright (©) 2021-2026 Teus Benschop.
 namespace functional {
 
 
-void move_only_function() {
-    // https://en.cppreference.com/w/cpp/utility/functional/move_only_function.html
-    // C++23 introduces the std::move_only_function,
-    // a new utility for handling callable objects that don't need to be copyable.
-    // It's a streamlined alternative to std::function,
-    // designed for cases where you're working with move-only types
-    // like std::unique_ptr or other non-copyable resources.
-
+namespace move_only_function {
+// https://en.cppreference.com/w/cpp/utility/functional/move_only_function.html
+// C++23 introduces the std::move_only_function,
+// a new utility for handling callable objects that don't need to be copyable.
+// It's a streamlined alternative to std::function,
+// designed for cases where you're working with move-only types
+// like std::unique_ptr or other non-copyable resources.
+void demo()
+{
+    return;
     std::packaged_task<double()> packaged_task([](){ return 3.14159; });
 
     std::future<double> future = packaged_task.get_future();
@@ -50,6 +52,8 @@ void move_only_function() {
     std::cout << future.get();
 
 }
+}
+
 
 
 namespace brackets_are_optional_for_lambdas {
@@ -173,15 +177,71 @@ void demo(){}
 }
 
 
+namespace binding {
+// Demo of std::bind, including bind_front and bind_back.
+// https://cppreference.com/w/cpp/utility/functional/bind.html
+void demo()
+{
+    constexpr auto minus = [](int a, int b) -> int
+    {
+        return a - b;
+    };
+
+    struct Foo
+    {
+        constexpr int minus(int a, int b) const noexcept
+        {
+            return a - b;
+        }
+
+        int val10 = 10;
+    };
+
+    // Struct instance.
+    Foo foo;
+
+    // The function template std::bind generates a forwarding call wrapper for f.
+    // Calling this wrapper is equivalent to invoking f with some of its arguments bound to args.
+
+    const auto value1_minus_value2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
+    assert(value1_minus_value2(1, 2) == -1);
+
+    const auto value_minus_3 = std::bind(minus, std::placeholders::_1, 3);
+    assert(value_minus_3(1) == -2);
+
+    // Bind to a pointer to a member function.
+    const auto value1_minus_value2_via_member_fn = std::bind(&Foo::minus, &foo, std::placeholders::_1,
+                                                             std::placeholders::_2);
+    assert(value1_minus_value2_via_member_fn(1, 2) == -1);
+
+    // Bind to a pointer to a data member.
+    const auto get_value_from_struct = std::bind(&Foo::val10, std::placeholders::_1);
+    assert(get_value_from_struct(foo) == 10);
+
+    // Function templates std::bind_front and std::bind_back
+    // generate a perfect forwarding call wrapper
+    // which allows to invoke the callable target
+    // with its first or last sizeof...(Args) parameters bound to args.
+
+    const auto fifty_minus_value = std::bind_front(minus, 50);
+    assert(fifty_minus_value(3) == 47); // equivalent to `minus(50, 3)`: 47.
+
+    const auto value_minus_fifty = std::bind_back(minus, 50);
+    assert(value_minus_fifty(5) == -45);
+}
+}
+
+
+
 
 void demo() {
-    //move_only_function();
+    move_only_function::demo();
     brackets_are_optional_for_lambdas::demo();
     lambda_capture::demo();
     assign_two_lambdas_to_same_function_object::demo();
     stateless_lambda_function::demo();
     keyword_auto_for_lambdas::demo();
-
+    binding::demo();
 }
 }
 

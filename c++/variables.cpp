@@ -23,6 +23,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <iostream>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace variables {
@@ -339,6 +340,30 @@ void demo()
 }
 
 
+namespace variant {
+void demo()
+{
+    // Initialized with the monostate as that is the first variant.
+    std::variant<std::monostate, int, float> variant;
+
+    // Getting the wrong variant throws a bad_variant_access exception.
+    try
+    {
+        std::get<int>(variant);
+        assert(false);
+    }
+    catch (const std::bad_variant_access& e)
+    {
+        assert(true);
+    }
+
+    variant = 10;
+    assert(std::get<int>(variant) == 10);
+    assert(std::get<1>(variant) == 10); // Same as above.
+    assert(std::holds_alternative<int>(variant));
+}
+}
+
 
 
 void demo()
@@ -348,6 +373,7 @@ void demo()
     forward_as_tuple::demo();
     auto_x_decay_copy::demo();
     aggregate_initialization::demo();
+    variant::demo();
 }
 
 

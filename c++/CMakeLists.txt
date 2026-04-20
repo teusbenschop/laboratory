@@ -28,5 +28,6 @@ add_executable(cpp
         coroutines.cpp
         exceptions.cpp
         transformations.cpp
+        bits.cpp
 
 )

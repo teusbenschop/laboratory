@@ -471,6 +471,19 @@ void demo(){}
 }
 
 
+namespace at_exit {
+void demo()
+{
+    const auto fn = []() -> void
+    {
+        assert(true); // To see the effect on exit: Set to false.
+    };
+    std::atexit(fn); // Register "fn" to run at normal program exit.
+}
+}
+
+
+
 void demo() {
     alignment::demo();
     alias_declarations_in_init_statements::demo();
@@ -481,6 +494,7 @@ void demo() {
     const_types::demo();
     operator_overloading::demo();
     space_ship_operator::demo();
+    at_exit::demo();
 }
 
 }
