@@ -20,6 +20,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "variables.h"
 
 #include <cassert>
+#include <functional>
 #include <iostream>
 #include <type_traits>
 #include <utility>
@@ -365,6 +366,116 @@ void demo()
 }
 
 
+namespace designated_initializers {
+// https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers
+
+struct S1 {
+    const int x{};
+    const int y{};
+    const int z{};
+};
+
+// Fails because designator order does not match declaration order.
+//constexpr S1 s1 {.y = 2, .x = 1};
+
+// OK: s2.y initialized to 0.
+constexpr S1 s2 {.x = 1, .z = 2};
+static_assert(s2.x == 1);
+static_assert(s2.y == 0);
+static_assert(s2.z == 2);
+
+struct S2 {
+    const int o {33};
+    const int n {42};
+    const int m {-1};
+};
+constexpr S2 s3 {.m = 21};
+// Initializes o with 33.
+// Then initializes n with = 42.
+// Then initializes m with = 21.
+static_assert(s3.o == 33);
+static_assert(s3.n == 42);
+static_assert(s3.m == 21);
+
+void demo()
+{
+}
+}
+
+
+
+namespace mathematical_functions {
+void demo()
+{
+    assert(std::ceil(1.2f) == 2);
+}
+}
+
+
+namespace reference_wrappers {
+void demo()
+{
+    const auto fn = [](int& n1, int& n2, [[maybe_unused]] const int& n3)
+    {
+        n1++; // Increases the copy of n1 stored in the function object.
+        n2++; // Increases the caller's n2.
+        // n3++; Compile error: cannot assign to variable 'n3' with const-qualified type 'const int &'
+    };
+
+    int n1{1};
+    int n2{2};
+    int n3{3};
+
+    std::function<void()> bound_fn = std::bind(fn, n1, std::ref(n2), std::cref(n3));
+
+    bound_fn();
+
+    assert(n1 == 1); // This is left unchanged, because it was passed by value to the function.
+    assert(n2 == 3); // This was passed by reference, and got increased by the function.
+    assert(n3 == 3); // Passed by const reference, could not get increased.
+}
+}
+
+
+
+namespace enable_shared_from_this {
+// The std::enable_shared_from_this allows an object
+// that is currently managed by a std::shared_ptr
+// to safely generate additional std::shared_ptr instances, pt1, pt2 etc.,
+// that all share ownership of the object with the original shared_ptr.
+void demo()
+{
+    struct Struct : public std::enable_shared_from_this<Struct>
+    {
+        std::shared_ptr<Struct> getptr()
+        {
+            return shared_from_this();
+        }
+    };
+
+    // The original and derived shared pointers share the same object.
+    {
+        std::shared_ptr<Struct> object1 = std::make_shared<Struct>();
+        std::shared_ptr<Struct> object2 = object1->getptr();
+        assert(object1 == object2);
+        assert(object1.use_count() == 2);
+        assert(object2.use_count() == 2);
+    }
+
+    // Bad use: shared_from_this is called without having std::shared_ptr owning the caller.
+    // It will throw an exception.
+    try
+    {
+        Struct object1;
+        std::shared_ptr<Struct> object2 = object1.getptr();
+        assert(false); // It should never arrive here.
+    }
+    catch (std::bad_weak_ptr& e)
+    {
+        assert(e.what() == std::string("bad_weak_ptr"));
+    }
+}
+}
 
 void demo()
 {
@@ -374,6 +485,10 @@ void demo()
     auto_x_decay_copy::demo();
     aggregate_initialization::demo();
     variant::demo();
+    designated_initializers::demo();
+    mathematical_functions::demo();
+    reference_wrappers::demo();
+    enable_shared_from_this::demo();
 }
 
 

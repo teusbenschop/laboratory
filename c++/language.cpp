@@ -19,6 +19,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "language.h"
 
 #include <cassert>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -483,6 +484,108 @@ void demo()
 }
 
 
+namespace attribute_assume {
+// Specifies that the given expression is assumed to always evaluate to true
+// to allow compiler optimizations based on the information given.
+// Since assumptions cause runtime-undefined behavior if they do not hold,
+// they should be used sparingly.
+// https://en.cppreference.com/w/cpp/language/attributes/assume
+// One correct way to use them is to follow assertions with assumptions.
+
+[[maybe_unused]] auto f = [] (auto x) {
+    // Compiler may assume x is positive.
+    assert(x > 0);
+    [[assume(x > 0)]];
+};
+
+void demo() {}
+
+}
+
+
+namespace attribute_likely_unlikely {
+// https://en.cppreference.com/w/cpp/language/attributes/likely
+// Attribute to hint the compiler for the likely or unlikely path of execution,
+// allowing the compiler to optimize the code.
+constexpr double power(double x, long long n) noexcept
+{
+    if (n > 0) [[likely]]
+      return x * std::pow(x, n - 1);
+    else [[unlikely]]
+      return 1;
+}
+
+constexpr long long factorial(long long n) noexcept
+{
+    if (n > 1) [[likely]]
+      return n * factorial(n - 1);
+    else [[unlikely]]
+      return 1;
+}
+
+constexpr double cosine(double x) noexcept
+{
+    constexpr long long precision{16LL};
+    double y{};
+    for (auto n{0LL}; n < precision; n += 2LL) [[likely]]
+      y += pow(x, n) / (n & 2LL ? -factorial(n) : factorial(n));
+    return y;
+}
+
+void demo()
+{
+
+}
+}
+
+
+
+namespace attribute_no_unique_address {
+// https://en.cppreference.com/w/cpp/language/attributes/no_unique_address
+
+struct Empty {}; // The size of any object or empty class type is at least 1.
+static_assert(sizeof(Empty) == 1);
+
+struct X
+{
+    int i; // 4 bytes.
+    Empty e; // At least one more byte is needed to give ‘e’ a unique address
+};
+static_assert(sizeof(X) == 8);
+
+struct Y
+{
+    int i; // 4 bytes.
+    [[no_unique_address]] Empty e; // Empty member optimized out.
+};
+static_assert(sizeof(Y) == 4);
+
+struct Z
+{
+    char c;
+    // e1 and e2 cannot share the same address because they have the
+    // same type, even though they are marked with [[no_unique_address]].
+    // However, either may share address with ‘c’.
+    [[no_unique_address]] Empty e1, e2;
+};
+static_assert(sizeof(Z) == 2);
+
+struct W
+{
+    char c[2];
+    // e1 and e2 cannot have the same address, but one of
+    // them can share with c[0] and the other with c[1]:
+    [[no_unique_address]] Empty e1, e2;
+};
+static_assert(sizeof(W) == 3);
+
+void demo()
+{
+}
+}
+
+
+
 
 void demo() {
     alignment::demo();
@@ -495,6 +598,9 @@ void demo() {
     operator_overloading::demo();
     space_ship_operator::demo();
     at_exit::demo();
+    attribute_assume::demo();
+    attribute_likely_unlikely::demo();
+    attribute_no_unique_address::demo();
 }
 
 }

@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 26)
 
 add_executable(cpp
         main.cpp
-        scoped_timer.cpp
+        clocking.cpp
         searching.cpp
         bounds_limits.cpp
         counting.cpp

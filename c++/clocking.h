@@ -45,3 +45,7 @@ private:
 void demo();
 
 }
+
+namespace clocking {
+void demo();
+}

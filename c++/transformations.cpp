@@ -52,9 +52,29 @@ void demo()
 }
 
 
+namespace copy {
+void demo()
+{
+    constexpr auto values = std::array<int, 3>{1, 2, 3};
+    {
+        std::vector<int> copy{};
+        std::copy(values.begin(), values.end(), std::back_inserter(copy));
+        assert(copy.size() == 3);
+    }
+    {
+        std::vector<int> copy{};
+        std::ranges::copy(values, std::back_inserter(copy));
+        assert(copy.size() == 3);
+    }
+}
+}
+
+
+
 
 void demo()
 {
     accumulate::demo();
+    copy::demo();
 }
 }
