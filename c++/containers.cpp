@@ -22,6 +22,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <deque>
 #include <forward_list>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <queue>
 #include <set>
@@ -690,6 +691,35 @@ void demo()
 }
 
 
+namespace inserter {
+// The inserter is a convenience function template that constructs a std::insert_iterator
+// for the container c and its iterator i with the type deduced from the type of the argument.
+void demo()
+{
+    std::multiset<int> ms{1, 2, 3};
+
+    // The std::inserter is commonly used with multi-sets.
+    // Add 5 times 2 to the end of the container.
+    std::fill_n(std::inserter(ms, ms.end()), 5, 2);
+    {
+        std::multiset<int> standard{1, 2, 2, 2, 2, 2, 2, 3};
+        assert(ms == standard);
+    }
+
+    std::vector<int> d{100, 200, 300};
+    std::vector<int> v{1, 2, 3, 4, 5};
+
+    // when inserting in a sequence container, insertion point advances
+    // because each std::insert_iterator::operator= updates the target iterator
+    std::ranges::copy(d, std::inserter(v, std::next(v.begin())));
+    {
+        std::vector<int> standard{1, 100, 200, 300, 2, 3, 4, 5};
+        assert(v == standard);
+    }
+}
+}
+
+
 
 void demo()
 {
@@ -713,5 +743,6 @@ void demo()
     priority_queues::demo();
     span::demo();
     performance::demo();
+    inserter::demo();
 }
 }

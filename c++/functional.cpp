@@ -232,6 +232,70 @@ void demo()
 }
 
 
+namespace member_function {
+// Function template std::mem_fn generates wrapper objects for pointers to members.
+// It can store, copy, and invoke a pointer to member.
+
+struct Foo
+{
+    std::string display_greeting()
+    {
+        return "hello";
+    }
+
+    int display_number(int i)
+    {
+        return i;
+    }
+
+    int add_xy(int x, int y)
+    {
+        return data + x + y;
+    }
+
+    template <typename... Args>
+    int add_many1(Args... args)
+    {
+        return data + (args + ...);
+    }
+x
+    auto add_many2(auto... args) // C++20 required
+    {
+        return data + (args + ...);
+    }
+
+    int data = 7;
+};
+
+void demo()
+{
+    auto f = Foo{};
+
+    constexpr auto greet = std::mem_fn(&Foo::display_greeting);
+    assert(greet(f) == "hello");
+
+    const auto print_num = std::mem_fn(&Foo::display_number);
+    assert(print_num(f, 42) == 42);
+
+    const auto access_data = std::mem_fn(&Foo::data);
+    assert(access_data(f) == 7);
+
+    const auto add_xy = std::mem_fn(&Foo::add_xy);
+    assert(add_xy(f, 1, 2) == 10);
+
+    const auto u = std::make_unique<Foo>();
+    assert(access_data(u) == 7);
+    assert(add_xy(u, 1, 2) == 10);
+
+    const auto add_many = std::mem_fn(&Foo::add_many1<short, int, long>);
+    assert(add_many(u, 1, 2, 3) == 13);
+
+    const auto add_them = std::mem_fn(&Foo::add_many2<short, int, float, double>);
+    assert(add_them(u, 5, 7, 10.0f, 13.0) == 42);
+}
+}
+
+
 
 
 void demo() {
@@ -242,6 +306,7 @@ void demo() {
     stateless_lambda_function::demo();
     keyword_auto_for_lambdas::demo();
     binding::demo();
+    member_function::demo();
 }
 }
 

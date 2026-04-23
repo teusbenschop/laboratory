@@ -22,6 +22,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <format>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <thread>
@@ -114,11 +115,34 @@ void demo()
 
 
 
+
+namespace output_manipulation {
+void demo()
+{
+    {
+        // When filling put the value at the left.
+        std::stringstream ss;
+        ss << std::left << std::setfill('_') << std::setw(10) << -1.23;
+        assert(ss.str() == "-1.23_____");
+    }
+    {
+        // When filling up put the value at the right (this is the default normally).
+        std::stringstream ss;
+        ss << std::right << std::setfill('_') << std::setw(10) << -1.23;
+        assert(ss.str() == "_____-1.23");
+    }
+}
+}
+
+
+
+
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
     stream_manipulation::demo();
     osyncstream::demo();
+    output_manipulation::demo();
 }
 
 

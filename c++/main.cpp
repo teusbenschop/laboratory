@@ -82,116 +82,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 
-namespace output_manipulation {
-void demo()
-{
-    {
-        // When filling put the value at the left.
-        std::stringstream ss;
-        ss << std::left << std::setfill('_') << std::setw(10) << -1.23;
-        assert(ss.str() == "-1.23_____");
-    }
-    {
-        // When filling up put the value at the right (this is the default normally).
-        std::stringstream ss;
-        ss << std::right << std::setfill('_') << std::setw(10) << -1.23;
-        assert(ss.str() == "_____-1.23");
-    }
-}
-}
 
-
-namespace inserter {
-// The inserter is a convenience function template that constructs a std::insert_iterator
-// for the container c and its iterator i with the type deduced from the type of the argument.
-void demo()
-{
-    std::multiset<int> s{1, 2, 3};
-
-    // The std::inserter is commonly used with multi-sets.
-    // Add 5 times 2 to the end of the container.
-    std::fill_n(std::inserter(s, s.end()), 5, 2);
-    {
-        std::multiset<int> standard{1, 2, 2, 2, 2, 2, 2, 3};
-        assert(s == standard);
-    }
-
-    std::vector<int> d{100, 200, 300};
-    std::vector<int> v{1, 2, 3, 4, 5};
-
-    // when inserting in a sequence container, insertion point advances
-    // because each std::insert_iterator::operator= updates the target iterator
-    std::copy(d.begin(), d.end(), std::inserter(v, std::next(v.begin())));
-    {
-        std::vector<int> standard{1, 100, 200, 300, 2, 3, 4, 5};
-        assert(v == standard);
-    }
-}
-}
-
-
-namespace member_function {
-// Function template std::mem_fn generates wrapper objects for pointers to members.
-// It can store, copy, and invoke a pointer to member.
-
-struct Foo
-{
-    std::string display_greeting()
-    {
-        return "hello";
-    }
-
-    int display_number(int i)
-    {
-        return i;
-    }
-
-    int add_xy(int x, int y)
-    {
-        return data + x + y;
-    }
-
-    template <typename... Args>
-    int add_many(Args... args)
-    {
-        return data + (args + ...);
-    }
-
-    auto add_them(auto... args) // C++20 required
-    {
-        return data + (args + ...);
-    }
-
-    int data = 7;
-};
-
-void demo()
-{
-    auto f = Foo{};
-
-    constexpr auto greet = std::mem_fn(&Foo::display_greeting);
-    assert(greet(f) == "hello");
-
-    const auto print_num = std::mem_fn(&Foo::display_number);
-    assert(print_num(f, 42) == 42);
-
-    const auto access_data = std::mem_fn(&Foo::data);
-    assert(access_data(f) == 7);
-
-    const auto add_xy = std::mem_fn(&Foo::add_xy);
-    assert(add_xy(f, 1, 2) == 10);
-
-    const auto u = std::make_unique<Foo>();
-    assert(access_data(u) == 7);
-    assert(add_xy(u, 1, 2) == 10);
-
-    const auto add_many = std::mem_fn(&Foo::add_many<short, int, long>);
-    assert(add_many(u, 1, 2, 3) == 13);
-
-    const auto add_them = std::mem_fn(&Foo::add_them<short, int, float, double>);
-    assert(add_them(u, 5, 7, 10.0f, 13.0) == 42);
-}
-}
 
 
 namespace priority_queue {
@@ -1258,8 +1149,6 @@ int main()
     shared_mutex::demo();
     clocking::demo();
     filesystem::demo();
-    output_manipulation::demo();
-    inserter::demo();
     member_function::demo();
     priority_queue::demo();
     time_formatting::demo();
