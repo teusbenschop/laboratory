@@ -20,7 +20,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <algorithm>
 #include <array>
 #include <barrier>
-#include <bit>
 #include <cassert>
 #include <chrono>
 #include <complex>
@@ -43,13 +42,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <random>
 #include <ranges>
 #include <regex>
-#include <semaphore>
 #include <set>
 #include <shared_mutex>
 #include <source_location>
 #include <syncstream>
 #include <thread>
-#include <unordered_set>
 #include <vector>
 
 #include "bad_coding.h"
@@ -69,6 +66,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "latches_barriers.h"
 #include "modules.h"
 #include "clocking.h"
+#include "filesystem.h"
 #include "searching.h"
 #include "shared_mutex.h"
 #include "templates.h"
@@ -82,129 +80,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 
-
-
-namespace swapping_and_exchanging {
-void demo()
-{
-    {
-        int a = 1, b = 2;
-        std::swap(a, b);
-        assert(a == 2);
-        assert(b == 1);
-    }
-    {
-        int a = 1;
-        // Put a new value in a, and return the old value.
-        const int b = std::exchange(a, 2);
-        assert(a == 2);
-        assert(b == 1);
-    }
-}
-}
-
-namespace execution_policies {
-void demo()
-{
-    std::array<int, 5> values = {1, 2, 3, 4, 5};
-    [[maybe_unused]] const auto fn = []([[maybe_unused]] const int n)
-    {
-    };
-    // std::for_each(std::execution::par_unseq, values.begin(), values.end(), fn);
-    // Clang does not yet support parallel execution.
-    std::for_each(values.begin(), values.end(), fn);
-}
-}
-
-
-namespace filesystem {
-void demo()
-{
-    {
-        std::string url = "/var/log/app";
-        std::filesystem::path p(url);
-        const auto dirname = p.parent_path().string();
-        assert(dirname == "/var/log");
-    }
-
-    assert(std::filesystem::path::preferred_separator == '/');
-
-    {
-        std::filesystem::path p("log");
-        std::filesystem::remove(p);
-    }
-
-    {
-        std::filesystem::path path("/tmp/hi.txt");
-        assert(std::filesystem::exists (path) == false);
-    }
-
-    std::filesystem::path path(R"(/tmp)");
-    for (const auto& directory_entry : std::filesystem::directory_iterator{path})
-    {
-        std::filesystem::path path = directory_entry.path();
-        assert(!path.empty());
-    }
-}
-}
-
-
-namespace demo_initializer_list {
-// The initializer_list is a light-weight proxy object that gives access to the backing array.
-template <class T>
-struct S
-{
-    std::vector<T> v;
-
-    S(std::initializer_list<T> l) : v(l)
-    {
-    }
-
-    void append(std::initializer_list<T> l)
-    {
-        v.insert(v.end(), l.begin(), l.end());
-    }
-
-    std::pair<const T*, std::size_t> c_arr() const
-    {
-        return {&v[0], v.size()}; // copy list-initialization in return statement
-        // Note this is NOT a use of std::initializer_list
-    }
-};
-
-template <typename T>
-void templated_fn(T)
-{
-}
-
-void demo()
-{
-    S<int> s = {1, 2, 3, 4, 5}; // copy list-initialization
-    s.append({6, 7, 8}); // list-initialization in function call
-    assert(s.c_arr().second == 8); // Assert the backing array size.
-    assert(s.v.size() == 8);
-
-    // Range-for over brace-init-list
-    for (int x : {-1, -2, -3}) // the rule for auto makes this ranged-for work
-        assert(x == -3 or x == -2 or x == -1);
-
-    auto al = {10, 11, 12}; // special rule for auto
-    assert(al.size() == 3);
-
-    auto la = al; // a shallow-copy of top-level proxy object
-    assert(la.begin() == al.begin()); // guaranteed: backing array is the same
-
-    std::initializer_list<int> il{-3, -2, -1};
-    assert(il.begin()[2] == -1); // note the replacement for absent operator[]
-    il = al; // shallow-copy
-    assert(il.begin() == al.begin()); // guaranteed
-
-    // templated_fn({1, 2, 3}); // compiler error! "{1, 2, 3}" is not an expression,
-    // it has no type, and so T cannot be deduced
-    templated_fn<std::initializer_list<int>>({1, 2, 3}); // OK
-    templated_fn<std::vector<int>>({1, 2, 3}); // also OK
-}
-}
 
 
 namespace output_manipulation {
@@ -1360,101 +1235,7 @@ void demo()
 }
 
 
-namespace lock_multiple_simultaneously {
-// This demonstrates how to use std::lock to lock multiple locks at once simultaneously.
-// This avoids the risk of having deadlocks in the transfer function.
-void demo()
-{
-    struct account {
-        int m_balance{0};
-        std::mutex m_mutex{};
-    };
 
-    const auto transfer_money = [](account& from, account& to, int amount) -> void {
-        // Define two deferred unique locks.
-        auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
-        auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
-        // Lock both unique_locks at the same time to avoid a deadlock.
-        std::lock(lock1, lock2);
-        // Do the transfer.
-        from.m_balance -= amount;
-        to.m_balance += amount;
-        // End of scope releases locks.
-    };
-
-    auto account1 = account{100};
-    auto account2 = account{30};
-    transfer_money(account1, account2, 20);
-    assert (account1.m_balance == 80);
-    assert (account2.m_balance == 50);
-}
-}
-
-
-namespace future_and_promise_and_exception {
-// It is possible to set an exception in a promise.
-void demo()
-{
-    return; // Fails on macOS Tahoe
-    const auto divide = [] (int a, int b, std::promise<int>& promise) {
-        try {
-            const auto result = a / b;
-            promise.set_value(result);
-        } catch(...) {
-            try {
-                // Store anything thrown in the promise
-                promise.set_exception(std::current_exception());
-                // or throw a custom exception instead.
-                // promise.set_exception(std::make_exception_ptr(MyException("mine")));
-            } catch(...) {} // set_exception() may throw too.
-        }
-    };
-
-    {
-        std::promise<int> promise;
-        std::thread thread {divide, 45, 5, std::ref(promise)};
-        auto future = promise.get_future();
-        auto result = future.get();
-        std::cout << "Result should be " << 45 / 5 << " and it is " << result << std::endl;
-        thread.join();
-    }
-    try {
-        std::promise<int> promise;
-        std::thread thread {divide, 45, 0, std::ref(promise)};
-        auto future = promise.get_future();
-        auto result = future.get();
-        std::cout << result << std::endl;
-        std::cout << "Result should give an exception" << std::endl;
-        thread.join();
-    } catch (const std::exception& exception) {
-        std::cout << exception.what() << std::endl;
-    }
-}
-}
-
-
-namespace osyncstream {
-// https://en.cppreference.com/w/cpp/io/basic_osyncstream
-// The class template std::basic_osyncstream is a convenience wrapper for std::basic_syncbuf.
-// It provides a mechanism to synchronize threads writing to the same stream.
-void demo()
-{
-    const auto stream_worker = []([[maybe_unused]] int id) {
-        using namespace std::literals::chrono_literals;
-        for (int i = 0; i < 2; i++) {
-            std::this_thread::sleep_for(1ms);
-            // std::osyncstream synced_out(std::cout);
-            // synced_out << "worker " << id << std::endl;
-        }
-    };
-
-    std::jthread threads [4];
-    for (int i = 0; i < 4; ++i) {
-        threads[i] = std::jthread(stream_worker, i);
-    }
-
-}
-}
 
 
 
@@ -1476,10 +1257,7 @@ int main()
     demonstrate_constraints::demo();
     shared_mutex::demo();
     clocking::demo();
-    swapping_and_exchanging::demo();
-    execution_policies::demo();
     filesystem::demo();
-    demo_initializer_list::demo();
     output_manipulation::demo();
     inserter::demo();
     member_function::demo();
@@ -1499,8 +1277,6 @@ int main()
     barrier_jthread_stop_token::demo();
     heterogenous_collections_with_variant::demo();
     atomic_reference::demo();
-    lock_multiple_simultaneously::demo();
-    future_and_promise_and_exception::demo();
     coroutines::demo();
     modules::demo();
     concurrency::demo();

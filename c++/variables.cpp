@@ -477,6 +477,88 @@ void demo()
 }
 }
 
+
+namespace swapping_and_exchanging {
+void demo()
+{
+    {
+        // Swap values in a and b.
+        int a = 1, b = 2;
+        std::swap(a, b);
+        assert(a == 2);
+        assert(b == 1);
+    }
+    {
+        int a = 1;
+        // Put a new value in a, and return the old value.
+        const int b = std::exchange(a, 2);
+        assert(a == 2);
+        assert(b == 1);
+    }
+}
+}
+
+
+namespace initializer_list {
+// The initializer_list is a light-weight proxy object that gives access to the backing array.
+template <typename T>
+struct Struct
+{
+    std::vector<T> vec;
+
+    Struct(std::initializer_list<T> il) : vec(il)
+    {
+    }
+
+    void append(std::initializer_list<T> il)
+    {
+        vec.insert(vec.end(), il.begin(), il.end());
+    }
+
+    std::pair<const T*, std::size_t> c_arr() const
+    {
+        // Copy list-initialization in return statement.
+        // Note this is NOT a use of std::initializer_list.
+        return {std::addressof(vec.at(0)), vec.size()};
+    }
+};
+
+template <typename T>
+void templated_fn(T)
+{
+}
+
+void demo()
+{
+    Struct<int> s = {1, 2, 3, 4, 5}; // copy list-initialization
+    s.append({6, 7, 8}); // list-initialization in function call
+    assert(s.c_arr().second == 8); // Assert the backing array size.
+    assert(s.vec.size() == 8);
+
+    // Range-for over brace-init-list
+    for (int x : {-1, -2, -3}) // the rule for auto makes this ranged-for work
+        assert(x == -3 or x == -2 or x == -1);
+
+    auto il1 = {10, 11, 12}; // special rule for auto
+    assert(il1.size() == 3);
+
+    auto il_copy = il1; // a shallow-copy of top-level proxy object
+    assert(il_copy.begin() == il1.begin()); // guaranteed: backing array is the same
+
+    std::initializer_list<int> il2{-3, -2, -1};
+    assert(il2.begin()[2] == -1); // note the replacement for absent operator[]
+    il2 = il1; // shallow-copy
+    assert(il2.begin() == il1.begin()); // guaranteed
+
+    // templated_fn({1, 2, 3}); // compiler error! "{1, 2, 3}" is not an expression.
+    // It has no type, and so T cannot be deduced.
+    templated_fn<std::initializer_list<int>>({1, 2, 3}); // OK
+    templated_fn<std::vector<int>>({1, 2, 3}); // Also OK
+}
+}
+
+
+
 void demo()
 {
     forward_like::demo();
@@ -489,6 +571,8 @@ void demo()
     mathematical_functions::demo();
     reference_wrappers::demo();
     enable_shared_from_this::demo();
+    swapping_and_exchanging::demo();
+    initializer_list::demo();
 }
 
 

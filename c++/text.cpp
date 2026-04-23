@@ -21,8 +21,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <cassert>
 #include <format>
+#include <iostream>
 #include <string>
 #include <sstream>
+#include <thread>
+#include <__thread/jthread.h>
 
 
 namespace text {
@@ -86,10 +89,36 @@ void demo()
 }
 
 
+namespace osyncstream {
+// https://en.cppreference.com/w/cpp/io/basic_osyncstream
+// The class template std::basic_osyncstream is a convenience wrapper for std::basic_syncbuf.
+// It provides a mechanism to synchronize threads writing to the same stream.
+void demo()
+{
+    const auto stream_worker = []([[maybe_unused]] int id) {
+        using namespace std::literals::chrono_literals;
+        for (int i = 0; i < 2; i++) {
+            std::this_thread::sleep_for(1ms);
+            // std::osyncstream synced_out(std::cout);
+            // synced_out << "worker " << id << std::endl;
+        }
+    };
+
+    std::jthread threads [4];
+    for (int i = 0; i < 4; ++i) {
+        threads[i] = std::jthread(stream_worker, i);
+    }
+
+}
+}
+
+
+
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
     stream_manipulation::demo();
+    osyncstream::demo();
 }
 
 

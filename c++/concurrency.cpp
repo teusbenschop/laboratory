@@ -341,6 +341,90 @@ void demo()
 }
 
 
+namespace future_and_promise_and_exception {
+// It is possible to set an exception in a promise.
+// If it is set, then it gets thrown in the calling environment.
+void demo()
+{
+    const auto divide = [] (int a, int b, std::promise<int>& promise) {
+        try {
+            if (not b)
+                throw std::runtime_error("cannot divide by zero");
+            const auto result = a / b;
+            promise.set_value(result);
+        } catch(...) {
+            try {
+                // Store the exception in the promise.
+                promise.set_exception(std::current_exception());
+                // Or store custom exception instead.
+                // promise.set_exception(std::make_exception_ptr(MyException("mine")));
+            } catch(...) {} // set_exception() may throw too.
+        }
+    };
+
+    {
+        std::promise<int> promise;
+        std::jthread thread {divide, 45, 5, std::ref(promise)};
+        auto future = promise.get_future();
+        int result = future.get();
+        assert (result == 9);
+    }
+    try {
+        std::promise<int> promise;
+        std::jthread thread {divide, 45, 0, std::ref(promise)};
+        auto future = promise.get_future();
+        auto result = future.get();
+        assert(false);
+    } catch (const std::exception& exception) {
+        assert(exception.what() == std::string("cannot divide by zero"));
+    }
+}
+}
+
+
+namespace execution_policies {
+void demo()
+{
+    std::array<int, 5> values = {1, 2, 3, 4, 5};
+    [[maybe_unused]] const auto fn = []([[maybe_unused]] const int n)
+    {
+    };
+    // std::for_each(std::execution::par_unseq, values.begin(), values.end(), fn);
+    // Clang on macOS Tahoe does not support parallel execution.
+    std::for_each(values.begin(), values.end(), fn);
+}
+}
+
+
+namespace lock_multiple_simultaneously {
+// This demonstrates how to use std::lock to lock multiple locks at once simultaneously.
+// This avoids the risk of having deadlocks in the transfer function.
+void demo()
+{
+    struct account {
+        int m_balance{0};
+        std::mutex m_mutex{};
+    };
+
+    const auto transfer_money = [](account& from, account& to, int amount) -> void {
+        // Define two deferred unique locks.
+        auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
+        auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
+        // Lock both unique_locks at the same time to avoid a deadlock.
+        std::lock(lock1, lock2);
+        // Do the transfer.
+        from.m_balance -= amount;
+        to.m_balance += amount;
+        // End of scope releases locks.
+    };
+
+    auto account1 = account{100};
+    auto account2 = account{30};
+    transfer_money(account1, account2, 20);
+    assert (account1.m_balance == 80);
+    assert (account2.m_balance == 50);
+}
+}
 
 
 void demo()
@@ -353,5 +437,8 @@ void demo()
     jthread::demo();
     timer_with_jthread_and_timed_mutex_and_condition_variable::demo();
     condition_variables::demo();
+    future_and_promise_and_exception::demo();
+    execution_policies::demo();
+    lock_multiple_simultaneously::demo();
 }
 }
