@@ -26,6 +26,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "searching.h"
 
+#include <iostream>
+#include <regex>
+
 
 namespace searching {
 
@@ -151,6 +154,72 @@ void demo() {}
 }
 
 
+namespace contains_and_contains_subrange {
+void demo()
+{
+    constexpr auto haystack = std::array{3, 1, 4, 1, 5};
+    constexpr auto needle = std::array{1, 4, 1};
+    constexpr auto bodkin = std::array{2, 5, 2};
+    static_assert(std::ranges::contains(haystack, 4));
+    static_assert(not std::ranges::contains(haystack, 6));
+    static_assert(std::ranges::contains_subrange(haystack, needle));
+    static_assert(not std::ranges::contains_subrange(haystack, bodkin));
+
+    constexpr std::array<std::complex<double>, 3> nums{
+            {
+                {1, 2},
+                {3, 4},
+                {5, 6}
+            }
+    };
+    static_assert(std::ranges::contains(nums, std::complex<double>{3, 4}));
+}
+}
+
+
+namespace regex {
+void demo()
+{
+    std::string s =
+        R"(Some people, when confronted with a problem, think "I'll use regular expressions." Now they have two problems.)";
+
+    // Case-insensitive search for "regular expressions".
+    std::regex self_regex("REGULAR EXPRESSIONS", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    assert(std::regex_search(s, self_regex));
+
+    // Regex that finds words.
+    std::regex word_regex(R"((\w+))");
+    auto words_begin = std::sregex_iterator(s.begin(), s.end(), word_regex);
+    auto words_end = std::sregex_iterator();
+
+    // The number of words found.
+    assert(std::distance(words_begin, words_end) == 18);
+
+    // Words it found:
+    // Some people when confronted with a problem think I ll use regular expressions Now they have two problems
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i)
+    {
+        std::smatch match = *i;
+        [[maybe_unused]] std::string match_str = match.str();
+    }
+
+    std::regex long_word_regex(R"((\w{7,}))");
+    std::string new_s = std::regex_replace(s, long_word_regex, "[$&]");
+    assert(
+        new_s ==
+        R"(Some people, when [confronted] with a [problem], think "I'll use [regular] [expressions]." Now they have two [problems].)");
+
+    // Regex matching.
+    {
+        const std::regex regex(R"(\w+@\w+\.(?:com))");
+        assert(std::regex_match("good@mail.com", regex));
+        assert(not std::regex_match("@bad.com", regex));
+    }
+}
+}
+
+
+
 
 void demo() {
     binary_search::demo();
@@ -158,6 +227,8 @@ void demo() {
     starts_with_and_ends_with::demo();
     header_compare::demo();
     adjacent_find::demo();
+    contains_and_contains_subrange::demo();
+    regex::demo();
 }
 
 

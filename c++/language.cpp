@@ -20,7 +20,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <cassert>
 #include <cmath>
+#include <source_location>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 
@@ -585,6 +587,216 @@ void demo()
 }
 
 
+namespace basic_memory_management {
+void demo()
+{
+    struct Struct
+    {
+        Struct(const std::string& name) : name(name)
+        {
+        }
+        std::string name;
+    };
+
+    // Established way.
+    {
+        // Allocate sufficient memory for the object.
+        auto* memory = std::malloc(sizeof(Struct));
+        // Construct new object in existing memory.
+        auto* object = new(memory) Struct("hello");
+        assert(object->name == "hello");
+        // Call destructor: This does not yet free the memory.
+        object->~Struct();
+        // Free memory on heap.
+        std::free(memory);
+    }
+
+    // Modern way in C++20.
+    {
+        auto* memory = std::malloc(sizeof(Struct));
+        auto* struct_ptr = static_cast<Struct*>(memory);
+        // Method 1:
+        std::uninitialized_fill_n(struct_ptr, 1, Struct{"hello"});
+        assert(struct_ptr->name == "hello");
+        // Method 2:
+        std::construct_at(struct_ptr, Struct{"hello"});
+        assert(struct_ptr->name == "hello");
+        // And destroy / free again.
+        std::destroy_at(struct_ptr);
+        std::free(memory);
+    }
+}
+}
+
+
+namespace remove_const_volatile_reference {
+// Demo of removing const, volatile, and reference.
+static_assert(std::is_same_v<std::remove_cvref_t<int>, int>);
+static_assert(std::is_same_v<std::remove_cvref_t<int&>, int>);
+static_assert(std::is_same_v<std::remove_cvref_t<int&&>, int>);
+static_assert(std::is_same_v<std::remove_cvref_t<const int&>, int>);
+static_assert(std::is_same_v<std::remove_cvref_t<const int[2]>, int[2]>);
+static_assert(std::is_same_v<std::remove_cvref_t<const int(&)[2]>, int[2]>);
+static_assert(std::is_same_v<std::remove_cvref_t<int(int)>, int(int)>);
+
+void demo()
+{
+    auto power = [](const auto& v, int n)
+    {
+        //auto product = decltype(v){1};
+        //typename std::remove_cvref<decltype(v)>::type product {1};
+        std::remove_cvref_t<decltype(v)> product{1};
+        for (int i = 0; i < n; i++)
+        {
+            product *= v;
+        }
+        return product;
+    };
+    assert(power(2, 4) == 16);
+}
+}
+
+
+namespace simple_type_traits {
+static_assert(std::is_same_v<uint8_t, unsigned char>);
+static_assert(std::is_floating_point_v<decltype(3.f)>);
+static_assert(std::is_unsigned_v<unsigned int>);
+static_assert(not std::is_unsigned_v<int>);
+
+class Planet
+{
+};
+
+class Mars : public Planet
+{
+};
+
+class Sun
+{
+};
+
+static_assert(std::is_base_of_v<Planet, Mars>);
+static_assert(std::derived_from<Mars, Planet>);
+static_assert(std::is_convertible_v<Mars, Planet>);
+static_assert(not std::is_base_of_v<Planet, Sun>);
+static_assert(not std::is_base_of_v<Mars, Planet>);
+
+static_assert(std::is_scoped_enum_v<int> == false);
+
+class A
+{
+};
+
+static_assert(not std::is_scoped_enum_v<A>);
+
+enum B { self_test = std::is_scoped_enum_v<B> };
+
+static_assert(not std::is_scoped_enum_v<B>);
+static_assert(not self_test);
+
+enum struct C
+{
+};
+
+static_assert(std::is_scoped_enum_v<C>);
+
+enum class D : int
+{
+};
+
+static_assert(std::is_scoped_enum_v<D>);
+
+enum class E;
+static_assert(std::is_scoped_enum_v<E>);
+
+// The following types are collectively called implicit-lifetime types:
+// * scalar types:
+//     * arithmetic types
+//     * enumeration types
+//     * pointer types
+//     * pointer-to-member types
+//     * std::nullptr_t
+// * implicit-lifetime class types
+//     * is an aggregate whose destructor is not user-provided
+//     * has at least one trivial eligible constructor and a trivial,
+//       non-deleted destructor
+// * array types
+// * cv-qualified versions of these types.
+// static_assert(std::is_implicit_lifetime_v<int>); // arithmetic type is a scalar type
+// static_assert(std::is_implicit_lifetime_v<const int>); // cv-qualified a scalar type
+
+// enum E { e };
+//    static_assert(std::is_implicit_lifetime_v<E>); // enumeration type is a scalar type
+//    static_assert(std::is_implicit_lifetime_v<int*>); // pointer type is a scalar type
+//    static_assert(std::is_implicit_lifetime_v<std::nullptr_t>); // scalar type
+
+// struct S
+// {
+//     int x, y;
+// };
+//    S is an implicit-lifetime class: an aggregate without user-provided destructor
+//    static_assert(std::is_implicit_lifetime_v<S>);
+//
+//    static_assert(std::is_implicit_lifetime_v<int S::*>); // pointer-to-member
+
+// struct X { ~X() = delete; };
+// X is not implicit-lifetime class due to deleted destructor
+//    static_assert(!std::is_implicit_lifetime_v<X>);
+//
+//    static_assert(std::is_implicit_lifetime_v<int[8]>); // array type
+//    static_assert(std::is_implicit_lifetime_v<volatile int[8]>); // cv-qualified array type
+//
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, int> == true);
+//    static_assert(std::reference_constructs_from_temporary_v<const int&, int> == true);
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, int&&> == false);
+//    static_assert(std::reference_constructs_from_temporary_v<const int&, int&&> == false);
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, long&&> == true);
+//    static_assert(std::reference_constructs_from_temporary_v<int&&, long> == true);
+
+
+void demo()
+{
+    struct foo
+    {
+        void m()
+        {
+        }
+
+        void m() const
+        {
+        }
+
+        void m() volatile
+        {
+        }
+
+        void m() const volatile
+        {
+        }
+    };
+    foo{}.m();
+    std::add_const_t<foo>{}.m();
+    std::add_volatile_t<foo>{}.m();
+    std::add_cv_t<foo>{}.m(); // Add const volatile.
+}
+}
+
+
+namespace source_location {
+// https://en.cppreference.com/w/cpp/utility/source_location
+void demo()
+{
+    constexpr int line = __LINE__;
+    const std::source_location location = std::source_location::current();
+    const std::string file_name = location.file_name();
+    assert(file_name.contains("language.cpp"));
+    assert(location.line() == line + 1);
+    assert(location.column() == 43);
+    assert(location.function_name() == std::string("void language::source_location::demo()"));
+}
+}
+
+
 
 
 void demo() {
@@ -601,6 +813,10 @@ void demo() {
     attribute_assume::demo();
     attribute_likely_unlikely::demo();
     attribute_no_unique_address::demo();
+    basic_memory_management::demo();
+    remove_const_volatile_reference::demo();
+    simple_type_traits::demo();
+    source_location::demo();
 }
 
 }

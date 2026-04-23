@@ -21,6 +21,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <array>
 #include <cassert>
 #include <numeric>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -70,11 +71,33 @@ void demo()
 }
 
 
+namespace ranges_views_filter_drop_reverse {
+void demo()
+{
+    // Start from a list of numbers.
+    const auto numbers = std::vector{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // Define a function to select even numbers.
+    const auto even = [](const int i) -> bool
+    {
+        return 0 == i % 2;
+    };
+    // Define a view that filters on even numbers, then drops the first number, then reverses them.
+    using namespace std::ranges::views;
+    auto result = numbers | filter(even) | drop(1) | reverse;
+    // The view contains: 8 6 4 2
+    for (const int i : result)
+        assert(i == 8 or i == 6 or i == 4 or i == 2);
+}
+}
+
+
+
 
 
 void demo()
 {
     accumulate::demo();
     copy::demo();
+    ranges_views_filter_drop_reverse::demo();
 }
 }

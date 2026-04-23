@@ -19,9 +19,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "variables.h"
 
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <iostream>
+#include <random>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -557,6 +559,98 @@ void demo()
 }
 }
 
+namespace pseudo_random_number_generation {
+void demo()
+{
+    {
+        // Poisson distribution.
+        // The probability of an event happening a certain number of times within a given interval of time.
+        // Construct it around a given mean event count.
+        constexpr float mean_event_count{4.5};
+        std::poisson_distribution<int> distribution(mean_event_count);
+        std::default_random_engine generator;
+
+        // Store how often an event occurs.
+        constexpr int array_size{10};
+        std::array<int, array_size> events{};
+
+        constexpr int number_of_experiments{1000};
+        [[maybe_unused]] constexpr int number_of_stars{100};
+
+        for (int i = 0; i < number_of_experiments; ++i)
+        {
+            const int number = distribution(generator);
+            if (number < array_size) events[number]++;
+        }
+
+        // The Poisson distribution is around a given mean event count.
+        for (int i = 0; i < array_size; ++i)
+        {
+            //std::cout << i << ": " << std::string(events[i] * number_of_stars / number_of_experiments, '*') << std::endl;
+        }
+        // 0: *
+        // 1: *****
+        // 2: ***********
+        // 3: ******************
+        // 4: ******************
+        // 5: *****************
+        // 6: ***********
+        // 7: ********
+        // 8: ****
+        // 9: **
+
+        // Simulate throwing a 6-sided dice.
+        {
+            // A seed source for the random number engine.
+            std::random_device rd;
+            // A Mersenne Twister_random engine seeded with the random device.
+            std::mt19937 mt_generator(rd());
+            // A uniform distribution between 1 and 6 inclusive.
+            std::uniform_int_distribution<> uniform_distribution(1, 6);
+
+            // Throw the dice multiple times.
+            // std::cout << "Normal distribution for throwing a dice" << std::endl;
+            // for (int n = 0; n < 20; n++)
+            //     std::cout << uniform_distribution(mt_generator) << " ";
+            // std::cout << std::endl;
+            // The above will have a normal distribution like this:
+            // 4 5 6 6 3 6 6 1 6 1 6 1 1 4 2 2 1 5 1 2
+        }
+    }
+}
+}
+
+
+namespace heterogenous_collections_with_variant {
+void demo()
+{
+    using variant_t = std::variant<int, std::string, bool>;
+    {
+        auto container = std::vector<variant_t> { false, "hello", "world", 13 };
+        std::ranges::reverse(container);
+    }
+    {
+        constexpr std::string needle {"needle"};
+        const auto v = std::vector<variant_t>{42, needle, true};
+        for (const auto& item : v) {
+            std::visit([](auto&& x)
+            {
+            //assert ((x == 42) or (std::string(x) == needle) or (x == true));
+            // std::cout << "Variant has: " << x << std::endl;
+            }, item);
+        }
+        const auto num_bools = std::ranges::count_if(v, [](const auto& item) {
+          return std::holds_alternative<bool>(item);
+        });
+        assert(num_bools == 1);
+        auto contains_needle_string = std::ranges::any_of(v, [&](const auto& item) {
+          return std::holds_alternative<std::string>(item) and std::get<std::string>(item) == needle;
+        });
+        assert(contains_needle_string);
+    }
+}
+}
+
 
 
 void demo()
@@ -573,6 +667,8 @@ void demo()
     enable_shared_from_this::demo();
     swapping_and_exchanging::demo();
     initializer_list::demo();
+    pseudo_random_number_generation::demo();
+    heterogenous_collections_with_variant::demo();
 }
 
 

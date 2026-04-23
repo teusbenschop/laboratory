@@ -248,18 +248,18 @@ struct Foo
         return i;
     }
 
-    int add_xy(int x, int y)
+    int add_xy(int x, int y) const
     {
         return data + x + y;
     }
 
     template <typename... Args>
-    int add_many1(Args... args)
+    int add_many1(Args... args) const
     {
         return data + (args + ...);
     }
 
-    auto add_many2(auto... args)
+    auto add_many2(auto... args) const
     {
         return data + (args + ...);
     }
@@ -269,19 +269,19 @@ struct Foo
 
 void demo()
 {
-    auto f = Foo{};
+    auto foo = Foo{};
 
     constexpr auto greet = std::mem_fn(&Foo::display_greeting);
-    assert(greet(f) == "hello");
+    assert(greet(foo) == "hello");
 
-    const auto print_num = std::mem_fn(&Foo::display_number);
-    assert(print_num(f, 42) == 42);
+    constexpr auto print_num = std::mem_fn(&Foo::display_number);
+    assert(print_num(foo, 42) == 42);
 
-    const auto access_data = std::mem_fn(&Foo::data);
-    assert(access_data(f) == 7);
+    constexpr auto access_data = std::mem_fn(&Foo::data);
+    assert(access_data(foo) == 7);
 
-    const auto add_xy = std::mem_fn(&Foo::add_xy);
-    assert(add_xy(f, 1, 2) == 10);
+    constexpr auto add_xy = std::mem_fn(&Foo::add_xy);
+    assert(add_xy(foo, 1, 2) == 10);
 
     const auto u = std::make_unique<Foo>();
     assert(access_data(u) == 7);

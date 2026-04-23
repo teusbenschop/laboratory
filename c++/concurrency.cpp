@@ -19,11 +19,13 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "concurrency.h"
 
 #include <atomic>
+#include <barrier>
 #include <cassert>
 #include <condition_variable>
 #include <future>
 #include <iostream>
 #include <mutex>
+#include <random>
 #include <semaphore>
 #include <thread>
 
@@ -427,6 +429,131 @@ void demo()
 }
 
 
+namespace atomic_reference {
+void demo()
+{
+    struct Statistics {
+        int heads{};
+        int tails{};
+    } stats;
+
+    const auto random_int = [](int min, int max) {
+        // One engine instance per thread.
+        static thread_local auto engine = std::default_random_engine{std::random_device{}()};
+        auto distribution = std::uniform_int_distribution<>{min, max};
+        return distribution(engine);
+    };
+
+    constexpr int flip_count {5000};
+
+    const auto flip_coin = [&](std::size_t n, auto& outcomes) {
+        auto flip = [&](auto n) {
+            const auto heads = std::atomic_ref<int>{outcomes.heads};
+            const auto tails = std::atomic_ref<int>{outcomes.tails};
+            for (auto i = 0u; i < n; ++i)
+                random_int(0, 1) == 0 ? ++heads : ++tails;
+        };
+        // Five threads for parallel flipping.
+        std::jthread{flip, n / 5};
+        std::jthread{flip, n / 5};
+        std::jthread{flip, n / 5};
+        std::jthread{flip, n / 5};
+        std::jthread{flip, n / 5};
+    };
+
+    flip_coin(flip_count, stats); // Flip many times.
+    assert(stats.heads + stats.tails == flip_count);
+}
+}
+
+
+namespace barrier_jthread_stop_token {
+void demo()
+{
+    return;
+    // This lambda starts the failing processes.
+    // On any failure, it restarts the processes.
+    const auto resilient_processes = [](const std::stop_token& stop_token)
+    {
+        // Protect the barrier from being arrived at multiple times
+        // due to multiple processes that may all fail simultaneously.
+        std::atomic<bool> barrier_active{false};
+        // As soon as the barrier is complete, clear the associated protecting flag.
+        auto on_barrier_completion = [&]() noexcept
+        {
+            barrier_active = false;
+        };
+        // The barrier has count 2:
+        // One to allow arriving and waiting at the barrier after all processes have been created.
+        // The second one to use for the error callback.
+        std::barrier barrier(2, on_barrier_completion);
+
+        // Allow the main program to interrupt the processes loop.
+        std::stop_callback stop_callback(stop_token, [&]()
+        {
+            if (barrier_active)
+            {
+                barrier_active = false;
+                [[maybe_unused]] const auto token = barrier.arrive();
+            }
+        });
+
+        bool slow_restart_down{false};
+
+        while (!stop_token.stop_requested())
+        {
+            try
+            {
+                const auto on_event = [&]([[maybe_unused]] const std::string& error)
+                {
+                    // Arrive at the barrier.
+                    // This will open the barrier, so all processes get recreated.
+                    if (barrier_active)
+                    {
+                        barrier_active = false;
+                        [[maybe_unused]] const auto token = barrier.arrive();
+                        slow_restart_down = true;
+                    }
+                };
+
+                // Wait shortly to avoid fast repeating error events.
+                if (slow_restart_down)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                }
+
+                // The processes start here.
+                barrier_active = true;
+
+                // Call the on_event callback to simulate an error.
+                const auto generate_error = [&]()
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    on_event("Error");
+                };
+                std::thread(generate_error).detach(); // Better not detach in production code.
+
+                // At this point all processes have started.
+
+                // Wait here till an error occurs or the program shuts down.
+                barrier.arrive_and_wait();
+            }
+            catch (const std::exception& ex)
+            {
+                std::cerr << ex.what() << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
+    };
+
+    std::jthread thread(resilient_processes);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // The thread goes out of scope here, so it gets the stop token.
+}
+}
+
+
+
 void demo()
 {
     atomic_wait::demo();
@@ -440,5 +567,7 @@ void demo()
     future_and_promise_and_exception::demo();
     execution_policies::demo();
     lock_multiple_simultaneously::demo();
+    atomic_reference::demo();
+    barrier_jthread_stop_token::demo();
 }
 }

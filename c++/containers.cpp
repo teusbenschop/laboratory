@@ -615,14 +615,14 @@ void demo()
     std::priority_queue<int> p2 (p1);
 
     // Initialization using iterators
-    int a1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    std::vector <int> v1 (a1, a1 + 10);
+    int array[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    std::vector <int> v1 (array, array + 10);
     std::priority_queue<int> q3 (v1.begin (), v1.end ());
 
     // Using non-default storage (standard it uses the vector)
     std::priority_queue <int, std::deque<int>> p4;
 
-    // Providing different comparator type
+    // Providing different comparator type: This makes the minimum value to be at the top.
     std::priority_queue <int, std::vector<int>, std::greater<int>> p5;
 
     // The methods push / top / pop
@@ -633,6 +633,29 @@ void demo()
     assert(p1.top() == 2);
     p1.pop();
     assert(p1.top() == 1);
+
+    // Using a custom function object to compare elements.
+    struct
+    {
+        bool operator()(const int l, const int r) const { return l > r; }
+    } custom_less;
+    std::priority_queue p6(v1.begin(), v1.end(), custom_less);
+    assert(p6.top() == 1);
+
+    // Using lambda to compare elements.
+    // This allows for custom ordering, as in this example.
+    const auto cmp = [](int left, int right) { return (left ^ 1) < (right ^ 1); };
+    std::priority_queue<int, std::vector<int>, decltype(cmp)> lambda_priority_queue(cmp);
+    for (int n : v1)
+        lambda_priority_queue.push(n);
+    std::vector<int> lambda_output{};
+    while (!lambda_priority_queue.empty())
+    {
+        lambda_output.push_back(lambda_priority_queue.top());
+        lambda_priority_queue.pop();
+    }
+    std::vector<int> lambda_standard{10, 8, 9, 6, 7, 4, 5, 2, 3, 1};
+    assert(lambda_output == lambda_standard);
 }
 }
 

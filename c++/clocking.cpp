@@ -17,10 +17,11 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include <thread>
 #include "clocking.h"
 
 #include <cassert>
+#include <iomanip>
+#include <thread>
 
 namespace scoped_timer {
 
@@ -102,5 +103,16 @@ void demo()
         //std::cout << "Local time: " << time_str << std::endl;
         //std::cout << std::chrono::current_zone()->to_local(utc) << std::endl;
     }
+
+    {
+        const std::time_t t = std::time(nullptr);
+        const std::tm tm = *std::localtime(&t);
+        std::ostringstream oss;
+        // The locale determines the language etc.
+        //oss.imbue(std::locale("us_EN.utf8"));
+        // E.g.: Tue Mar 17 20:18:21 2026 CET
+        oss << std::put_time(&tm, "%c %Z") << std::endl;
+    }
+
 }
 }
