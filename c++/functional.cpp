@@ -258,8 +258,8 @@ struct Foo
     {
         return data + (args + ...);
     }
-x
-    auto add_many2(auto... args) // C++20 required
+
+    auto add_many2(auto... args)
     {
         return data + (args + ...);
     }
