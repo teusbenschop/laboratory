@@ -27,7 +27,10 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "searching.h"
 
 #include <iostream>
+#include <list>
 #include <regex>
+
+#include "clocking.h"
 
 
 namespace searching {
@@ -219,6 +222,146 @@ void demo()
 }
 
 
+namespace ranges_finding {
+    void demo() {
+        // Simple find integer value.
+        {
+            const auto numbers = std::list{2, 4, 3, 2, 3, 1};
+            auto it = std::ranges::find(numbers, 2);
+            assert(*it == 2);
+        }
+
+        // Find by specifying to search on a struct member.
+        {
+            struct Person
+            {
+                unsigned id;
+                const char* name;
+                const char* job;
+            };
+            std::list<Person> persons{
+                {0, "Ana", "barber"},
+                {1, "Bob", "cook"},
+                {2, "Eve", "builder"}
+            };
+            auto it = std::ranges::find(persons, "Bob", &Person::name);
+            assert(it->id == 1);
+            assert(it->name == std::string("Bob"));
+            assert(it->job == std::string("cook"));
+        }
+
+        // Demo of find on word length.
+        {
+            std::vector<std::string> names {"Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"};
+            auto iterator = std::ranges::find(names, 4, &std::string::size);
+            assert(*iterator == "Lisa");
+        }
+
+        // Demo of finding duplicates in a range.
+        {
+            auto contains_duplicates_n2 = [](auto begin, auto end)
+            {
+                for (auto it = begin; it != end; ++it)
+                    if (std::find(std::next(it), end, *it) != end)
+                        return true;
+                return false;
+            };
+            const auto contains_duplicates_allocating = [](auto first, auto last)
+            {
+                // As (*first) returns a reference, we have to get the base type using std::decay_t
+                using value_type = std::decay_t<decltype(*first)>;
+                auto copy = std::vector<value_type>(first, last);
+                std::sort(copy.begin(), copy.end());
+                // The std::adjacent_find searches the sorted range for two consecutive equal elements.
+                return std::adjacent_find(copy.begin(), copy.end()) != copy.end();
+            };
+            const auto vals = std::vector{1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 0};
+            const auto a = contains_duplicates_n2(vals.cbegin(), vals.cend());
+            assert(a);
+            const auto b = contains_duplicates_allocating(vals.cbegin(), vals.cend());
+            assert(b);
+        }
+    }
+}
+
+
+namespace ranges_find_max {
+void demo() {
+    // Getting the maximum value.
+    {
+        struct Student
+        {
+            int year{};
+            int score{};
+            std::string name{};
+        };
+
+        auto get_max_score_copy = [](const std::vector<Student>& students, int year)
+        {
+            const auto by_year = [year](const auto& s) { return s.year == year; };
+            // The student list needs to be copied in order to filter on the year.
+            auto copy = std::vector<Student>{};
+            std::ranges::copy_if(students, std::back_inserter(copy), by_year);
+            auto it = std::ranges::max_element(copy, std::less{}, &Student::score);
+            return it != copy.end() ? it->score : 0;
+        };
+
+        auto get_max_score = [](const std::vector<Student>& students, int year)
+        {
+            auto max_value = [](auto&& range)
+            {
+                const auto it = std::ranges::max_element(range);
+                return it != range.end() ? *it : 0;
+            };
+            const auto by_year = [year](auto&& s) { return s.year == year; };
+            return max_value(students | std::views::filter(by_year) | std::views::transform(&Student::score));
+        };
+
+        auto get_max_score_explicit_views = [](const std::vector<Student>& s, int year)
+        {
+            auto by_year = [year](const auto& s) { return s.year == year; };
+            const auto view1 = std::ranges::ref_view{s}; // Wrap container in a view.
+            const auto view2 = std::ranges::filter_view{view1, by_year};
+            auto view3 = std::ranges::transform_view{view2, &Student::score};
+            auto it = std::ranges::max_element(view3);
+            return it != view3.end() ? *it : 0;
+        };
+
+        const auto students = std::vector<Student>{
+            {3, 120, "A"},
+            {2, 140, "B"},
+            {3, 190, "C"},
+            {2, 110, "D"},
+            {2, 120, "E"},
+            {3, 130, "F"},
+        };
+        {
+            auto score = get_max_score_copy(students, 2);
+            assert(score == 140);
+        }
+        {
+            auto score = get_max_score(students, 2);
+            assert(score == 140);
+        }
+        {
+            auto score = get_max_score_explicit_views(students, 2);
+            assert(score == 140);
+        }
+    }
+
+}
+}
+
+
+namespace find_if {
+// Demo of ranges::find_if
+void demo() {
+    const auto values = {4, 1, 3, 2};
+    const auto is_even = [](int x) { return x % 2 == 0; };
+    const auto iter = std::ranges::find_if(values, is_even);
+    assert(*iter == 4);
+}
+}
 
 
 void demo() {
@@ -229,7 +372,8 @@ void demo() {
     adjacent_find::demo();
     contains_and_contains_subrange::demo();
     regex::demo();
+    ranges_finding::demo();
+    ranges_find_max::demo();
+    find_if::demo();
 }
-
-
 }

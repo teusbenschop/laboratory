@@ -23,6 +23,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <functional>
 #include <iostream>
+#include <list>
 #include <random>
 #include <type_traits>
 #include <utility>
@@ -652,6 +653,40 @@ void demo()
 }
 
 
+namespace range_fillup {
+void demo() {
+    {
+        // Demonstration of ranges fill.
+        std::vector<int> v(5);
+        std::ranges::fill(v, 123);
+        // The output will be:  123 123 123 123 123
+        const std::vector<int> standard = {123, 123, 123, 123, 123};
+        assert(v == standard);
+    }
+    {
+        // Demonstration of ranges generate.
+        std::vector<int> v(4);
+        std::ranges::generate(v, std::rand);
+        // The output will be random, e.g. 16807 282475249 1622650073 984943658
+    }
+    {
+        // Demonstration of ranges iota.
+        auto v = std::list<int>(6);
+        // Fill the list with ascending values: 0, 1, 2, ...
+        std::iota(v.begin(), v.end(), 0);
+        const auto standard = std::list<int>({0, 1, 2, 3, 4, 5});
+        assert(v == standard);
+        //std::ranges::iota(v, 0);
+
+        // A vector of iterators.
+        // Fill with iterators to consecutive list's elements.
+        std::vector<std::list<int>::iterator> vec(v.size());
+        std::iota(vec.begin(), vec.end(), v.begin());
+        //std::ranges::iota(vec.begin(), vec.end(), list.begin());
+    }
+}
+}
+
 
 void demo()
 {
@@ -669,6 +704,7 @@ void demo()
     initializer_list::demo();
     pseudo_random_number_generation::demo();
     heterogenous_collections_with_variant::demo();
+    range_fillup::demo();
 }
 
 

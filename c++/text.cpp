@@ -21,12 +21,12 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <cassert>
 #include <format>
-#include <iostream>
 #include <iomanip>
+#include <ranges>
 #include <string>
 #include <sstream>
 #include <thread>
-#include <__thread/jthread.h>
+#include <vector>
 
 
 namespace text {
@@ -135,6 +135,19 @@ void demo()
 }
 
 
+namespace istream_view {
+void demo() {
+    // Demo of istream_view.
+    {
+        const auto s{"1.4142 1.618 2.71828 3.14159 6.283"};
+        auto iss = std::istringstream{s};
+        auto floats = std::ranges::istream_view<float>(iss);
+        auto result = floats | std::ranges::to<std::vector<float>>();
+        std::vector<float> standard = {1.4142, 1.618, 2.71828, 3.14159, 6.283};
+        assert(result == standard);
+    }
+}
+}
 
 
 void demo() {
@@ -143,6 +156,7 @@ void demo() {
     stream_manipulation::demo();
     osyncstream::demo();
     output_manipulation::demo();
+    istream_view::demo();
 }
 
 
