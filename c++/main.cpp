@@ -40,6 +40,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "templates.h"
 #include "text.h"
 #include "transformations.h"
+#include "unions.h"
 #include "variables.h"
 
 int main()
@@ -73,6 +74,7 @@ int main()
     transformations::demo();
     bits::demo();
     linux::demo();
+    unions::demo();
     return EXIT_SUCCESS;
 }
 

@@ -22,6 +22,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <format>
 #include <iomanip>
+#include <iostream>
 #include <ranges>
 #include <string>
 #include <sstream>
@@ -150,6 +151,36 @@ void demo() {
 }
 
 
+namespace templates_printf {
+
+// The base function if no arguments are given, only the format string.
+void template_printf(const char* format)
+{
+    std::cout << format;
+}
+
+// The recursive variadic function.
+template <typename T, typename... Targs>
+void template_printf(const char* format, T value, Targs... args)
+{
+    for (; *format; ++format)
+    {
+        if (*format == '%')
+        {
+            std::cout << value;
+            template_printf(format + 1, args...);
+            return;
+        }
+        std::cout << *format;
+    }
+}
+
+void demo()
+{
+    //template_printf("% world % %", "Hello", "!", 123);
+}
+}
+
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
@@ -157,6 +188,7 @@ void demo() {
     osyncstream::demo();
     output_manipulation::demo();
     istream_view::demo();
+    templates_printf::demo();
 }
 
 

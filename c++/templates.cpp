@@ -538,7 +538,7 @@ void func4 (T1 t1, T2 t2, Args... args) {
     std::tuple<T1, Args..., T2> tup3; // expands to std::tuple<t1, a1, a2, a4, t2>
 }
 
-// The ellipsis in a function parameter list: the parameter declaration is the pattern.
+// The ellipsis in a function parameter list: the parameter declaration is the pattern for expansion.
 template <typename ... Ts>
 void func5 (Ts ... args) {}
 // func5('a', 1); // Ts... expands to void func5(char, int)
@@ -552,12 +552,57 @@ void demo6() {
     //                                        const char (&)[2], int(&)[1]
 }
 
+// Pack expansion in base specifiers and member initializer lists.
+// template <class...Mixins>
+// class C : public Mixins...
+// {
+// public:
+// C (const Mixins&...mixins) : Mixins(mixins...) {}
+// };
 
+
+// Pack expansion in lambda captures.
+template<class ... Args>
+constexpr int func7(Args...args) {
+    auto lambda = [args...] { // <- pack expansion.
+        return (args+...);
+    };
+    return lambda();
+}
+static_assert(func7(1,2,3) == 6);
+
+
+// Pack expansion in the sizeof... operator.
+template <typename ... Types>
+struct Sizeof {
+    constexpr static std::size_t size = sizeof ... (Types);
+};
+static_assert(Sizeof<int,char,float>::size == 3);
+
+
+// Pack expansion in using-declarations.
+template <class ... Bases>
+struct Derived : Bases...
+{
+   using Bases::g...;
+};
+// Derived<B, D> d; // OK: B::g and D::g introduced.
+
+
+// Pack indexing.
+consteval auto first_plus_last(auto ... args) {
+    return args...[0] + args...[sizeof...(args) - 1];
+}
+static_assert(first_plus_last(1,2,3) == 4);
+static_assert(first_plus_last(1,2) == 3);
+static_assert(first_plus_last(1) == 2);
+static_assert(first_plus_last(std::string("a")) == "aa");
 
 
 void demo()
 {
     demo6();
+
 }
 }
 
