@@ -497,14 +497,67 @@ void func2 (Bars ... args)
     // Bars ... args expanded into: int i, float f, char c, const char* s
     // &args expands into: &i, &f, &c, &s
     // Foos ... args expand into: int* i, float* f, char* c, const char** s
-
-
 }
+
+
+// Pack expansion in function argument lists.
+// f(args...);      // Expands into f(a1, a2, a3);
+// f(&args...);     // Expands into f(&a1, &a2, &a3);
+// f(n, ++args...); // Expands into f(n, ++a1, ++a2, ++a3);
+// f(++args..., n); // Expands into f(++a1, ++a2, ++a3, n);
+
+// f(const_cast<const Args*>(&args)...); // Expands into:
+// f(const_cast<const A1*>(&a1), const_cast<const A2*>(&a2), const_cast<const A3*>(&a3))
+
+// f(h(args...) + args...); // Expands into:
+// f(h(a1, a2, a3) + a1, h(a1, a2, a3) + a2, h(a1, a2, a3) + a3)
+
+// Pack expansion in parentheses works the same as in function argument lists.
+// Class c(&args...);   // Expands into Class::Class(&a1, &a2, &a3)
+// Class c(n, ++args...); // Expands into Class::Class(n, ++a1, ++a2, ++a3);
+
+// Pack expansion in brace-enclosed initializers.
+template <typename ...Args>
+constexpr int func3 (Args... args) {
+    const int size = sizeof...(args) + 2;
+    int arr[size] = {1, args..., 2};
+
+    // The initializer lists guarantee sequencing.
+    // They can therefore be used to call a function on each element of a pack, in order.
+    int sum = 0;
+    int dummy[sizeof...(Args)] = {(sum += args, 0)...};
+    return sum;
+}
+static_assert (func3(1, 2, 3) == 6);
+
+// Pack expansion in template argument lists.
+template <typename T1, typename T2, typename... Args>
+void func4 (T1 t1, T2 t2, Args... args) {
+    std::tuple<T1, T2, Args...> tup1; // expands to std::tuple<t1, t2, a1, a2, a3>
+    std::tuple<Args..., T1, T2> tup2; // expands to std::tuple<a1, a2, a3, t1, t2>
+    std::tuple<T1, Args..., T2> tup3; // expands to std::tuple<t1, a1, a2, a4, t2>
+}
+
+// The ellipsis in a function parameter list: the parameter declaration is the pattern.
+template <typename ... Ts>
+void func5 (Ts ... args) {}
+// func5('a', 1); // Ts... expands to void func5(char, int)
+// func(0.1f);    // Ts... expands to void func5(float)
+
+template <typename ...Ts, int... N>
+void func6 (Ts (&...arr)[N]){}
+void demo6() {
+    int n[1];
+    func6<const char, int>("a", n); // Ts (&...arr)[N] expands to:
+    //                                        const char (&)[2], int(&)[1]
+}
+
+
 
 
 void demo()
 {
-
+    demo6();
 }
 }
 
