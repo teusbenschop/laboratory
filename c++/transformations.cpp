@@ -93,7 +93,7 @@ void demo()
 }
 
 
-namespace range_transformations {
+namespace ranges_transformations {
 void demo() {
     {
         // ranges::transform.
@@ -180,9 +180,56 @@ void demo() {
         const auto standard = std::vector<int>{1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
         assert(result == standard);
     }
+}
+}
 
 
-
+namespace ranges_sorting {
+void demo()
+{
+    {
+        // Standard sorting demo.
+        std::vector values {6, 3, 2, 7, 4, 1, 5};
+        assert(!std::ranges::is_sorted(values));
+        // Regular C++ sort:
+        std::sort(values.begin(), values.end());
+        // Ranges sort:
+        std::ranges::sort(values);
+        const auto standard = std::vector{1, 2, 3, 4, 5, 6, 7};
+        assert(values == standard);
+        assert(std::ranges::is_sorted(values));
+    }
+    {
+        // Demo of sorting on property, in this case, word length.
+        std::vector<std::string> names {"Ralph", "Lisa", "Homer", "Maggie", "Apu", "Bart"};
+        std::ranges::sort(names, std::less{}, &std::string::size);
+        // The names are now sorted on length.
+        const std::vector<std::string> standard {"Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"};
+        assert(names == standard);
+    }
+    {
+        // Demo of sorting a struct on two fields.
+        struct Player
+        {
+            std::string name{};
+            int level{};
+            float health{};
+        };
+        auto players = std::vector<Player>{
+            {"Aki", 1, 9.1f},
+            {"Nao", 2, 7.2f},
+            {"Rei", 2, 3.3f}
+        };
+        const auto level_and_health = [](const Player& player)
+        {
+            return std::tie(player.level, player.health);
+        };
+        // Sort players by level, then by health.
+        std::ranges::sort(players, std::less<>{}, level_and_health);
+        assert(players.at(0).name == "Aki");
+        assert(players.at(1).name == "Rei");
+        assert(players.at(2).name == "Nao");
+    }
 }
 }
 
@@ -192,6 +239,7 @@ void demo()
     accumulate::demo();
     copy::demo();
     ranges_views_filter_drop_reverse::demo();
-    range_transformations::demo();
+    ranges_transformations::demo();
+    ranges_sorting::demo();
 }
 }

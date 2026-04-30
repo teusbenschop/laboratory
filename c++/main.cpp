@@ -17,32 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include <algorithm>
-#include <array>
-#include <barrier>
-#include <cassert>
-#include <chrono>
-#include <complex>
-#include <condition_variable>
-#include <cstdlib>
-#include <forward_list>
-#include <functional>
-#include <future>
-#include <iostream>
-#include <iterator>
-#include <latch>
-#include <list>
-#include <memory>
-#include <mutex>
-#include <queue>
-#include <random>
-#include <ranges>
-#include <regex>
-#include <source_location>
-#include <syncstream>
-#include <thread>
-#include <vector>
-
 #include "bad_coding.h"
 #include "bits.h"
 #include "bounds_limits.h"
@@ -56,7 +30,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "exceptions.h"
 #include "expected.h"
 #include "filesystem.h"
-#include "fold_expressions.h"
 #include "functional.h"
 #include "language.h"
 #include "latches_barriers.h"
@@ -68,59 +41,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "text.h"
 #include "transformations.h"
 #include "variables.h"
-
-
-
-
-
-
-
-namespace ranges_sorting_demo {
-void demo()
-{
-    {
-        // Standard sorting demo.
-        auto values = std::vector{6, 3, 2, 7, 4, 1, 5};
-        assert(!std::ranges::is_sorted(values));
-        // Regular C++ sort: std::sort(non_const_values.begin(), non_const_values.end());
-        std::ranges::sort(values);
-        const auto standard = std::vector{1, 2, 3, 4, 5, 6, 7};
-        assert(values == standard);
-        assert(std::ranges::is_sorted(values));
-    }
-    {
-        // Demo of sorting on property, in this case, word length.
-        auto names = std::vector<std::string>{"Ralph", "Lisa", "Homer", "Maggie", "Apu", "Bart"};
-        std::ranges::sort(names, std::less{}, &std::string::size);
-        // The names are now sorted on length: "Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"
-    }
-    {
-        // Demo of sorting a struct on two fields.
-        struct Player
-        {
-            std::string name{};
-            int level{};
-            float health{};
-        };
-        auto players = std::vector<Player>{
-            {"Aki", 1, 9.1f},
-            {"Nao", 2, 7.2f},
-            {"Rei", 2, 3.3f}
-        };
-        const auto level_and_health = [](const Player& player)
-        {
-            return std::tie(player.level, player.health);
-        };
-        // Order players by level, then by health.
-        std::ranges::sort(players, std::less<>{}, level_and_health);
-        assert(players.at(0).name == "Aki");
-        assert(players.at(1).name == "Rei");
-        assert(players.at(2).name == "Nao");
-    }
-}
-}
-
-
 
 int main()
 {
@@ -137,11 +57,9 @@ int main()
     shared_mutex::demo();
     clocking::demo();
     filesystem::demo();
-    ranges_sorting_demo::demo();
     coroutines::demo();
     modules::demo();
     concurrency::demo();
-    fold_expressions::demo();
     containers::demo();
     language::demo();
     templates::demo();
@@ -155,7 +73,6 @@ int main()
     transformations::demo();
     bits::demo();
     linux::demo();
-
     return EXIT_SUCCESS;
 }
 

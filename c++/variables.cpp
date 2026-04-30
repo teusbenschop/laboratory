@@ -369,6 +369,19 @@ void demo()
 }
 
 
+namespace initialization {
+void demo()
+{
+    std::string s1; // Default initialization.
+    //std::string s2(); // Not an initialization but a function declaration.
+    std::string s3 = "s3"; // Copy initialization.
+    std::string s4("s4"); // Direct initialization.
+    std::string s5{'a'}; // List initialization.
+    char c1[3] = {'1', '2', '3'}; // Aggregation initialization.
+    char& c2 = c1[0]; // Reference initialization.
+}
+}
+
 namespace designated_initializers {
 // https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers
 
@@ -414,30 +427,6 @@ void demo()
 }
 }
 
-
-namespace reference_wrappers {
-void demo()
-{
-    const auto fn = [](int& n1, int& n2, [[maybe_unused]] const int& n3)
-    {
-        n1++; // Increases the copy of n1 stored in the function object.
-        n2++; // Increases the caller's n2.
-        // n3++; Compile error: cannot assign to variable 'n3' with const-qualified type 'const int &'
-    };
-
-    int n1{1};
-    int n2{2};
-    int n3{3};
-
-    std::function<void()> bound_fn = std::bind(fn, n1, std::ref(n2), std::cref(n3));
-
-    bound_fn();
-
-    assert(n1 == 1); // This is left unchanged, because it was passed by value to the function.
-    assert(n2 == 3); // This was passed by reference, and got increased by the function.
-    assert(n3 == 3); // Passed by const reference, could not get increased.
-}
-}
 
 
 
@@ -688,6 +677,50 @@ void demo() {
 }
 
 
+namespace aliases {
+
+// Type alias ( = typedef).
+using vi = std::vector<int>;
+static_assert(std::is_same_v<vi, std::vector<int>>);
+
+// Alias template.
+template <typename T>
+using Pair = std::pair<T, T>;
+Pair<int> p {1, 2}; // Equals std::pair<int, int>.
+static_assert(std::is_same_v<Pair<int>, std::pair<int, int>>);
+
+void demo()
+{
+}
+}
+
+
+namespace perfect_forwarding {
+// Perfect forwarding means that the function forwards its arguments
+// without changing its lvalue or rvalue.
+
+std::string value;
+void overloaded_function(int&  i) { value = "lvalue"; }
+void overloaded_function(int&& i) { value = "rvalue"; }
+
+template<typename Arg>
+void template_function(Arg&& arg)
+{
+    overloaded_function(std::forward<Arg>(arg));
+}
+
+void demo()
+{
+    int i = 10;
+    template_function(i);
+    assert (value == "lvalue");
+
+    template_function(10);
+    assert (value == "rvalue");
+}
+}
+
+
 void demo()
 {
     forward_like::demo();
@@ -696,17 +729,18 @@ void demo()
     auto_x_decay_copy::demo();
     aggregate_initialization::demo();
     variant::demo();
+    initialization::demo();
     designated_initializers::demo();
     mathematical_functions::demo();
-    reference_wrappers::demo();
     enable_shared_from_this::demo();
     swapping_and_exchanging::demo();
     initializer_list::demo();
     pseudo_random_number_generation::demo();
     heterogenous_collections_with_variant::demo();
     range_fillup::demo();
+    aliases::demo();
+    perfect_forwarding::demo();
 }
-
 
 
 }

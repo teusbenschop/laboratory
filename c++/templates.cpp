@@ -20,7 +20,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <cassert>
 #include <iostream>
+#include <list>
 #include <type_traits>
+#include <vector>
 
 namespace templates {
 
@@ -432,6 +434,175 @@ void demo()
 }
 
 
+namespace variadic_class_template {
+// A variadic class template can be instantiated with any number of template arguments.
+template<typename... Types>
+struct Storage
+{
+    Storage(Types... args) : elements(args...) {}
+    std::tuple<Types...> elements;
+};
+
+void demo()
+{
+    {
+        Storage<> s; // Types contains no arguments (this has no application).
+    }
+    {
+        Storage<int> s(1); // Types contains one argument: int.
+        assert(std::get<0>(s.elements) == 1);
+    }
+    {
+        Storage<int, float> s(1, 1.0f); // Types contains two arguments: int and float.
+        assert(std::get<0>(s.elements) == 1);
+        assert(std::get<1>(s.elements) == 1.0f);
+    }
+}
+}
+
+
+namespace variadic_function_template {
+template<typename T, typename... Args>
+constexpr T sum(T t, Args... args)
+{
+    if constexpr (sizeof...(args))
+        return t + sum(args...);
+    else
+        return t;
+};
+
+static_assert(sum<int>(1) == 1);
+static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
+static_assert(sum<int>(1, 2, 3, 4) == 10);
+void demo()
+{
+}
+}
+
+
+namespace pack_expansion {
+
+template <typename ... Foos>
+void func1 (Foos ... args)
+{
+}
+
+template <typename ... Bars>
+void func2 (Bars ... args)
+{
+    func1(&args...); // &args...   : a pack expansion.
+                     // &args      : the pattern.
+
+    func2(1, 1.0f, '1', "1");
+    // Bars ... args expanded into: int i, float f, char c, const char* s
+    // &args expands into: &i, &f, &c, &s
+    // Foos ... args expand into: int* i, float* f, char* c, const char** s
+
+
+}
+
+
+void demo()
+{
+
+}
+}
+
+
+namespace fold_expressions {
+template <typename ... Args>
+constexpr int subtract_right_fold(Args&& ... args)
+{
+    // (arg1 - (... - (argN-1 - argN)))
+    return (args - ...);
+}
+// (1 - (2 - 3))
+static_assert(subtract_right_fold(1,2,3) == 2);
+
+template <typename ... Args>
+constexpr int subtract_left_fold(Args&& ... args)
+{
+    // (((arg1 op arg2) op ...) op argN)
+    return (... - args);
+}
+// ((1 - 2) - 3)
+static_assert(subtract_left_fold(1,2,3) == -4);
+
+template <typename I, typename ... Args>
+constexpr int init_subtract_right_fold(I init, Args&& ... args)
+{
+    // (arg1 op (... op (argN−1 op (argN op I))))
+    return (args - ... - init);
+}
+// (1 - (2 - (3 - 10)))
+static_assert(init_subtract_right_fold(10, 1,2,3) == -8);
+
+template <typename I, typename ... Args>
+constexpr int init_subtract_left_fold(I init, Args&& ... args)
+{
+    // ((((init - arg1) - arg2) - ...) op argN)
+    return (init - ... - args);
+}
+// ((10 - 1) - 2) - 3
+static_assert(init_subtract_left_fold(10, 1,2,3) == 4);
+
+void demo()
+{
+}
+}
+
+
+namespace typetrait_specialization_of_vector {
+
+template <typename T>
+concept specialization_of_vector = requires(T& t)
+{
+    t.begin();
+    t.data();
+    t.reserve(1);
+};
+
+template <typename T>
+requires specialization_of_vector<T>
+void func1 (T& v)
+{
+}
+
+void func2 (specialization_of_vector auto& v)
+{
+}
+
+void demo()
+{
+    std::vector<int> v;
+    func1(v);
+    func2(v);
+}
+}
+
+
+namespace generic_specialization_of_typetrait {
+
+template<class T, template<typename...> class Z>
+constexpr bool is_specialisation_of = false;
+
+template<template<typename...> class T, typename... Args>
+constexpr bool is_specialisation_of<T<Args...>, T> = true;
+
+template<class T, template<typename ...> class Z>
+concept specialisation_of = is_specialisation_of<T,Z>;
+
+template<specialisation_of<std::vector> T>
+void func(T c) {
+};
+
+void demo()
+{
+    std::vector<int> v = {1,2,3,4};
+    func(v);
+}
+}
+
 void demo()
 {
     simple_template::demo();
@@ -439,6 +610,12 @@ void demo()
     class_with_template_methods::demo();
     automatic_temperature_unit_conversion::demo();
     meta_programming_recursive_calculation::demo();
+    variadic_class_template::demo();
+    variadic_function_template::demo();
+    pack_expansion::demo();
+    fold_expressions::demo();
+    typetrait_specialization_of_vector::demo();
+    generic_specialization_of_typetrait::demo();
 }
 }
 

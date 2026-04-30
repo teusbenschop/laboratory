@@ -411,6 +411,199 @@ struct GoodLaptop
 }
 
 
+namespace constructors {
+
+// default constructor: C()
+// copy constructor: C(const C&)
+// copy assignment operator: C operator=(const C&)
+// move constructor: C(C&&)
+// move assignment operator: C operator=(C&&)
+// destructor: ~C()
+
+// Compiler generates all six, unless one of them is user defined.
+// Force generation by declaring = default.
+
+// A constructor is trivial if not user-defined, and no virtual inheritance.
+
+struct S1
+{
+    int value;
+};
+
+static_assert(std::is_constructible_v<S1>);
+static_assert(std::is_default_constructible_v<S1>);
+static_assert(std::is_nothrow_constructible_v<S1>);
+static_assert(std::is_nothrow_default_constructible_v<S1>);
+static_assert(std::is_destructible_v<S1>);
+static_assert(std::is_nothrow_destructible_v<S1>);
+static_assert(std::is_copy_constructible_v<S1>);
+static_assert(std::is_trivially_copy_constructible_v<S1>);
+static_assert(std::is_nothrow_copy_constructible_v<S1>);
+static_assert(std::is_copy_assignable_v<S1>);
+static_assert(std::is_nothrow_copy_assignable_v<S1>);
+static_assert(std::is_trivially_copy_assignable_v<S1>);
+static_assert(std::is_move_constructible_v<S1>);
+static_assert(std::is_nothrow_move_constructible_v<S1>);
+static_assert(std::is_trivially_move_constructible_v<S1>);
+static_assert(std::is_move_assignable_v<S1>);
+static_assert(std::is_nothrow_move_assignable_v<S1>);
+static_assert(std::is_trivially_move_assignable_v<S1>);
+
+
+
+void demo()
+{
+    {
+        // Call default constructor.
+        struct S
+        {
+            int value{};
+        };
+        S s;
+        assert(s.value == 0);
+    }
+    {
+        // Call user-defined default constructor.
+        struct S
+        {
+            S() : value(1) {}
+            int value{};
+        };
+        S s;
+        assert(s.value == 1);
+    }
+    {
+        // Deleted default constructor.
+        struct S
+        {
+            S() = delete;
+        };
+        static_assert(not std::is_constructible_v<S>);
+    }
+    {
+        // Deleted destructor.
+        struct S
+        {
+            ~S() = delete;
+        };
+        static_assert(not std::is_destructible_v<S>);
+    }
+    {
+        // Default copy constructor.
+        struct S
+        {
+            int value{};
+        };
+        S s1;
+        s1.value = 2;
+        S s2 = s1;
+        assert(s2.value == 2);
+    }
+    {
+        // Deleted copy constructor.
+        struct S
+        {
+            S(const S&) = delete;
+        };
+        static_assert(not std::is_copy_constructible_v<S>);
+    }
+    {
+        // User defined copy constructor.
+        struct S
+        {
+            S() = default;
+            S(const S& s)
+            {
+                this->value = s.value + 1; // Some non-default construction.
+            }
+            int value{};
+        };
+        static_assert(std::is_copy_constructible_v<S>);
+        static_assert(not std::is_trivially_copy_constructible_v<S>);
+        S s1;
+        s1.value = 1;
+        S s2 = s1;
+        assert(s2.value == 2);
+    }
+    {
+        // User-defined copy assignment operator.
+        struct S
+        {
+            S& operator=(const S& other)
+            {
+                value = other.value + 1;
+                return *this;
+            }
+            int value{};
+        };
+        S s1, s2;
+        s1.value = 1;
+        s2 = s1;
+        assert(s2.value == 2);
+        assert(s1.value == 1);
+    }
+    {
+        // Deleted move constructor.
+        struct S
+        {
+            S(S&&) = delete;
+        };
+        static_assert(not std::is_move_constructible_v<S>);
+    }
+    {
+        // User-defined move constructor.
+        struct S
+        {
+            S() = default;
+            S(S&& other)
+            {
+                value = other.value + 1;
+            }
+            int value{};
+        };
+        S s1;
+        S s2 = std::move(s1);
+        assert(s2.value == 1);
+    }
+    {
+        // User-defined move assignment operator
+        struct S
+        {
+            S& operator=(S&& other)
+            {
+                value = other.value + 1;
+                return *this;
+            }
+            int value{};
+        };
+        S s1, s2;
+        s2 = std::move(s1);
+        assert(s2.value == 1);
+    }
+    {
+        // The delegating constructor: The class appears in the member initializer list.
+        struct S
+        {
+            S (char c, int i) {}
+            S (int i) : S('c', i) {}
+            // S(int) delegates to S(char, int).
+        };
+    }
+    {
+        // Inheriting constructors.
+        struct Base
+        {
+            Base(int, ...) { }
+        };
+        struct Derived : Base
+        {
+            using Base::Base; // Inherits Base(int, ...)
+        };
+        Derived d1 (1, 2, 3); // Calls the Base constructor.
+    }
+}
+}
+
 void demo()
 {
     design_idiom_raii::demo();
@@ -418,5 +611,6 @@ void demo()
     design_idiom_crtp::demo();
     design_idiom_copy_swap::demo();
     liskov_substitution_principle::demo();
+    constructors::demo();
 }
 }

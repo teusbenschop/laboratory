@@ -20,10 +20,13 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <cassert>
 #include <cmath>
+#include <functional>
 #include <source_location>
 #include <string>
 #include <type_traits>
 #include <vector>
+
+#include "clocking.h"
 
 
 namespace language {
@@ -797,6 +800,296 @@ void demo()
 }
 
 
+namespace references {
+// General rule of thumb about whether something is a lvalue or rvalue reference.
+// 1. If you can take the address of an expression, the expression is a lvalue.
+// 2. If the expression is a lvalue reference (e.g., T& or const T&, etc.),
+// that expression is a lvalue.
+// Otherwise, the expression is a rvalue.
+// Conceptually, rvalues correspond to temporary objects,
+// such as those returned from functions or created through implicit type conversions.
+// Most literal values (e.g., 10 and 5.3) are rvalues.
+
+namespace lvalue_references {
+// The lvalue reference aliases an existing object (optionally with different cv-qualification).
+void demo()
+{
+    // When a function's return type is lvalue reference, the function call expression becomes a lvalue expression.
+    auto char_number = [] (std::string& s, std::size_t n) -> char&
+    {
+        return s.at(n); // The string::at() returns a reference to char.
+    };
+    std::string str = "ab";
+    char_number(str, 1) = 'a'; // The function call is lvalue, can be assigned to.
+    assert(str == "aa");
+}
+}
+
+
+namespace rvalue_references {
+void demo()
+{
+    // This function returns an rvalue of temporary pair {10,10}.
+    // Normally this pair {10,10} goes out of scope at function end.
+    auto pair10 = [] -> std::pair<int,int> { return {10,10}; };
+
+    // Rvalue binds to temporary object, extends lifetime of it.
+    std::pair<int,int>&& r1 = pair10();
+    int&& r2 = r1.first + r1.first;
+    assert(r2 == 20);
+
+    // Can modify the rvalue through reference to non-const.
+    r1.first++;
+    assert(r1.first == 11);
+}
+}
+
+namespace reference_collapsing {
+// Have references to references.
+// A rvalue reference to rvalue reference collapses to rvalue reference.
+// All other combinations form lvalue reference.
+void demo()
+{
+    typedef int&  lref;
+    typedef int&& rref;
+    int n;
+
+    lref&  r1 = n;
+    static_assert(std::is_lvalue_reference_v<decltype(r1)>);
+
+    lref&& r2 = n;
+    static_assert(std::is_lvalue_reference_v<decltype(r2)>);
+
+    rref&  r3 = n;
+    static_assert(std::is_lvalue_reference_v<decltype(r3)>);
+
+    rref&& r4 = 1;
+    static_assert(std::is_rvalue_reference_v<decltype(r4)>);
+}
+}
+
+
+
+namespace forwarding_references {
+// T&& does not always mean: rvalue reference.
+
+// General rule of thumb:
+// If a variable or parameter is declared to have type T&& for some deduced type T,
+// that variable or parameter is a forwarding reference (or: universal reference).
+// A 'const' makes it a rvalue reference: const T&&
+
+// The forwarding (universal) reference makes perfect forwarding possible.
+
+template<typename T>
+T func(T&& t) // t is forwarding reference
+{
+    return std::forward<T>(t); // Perfect forwarding.
+}
+
+void demo()
+{
+    int i = 1;
+    int& i2 = func(i); // Returns lvalue reference.
+    int&& i3 = func(1); // Returns rvalue reference.
+    int&& i4 = func(std::move(i)); // Returns rvalue reference.
+
+    auto&& i5 = func(i); // i5 is forwarding reference, initialized by lvalue.
+    auto&& i6 = func(std::move(i)); // i6 is forwarding reference, initialized by rvalue.
+}
+}
+
+
+namespace dangling_references {
+// If the referred-to object goes out of scope before the reference,
+// the reference becomes dangling.
+
+// const std::string& f()
+// {
+//     std::string s = "Test";
+//     return s; // exits the scope of s:
+//     // its destructor is called and its storage deallocated
+// }
+
+void demo()
+{
+//     const std::string& r = f(); // dangling reference
+//     //assert(r == "Test");; // undefined behavior: reads from a dangling reference
+//     //std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
+}
+}
+
+
+namespace reference_wrappers {
+void demo()
+{
+    const auto fn = [](int& n1, int& n2, [[maybe_unused]] const int& n3)
+    {
+        n1++; // Increases the copy of n1 stored in the function object.
+        n2++; // Increases the caller's n2.
+        // n3++; Compile error: cannot assign to variable 'n3' with const-qualified type 'const int &'
+    };
+
+    int n1{1};
+    int n2{2};
+    int n3{3};
+
+    std::function<void()> bound_fn = std::bind(fn, n1, std::ref(n2), std::cref(n3));
+
+    bound_fn();
+
+    assert(n1 == 1); // This is left unchanged, because it was passed by value to the function.
+    assert(n2 == 3); // This was passed by reference, and got increased by the function.
+    assert(n3 == 3); // Passed by const reference, could not get increased.
+}
+}
+
+
+
+void demo()
+{
+    lvalue_references::demo();
+    rvalue_references::demo();
+    reference_collapsing::demo();
+    forwarding_references::demo();
+    dangling_references::demo();
+    reference_wrappers::demo();
+}
+}
+
+
+namespace final {
+
+struct base {
+    virtual int f() const = 0;
+};
+
+struct derived final : base {
+    int f() const override { return 1; }
+};
+
+void demo()
+{
+    // According to the theory the function call in a final class is faster
+    // due to devirtualization, so the compiler knows that derived.f can only call the overriding f.
+    // But time measurements could not detect a real improvement.
+    int sum = 0;
+    {
+        //scoped_timer::scoped_timer<std::chrono::nanoseconds> timer;
+        for (int i = 0; i < 1000; i++)
+        {
+            derived derived;
+            sum += derived.f();
+        }
+    }
+    assert(sum == 1000);
+}
+}
+
+
+namespace enums {
+
+// An unscoped enum.
+enum Enum1 {red, green, yellow};
+constexpr Enum1 e = green;
+static_assert(e == green);
+
+// Unscoped enum with assignment.
+enum Enum2 {a2, b2, c2 = 10, d2 = c2 + 5};
+static_assert(a2 == 0);
+static_assert(b2 == 1);
+static_assert(c2 == 10);
+static_assert(d2 == 15);
+
+// Scoped enum.
+enum class ScopedEnum1 { red, green = 10, yellow };
+ScopedEnum1 se1 = ScopedEnum1::red;
+
+// Demo using enum.
+enum class Fruit { apple, pear };
+struct S
+{
+    using enum Fruit; // This brings apple and pear into the struct scope.
+};
+S s;
+static_assert(s.apple == Fruit::apple);
+
+// Demo class enum with specified underlying type.
+enum class Height : char { low = 'l', high = 'h' };
+static_assert(sizeof(Height::low) == 1);
+
+void demo()
+{
+}
+}
+
+
+namespace noexcept_specifier {
+// noexcept : the function is declared not to throw.
+
+// Results in std::terminate no matter whether caller uses try...catch block.
+void noexcept_but_throw () noexcept
+{
+    // throw 1;
+}
+
+void f() noexcept; // the function f() does not throw
+void (*fp)() noexcept(false); // fp points to a function that may throw
+void g(void pfa() noexcept);  // g takes a pointer to function that doesn't throw
+typedef int (*pf)() noexcept; // should be error but compiles on macOS.
+
+// No function overload when differing in exception specification.
+void f() noexcept;
+//void f(); // error: different exception specification
+void g() noexcept(false);
+void g(); // ok, both declarations for g are potentially-throwing
+
+// Overriding class methods must have the same exception specification, unless deleted.
+struct A
+{
+    virtual void f() noexcept;
+    virtual void g();
+    virtual void h() noexcept = delete;
+};
+struct B : A
+{
+    //void f(); // Error: Base function is potentially-throwing, derived is not
+    virtual void g() noexcept; // OK.
+    virtual void h() noexcept = delete; // OK: deleted.
+};
+
+// Template function with noexcept true/false depending on type size.
+template <typename T>
+void func1() noexcept(sizeof(T) < 4);
+
+decltype(func1<char>()) func2();
+
+void demo()
+{
+}
+}
+
+
+namespace keyword_const {
+
+struct S
+{
+    // Functions with different const qualifiers have different types so may overload each other.
+    int& get() { return i; }
+    const int& get () const { return i; }
+    int i {10};
+};
+
+
+void demo()
+{
+    S s1;
+    s1.get()++; // Calls the first.
+    int i1 = s1.get(); // Calls the first.
+
+    const S s2;
+    int i2 = s2.get(); // Calls the second.
+}
+}
 
 
 void demo() {
@@ -817,6 +1110,11 @@ void demo() {
     remove_const_volatile_reference::demo();
     simple_type_traits::demo();
     source_location::demo();
+    references::demo();
+    final::demo();
+    enums::demo();
+    noexcept_specifier::demo();
+    keyword_const::demo();
 }
 
 }
