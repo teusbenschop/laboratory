@@ -277,6 +277,64 @@ static_assert(weight_kg.value() == 0.01f);
 }
 
 
+namespace template_specialization {
+
+enum Type {generic_type, float_type} type;
+
+// General class template syntax:
+template <typename T>
+class Class
+{
+public:
+    // Generic class definition.
+    Class()
+    {
+        type = Type::generic_type;
+    }
+};
+
+// Specialized class template syntax:
+template <>
+class Class<float>
+{
+public:
+    // Specialized class definition for type float.
+    Class()
+    {
+        type = Type::float_type;
+    }
+};
+// Key points:
+// 1. template<> (no type there)
+// 2. Provide class definition for specific type, e.g. Class<float>
+
+
+// Generic function template.
+template <typename T>
+void func(T t)
+{
+    type = Type::generic_type;
+}
+template <>
+void func<float>(float f)
+{
+    type = Type::float_type;
+}
+
+void demo()
+{
+    Class<int> ci;
+    assert(type == Type::generic_type);
+    Class<float> cf;
+    assert(type == Type::float_type);
+
+    func("a");
+    assert(type == Type::generic_type);
+    func(1.0f);
+    assert(type == Type::float_type);
+}
+}
+
 namespace automatic_temperature_unit_conversion {
 
 // Write a template that automatically converts temperatures between different unit.
@@ -706,6 +764,7 @@ void demo()
     simple_template::demo();
     class_template::demo();
     class_with_template_methods::demo();
+    template_specialization::demo();
     automatic_temperature_unit_conversion::demo();
     meta_programming_recursive_calculation::demo();
     variadic_class_template::demo();

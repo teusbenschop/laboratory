@@ -18,6 +18,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include "containers.h"
 
+#include <array>
 #include <cassert>
 #include <deque>
 #include <forward_list>
@@ -28,6 +29,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <set>
 #include <span>
 #include <stack>
+#include <type_traits>
 #include <unordered_set>
 #include <vector>
 
@@ -40,6 +42,7 @@ namespace containers {
 
 // array
 // fixed-sized inplace contiguous array
+// Access in constant time (O(1).
 
 // vector
 // Dynamic contiguous array
@@ -263,6 +266,23 @@ void demo()
 }
 }
 
+
+namespace arrays {
+// Complexity is O(1) constant.
+
+constexpr auto array1 = std::to_array({1, 2, 3});
+static_assert(std::tuple_size<decltype(array1)>() == 3);
+
+std::array<int, 3> array2 = {1, 2, 3};
+using T = std::tuple_element_t<0, decltype(array2)>; // int
+static_assert(std::is_same_v<T, int>);
+
+
+void demo()
+{
+
+}
+}
 
 
 namespace iterators {
@@ -750,6 +770,7 @@ void demo()
     deques::demo();
     forward_lists::demo();
     lists::demo();
+    arrays::demo();
     iterators::demo();
     sizes::demo();
     assigning::demo();

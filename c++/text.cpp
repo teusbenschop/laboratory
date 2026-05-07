@@ -23,6 +23,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <format>
 #include <iomanip>
 #include <iostream>
+#include <numbers>
 #include <ranges>
 #include <string>
 #include <sstream>
@@ -181,6 +182,90 @@ void demo()
 }
 }
 
+namespace string_literals {
+// Ordinary literal encoding
+const char* cc1 = "abc";
+// UTF-8 string.
+const char8_t* cc2 = u8"abc";
+// Raw string literal UTF-8.
+const char8_t* cc3 = u8R"(abc)";
+
+// Adjacent string literal are concatenated by the compiler.
+
+void demo()
+{
+    // String literals may have embedded null characters but strlen fails on that.
+    const char* cc4 = "abc\0abc";
+    static_assert(sizeof(cc4) == 8); // including \0 at the end.
+    assert(strlen(cc4) == 3);
+}
+}
+
+
+namespace user_defined_literals {
+
+// Create user-defined types by defining a user-defined suffix.
+
+struct Distance
+{
+public:
+    constexpr static long double km_per_mile = 1.609344L;
+    long double get_kilometers() const { return kilometers; };
+
+    Distance operator+(const Distance other)
+    {
+        return Distance(get_kilometers() + other.get_kilometers());
+    }
+
+private:
+    explicit Distance (long double val) : kilometers(val) {}
+    long double kilometers{0.0};
+    friend Distance operator""_km(long double val);
+    friend Distance operator""_mi(long double val);
+};
+
+Distance operator""_km(long double val)
+{
+    return Distance(val);
+}
+
+Distance operator""_mi(long double val)
+{
+    return Distance(val * Distance::km_per_mile);
+}
+
+void demo_distance()
+{
+    // Must have a decimal point to bind to the operator we defined.
+    Distance d{ 402.0_km }; // construct using kilometers
+    assert(d.get_kilometers() == 402.0);
+
+    Distance d2{ 402.0_mi }; // construct using same amount of miles
+    assert(d2.get_kilometers() > 646.955 and d2.get_kilometers() < 646.957);
+
+    // Add distances constructed with different units.
+    Distance d3 = 36.0_mi + 42.0_km;
+    assert(d3.get_kilometers() > 99.9363 and d3.get_kilometers() < 99.9365);
+
+    // Distance d4(90.0); // error constructor not accessible
+}
+
+
+constexpr long double operator""_degrees_to_radians(long double degrees)
+{
+    long double radians = degrees * std::numbers::pi_v<long double> / 180;
+    return radians;
+}
+
+static_assert(90.0_degrees_to_radians >= 1.57 and 90.0_degrees_to_radians <= 1.58);
+
+void demo()
+{
+    demo_distance();
+}
+}
+
+
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
@@ -189,6 +274,8 @@ void demo() {
     output_manipulation::demo();
     istream_view::demo();
     templates_printf::demo();
+    string_literals::demo();
+    user_defined_literals::demo();
 }
 
 

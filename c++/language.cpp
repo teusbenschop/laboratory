@@ -99,6 +99,12 @@ struct S6
 static_assert(sizeof(S6) == 2);
 static_assert(alignof(S6) == 1);
 
+// Can specify desired alignment.
+struct alignas(16) S7 {
+};
+static_assert(alignof(S7) == 16);
+
+
 void demo()
 {
 }
