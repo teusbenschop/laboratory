@@ -29,6 +29,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <utility>
 #include <variant>
 #include <vector>
+#include <__thread/jthread.h>
 
 namespace variables {
 
@@ -721,6 +722,41 @@ void demo()
 }
 
 
+namespace storage_duration {
+
+// "static" variables last for the duration of the program.
+
+// "thread_local" variables last for the duration of the thread.
+// The storage for these entities lasts for the duration of the thread in which they are created.
+// There is a distinct object or reference per thread.
+// Use of the declared name refers to the entity associated with the current thread.
+thread_local int thread_local_var = 0;
+
+void demo()
+{
+    // Instance 1 of the variable.
+    thread_local_var++;
+    {
+        std::jthread thread ([]()
+        {
+            // Instance 2 of the variable.
+            thread_local_var++;
+            assert(thread_local_var == 1);
+        });
+    }
+    {
+        std::jthread thread ([]()
+        {
+            // Instance 3 of the variable.
+            thread_local_var++;
+            assert(thread_local_var == 1);
+        });
+    }
+    assert(thread_local_var == 1);
+}
+}
+
+
 void demo()
 {
     forward_like::demo();
@@ -740,6 +776,7 @@ void demo()
     range_fillup::demo();
     aliases::demo();
     perfect_forwarding::demo();
+    storage_duration::demo();
 }
 
 

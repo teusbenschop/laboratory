@@ -22,12 +22,14 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <barrier>
 #include <cassert>
 #include <condition_variable>
+#include <functional>
 #include <future>
 #include <iostream>
 #include <mutex>
 #include <random>
 #include <semaphore>
 #include <thread>
+#include <queue>
 
 namespace concurrency {
 namespace atomic_wait {
@@ -47,7 +49,7 @@ void demo()
     for (std::future<void>& task_future : futures)
         task_future = std::async([&]
         {
-            // This sleep represents doing real work...
+            // This sleep represents doing real work.
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(50ms);
 
@@ -553,6 +555,107 @@ void demo()
 }
 
 
+namespace thread_pool {
+
+class ThreadPool {
+public:
+    // Constructor to creates a thread pool with given number of threads.
+    ThreadPool(size_t num_threads = std::thread::hardware_concurrency())
+    {
+        // Creating worker threads.
+        for (size_t i = 0; i < num_threads; ++i) {
+            m_threads.emplace_back([this] {
+                while (true) {
+                    std::function<void()> task;
+                    // The reason for putting the below code here is to unlock the queue
+                    // before executing the task so that other threads can perform enqueue tasks.
+                    {
+                        // Locking the queue so that data can be shared safely.
+                        std::unique_lock<std::mutex> lock(m_mutex);
+
+                        // Waiting until there is a task to execute or the pool is stopped.
+                        m_cv.wait(lock, [this] {
+                            return !m_tasks.empty() or m_stop;
+                        });
+
+                        // Exit the thread in case the pool is stopped and there are no tasks.
+                        if (m_stop && m_tasks.empty()) {
+                            return;
+                        }
+
+                        // Get the next task from the queue
+                        task = std::move(m_tasks.front());
+                        m_tasks.pop();
+                    }
+
+                    task();
+                }
+            });
+        }
+    }
+
+    // Destructor to stop the thread pool.
+    ~ThreadPool()
+    {
+        {
+            // Lock the queue to update the stop flag safely.
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_stop = true;
+        }
+
+        // Notify all threads
+        m_cv.notify_all();
+
+        // Joining all worker threads to ensure they have completed their tasks.
+        for (auto& thread : m_threads) {
+            thread.join();
+        }
+    }
+
+    // Enqueue task for execution by the thread pool
+    void enqueue(std::function<void()> task)
+    {
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_tasks.emplace(std::move(task));
+        }
+        m_cv.notify_one();
+    }
+
+private:
+    // Vector to store worker threads
+    std::vector<std::thread> m_threads;
+
+    // Queue of tasks.
+    std::queue<std::function<void()>> m_tasks;
+
+    // Mutex to synchronize access to shared data.
+    std::mutex m_mutex;
+
+    // Condition variable to signal changes in the state of the tasks queue.
+    std::condition_variable m_cv;
+
+    // Flag to indicate whether the thread pool should stop or not.
+    bool m_stop = false;
+};
+
+
+void demo()
+{
+    // Create a thread pool with 4 threads.
+    ThreadPool pool(4);
+
+    // Enqueue tasks for execution.
+    for (int i = 0; i < 10; ++i) {
+        pool.enqueue([i] {
+            std::cout << "Task " << i << " is running on thread " << std::this_thread::get_id() << std::endl;
+            // Simulate some work.
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        });
+    }
+}
+}
+
 
 void demo()
 {
@@ -569,5 +672,6 @@ void demo()
     lock_multiple_simultaneously::demo();
     atomic_reference::demo();
     barrier_jthread_stop_token::demo();
+    thread_pool::demo();
 }
 }

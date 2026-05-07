@@ -155,7 +155,6 @@ void demo()
         s.c = 'c';
     }
     // The std::variant is a modern replacement of the union.
-
 }
 
 }
