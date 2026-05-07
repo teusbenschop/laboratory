@@ -44,7 +44,7 @@ static_assert(sum(1, 1) == 2);
 
 }
 
-namespace simple_template {
+namespace simple_function_template {
 
 struct Point
 {
@@ -107,6 +107,35 @@ void demo()
 }
 }
 
+
+namespace variable_template {
+
+// Basic variable template.
+template <typename T>
+constexpr T pi = 3.1415926535897932385L;
+// Instantiate it.
+static_assert(pi<float> > 3.14159 and pi<float> < 3.14160);
+
+// Variable template as class member. Must be static.
+struct S1 {
+    template<typename T>
+    static constexpr T val = 1; // Declared inside class, defined inside class.
+};
+static_assert(S1::val<int> == 1);
+
+template<class T>
+struct S2
+{
+    static T val; // Declaration of a non-template static data member of a class template.
+};
+
+template<class T>
+T S2<T>::val = 1; // Definition of the above.
+
+void demo() {
+    assert(S2<int>::val);
+}
+}
 
 namespace class_with_template_methods {
 template <typename T>
@@ -647,20 +676,19 @@ struct Derived : Bases...
 // Derived<B, D> d; // OK: B::g and D::g introduced.
 
 
-// Pack indexing.
-consteval auto first_plus_last(auto ... args) {
-    return args...[0] + args...[sizeof...(args) - 1];
-}
-static_assert(first_plus_last(1,2,3) == 4);
-static_assert(first_plus_last(1,2) == 3);
-static_assert(first_plus_last(1) == 2);
-static_assert(first_plus_last(std::string("a")) == "aa");
+// Pack indexing (C++26).
+// consteval auto first_plus_last(auto ... args) {
+//     return args...[0] + args...[sizeof...(args) - 1];
+// }
+// static_assert(first_plus_last(1,2,3) == 4);
+// static_assert(first_plus_last(1,2) == 3);
+// static_assert(first_plus_last(1) == 2);
+// static_assert(first_plus_last(std::string("a")) == "aa");
 
 
 void demo()
 {
     demo6();
-
 }
 }
 
@@ -678,7 +706,7 @@ static_assert(subtract_right_fold(1,2,3) == 2);
 template <typename ... Args>
 constexpr int subtract_left_fold(Args&& ... args)
 {
-    // (((arg1 op arg2) op ...) op argN)
+    // (((arg1 - arg2) - ...) - argN)
     return (... - args);
 }
 // ((1 - 2) - 3)
@@ -761,8 +789,9 @@ void demo()
 
 void demo()
 {
-    simple_template::demo();
+    simple_function_template::demo();
     class_template::demo();
+    variable_template::demo();
     class_with_template_methods::demo();
     template_specialization::demo();
     automatic_temperature_unit_conversion::demo();

@@ -757,6 +757,25 @@ void demo()
 }
 
 
+namespace integer_sequence {
+// A compile-time sequence of integers as a pack.
+
+constexpr auto is1 = std::integer_sequence<int, 1, 2, 3>();
+
+static_assert(is1.size() == 3);
+
+template <typename T, T... ints>
+void print(std::integer_sequence<T, ints...> is) {
+    std::cout << "integer sequence size " << is.size() << ": ";
+    ((std::cout << ints << ' '), ...);
+    std::cout << std::endl;
+}
+
+void demo() {
+    print(is1);
+}
+}
+
 void demo()
 {
     forward_like::demo();
@@ -777,6 +796,7 @@ void demo()
     aliases::demo();
     perfect_forwarding::demo();
     storage_duration::demo();
+    integer_sequence::demo();
 }
 
 

@@ -559,7 +559,7 @@ namespace thread_pool {
 
 class ThreadPool {
 public:
-    // Constructor to creates a thread pool with given number of threads.
+    // Construct a thread pool with a number of threads.
     ThreadPool(size_t num_threads = std::thread::hardware_concurrency())
     {
         // Creating worker threads.
@@ -574,12 +574,13 @@ public:
                         std::unique_lock<std::mutex> lock(m_mutex);
 
                         // Waiting until there is a task to execute or the pool is stopped.
+                        // While in .wait it unlocks the mutex on the queue.
                         m_cv.wait(lock, [this] {
                             return !m_tasks.empty() or m_stop;
                         });
 
                         // Exit the thread in case the pool is stopped and there are no tasks.
-                        if (m_stop && m_tasks.empty()) {
+                        if (m_stop and m_tasks.empty()) {
                             return;
                         }
 
@@ -597,11 +598,8 @@ public:
     // Destructor to stop the thread pool.
     ~ThreadPool()
     {
-        {
-            // Lock the queue to update the stop flag safely.
-            std::unique_lock<std::mutex> lock(m_mutex);
-            m_stop = true;
-        }
+        // Indicate stop.
+        m_stop = true;
 
         // Notify all threads
         m_cv.notify_all();
@@ -624,7 +622,7 @@ public:
 
 private:
     // Vector to store worker threads
-    std::vector<std::thread> m_threads;
+    std::vector<std::jthread> m_threads;
 
     // Queue of tasks.
     std::queue<std::function<void()>> m_tasks;
@@ -635,13 +633,15 @@ private:
     // Condition variable to signal changes in the state of the tasks queue.
     std::condition_variable m_cv;
 
-    // Flag to indicate whether the thread pool should stop or not.
-    bool m_stop = false;
+    // Flag to indicate whether the thread pool should stop.
+    std::atomic<bool> m_stop = false;
 };
 
 
 void demo()
 {
+    return;
+
     // Create a thread pool with 4 threads.
     ThreadPool pool(4);
 
