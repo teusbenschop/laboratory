@@ -521,6 +521,31 @@ void demo()
 }
 
 
+namespace variadic_minimum {
+// Calculate minimum of values through variadic template.
+
+// Template for one variable, stops recursion.
+template <typename T>
+T min (const T& value)
+{
+    return value;
+}
+
+// Template for recursion for more than one variable.
+template <typename T, typename ... Args>
+T min (const T& value, const Args&... rest)
+{
+    T minimum_of_rest = min(rest...);
+    return value < minimum_of_rest ? value : minimum_of_rest;
+}
+
+void demo()
+{
+    assert(min(2.4, 7.5) == 2.4);
+    assert(min(2, 3, 4, 5, 6, 1) == 1);
+}
+}
+
 namespace variadic_class_template {
 // A variadic class template can be instantiated with any number of template arguments.
 template<typename... Types>
@@ -549,6 +574,7 @@ void demo()
 
 
 namespace variadic_function_template {
+
 template<typename T, typename... Args>
 constexpr T sum(T t, Args... args)
 {
@@ -561,6 +587,7 @@ constexpr T sum(T t, Args... args)
 static_assert(sum<int>(1) == 1);
 static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
 static_assert(sum<int>(1, 2, 3, 4) == 10);
+
 void demo()
 {
 }
@@ -694,41 +721,63 @@ void demo()
 
 
 namespace fold_expressions {
-template <typename ... Args>
-constexpr int subtract_right_fold(Args&& ... args)
-{
-    // (arg1 - (... - (argN-1 - argN)))
-    return (args - ...);
-}
-// (1 - (2 - 3))
-static_assert(subtract_right_fold(1,2,3) == 2);
+// Replace complex template recursion with elegant one-line syntax for variadic arguments.
+// A fold expression applies a binary operator to all elements of a parameter pack,
+// reducing them to a single value — without recursion.
+
+// Left and right fold.
+// Sample arguments: 1 2 3
+// Left: Start from the left, apply operation, get result, then do next argument:
+// 1. Do 1 + 2 > result.
+// 2. Do result + 3 > final result.
+// Right: Start from the right, apply operation, get result, then do next argument:
+// 1. Do 3 + 3 > result.
+// 2. Do result + 1 > final result.
 
 template <typename ... Args>
-constexpr int subtract_left_fold(Args&& ... args)
+constexpr int sum(Args...args)
+{
+    return (args + ...);
+}
+static_assert(sum(1) == 1);
+static_assert(sum(1, 2, 3) == 6);
+
+
+template <typename ... Args>
+constexpr int unary_left_fold(Args&& ... args)
 {
     // (((arg1 - arg2) - ...) - argN)
-    return (... - args);
+    return (... - args); // Dots at left of operator.
 }
 // ((1 - 2) - 3)
-static_assert(subtract_left_fold(1,2,3) == -4);
+static_assert(unary_left_fold(1,2,3) == -4);
 
-template <typename I, typename ... Args>
-constexpr int init_subtract_right_fold(I init, Args&& ... args)
+template <typename ... Args>
+constexpr int unary_right_fold(Args&& ... args)
 {
-    // (arg1 op (... op (argN−1 op (argN op I))))
-    return (args - ... - init);
+    // (arg1 - (... - (argN-1 - argN)))
+    return (args - ...); // Dots at right of operator.
 }
-// (1 - (2 - (3 - 10)))
-static_assert(init_subtract_right_fold(10, 1,2,3) == -8);
+// (1 - (2 - 3))
+static_assert(unary_right_fold(1,2,3) == 2);
 
 template <typename I, typename ... Args>
-constexpr int init_subtract_left_fold(I init, Args&& ... args)
+constexpr int binary_left_fold(I init, Args&& ... args)
 {
-    // ((((init - arg1) - arg2) - ...) op argN)
+    // ((((init - arg1) - arg2) - ...) - argN)
     return (init - ... - args);
 }
 // ((10 - 1) - 2) - 3
-static_assert(init_subtract_left_fold(10, 1,2,3) == 4);
+static_assert(binary_left_fold(10, 1,2,3) == 4);
+
+template <typename I, typename ... Args>
+constexpr int binary_right_fold(I init, Args&& ... args)
+{
+    // (arg1 - (... - (argN−1 - (argN - I))))
+    return (args - ... - init);
+}
+// (1 - (2 - (3 - 10)))
+static_assert(binary_right_fold(10, 1,2,3) == -8);
 
 void demo()
 {
@@ -796,6 +845,7 @@ void demo()
     template_specialization::demo();
     automatic_temperature_unit_conversion::demo();
     meta_programming_recursive_calculation::demo();
+    variadic_minimum::demo();
     variadic_class_template::demo();
     variadic_function_template::demo();
     pack_expansion::demo();

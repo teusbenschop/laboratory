@@ -767,7 +767,7 @@ static_assert(is1.size() == 3);
 template <typename T, T... ints>
 void print(std::integer_sequence<T, ints...> is) {
     std::cout << "integer sequence size " << is.size() << ": ";
-    ((std::cout << ints << ' '), ...);
+    ((std::cout << ints << " "), ...);
     std::cout << std::endl;
 }
 
