@@ -760,21 +760,24 @@ void demo()
 namespace integer_sequence {
 // A compile-time sequence of integers as a pack.
 
-constexpr auto is1 = std::integer_sequence<int, 1, 2, 3>();
+constexpr auto seq = std::integer_sequence<int, 1, 2, 3>();
 
-static_assert(is1.size() == 3);
+static_assert(seq.size() == 3);
 
-template <typename T, T... ints>
-void print(std::integer_sequence<T, ints...> is) {
-    std::cout << "integer sequence size " << is.size() << ": ";
-    ((std::cout << ints << " "), ...);
-    std::cout << std::endl;
+template <typename T, T... vals>
+std::vector<T> assemble(std::integer_sequence<T, vals...> is) {
+    std::vector<T> v;
+    (void(v.emplace_back(vals)), ...);
+    return v;
 }
 
 void demo() {
-    print(is1);
+    const auto standard = std::vector<int>{1, 2, 3};
+    assert(assemble(seq) == standard);
 }
 }
+
+
 
 void demo()
 {

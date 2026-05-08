@@ -101,14 +101,32 @@ void demo()
     // Capture by reference.
     {
         auto v = 7;
-        auto lambda = [&v]
-        {
-            ++v;
-        };
+        auto lambda = [&v]{ ++v; };
         lambda();
         assert(v == 8);
         lambda();
         assert(v == 9);
+    }
+
+    // Capture this (current object).
+    {
+        struct S {
+            void func(int i) {
+                const auto capture_this = [this] {
+                    val++;
+                };
+                capture_this();
+                // Capture a copy of the enclosing object.
+                const auto capture_dereference_this = [*this] {
+                    assert(val == 11);
+                };
+                capture_dereference_this();
+            }
+            int val {10};
+        };
+        S s;
+        s.func(0);
+
     }
 }
 }

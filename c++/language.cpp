@@ -30,8 +30,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 namespace language {
-
-
 namespace alignment {
 
 static_assert(sizeof(bool) == 1);
@@ -918,9 +916,9 @@ namespace dangling_references {
 
 void demo()
 {
-//     const std::string& r = f(); // dangling reference
-//     //assert(r == "Test");; // undefined behavior: reads from a dangling reference
-//     //std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
+    //     const std::string& r = f(); // dangling reference
+    //     //assert(r == "Test");; // undefined behavior: reads from a dangling reference
+    //     //std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
 }
 }
 
@@ -1098,6 +1096,44 @@ void demo()
 }
 
 
+namespace unspecified_order_of_evaluation {
+// Order of evaluation of any part of any expression is unspecified.
+// Not to confuse this with the associativity of operators.
+
+int a() { return std::puts("a"); }
+int b() { return std::puts("b"); }
+int c() { return std::puts("c"); }
+void z(int, int, int) {}
+
+void demo()
+{
+    return;
+    z(a(), b(), c()); // all 6 permutations of output are allowed, e.g. "b c a".
+    int i = a() + b() + c(); // all 6 permutations of output are allowed, e.g. "c b a".
+}
+}
+
+
+namespace inline_specifier {
+inline int i = 0; // Inline variable.
+inline void demo() { } // Inline function.
+}
+
+
+namespace structured_binding {
+void demo() {
+    {
+        // Binding an array.
+        int a[2] = {1, 2};
+        // Creates e[2], copies a into e. Then xr refers to e[0] and yr to e[1].
+        auto [xc, yc] = a;
+        x
+        auto& [xr, yr] = a;
+    }
+}
+}
+
+
 void demo() {
     alignment::demo();
     alias_declarations_in_init_statements::demo();
@@ -1121,6 +1157,9 @@ void demo() {
     enums::demo();
     noexcept_specifier::demo();
     keyword_const::demo();
+    unspecified_order_of_evaluation::demo();
+    inline_specifier::demo();
+    structured_binding::demo();
 }
 
 }

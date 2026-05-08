@@ -21,6 +21,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <iostream>
 #include <list>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 
@@ -779,8 +780,20 @@ constexpr int binary_right_fold(I init, Args&& ... args)
 // (1 - (2 - (3 - 10)))
 static_assert(binary_right_fold(10, 1,2,3) == -8);
 
+// Folding over the comma operator.
+template <typename ... Args>
+void comma_operator(std::ostream &os, std::vector<int>& v, const Args&... args) {
+    (void(os << args << " "), ...); // Run function on arg1, then on arg2, and so on.
+    ((v.push_back(args)), ...); // Can leave out "void".
+}
+
 void demo()
 {
+    std::ostringstream oss;
+    std::vector<int> v;
+    comma_operator(oss, v, 1, 2, 3);
+    assert(oss.str() == "1 2 3 ");
+    assert(v == std::vector<int>({1, 2, 3}));
 }
 }
 
