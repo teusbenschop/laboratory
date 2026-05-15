@@ -355,6 +355,53 @@ void demo()
 }
 
 
+namespace scanning {
+
+void demo()
+{
+    {
+        // Default binary operator is summing.
+        // Outputs init(=0) -> 0+1(=1) -> 1+2(=3), excludes last element of input.
+        const std::vector data{1, 2, 3};
+        std::vector<int> out;
+        std::exclusive_scan(data.begin(), data.end(), std::back_inserter(out), 0);
+        const std::vector standard {0, 1, 3};
+        assert(out == standard);
+    }
+    {
+        // Outputs 1 -> 1+2=3, 3+3=6, includes last element.
+        const std::vector data{1, 2, 3};
+        std::vector<int> out;
+        std::inclusive_scan(data.begin(), data.end(), std::back_inserter(out));
+        const std::vector standard {1, 3, 6};
+        assert(out == standard);
+    }
+    {
+        const std::vector data{1, 2, 3, 4};
+        std::vector<int> out;
+        std::inclusive_scan(data.begin(), data.end(), std::back_inserter(out), std::multiplies<int>{});
+        const std::vector standard {1, 2, 6, 24};
+        assert(out == standard);
+    }
+}
+}
+
+
+namespace reduce {
+
+// The std::reduce returns the generalized sum of "init" and the given range, over, by default, operator +,
+// or another operator.
+// Behaves like std::accumulate, except it may arbitrarily rearrange and regroup the elements.
+
+void demo()
+{
+    const std::vector data{1, 2, 3};
+    int sum = std::reduce(data.cbegin(), data.cend());
+    assert(sum == 6);
+}
+}
+
+
 void demo()
 {
     accumulate::demo();
@@ -365,5 +412,7 @@ void demo()
     charconv::demo();
     tuple_apply::demo();
     make_from_tuple::demo();
+    scanning::demo();
+    reduce::demo();
 }
 }

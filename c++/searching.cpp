@@ -28,6 +28,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <iostream>
 #include <list>
+#include <numeric>
 #include <regex>
 
 #include "clocking.h"
@@ -364,6 +365,23 @@ void demo() {
 }
 
 
+namespace find_common_divisor_multiple {
+
+// The std::gcd finds the greatest common divisor of two integers.
+static_assert(std::gcd(6, 7) == 1);
+// If one 0 is included, it returns the other value.
+static_assert(std::gcd(6, 0) == 6);
+
+// Rhe std::lcm calculates the least common  multiple of both integers.
+static_assert(std::lcm( 6,  10) == 30);
+// Of one variable is nul, it returns nul.
+static_assert(std::lcm(2, 0) == 0);
+
+void demo() {
+}
+}
+
+
 void demo() {
     binary_search::demo();
     any_of_all_of_none_of::demo();
@@ -375,5 +393,6 @@ void demo() {
     ranges_finding::demo();
     ranges_find_max::demo();
     find_if::demo();
+    find_common_divisor_multiple::demo();
 }
 }
