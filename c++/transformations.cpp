@@ -17,14 +17,17 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "transformations.h"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <charconv>
+#include <iostream>
 #include <numeric>
+#include <ostream>
 #include <random>
 #include <ranges>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace transformations {
@@ -234,6 +237,124 @@ void demo()
 }
 
 
+namespace charconv {
+// Functions are ultra-fast, basic, non-throwing, non-allocating.
+void demo()
+{
+    {
+        const auto str {"1234"};
+        int result{};
+        const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
+        assert(ec == std::errc()); // No error.
+        assert(result == 1234);
+    }
+    {
+        const auto str {"123 foo"};
+        int result{};
+        const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
+        assert(ec == std::errc()); // No error.
+        assert(result == 123);
+    }
+    {
+        const auto str {"bar"};
+        int result{};
+        const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
+        assert(ec == std::errc::invalid_argument); // Not a number.
+        assert(result == 0);
+    }
+    {
+        const auto str {"500000000000"};
+        int result{};
+        const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
+        assert(ec == std::errc::result_out_of_range); // Number would have been too large.
+        assert(result == 0);
+    }
+    {
+        constexpr size_t size = 2;
+        char buf[size]{};
+        const std::to_chars_result result = std::to_chars(buf, buf + size, 42);
+        assert(result.ec == std::errc());
+        const std::string_view str(buf, result.ptr - buf);
+        assert(str == "42");
+    }
+    {
+        constexpr size_t size = 10;
+        char buf[size]{};
+        const std::to_chars_result result = std::to_chars(buf, buf + size, 3.1415926535, std::chars_format::fixed, 10);
+        assert(result.ec == std::errc::value_too_large);
+    }
+}
+}
+
+
+namespace tuple_apply {
+// Run a function on a tuple and pass the tuple elements as arguments to the function.
+
+int add_function (int a, int b) { return a + b; };
+
+template <typename T>
+T add_generic (T a, T b) { return a + b; };
+
+auto add_lambda = [] (auto a, auto b) { return a + b; };
+
+template <typename... Ts>
+std::ostream& operator<< (std::ostream& os, const std::tuple<Ts...>& tuple)
+{
+    std::apply(
+        [&os] (const Ts&... args)
+        {
+            os << "[";
+            std::size_t n{0};
+            ((os << args << (++n != sizeof...(Ts) ? ", " : "")), ...);
+            os << "]";
+        }, tuple
+    );
+    return os;
+}
+
+void demo()
+{
+    {
+        const int i = std::apply(add_function, std::pair{1, 2});
+        assert(i == 3);
+    }
+    {
+        const int i = std::apply(add_generic<int>, std::pair{1, 2});
+        assert(i == 3);
+    }
+    {
+        const int i = std::apply(add_lambda, std::pair{1, 2});
+        assert(i == 3);
+    }
+    {
+        std::ostringstream oss;
+        oss << std::tuple {123, "hello", 3.3f, 't'};
+        assert(oss.str() == "[123, hello, 3.3, t]");
+    }
+}
+}
+
+
+namespace make_from_tuple {
+void demo()
+{
+    struct Struct
+    {
+        Struct(int i, float f, char c) : i(i), f(f), c(c) {};
+        int i{};
+        float f{};
+        char c{};
+    };
+
+    auto tuple = std::tuple<int, float, char>{1, 2.0f, 'c'};
+    const Struct strct = std::make_from_tuple<Struct>(std::move(tuple));
+    assert(strct.i == 1);
+    assert(strct.f == 2.0f);
+    assert(strct.c == 'c');
+}
+}
+
+
 void demo()
 {
     accumulate::demo();
@@ -241,5 +362,8 @@ void demo()
     ranges_views_filter_drop_reverse::demo();
     ranges_transformations::demo();
     ranges_sorting::demo();
+    charconv::demo();
+    tuple_apply::demo();
+    make_from_tuple::demo();
 }
 }

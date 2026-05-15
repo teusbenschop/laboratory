@@ -24,6 +24,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <source_location>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "clocking.h"
@@ -1123,16 +1124,55 @@ inline void demo() { } // Inline function.
 namespace structured_binding {
 void demo() {
     {
-        // Binding an array.
+        // Binding to an array.
         int a[2] = {1, 2};
-        // Creates e[2], copies a into e. Then xr refers to e[0] and yr to e[1].
+        // Creates e[2], copies a into e. Then xcr refers to e[0] and yc to e[1].
         auto [xc, yc] = a;
-        x
+        // Variable xr refers to a[0] and yr to a[1].
         auto& [xr, yr] = a;
+    }
+    {
+        // Binding to a tuple.
+        float f {};
+        char c {};
+        int i {};
+        std::tuple<float&, char&&, int> tpl (f, std::move(c), i);
+        const auto& [f2, c2, i2] = tpl;
+        // Variable f2 refers to f (initialized from get<0>(tpl)).
+        static_assert(std::is_same_v<decltype(f2), float&>);
+        // Variable c2 refers to c (initialized from get<1>(tpl)).
+        static_assert(std::is_same_v<decltype(c2), char&&>);
+        // Variable i refers to the third component of tpl, get<2>(tpl).
+        static_assert(std::is_same_v<decltype(i2), const int>);
+    }
+    {
+        // Binding to data members.
+        struct S
+        {
+            mutable int i : 2;
+            char c;
+        };
+        auto func = [] -> S { return S{1, '1'}; };
+        const auto [i2, c2] = func();
+        assert(i2 == 1);
+        assert(c2 == '1');
+        i2 = -2;      // OK because member is mutable.
+        // c2 = '2';  // Error: c2 is const-qualified
     }
 }
 }
 
+
+namespace copy_elision {
+// Copy ilision does not create a temporal copy of an object.
+// It creates the object directly into the target.
+// It also omits side effects of the used constructor or the destructor.
+// Programs that rely on these side effects are not portable.
+// Copy elision is used for return statements ot throw expressions.
+void demo()
+{
+}
+}
 
 void demo() {
     alignment::demo();
@@ -1160,6 +1200,7 @@ void demo() {
     unspecified_order_of_evaluation::demo();
     inline_specifier::demo();
     structured_binding::demo();
+    copy_elision::demo();
 }
 
 }

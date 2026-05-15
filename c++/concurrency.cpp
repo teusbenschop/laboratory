@@ -22,6 +22,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <barrier>
 #include <cassert>
 #include <condition_variable>
+#include <execution>
 #include <functional>
 #include <future>
 #include <iostream>

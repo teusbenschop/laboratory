@@ -314,6 +314,32 @@ void demo()
 }
 
 
+namespace demo_not_fn {
+
+constexpr bool is_same (int a, int b)
+{
+    return a == b;
+}
+
+constexpr auto differs = std::not_fn(is_same);;
+
+struct S
+{
+    int val;
+    bool is_same (int arg) {return val == arg;}
+};
+
+auto member_differs = std::not_fn(&S::is_same);
+
+void demo()
+{
+    // Free function.
+    static_assert(is_same(8, 8));
+    static_assert(differs(8, 9));
+    // Member function.
+    assert(member_differs(S{3}, 4));
+}
+}
 
 
 void demo() {
@@ -325,6 +351,7 @@ void demo() {
     keyword_auto_for_lambdas::demo();
     binding::demo();
     member_function::demo();
+    demo_not_fn::demo();
 }
 }
 

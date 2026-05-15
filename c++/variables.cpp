@@ -20,16 +20,18 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "variables.h"
 
 #include <algorithm>
+#include <any>
 #include <cassert>
+#include <complex>
 #include <functional>
 #include <iostream>
 #include <list>
 #include <random>
+#include <thread>
 #include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <__thread/jthread.h>
 
 namespace variables {
 
@@ -778,6 +780,245 @@ void demo() {
 }
 
 
+namespace demo_any {
+void demo()
+{
+    // Holds any type.
+    std::any any;
+    any = 1;
+    any = 1.0f;
+    any = true;
+    any = 'c';
+
+    // Bad cast.
+    try
+    {
+        any = 1;
+        std::any_cast<float>(any);
+    }
+    catch (const std::bad_any_cast& e)
+    {
+        assert (e.what() == std::string("bad any cast"));
+    }
+
+    // Has value.
+    any = 1;
+    assert(any.has_value());
+
+    // Reset.
+    any.reset();
+    assert(not any.has_value());
+
+    // Pointer to contained data.
+    any = 1;
+    int* ip = std::any_cast<int>(&any);
+    assert(*ip == 1);
+
+    // Make any.
+    auto any2 = std::make_any<std::string>("test");
+    assert(std::any_cast<std::string>(any2) == "test");
+
+    // Store lambda into std::any and run it.
+    typedef std::function<void()> lambda;
+    auto any3 = std::make_any<lambda>([&any] (){any = std::string("lambda"); });
+    std::any_cast<lambda>(any3)();
+    assert(std::any_cast<std::string>(any) == "lambda");
+}
+}
+
+
+namespace demo_as_const {
+void demo()
+{
+    std::string s1 = "test";
+    const std::string& s2 = std::as_const(s1);
+    assert(std::addressof(s2) == std::addressof(s1));
+    using s2type = std::remove_reference_t<decltype(std::as_const(s1))>;
+    static_assert(std::is_same_v<std::remove_const_t<s2type>, std::string>, "should be some string");
+    static_assert(not std::is_same_v<s2type, std::string>, "should not be mutable");
+}
+}
+
+
+namespace byte {
+// The std::byte models a collection of bits, supports bitshift operations with an integer, and other bit operations.
+void demo()
+{
+    // std::byte y = 1; // error: cannot convert int to byte
+    std::byte b{1}; // OK.
+
+    // if (b == 2){} // error: cannot compare
+    if (b == std::byte{2}) {} // OK.
+
+    int arr[] = {1, 2, 3};
+    // int c = arr[b]; // error: array subscript is not an integer
+    int i1 = arr[std::to_integer<int>(b)]; // OK
+    int i2 = arr[std::to_underlying(b)];   // OK
+
+    auto to_int = [](std::byte b) {return std::to_integer<int>(b);};
+
+    b = std::byte{42};
+    assert(to_int(b) == 0b00101010);
+
+    // b *= 2; // error: b is not of arithmetic type
+    b <<= 1; // OK.
+    assert(to_int(b) == 0b01010100);
+
+    b >>= 1;
+    assert(to_int(b) == 0b00101010);
+
+    b |= std::byte{0b11110000};
+    assert(to_int(b) == 0b11111010);
+
+    b &= std::byte{0b11110000};
+    assert(to_int(b) == 0b11110000);
+
+    b ^= std::byte{0b11111111};
+    assert(to_int(b) == 0b00001111);
+}
+}
+
+
+namespace conjunction_disjunction_negation {
+// The std::conjunction perform a logical AND on a variadic pack of boolean values.
+// The std::disjunction does a logical OR on a variadic pack of booleans.
+
+bool all_the_same {};
+
+// The function is enabled if all types Ts... are the same as type T.
+template <typename T, typename ...Ts>
+std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>
+func(T, Ts...)
+{
+    all_the_same = true;
+}
+
+// The function is enabled if all types Ts... are not the same as type T.
+template <typename T, typename ...Ts>
+std::enable_if_t<not std::conjunction_v<std::is_same<T, Ts>...>>
+func(T, Ts...)
+{
+    all_the_same = false;
+}
+
+template <typename T, typename ...Ts>
+constexpr bool all_types_the_same = std::conjunction_v<std::is_same<T, Ts>...>;
+static_assert(all_types_the_same<int, int, int>);
+static_assert(not all_types_the_same<int, int, float>);
+
+void demo_conjunction()
+{
+    func(1, 2, 3);
+    assert(all_the_same);
+    func(1, 2, 3.0f);
+    assert(not all_the_same);
+}
+
+
+// Define two integral constants: 2 and 4.
+using int2 = std::integral_constant<int, 2>;
+using int4 = std::integral_constant<int, 4>;
+
+// Takes the first element that is true, and returns its value:
+static_assert(std::disjunction<int2, int4>::value == 2);
+// Returns true based on the first element:
+static_assert(std::disjunction_v<int2, int4>);
+
+void demo_disjunction()
+{
+}
+
+
+// The negation gives the logical negation of the passed type.
+
+static_assert(
+    std::is_same_v<
+        std::bool_constant<false>,
+        std::negation<std::bool_constant<true>>::type
+    >,
+    "");
+
+static_assert(std::negation_v<std::bool_constant<false>>);
+
+void demo_negation()
+{
+}
+
+void demo()
+{
+    demo_conjunction();
+    demo_disjunction();
+    demo_negation();
+}
+}
+
+
+namespace is_invocable {
+
+auto func(char) -> int (*)()
+{
+    return nullptr;
+}
+
+static_assert(std::is_invocable_r_v<int(*)(), decltype(func), char>);
+static_assert(not std::is_invocable_r_v<int(*)(), decltype(func), void>);
+
+void demo() {}
+}
+
+
+namespace is_aggregate {
+// An aggregate is a type that allows direct member initialization using curly braces ({})
+// because it has no user-declared constructors and so on.
+
+struct Aggregate
+{
+    int a;
+    int b;
+};
+static_assert(std::is_aggregate_v<Aggregate>);
+
+struct NonAggregate
+{
+    int i;
+    std::string_view sv;
+    NonAggregate (int i, std::string_view sv) : i(i), sv(sv) {}
+};
+static_assert(not std::is_aggregate_v<NonAggregate>);
+
+void demo()
+{
+}
+}
+
+
+namespace has_unique_object_representations {
+
+// Every value of a char corresponds to exactly one object representation.
+static_assert(std::has_unique_object_representations_v<char>);
+
+// IEC 559 floats: The value NaN has multiple object representations.
+static_assert(not std::has_unique_object_representations_v<float>);
+
+struct Unpadded { std::uint32_t a, b; };
+// Should succeed in a sane implementation because struct unpadded
+// is typically not padded, and std::uint32_t cannot contain padding bits.
+static_assert(std::has_unique_object_representations_v<Unpadded>);
+
+struct Padded { std::uint8_t u8; std::uint16_t u16; std::uint32_t u32; };
+// Fails in most implementations because padding bits are inserted
+// between the data members u8 and u16 for the purpose of aligning u16 to 16 bits.
+static_assert(not std::has_unique_object_representations_v<Padded>);
+
+// Notable architectural divergence:
+static_assert(std::has_unique_object_representations_v<bool>);  // x86
+// static_assert(not std::has_unique_object_representations_v<bool>); // ARM
+
+void demo()
+{
+}
+}
+
 
 void demo()
 {
@@ -800,6 +1041,13 @@ void demo()
     perfect_forwarding::demo();
     storage_duration::demo();
     integer_sequence::demo();
+    demo_any::demo();
+    demo_as_const::demo();
+    byte::demo();
+    conjunction_disjunction_negation::demo();
+    is_invocable::demo();
+    is_aggregate::demo();
+    has_unique_object_representations::demo();
 }
 
 
