@@ -37,24 +37,26 @@ static_assert(std::ranges::count_if(numbers, predicate) == 4);
 
 void demo()
 {
-    struct Player {
-        std::string name;
-        int score;
-    };
-    std::vector<Player> party{
-        {"Alice", 100},
-        {"Bob", 200},
-        {"Alice", 150}
-    };
-    // Count how many players have the name "Alice"
-    auto count = std::ranges::count(party, "Alice", &Player::name);
-    assert(count == 2);
+    {
+        struct Player {
+            std::string name;
+            int score;
+        };
+        std::vector<Player> players{
+            {"Alice", 10},
+            {"Bob", 10},
+            {"Alice", 10}
+        };
+        // Count how many players have the name "Alice".
+        long count = std::ranges::count(players, "Alice", &Player::name);
+        assert(count == 2);
+    }
 
-    std::vector<std::pair<int, int>> pairs {
-        {1,1}, {1,2}, {3,3}
-    };
-    auto count2 = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
-    assert(count2 == 2);
+    {
+        std::vector<std::pair<int, int>> pairs {{1,1}, {1,2}, {3,3} };
+        long count = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
+        assert(count == 2);
+    }
 }
 
 }

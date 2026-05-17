@@ -38,19 +38,18 @@ namespace unconstrained_errors {
 
 // An unconstrained template function.
 template <typename T>
-constexpr auto basic_plus(const T& x, const T& y)
+constexpr auto unconstrained_plus(const T& x, const T& y)
 {
     return x + y;
 }
 
 // Call the template with numbers: OK.
-static_assert(basic_plus(1, 2) == 3);
+static_assert(unconstrained_plus(1, 2) == 3);
 
 // Call the template with strings:
 // Oops, it works, but not as intended, it concatenates instead of summing.
 // It would help if the passed types could be constrained.
-// ReSharper disable once CppEvaluationInternalFailure
-static_assert(basic_plus(std::string("a"), std::string("b")) == "ab");
+static_assert(unconstrained_plus(std::string("a"), std::string("b")) == "ab");
 
 // Call the template with chars:
 // OK, it fails:
@@ -96,10 +95,8 @@ static_assert(get_value(Derived()) == 10); // This compiles.
 // The above fails to compile due to the constraint:
 // error: no matching function for call to 'get_value' ... and so on, multiple diagnostic errors.
 
-
 void demo()
 {
-
 }
 }
 
@@ -119,8 +116,8 @@ template <typename T>
 // ReSharper disable once CppConceptNeverUsed
 concept range = requires(T& t)
 {
-    std::begin(t);
-    std::end(t);
+    t.begin();
+    t.end();
 };
 
 // Constraining a type with a concept.
@@ -227,7 +224,6 @@ T generic_mod_overload(T v, T n)
 
 void demo()
 {
-
 }
 }
 

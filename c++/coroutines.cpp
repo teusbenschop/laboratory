@@ -17,7 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "coroutines.h"
-
 #include <coroutine>
 #include <iostream>
 #include <ostream>
@@ -36,20 +35,23 @@ namespace coroutines {
 // * co_yield: suspend execution returning a value.
 // * co_return: complete execution returning a value.
 
-struct return_object {
-  struct promise_type {
-    return_object get_return_object() { return {}; }
-    std::suspend_never initial_suspend() { return {}; }
-    std::suspend_never final_suspend() noexcept { return {}; }
-    void unhandled_exception() {}
-  };
+struct return_object
+{
+    struct promise_type
+    {
+        static return_object get_return_object() noexcept { return {}; }
+        static std::suspend_never initial_suspend() noexcept { return {}; }
+        static std::suspend_never final_suspend() noexcept { return {}; }
+        static void unhandled_exception() noexcept { }
+    };
 };
 
-struct awaiter {
-  std::coroutine_handle<> *m_handle;
-  constexpr bool await_ready() const noexcept { return false; }
-  void await_suspend(std::coroutine_handle<> handle) { *m_handle = handle; }
-  constexpr void await_resume() const noexcept {}
+struct awaiter
+{
+    std::coroutine_handle<>* m_handle;
+    constexpr bool await_ready() const noexcept { return false; }
+    void await_suspend(std::coroutine_handle<> handle) const { *m_handle = handle; }
+    constexpr void await_resume() const noexcept { }
 };
 
 // This function runs forever. It increases and prints the value.

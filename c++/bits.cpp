@@ -20,6 +20,10 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #include <bit>
 #include <bitset>
+#include <cassert>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 namespace bits {
 // https://en.cppreference.com/w/cpp/header/bit
@@ -53,6 +57,23 @@ static_assert(std::rotl(ui2, 1) == 0b0100);
 static_assert(std::rotr(ui2, 1) == 0b0001);
 
 
+// The std::byteswap reverses the bytes in the given integer value n.
+
+// Swapping one byte results in the same byte.
+static_assert(std::byteswap('a') == 'a');
+
+// Swap bytes for U16.
+constexpr auto u16 = std::uint16_t(0xCAFE);
+static_assert(std::byteswap(u16) == 0xFECA); // <- Two bytes swapped: CAFE -> FECA.
+
+// Swap bytes for U32.
+constexpr auto u32 = 0xDEADBEEFu;
+static_assert(std::byteswap(u32) == 0xEFBEADDEu);
+
+// Swap bytes for U64.
+constexpr auto u64 = std::uint64_t{0x0123456789ABCDEFull};
+static_assert(std::byteswap(u64) == 0xEFCDAB8967452301ull);
+
 void demo()
 {
     // bit_ceil
@@ -70,35 +91,6 @@ void demo()
     // countr_one
     // Counts the number of consecutive 1 bits, starting from the least significant bit.
     // popcount - Counts the number of 1 bits in an unsigned integer.
-
-    // The std::byteswap reverses the bytes in the given integer value n.
-    {
-        // const auto dump = [](auto value)
-        // {
-        //     std::cout << std::hex << std::uppercase << std::setfill('0') << std::setw(sizeof(value) * 2) << value <<
-        //         " : ";
-        //     for (std::size_t i{}; i != sizeof(value); i++, value >>= 8)
-        //         std::cout << std::setw(2) << static_cast<unsigned>(decltype(value)(0xFF) & value) << ' ';
-        //     std::cout << std::dec << std::endl;
-        // };
-        //
-        // static_assert(std::byteswap('a') == 'a');
-        //
-        // std::cout << "byteswap for U16:" << std::endl;
-        // constexpr auto x = std::uint16_t(0xCAFE);
-        // dump(x);
-        // dump(std::byteswap(x));
-        //
-        // std::cout << "\nbyteswap for U32:" << std::endl;
-        // constexpr auto y = std::uint32_t(0xDEADBEEFu);
-        // dump(y);
-        // dump(std::byteswap(y));
-        //
-        // std::cout << "\nbyteswap for U64:" << std::endl;
-        // constexpr auto z = std::uint64_t{0x0123456789ABCDEFull};
-        // dump(z);
-        // dump(std::byteswap(z));
-    }
 }
 
 }

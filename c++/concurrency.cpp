@@ -659,7 +659,7 @@ void demo()
 
 
 namespace lock_free {
-// Determine if the atomic object pointed to by obj is implemented lock-free.
+// Determine if the atomic object is implemented lock-free.
 void demo()
 {
     struct A { int a[100]; };
@@ -668,9 +668,9 @@ void demo()
     assert(not std::atomic<A>{}.is_lock_free());
     assert(std::atomic<B>{}.is_lock_free());
 
-    std::atomic<B> a;
+    std::atomic<A> a;
     std::atomic<B> b;
-    assert(std::atomic_is_lock_free(&a));
+    assert(not std::atomic_is_lock_free(&a));
     assert(std::atomic_is_lock_free(&b));
 }
 }
