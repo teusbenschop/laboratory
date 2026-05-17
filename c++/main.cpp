@@ -34,7 +34,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "language.h"
 #include "latches_barriers.h"
 #include "linux.h"
+#include "mathematics.h"
 #include "modules.h"
+#include "performance.h"
 #include "searching.h"
 #include "shared_mutex.h"
 #include "templates.h"
@@ -75,6 +77,8 @@ int main()
     bits::demo();
     linux::demo();
     unions::demo();
+    mathematics::demo();
+    performance::demo();
     return EXIT_SUCCESS;
 }
 

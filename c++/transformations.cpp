@@ -395,9 +395,22 @@ namespace reduce {
 
 void demo()
 {
-    const std::vector data{1, 2, 3};
-    int sum = std::reduce(data.cbegin(), data.cend());
-    assert(sum == 6);
+    std::vector data{1, 2, 3};
+
+    // Sum of the input data.
+    int sum1 = std::reduce(data.cbegin(), data.cend());
+    assert(sum1 == 6);
+
+    // Take initial value, sum with input data.
+    int init2 = 2;
+    int sum2 = std::reduce(data.cbegin(), data.cend(), init2);
+    assert(sum2 == 8);
+
+    // Same as above, but with product.
+    int init3 = 3;
+    int sum3 = std::reduce(data.cbegin(), data.cend(), init3, std::multiplies<>());
+    // 3 x 1 x 2 x 3 = 18.
+    assert(sum3 == 18);
 }
 }
 

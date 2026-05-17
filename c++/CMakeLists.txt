@@ -31,5 +31,7 @@ add_executable(cpp
         filesystem.cpp
         linux.cpp
         unions.cpp
+        mathematics.cpp
+        performance.cpp
 
 )

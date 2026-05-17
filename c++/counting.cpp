@@ -16,15 +16,20 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "counting.h"
 #include <algorithm>
 #include <array>
-#include "counting.h"
+#include <cassert>
+#include <iostream>
+#include <ranges>
+#include <string>
+#include <vector>
 
 namespace counting {
 
 constexpr auto numbers = std::array<int, 7>{3, 3, 2, 1, 3, 1, 3};
 
-// Count how often number 3 occurs: Should be 4 times.
+// Count how often a given number occurs.
 static_assert(std::ranges::count(numbers, 3) == 4);
 
 constexpr auto predicate = [](int i) { return i == 3; };
@@ -32,6 +37,24 @@ static_assert(std::ranges::count_if(numbers, predicate) == 4);
 
 void demo()
 {
+    struct Player {
+        std::string name;
+        int score;
+    };
+    std::vector<Player> party{
+        {"Alice", 100},
+        {"Bob", 200},
+        {"Alice", 150}
+    };
+    // Count how many players have the name "Alice"
+    auto count = std::ranges::count(party, "Alice", &Player::name);
+    assert(count == 2);
+
+    std::vector<std::pair<int, int>> pairs {
+        {1,1}, {1,2}, {3,3}
+    };
+    auto count2 = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
+    assert(count2 == 2);
 }
 
 }

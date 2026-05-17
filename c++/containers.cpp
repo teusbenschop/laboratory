@@ -25,6 +25,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <map>
 #include <queue>
 #include <set>
 #include <span>
@@ -464,15 +465,37 @@ void demo()
 namespace merging {
 void demo()
 {
-    std::list l1 { 2, 3, 4 };
-    std::list l2 { 2, 3 };
-    // Merging requires the list to be sorted.
-    l1.merge (l2);
-    const std::list standard {2, 2, 3, 3, 4};
-    assert(l1 == standard);
-    // Can also merge with a comparison predicate.
+    {
+        std::list list1 { 2, 3, 4 };
+        std::list list2 { 2, 3 };
+        // Merging requires the list to be sorted.
+        list1.merge (list2);
+        std::list standard {2, 2, 3, 3, 4};
+        assert(list1 == standard);
+        // Can also merge with a comparison predicate.
+    }
+    {
+        // Merging from/into std::map and std::set.
+        // Attempts to extract ("splice") each element in source and insert it into *this.
+        // If there is an element in *this with key equivalent to the key of an element from source,
+        // then that element is not extracted from source.
+        // No elements are copied or moved, only the internal pointers of the container nodes are repointed.
+        // All pointers and references to the transferred elements remain valid,
+        // but now refer into *this, not into source.
+        using map = std::map<int,std::string>;
+        map source1{{1, "1"}, {2, "2"}};
+        map source2 {{2, "2"}, {3, "3"}};
+        map destination;
+        destination.merge(source1);
+        assert(destination.size() == 2);
+        assert(source1.empty());
+        destination.merge(source2); // Merges only one element due to duplicate keys.
+        assert(destination.size() == 3);
+        assert(source2.size() == 1);
+    }
 }
 }
+
 
 namespace containing {
 void demo()
@@ -763,6 +786,87 @@ void demo()
 }
 
 
+namespace extraction {
+// Unlink a node from the container and provide a handle that owns it.
+void demo()
+{
+    using map = std::map<int, std::string>;
+
+    map container{{1, "1"}, {2, "2"}, {3, "3"}};
+
+    // Extract node handle and change key.
+    auto node_handle = container.extract(1);
+    node_handle.key() = 4;
+
+    map standard2 {{2, "2"}, {3, "3"}};
+    assert(container == standard2);
+
+    // Insert the updated node handle back.
+    container.insert(std::move(node_handle));
+
+    map standard3 {{2, "2"}, {3, "3"}, {4, "1"}};
+    assert(container == standard3);
+}
+}
+
+
+namespace map_try_emplace {
+void demo()
+{
+    std::map<int,int> map{};
+    {
+        // If emplace ok: Return iter to inserted element, return success.
+        const auto [iter, success] = map.try_emplace(1, 1);
+        assert(iter == map.cbegin());
+        assert(success);
+    }
+    {
+        // Emplace fails due to existing key.
+        // Returned iterator points to element that prevented insertion.
+        // Returned bool success is false.
+        const auto [iter, success] = map.try_emplace(1, 2);
+        assert(iter == map.cbegin());
+        assert(not success);
+    }
+}
+}
+
+
+namespace map_insert_or_assign {
+// If the key does not exist in the std::map, insert the pair.
+// If the key does exist, update its value.
+// Returns iterator and boolean.
+// Bool = true if inserted, and false if assigned.
+// Iter points to element inserted or updated.
+void demo()
+{
+    std::map<int,int> map{};
+    {
+        auto [iter, inserted] = map.insert_or_assign(1,1);
+        assert(iter == map.cbegin());
+        assert(inserted);
+        assert(iter->second == 1);
+    }
+    {
+        auto [iter, inserted] = map.insert_or_assign(1,2);
+        assert(iter == map.cbegin());
+        assert(not inserted);
+        assert(iter->second == 2);
+    }
+}
+}
+
+
+namespace non_member_size_empty_data {
+void demo()
+{
+    std::vector<int> v {1, 2, 3};
+    assert(std::size(v) == 3);
+    assert(not std::empty(v));
+    assert(std::data(v) == v.data());
+}
+}
+
 
 void demo()
 {
@@ -788,5 +892,9 @@ void demo()
     span::demo();
     performance::demo();
     inserter::demo();
+    extraction::demo();
+    map_try_emplace::demo();
+    map_insert_or_assign::demo();
+    non_member_size_empty_data::demo();
 }
 }

@@ -17,13 +17,15 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "exceptions.h"
-
 #include <exception>
 #include <iostream>
 #include <string>
 
 
 namespace exceptions {
+
+
+namespace exception_hierarchy {
 
 // It is good practice to have a hierarchy of exception types.
 
@@ -33,12 +35,10 @@ namespace exceptions {
 class BaseException : public std::exception
 {
     const std::string m_what;
-
 public:
     explicit BaseException(std::string_view what = "") noexcept : m_what(what)
     {
     }
-
     const char* what() const noexcept final override { return m_what.c_str(); }
 };
 
@@ -157,6 +157,54 @@ void demo()
     demo_exception_catch_hierarchy(BaseException());
     std::cout << "Throw standard exception" << std::endl;
     demo_exception_catch_hierarchy(std::runtime_error(""));
+}
+
+}
+
+
+namespace uncaught_exceptions {
+
+// The std::uncaught_exceptions returns how many exceptions have been thrown in the current thread,
+// and have not yet entered their matching catch clauses.
+
+struct Struct
+{
+    char id = '?';
+    int ue = std::uncaught_exceptions();
+
+    ~Struct()
+    {
+        ue = std::uncaught_exceptions();
+        std::cout << "Uncaught exceptions in id " << id << " : " << ue << std::endl;
+        // Possible usage: If the destructor is called due to a thrown exception,
+        // then the number of uncaught exceptions is larger than 0.
+        // If so the destructor can roll something back that is not to be committed.
+    }
+};
+
+void demo()
+{
+    return;
+    Struct s1('1');
+    try
+    {
+        Struct s2('2');
+        throw std::runtime_error("");
+        // Destructor of s2 called here, with one uncaught exception.
+    }
+    catch (...)
+    {
+        std::cout << "thrown exception" << std::endl;
+    }
+    // Destructor of s1 called here: zero uncaught exceptions.
+}
+}
+
+
+void demo ()
+{
+    exception_hierarchy::demo();
+    uncaught_exceptions::demo();
 }
 
 }

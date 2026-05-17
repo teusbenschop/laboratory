@@ -18,7 +18,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 #include "clocking.h"
-
 #include <cassert>
 #include <iomanip>
 #include <thread>
