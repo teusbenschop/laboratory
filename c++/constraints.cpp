@@ -75,7 +75,7 @@ struct Derived : Base
 {
 };
 
-struct [[maybe_unused]] Unrelated
+struct Unrelated
 {
     static constexpr int value{10};
 };
@@ -113,7 +113,6 @@ concept number = floating_point<T> or std::is_integral_v<T>;
 
 // Define a concept that requires the type to have the given iterators.
 template <typename T>
-// ReSharper disable once CppConceptNeverUsed
 concept range = requires(T& t)
 {
     t.begin();

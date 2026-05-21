@@ -84,14 +84,14 @@ void demo()
         const auto standard = std::vector{4, 4, 4};
         assert(v1 == standard);
         // Vector constructor based on iterators.
-        std::vector<int> v2 (v1.begin(), v1.end());
+        std::vector<int> v2 (v1.cbegin(), v1.cend());
         assert(v2 == standard);
         // Vector copy constructor.
         std::vector<int> v3 = v1;
         assert(v3 == standard);
     }
 
-    // Implicit class construction.
+    // Implicit class construction on push back etc.
     {
         class Class
         {
@@ -256,14 +256,14 @@ void demo()
 namespace lists {
 void demo()
 {
-    std::list<int> elements1({ 1, 2, 3 });
-    std::list<int> elements2({5, 8, 6 });
-    elements1.remove(2);
-    elements2.remove(8);
-    elements1.pop_back();
-    elements2.pop_back();
-    elements2.insert(elements2.begin(), 7);
-    elements2.pop_back();
+    std::list<int> list1({ 1, 2, 3 });
+    std::list<int> list2({ 5, 8, 6 });
+    list1.remove(2);
+    list2.remove(8);
+    list1.pop_back();
+    list2.pop_back();
+    list2.insert(list2.begin(), 7);
+    list2.pop_back();
 }
 }
 
@@ -281,7 +281,6 @@ static_assert(std::is_same_v<T, int>);
 
 void demo()
 {
-
 }
 }
 
@@ -420,9 +419,7 @@ void demo()
         {
             bool operator() (const int value) const
             {
-                if (value % 2)
-                    return true;
-                return false;
+                return (value % 2);
             }
         };
         std::list<int> l {1, 2, 3};
@@ -432,9 +429,7 @@ void demo()
     }
     {
         auto delete_even = [] (int value) {
-            if (value % 2 == 0)
-                return true;
-            return false;
+            return not (value % 2);
         };
         std::list<int> l {1, 2, 3};
         l.remove_if (delete_even);

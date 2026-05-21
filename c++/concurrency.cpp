@@ -33,6 +33,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <queue>
 
 namespace concurrency {
+
+
 namespace atomic_wait {
 // The std::atomic::wait performs atomic waiting operations.
 // An old value is passed to the ::wait.
@@ -45,10 +47,11 @@ void demo()
     std::future<void> futures[task_count];
     std::atomic<int> outstanding_task_count{task_count};
 
-    // Spawn several tasks which take different amounts of time,
+    // Spawn several tasks which take some of time,
     // then decrement the outstanding task count.
-    for (std::future<void>& task_future : futures)
-        task_future = std::async([&]
+    std::ranges::for_each(futures, [&](std::future<void>& future)
+    {
+        future = std::async([&]
         {
             // This sleep represents doing real work.
             using namespace std::chrono_literals;
@@ -57,19 +60,19 @@ void demo()
             ++completion_count;
             --outstanding_task_count;
 
-            // When the task count falls to zero, notify
-            // the waiter (the main thread in this case).
+            // When the task count falls to zero, notify the waiter (the main thread in this case).
             if (outstanding_task_count == 0)
             {
                 all_tasks_complete = true;
                 all_tasks_complete.notify_one();
             }
         });
+    });
 
     // Wait here till the atomic variable has a value different from false.
     all_tasks_complete.wait(false);
 
-    assert(completion_count.load() == task_count);
+    assert(completion_count == task_count);
 }
 }
 
@@ -84,16 +87,13 @@ std::timed_mutex timed_mutex;
 
 void demo()
 {
-    return;
-    std::cout << "Attempt to get first lock on timed mutex" << std::endl;
-    const std::unique_lock lock1(timed_mutex, std::chrono::seconds(1));
-    std::cout << "Got the first lock" << std::endl;
-    std::cout << "Attempt to get the second lock on the same timed mutex" << std::endl;
+    // Attempt to get first lock on timed mutex.
+    const std::unique_lock lock1(timed_mutex, std::chrono::milliseconds(10));
+    // Attempt to get the second lock on the same timed mutex.
     const std::unique_lock lock2(timed_mutex, std::chrono::milliseconds(10));
-    if (lock2)
-        std::cout << "Got second lock" << std::endl;
-    else
-        std::cout << "Failed to get second lock within 10 milliseconds" << std::endl;
+    // Test locks status.
+    assert(lock1.owns_lock());
+    assert(not lock2.owns_lock());
 }
 }
 
@@ -102,13 +102,13 @@ namespace async_and_future {
 void demo()
 {
     std::thread::id async_thread_id;
-    const auto sum = [&](int a, int b) -> int
+    const auto sum = [&](const int a, const int b) -> int
     {
         async_thread_id = std::this_thread::get_id();
         return a + b;
     };
     {
-        std::thread::id main_thread_id = std::this_thread::get_id();
+        const std::thread::id main_thread_id = std::this_thread::get_id();
         std::future future = std::async(sum, 1, 2); // Call the function in a thread.
         const int result = future.get(); // Wait till the calculation is ready and get the result.
         assert(result == 3);
@@ -130,23 +130,24 @@ namespace packaged_task {
 void demo()
 {
     // No need to pass a promise reference here.
-    [[maybe_unused]] auto task_divide = [](int a, int b)
+    [[maybe_unused]] auto task_divide = [](const int a, const int b)
     {
         if (!b)
             throw std::runtime_error{"Divide by zero exception"};
         return a / b;
     };
 
-    // std::packaged_task<decltype(task_divide)> task(task_divide);
-    // auto future = task.get_future();
-    // std::thread thread(std::move(task), 45, 5);
-    // try {
-    //     auto result = future.get();
-    //     std::cout << result << std::endl;
-    // } catch (const std::exception& exception) {
-    //     std::cout << exception.what() << std::endl;
-    // }
-    // thread.join();
+    std::packaged_task<int(int,int)> task(task_divide);
+    auto future = task.get_future();
+    std::thread thread(std::move(task), 45, 5);
+    int result {0};
+    try {
+        result = future.get();
+    } catch (const std::exception& exception) {
+        std::cerr << exception.what() << std::endl;
+    }
+    assert(result == 9);
+    thread.join();
 }
 }
 
@@ -154,7 +155,6 @@ void demo()
 namespace semaphores {
 void demo()
 {
-    return;
     // The counting_semaphore contains an internal counter initialized by the constructor.
     // This counter is decremented by calls to acquire() and related methods,
     // and is incremented by calls to release().
@@ -168,14 +168,13 @@ void demo()
         // Wait for a signal from the main process by attempting to acquire (decrement) the semaphore.
         // This call blocks until the semaphore is released (its count is increased) from the main process.
         signal_main_to_thread_semaphore.acquire();
-        std::cout << "Thread got the signal" << std::endl;
+        // Thread got the signal now.
 
         // Wait shortly to imitate some work being done by the thread.
         using namespace std::literals;
         std::this_thread::sleep_for(10ms);
 
         // Signal the main process back.
-        std::cout << "Thread sends the signal" << std::endl;
         signal_thread_to_main_semaphore.release();
     };
 
@@ -183,14 +182,12 @@ void demo()
     std::jthread worker_thread(thread_processor);
 
     // Signal the worker thread to start working by releasing the semaphore (increasing its count).
-    std::cout << "Main sends the signal" << std::endl;
     signal_main_to_thread_semaphore.release();
 
     // Wait until the worker thread is done doing the work
     // by attempting to decrement the semaphore's count.
     signal_thread_to_main_semaphore.acquire();
-
-    std::cout << "Main got the signal" << std::endl;
+    // Main got the signal from the thread.
 }
 }
 
@@ -202,12 +199,11 @@ namespace jthread {
 // and can be canceled/stopped in certain situations.
 void demo()
 {
-    return;
     {
         const auto worker = []
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            std::cout << "Within thread with ID " << std::this_thread::get_id() << std::endl;
+            const auto thread_id = std::this_thread::get_id();
         };
         auto jthread = std::jthread{worker};
         // The jthread will join automatically when it goes out of scope.
@@ -235,33 +231,21 @@ void demo()
         std::mutex mutex{};
         std::jthread threads[4];
 
-        const auto print = [](const std::stop_source& source)
-        {
-            std::cout << std::boolalpha
-                << "stop_source stop_possible = " << source.stop_possible() << std::endl
-                << "stop_requested = " << source.stop_requested() << std::endl;
-        };
-
         // Common stop source.
         std::stop_source stop_source;
         assert(stop_source.stop_requested() == false);
         assert(stop_source.stop_possible() == true);
-        print(stop_source);
 
         const auto joinable_thread_worker = [&mutex](const int id, std::stop_source stop_source)
         {
-            using namespace std::literals::chrono_literals;
+            using namespace std::chrono_literals;
             std::stop_token stoken = stop_source.get_token();
             while (true)
             {
                 std::this_thread::sleep_for(3ms);
                 std::lock_guard lock(mutex);
                 if (stoken.stop_requested())
-                {
-                    std::cout << "worker " << id << " is requested to stop" << std::endl;
                     return;
-                }
-                std::cout << "worker " << id << " goes back to sleep" << std::endl;
             }
         };
 
@@ -273,10 +257,9 @@ void demo()
 
         std::this_thread::sleep_for(7ms);
 
-        std::cout << "request stop" << std::endl;
+        // Request a stop once, it will propagate to all derived stop tokens.
         stop_source.request_stop();
 
-        print(stop_source);
         // Note: destructor of jthreads will call join so no need for explicit calls
     }
 }
@@ -285,40 +268,34 @@ void demo()
 namespace timer_with_jthread_and_timed_mutex_and_condition_variable {
 void demo()
 {
-    return;
     std::timed_mutex mx;
     std::condition_variable_any cv; // The _any means: Works with any lock, not just a unique_lock.
 
     // This lambda function takes a stop token as parameters.
     const auto timer = [&](const std::stop_token& stoken)
     {
-        std::cout << "Step 3: Set the timer interval to 100 milliseconds" << std::endl;
+        // Step 3: Set the timer interval to 100 milliseconds.
         constexpr auto interval = std::chrono::milliseconds(100);
         while (!stoken.stop_requested())
         {
-            std::cout << "Step 4: The stop token has no stop request: Keep going" << std::endl;
+            // Step 4: The stop token has no stop request: Keep going.
             std::unique_lock ulk(mx);
-            std::cout <<
-                "Step 5: Enter the condition variable which will wait 100 ms or less in case of a thread stop request"
-                << std::endl;
+            // Step 5: Enter the condition variable which will wait 100 ms or less in case of a thread stop request.
             if (cv.wait_for(ulk, stoken, interval, [&stoken] { return stoken.stop_requested(); }))
             {
-                std::cout <<
-                    "Step 8: The condition variable got a stop request and so interrupts its waiting state immediately"
-                    << std::endl;
+                // Step 8: The condition variable got a stop request and so interrupts its waiting state immediately.
                 break;
             }
-            std::cout << "Step 6: Run one timer cycle" << std::endl;
+            // Step 6: Run one timer cycle.
         }
-        std::cout << "Step 9: The thread function quits and the thread automatically joins" << std::endl;
+        // Step 9: The thread function quits and the thread automatically joins.
     };
 
-    std::cout << "Step 1: The main thread starts the timer thread" << std::endl;
+    // Step 1: The main thread starts the timer thread.
     std::jthread thread(timer);
-    std::cout << "Step 2: The main thread will sleep for 350 milliseconds" << std::endl;
+    // Step 2: The main thread will sleep for 350 milliseconds.
     std::this_thread::sleep_for(std::chrono::milliseconds(350));
-    std::cout << "Step 7: The jthread will go out of scope, this sends a stop request to the thread function" <<
-        std::endl;
+    // Step 7: The jthread will go out of scope, this sends a stop request to the thread function.
 }
 }
 
@@ -391,10 +368,8 @@ namespace execution_policies {
 void demo()
 {
     std::array<int, 5> values = {1, 2, 3, 4, 5};
-    [[maybe_unused]] const auto fn = []([[maybe_unused]] const int n)
-    {
-    };
-    // std::for_each(std::execution::par_unseq, values.begin(), values.end(), fn);
+    const auto fn = [](const int n){ };
+    //std::for_each(std::execution::par_unseq, values.begin(), values.end(), fn);
     // Clang on macOS Tahoe does not support parallel execution.
     std::for_each(values.begin(), values.end(), fn);
 }
@@ -577,7 +552,7 @@ public:
                         // Waiting until there is a task to execute or the pool is stopped.
                         // While in .wait it unlocks the mutex on the queue.
                         m_cv.wait(lock, [this] {
-                            return !m_tasks.empty() or m_stop;
+                            return not m_tasks.empty() or m_stop;
                         });
 
                         // Exit the thread in case the pool is stopped and there are no tasks.
