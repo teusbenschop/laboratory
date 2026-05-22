@@ -20,14 +20,13 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <iostream>
 #include <ranges>
 #include <string>
 #include <vector>
 
 namespace counting {
 
-constexpr auto numbers = std::array<int, 7>{3, 3, 2, 1, 3, 1, 3};
+constexpr auto numbers = std::array{3, 3, 2, 1, 3, 1, 3};
 
 // Count how often a given number occurs.
 static_assert(std::ranges::count(numbers, 3) == 4);

@@ -17,7 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "filesystem.h"
-
 #include <cassert>
 #include <filesystem>
 #include <string>

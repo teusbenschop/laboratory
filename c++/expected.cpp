@@ -17,7 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "expected.h"
-
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -55,14 +54,14 @@ void demo()
         std::string_view input = "42.2";
         const auto num = parse_number(input);
         assert(num.has_value());
-        assert(*num == 42.2f);
+        assert(num.value() == 42.2f);
     }
 
     {
         std::string_view input = "42abc";
         const auto num = parse_number(input);
         assert(num.has_value());
-        assert(*num == 42);
+        assert(num.value() == 42);
     }
 
     {

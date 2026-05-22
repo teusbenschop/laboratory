@@ -18,9 +18,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 #include "constraints.h"
-
 #include <iostream>
 #include <string>
+#include <cmath>
 
 
 // https://en.cppreference.com/w/cpp/language/constraints
@@ -47,14 +47,14 @@ constexpr auto unconstrained_plus(const T& x, const T& y)
 static_assert(unconstrained_plus(1, 2) == 3);
 
 // Call the template with strings:
-// Oops, it works, but not as intended, it concatenates instead of summing.
+// Oops, it works, but not as intended, it concatenates instead of taking the sum.
 // It would help if the passed types could be constrained.
 static_assert(unconstrained_plus(std::string("a"), std::string("b")) == "ab");
 
-// Call the template with chars:
+// Call the template with char pointers:
 // OK, it fails:
 // invalid operands of types 'const char*' and 'const char*' to binary 'operator+'
-// static_assert(basic_sum("a", "b") == "?");
+//static_assert(unconstrained_plus("a", "b") == "?");
 
 void demo()
 {
@@ -138,12 +138,12 @@ constexpr number auto add_both_abbreviated(number auto a, number auto b)
 static_assert(add_both_abbreviated(10, 11) == 21);
 
 // Declaration of the concept "hashable", which is satisfied by any type 'T'
-// such that for values 'a' of type 'T', the expression std::hash<T>{}(a)
+// such that for values 't' of type 'T', the expression std::hash<T>{}(t)
 // compiles and its result is convertible to std::size_t
 template <typename T>
-concept hashable = requires(T a)
+concept hashable = requires(T t)
 {
-    { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+    { std::hash<T>{}(t) } -> std::convertible_to<std::size_t>;
 };
 
 // Constrained C++20 function template.
@@ -220,6 +220,7 @@ T generic_mod_overload(T v, T n)
     // Floating point version.
     return std::fmod(v, n);
 }
+
 
 void demo()
 {

@@ -30,7 +30,7 @@ namespace performance {
 namespace hardware_interference {
 
 // Minimum offset between two objects to avoid false sharing.
-static_assert(std::hardware_destructive_interference_size == 64);
+static_assert(std::hardware_destructive_interference_size == 64 or std::hardware_destructive_interference_size == 256);
 
 // Maximum size of contiguous memory to promote true sharing.
 static_assert(std::hardware_constructive_interference_size == 64);

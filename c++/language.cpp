@@ -116,6 +116,8 @@ void demo()
     std::vector v {1, 2, 3};
     for (using T = int; T e : v)
         assert((e));
+    for (typedef int T; T e : v)
+        assert((e));
 }
 }
 
@@ -128,7 +130,7 @@ void demo()
     // comparison of integers of different signs: 'int' and 'size_type' (aka 'unsigned long') [-Wsign-compare]
     const std::vector<int> v{2, 4, 6, 8};
     for (auto i = 0uz; i < v.size(); ++i) {
-        assert((v.at(i)));
+        assert(v.at(i));
     }
 }
 }
@@ -158,13 +160,13 @@ struct Struct
 
 void demo()
 {
-    Struct object;
+    Struct s;
 
     // This creates an object (and perhaps the optimizer removes it again).
     assert(Struct{}(1, 0) == 1);
 
     // This does not create an object. It just calls the static method.
-    assert(object(1, 0) == 1);
+    assert(s(1, 0) == 1);
 
     // Lambda's can be made static too.
     int x {0};
@@ -188,8 +190,8 @@ namespace multidimensional_subscript_operator {
 void demo()
 {
     int array3d[4][3][2]{};
-    array3d[3][2][1] = 42;
-    assert(array3d[3][2][1] == 42);
+    array3d[3][2][1] = 321;
+    assert(array3d[3][2][1] == 321);
 }
 }
 

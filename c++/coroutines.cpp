@@ -35,29 +35,29 @@ namespace coroutines {
 // * co_yield: suspend execution returning a value.
 // * co_return: complete execution returning a value.
 
-struct return_object
+struct returner
 {
     struct promise_type
     {
-        static return_object get_return_object() noexcept { return {}; }
-        static std::suspend_never initial_suspend() noexcept { return {}; }
-        static std::suspend_never final_suspend() noexcept { return {}; }
-        static void unhandled_exception() noexcept { }
+        returner get_return_object() { return {}; }
+        std::suspend_never initial_suspend() { return {}; }
+        std::suspend_never final_suspend() noexcept { return {}; }
+        void unhandled_exception() { }
     };
 };
 
 struct awaiter
 {
     std::coroutine_handle<>* m_handle;
-    constexpr bool await_ready() const noexcept { return false; }
-    void await_suspend(std::coroutine_handle<> handle) const { *m_handle = handle; }
-    constexpr void await_resume() const noexcept { }
+    bool await_ready() { return false; }
+    void await_suspend(std::coroutine_handle<> handle) { *m_handle = handle; }
+    void await_resume() { }
 };
 
 // This function runs forever. It increases and prints the value.
 // The variable i maintains its value even as control switches repeatedly
 // between this function and the function that invoked it.
-return_object infinite_counter(std::coroutine_handle<>* handle) {
+returner infinite_counter(std::coroutine_handle<>* handle) {
     awaiter a{handle};
     int i {0};
     while (true)
