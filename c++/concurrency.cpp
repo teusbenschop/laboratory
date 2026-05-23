@@ -26,6 +26,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <functional>
 #include <future>
 #include <iostream>
+#include <list>
 #include <mutex>
 #include <random>
 #include <semaphore>
@@ -533,102 +534,113 @@ void demo()
 
 namespace thread_pool {
 
-class ThreadPool {
-public:
-    // Construct a thread pool with a number of threads.
-    ThreadPool(size_t num_threads = std::thread::hardware_concurrency())
-    {
-        // Creating worker threads.
-        for (size_t i = 0; i < num_threads; ++i) {
-            m_threads.emplace_back([this] {
-                while (true) {
-                    std::function<void()> task;
-                    // The reason for putting the below code here is to unlock the queue
-                    // before executing the task so that other threads can perform enqueue tasks.
-                    {
-                        // Locking the queue so that data can be shared safely.
-                        std::unique_lock<std::mutex> lock(m_mutex);
+// Number of threads in the pool is equal to number of cores, but can be adjusted as needed.
+const std::size_t num_threads = std::thread::hardware_concurrency();
 
-                        // Waiting until there is a task to execute or the pool is stopped.
-                        // While in .wait it unlocks the mutex on the queue.
-                        m_cv.wait(lock, [this] {
-                            return not m_tasks.empty() or m_stop;
-                        });
+// Storage for the worker threads
+std::vector<std::jthread> threads;
 
-                        // Exit the thread in case the pool is stopped and there are no tasks.
-                        if (m_stop and m_tasks.empty()) {
-                            return;
-                        }
+// Queue of tasks.
+std::queue<std::function<void()>> tasks;
 
-                        // Get the next task from the queue
-                        task = std::move(m_tasks.front());
-                        m_tasks.pop();
+// Mutex to synchronize access to shared data.
+std::mutex mutex;
+
+// Condition variable to signal changes in the state of the tasks queue.
+std::condition_variable cv;
+
+// Flag to indicate whether the thread pool should stop.
+std::atomic stop {false};
+
+// The result of the tasks.
+std::list<std::thread::id> task_thread_ids;
+
+void start_thread_pool()
+{
+    // Creating worker threads.
+    for (size_t i = 0; i < num_threads; ++i) {
+        threads.emplace_back([] {
+            while (true) {
+                std::function<void()> task;
+                // The reason for putting the below code here is to unlock the queue
+                // before executing the task so that other threads can perform enqueue tasks.
+                {
+                    // Locking the queue so that data can be shared safely.
+                    std::unique_lock<std::mutex> lock(mutex);
+
+                    // Waiting until there is a task to execute or the pool is stopped.
+                    // While in .wait it unlocks the mutex on the queue.
+                    cv.wait(lock, [] {
+                        return not tasks.empty() or stop;
+                    });
+
+                    // Exit the thread in case the pool is stopped and there are no tasks.
+                    if (stop and tasks.empty()) {
+                        return;
                     }
 
-                    task();
+                    // Get the next task from the queue.
+                    task = std::move(tasks.front());
+                    tasks.pop();
                 }
-            });
-        }
-    }
 
-    // Destructor to stop the thread pool.
-    ~ThreadPool()
+                // Run the task in this thread.
+                task();
+            }
+        });
+    }
+}
+
+void stop_thread_pool()
+{
+    // Indicate stop.
+    stop = true;
+
+    // Notify all threads
+    cv.notify_all();
+
+    // Join all worker threads to ensure they have completed their tasks.
+    threads.clear();
+}
+
+
+void enqueue_task(std::function<void()> task)
+{
     {
-        // Indicate stop.
-        m_stop = true;
-
-        // Notify all threads
-        m_cv.notify_all();
-
-        // Joining all worker threads to ensure they have completed their tasks.
-        for (auto& thread : m_threads) {
-            thread.join();
-        }
+        std::unique_lock<std::mutex> lock(mutex);
+        tasks.emplace(std::move(task));
     }
-
-    // Enqueue task for execution by the thread pool
-    void enqueue(std::function<void()> task)
-    {
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            m_tasks.emplace(std::move(task));
-        }
-        m_cv.notify_one();
-    }
-
-private:
-    // Vector to store worker threads
-    std::vector<std::jthread> m_threads;
-
-    // Queue of tasks.
-    std::queue<std::function<void()>> m_tasks;
-
-    // Mutex to synchronize access to shared data.
-    std::mutex m_mutex;
-
-    // Condition variable to signal changes in the state of the tasks queue.
-    std::condition_variable m_cv;
-
-    // Flag to indicate whether the thread pool should stop.
-    std::atomic<bool> m_stop = false;
-};
-
+    cv.notify_one();
+}
 
 void demo()
 {
-    return;
+    start_thread_pool();
 
-    // Create a thread pool with 4 threads.
-    ThreadPool pool(4);
+    // Mutex to protect container with thread IDs.
+    std::mutex thread_ids_mutex;
+    const auto task = [&thread_ids_mutex]
+    {
+        std::unique_lock lock(thread_ids_mutex);
+        task_thread_ids.push_back(std::this_thread::get_id());
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    };
 
     // Enqueue tasks for execution.
-    for (int i = 0; i < 10; ++i) {
-        pool.enqueue([i] {
-            std::cout << "Task " << i << " is running on thread " << std::this_thread::get_id() << std::endl;
-            // Simulate some work.
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        });
+    const std::size_t num_tasks = num_threads * 5;
+    for (int i = 0; i < num_tasks; ++i) {
+        enqueue_task(task);
     }
+
+    stop_thread_pool();
+
+    // Check whether all tasks ran.
+    assert(task_thread_ids.size() == num_tasks);
+
+    // Check whether all available threads were used.
+    task_thread_ids.sort();
+    task_thread_ids.unique();
+    assert(task_thread_ids.size() == num_threads);
 }
 }
 
