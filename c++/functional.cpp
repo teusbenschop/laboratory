@@ -34,8 +34,7 @@ namespace move_only_function {
 // like std::unique_ptr or other non-copyable resources.
 void demo()
 {
-    // return;
-    std::packaged_task<float()> packaged_task([](){ return 1.1f; });
+    std::packaged_task<float()> packaged_task([]{ return 1.1f; });
 
     std::future<float> future = packaged_task.get_future();
 
@@ -56,7 +55,7 @@ void demo()
 namespace brackets_are_optional_for_lambdas {
 void demo()
 {
-    const std::string s = "s";
+    std::string s = "s";
     auto with_parenthesis = [s1 = s] () {
         assert(s1 == "s");
     };

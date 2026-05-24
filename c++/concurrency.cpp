@@ -552,8 +552,11 @@ std::condition_variable cv;
 // Flag to indicate whether the thread pool should stop.
 std::atomic stop {false};
 
-// The result of the tasks.
-std::list<std::thread::id> task_thread_ids;
+// The results of the tasks.
+std::mutex result_mutex;
+std::list<std::thread::id> result_thread_ids;
+std::atomic result_sum{0};
+std::atomic standard_sum{0};
 
 void start_thread_pool()
 {
@@ -617,47 +620,77 @@ void demo()
 {
     start_thread_pool();
 
-    // Mutex to protect container with thread IDs.
-    std::mutex thread_ids_mutex;
-    const auto task = [&thread_ids_mutex]
-    {
-        std::unique_lock lock(thread_ids_mutex);
-        task_thread_ids.push_back(std::this_thread::get_id());
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    };
-
     // Enqueue tasks for execution.
-    const std::size_t num_tasks = num_threads * 5;
-    for (int i = 0; i < num_tasks; ++i) {
-        enqueue_task(task);
+    for (int i = 0; i < num_threads; ++i) {
+
+        // Store function without parameters.
+        auto fn1 = []{
+            std::unique_lock lock(result_mutex);
+            result_thread_ids.push_back(std::this_thread::get_id());
+            result_sum += 1;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        };
+        enqueue_task(fn1);
+        standard_sum += 1;
+
+        // Store lambda with a captured value, emulating one parameter.
+        auto fn2 = [i]
+        {
+            std::unique_lock lock(result_mutex);
+            result_thread_ids.push_back(std::this_thread::get_id());
+            result_sum += i;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        };
+        enqueue_task(fn2);
+        standard_sum += i;
+
+        // Store function with multiple parameters bound with std::bind.
+        auto fn3 = [] (int p1, int p2, int p3)
+        {
+            std::unique_lock lock(result_mutex);
+            result_thread_ids.push_back(std::this_thread::get_id());
+            result_sum += (p1 + p2 + p3);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        };
+        int p1 = i;
+        int p2 = p1 + 2;
+        int p3 = p2 + 2;
+        auto fn3_bound = std::bind(fn3, p1, p2, p3);
+        enqueue_task(fn3_bound);
+        standard_sum += (p1 + p2 + p3);
     }
 
     stop_thread_pool();
 
     // Check whether all tasks ran.
-    assert(task_thread_ids.size() == num_tasks);
+    assert(result_thread_ids.size() == num_threads * 3);
+
+    // Check all tasks executed the appropriate function.
+    assert(result_sum == standard_sum);
 
     // Check whether all available threads were used.
-    task_thread_ids.sort();
-    task_thread_ids.unique();
-    assert(task_thread_ids.size() == num_threads);
+    result_thread_ids.sort();
+    result_thread_ids.unique();
+    assert(result_thread_ids.size() == num_threads);
 }
 }
 
 
 namespace lock_free {
-// Determine if the atomic object is implemented lock-free.
+// Type-trait to determine if the atomic object is implemented lock-free,
+// that is, implemented directly using CPU instructions,
+// without blocking or software locks like mutexes.
 void demo()
 {
     struct A { int a[100]; };
     struct B { int b; };
 
-    assert(not std::atomic<A>{}.is_lock_free());
+    assert(std::atomic<A>{}.is_lock_free() == false);
     assert(std::atomic<B>{}.is_lock_free());
 
     std::atomic<A> a;
     std::atomic<B> b;
-    assert(not std::atomic_is_lock_free(&a));
+    assert(std::atomic_is_lock_free(&a) == false);
     assert(std::atomic_is_lock_free(&b));
 }
 }
