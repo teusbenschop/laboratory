@@ -17,7 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "language.h"
-
 #include <cassert>
 #include <cmath>
 #include <functional>
@@ -26,11 +25,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <type_traits>
 #include <utility>
 #include <vector>
-
 #include "clocking.h"
 
 
 namespace language {
+
 namespace alignment {
 
 static_assert(sizeof(bool) == 1);
@@ -46,7 +45,7 @@ static_assert(sizeof(double) == 8);
 struct S1
 {
     bool b; // 1 byte
-    // 3 bytes padding
+    // padding 3 bytes
     int i; // 4 bytes
 };
 static_assert(sizeof(S1) == 8);
@@ -55,16 +54,19 @@ static_assert(alignof(S1) == 4);
 struct S2
 {
     double d; // 8 bytes
-    bool b; // 1 byte (+ 7 padding)
+    bool b; // 1 byte
+    // padding 7 byte
 };
 static_assert(sizeof(S2) == 16);
 static_assert(alignof(S2) == 8);
 
 struct S3
 {
-    int i1; // 4 bytes (+ 4 padding)
+    int i1; // 4 bytes
+    // padding 4 bytes
     double d; // 8 bytes
-    int i2; // 4 bytes (+ 4 padding)
+    int i2; // 4 bytes
+    // padding 4 bytes
 };
 static_assert(sizeof(S3) == 24);
 static_assert(alignof(S3) == 8);
@@ -114,9 +116,9 @@ namespace alias_declarations_in_init_statements {
 void demo()
 {
     std::vector v {1, 2, 3};
-    for (using T = int; T e : v)
+    for (using I = int; I e : v)
         assert((e));
-    for (typedef int T; T e : v)
+    for (typedef int I; I e : v)
         assert((e));
 }
 }
@@ -165,8 +167,11 @@ void demo()
     // This creates an object (and perhaps the optimizer removes it again).
     assert(Struct{}(1, 0) == 1);
 
-    // This does not create an object. It just calls the static method.
+    // This calls the static method on the already created object above.
     assert(s(1, 0) == 1);
+
+    // This does not create an object. It just calls the static method.
+    assert(Struct::operator()(1, 0) == 1);
 
     // Lambda's can be made static too.
     int x {0};
@@ -228,7 +233,7 @@ struct Struct
     void f1(this Struct const& self, int i);
 
     // Error: already declared.
-    // void f1(int i) const &;
+    // void f1(int i) const&;
 
     // Also OK for templates.
     // For member function templates,
@@ -241,13 +246,13 @@ struct Struct
     void f3(this Struct self, int i);
 
     // Error: “const” not allowed here
-    // void p(this ExplicitObjectParameter) const;
+    // void p(this Struct) const;
 
     // Error: “static” not allowed here
-    // static void q(this ExplicitObjectParameter);
+    // static void q(this Struct);
 
     // Error: an explicit object parameter can only be the first parameter
-    // void r(int, this ExplicitObjectParameter);
+    // void r(int, this Struct);
 
     // Inside the body of an explicit object member function,
     // the "this" pointer cannot be used.
@@ -331,11 +336,12 @@ void demo()
     static_assert(constexpr_add(1, 2) == 3);
     static_assert(constexpr_add(i1, i2) == 20);
 
-    // Variable i3 is assigned at runtime.
-    int i3 = 2;
+    // Variable i3 is assignable at runtime.
+    i3 = 2;
+    assert(i3 == 2);
+
     // Compile error: the value of 'i3' is not usable in a constant expression
     // static_assert(constexpr_add(i3,i3) == 4);
-    assert(i3 == 2);
 
     // The variable is initialized at runtime although the function is constexpr.
     int i4 = constexpr_add(i3, i3);
@@ -364,7 +370,7 @@ void demo()
     static_assert(if_constexpr_add(1, 2) == 3);
 
     {
-        constexpr const auto xdigit = [](int n) -> char
+        constexpr auto xdigit = [](int n) -> char
         {
             // This is a constexpr variable in a constexpr lambda function: OK in C++23.
             constexpr const char digits[] = "0123456789";
@@ -397,29 +403,29 @@ struct Struct
     constexpr int operator()() { return value; }
 
     // Overload the += and the -= and the %= operators.
-    constexpr Struct& operator+=(const Struct& c) noexcept
+    constexpr Struct& operator+=(const Struct& s) noexcept
     {
-        value += c.value;
+        value += s.value;
         return *this;
     }
 
-    constexpr Struct& operator-=(const Struct& c) noexcept
+    constexpr Struct& operator-=(const Struct& s) noexcept
     {
-        value -= c.value;
+        value -= s.value;
         return *this;
     }
 
-    constexpr Struct& operator%=(const Struct& c) noexcept
+    constexpr Struct& operator%=(const Struct& s) noexcept
     {
-        value = value % c.value;
+        value = value % s.value;
         return *this;
     }
 };
 
 // Overload the "<<" operator.
-std::ostream& operator<<(std::ostream& os, const Struct& c) noexcept
+std::ostream& operator<<(std::ostream& os, const Struct& s) noexcept
 {
-    os << c.value;
+    os << s.value;
     return os;
 }
 
@@ -487,7 +493,7 @@ void demo(){}
 namespace at_exit {
 void demo()
 {
-    const auto fn = []() -> void
+    const auto fn = []
     {
         assert(true); // To see the effect on exit: Set to false.
     };
@@ -504,13 +510,13 @@ namespace attribute_assume {
 // https://en.cppreference.com/w/cpp/language/attributes/assume
 // One correct way to use them is to follow assertions with assumptions.
 
-[[maybe_unused]] auto f = [] (auto x) {
+auto f = [] (auto x) {
     // Compiler may assume x is positive.
     assert(x > 0);
     [[assume(x > 0)]];
 };
 
-void demo() {}
+void demo() {f(1);}
 
 }
 
@@ -768,21 +774,13 @@ void demo()
 {
     struct foo
     {
-        void m()
-        {
-        }
+        void m() { }
 
-        void m() const
-        {
-        }
+        void m() const { }
 
-        void m() volatile
-        {
-        }
+        void m() volatile { }
 
-        void m() const volatile
-        {
-        }
+        void m() const volatile { }
     };
     foo{}.m();
     std::add_const_t<foo>{}.m();
@@ -836,11 +834,11 @@ void demo()
 namespace rvalue_references {
 void demo()
 {
-    // This function returns an rvalue of temporary pair {10,10}.
+    // This function returns a rvalue of temporary pair {10,10}.
     // Normally this pair {10,10} goes out of scope at function end.
     auto pair10 = [] -> std::pair<int,int> { return {10,10}; };
 
-    // Rvalue binds to temporary object, extends lifetime of it.
+    // Rvalue reference binds to temporary object, extends lifetime of it.
     std::pair<int,int>&& r1 = pair10();
     int&& r2 = r1.first + r1.first;
     assert(r2 == 20);
@@ -850,6 +848,7 @@ void demo()
     assert(r1.first == 11);
 }
 }
+
 
 namespace reference_collapsing {
 // Have references to references.
@@ -899,7 +898,6 @@ void demo()
     int& i2 = func(i); // Returns lvalue reference.
     int&& i3 = func(1); // Returns rvalue reference.
     int&& i4 = func(std::move(i)); // Returns rvalue reference.
-
     auto&& i5 = func(i); // i5 is forwarding reference, initialized by lvalue.
     auto&& i6 = func(std::move(i)); // i6 is forwarding reference, initialized by rvalue.
 }
@@ -910,18 +908,18 @@ namespace dangling_references {
 // If the referred-to object goes out of scope before the reference,
 // the reference becomes dangling.
 
-// const std::string& f()
-// {
-//     std::string s = "Test";
-//     return s; // exits the scope of s:
-//     // its destructor is called and its storage deallocated
-// }
+const std::string& f()
+{
+    std::string s = "Test";
+    return s; // exits the scope of s:
+    // its destructor is called and its storage deallocated
+}
 
 void demo()
 {
-    //     const std::string& r = f(); // dangling reference
-    //     //assert(r == "Test");; // undefined behavior: reads from a dangling reference
-    //     //std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
+    const std::string& r = f(); // dangling reference
+    //assert(r == "Test");; // undefined behavior: reads from a dangling reference
+    //std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
 }
 }
 
@@ -929,7 +927,7 @@ void demo()
 namespace reference_wrappers {
 void demo()
 {
-    const auto fn = [](int& n1, int& n2, [[maybe_unused]] const int& n3)
+    const auto fn = [](int& n1, int& n2, const int& n3)
     {
         n1++; // Increases the copy of n1 stored in the function object.
         n2++; // Increases the caller's n2.

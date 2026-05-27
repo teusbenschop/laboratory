@@ -17,7 +17,9 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "performance.h"
+#include "clocking.h"
 #include <cassert>
+#include <functional>
 #include <iostream>
 #include <latch>
 #include <new>
@@ -104,14 +106,14 @@ void demo()
     alignas(Struct) unsigned char raw_memory[sizeof(Struct)];
 
     // Construct the first Struct in that raw memory.
-    Struct* ptr1 = new(raw_memory) Struct {10};
+    auto* ptr1 = new(raw_memory) Struct {10};
     assert(ptr1->value == 10);
 
     // Destroy the first Struct.
     ptr1->~Struct();
 
     // Reuse the same memory for a second Struct.
-    Struct* ptr2 = new(raw_memory) Struct {20};
+    auto* ptr2 = new(raw_memory) Struct {20};
     assert(ptr2->value == 20);
 
     // Using the original pointer here is undefined behavior, although it may work.
@@ -124,9 +126,49 @@ void demo()
 }
 
 
+
+namespace lambda_is_much_faster_than_bind {
+
+int sum_fn(int a, int b, int c)
+{
+    return a + b + c;
+}
+
+void demo()
+{
+    return;
+    int sum = 0;
+    {
+        const auto timer = scoped_timer::scoped_timer<std::chrono::microseconds>{};
+        for (int a = 0; a < 100; ++a)
+            for (int b = 0; b < 100; ++b)
+                for (int c = 0; c < 100; ++c)
+                {
+                    const auto lambda_fn = [a, b, c]()
+                    {
+                        return sum_fn(a, b, c);
+                    };
+                    sum += lambda_fn();
+                }
+    }
+    {
+        const auto timer = scoped_timer::scoped_timer<std::chrono::microseconds>{};
+        for (int a = 0; a < 100; ++a)
+            for (int b = 0; b < 100; ++b)
+                for (int c = 0; c < 100; ++c)
+                {
+                    const auto bind_fn = std::bind(sum_fn, a, b, c);
+                    sum += bind_fn();
+                }
+    }
+}
+}
+
+
 void demo()
 {
     hardware_interference::demo();
     pointer_laundering::demo();
+    lambda_is_much_faster_than_bind::demo();
 }
 }
