@@ -33,15 +33,12 @@ namespace templates {
 namespace default_type {
 
 template <typename T = int>
-constexpr auto sum(T a, T b) -> T
-{
-    return a + b;
-}
+constexpr auto sum(T a, T b) -> T { return a + b; }
 
-// Pass the type:
-static_assert(sum<int>(1, 1) == 2);
+// Pass the type.
+static_assert(std::is_same_v<decltype(sum<unsigned>(1, 2)), unsigned>);
 // Omit the type: it takes int.
-static_assert(sum(1, 1) == 2);
+static_assert(std::is_same_v<decltype(sum<>(1, 2)), int>);
 
 }
 
@@ -56,7 +53,7 @@ struct Point
     }
 };
 
-// A general template.
+// General templates.
 template <typename T>
 T add (T a, T b) noexcept
 {
@@ -70,7 +67,7 @@ int signum (T a) noexcept
     return 0;
 }
 
-// A specialized template.
+// Specialized templates.
 template <> // This could be left out.
 Point add (const Point a, const Point b) noexcept
 {
@@ -90,6 +87,7 @@ void demo()
     add(1.1,2.2);
     Point p {1,1 };
     add(p,p);
+    Point p2 {2, 2};
     signum(Point{1,-2});
 }
 }
@@ -97,10 +95,10 @@ void demo()
 namespace class_template {
 
 template <typename T>
-struct Cls
+struct Class
 {
     T a;
-    Cls(T a) : a(a) {}
+    Class(T a) : a(a) {}
 };
 
 void demo()
@@ -134,25 +132,26 @@ template<class T>
 T S2<T>::val = 1; // Definition of the above.
 
 void demo() {
-    assert(S2<int>::val);
+    assert(S2<int>::val == 1);
 }
 }
 
+
 namespace class_with_template_methods {
 template <typename T>
-struct Cls
+struct Class
 {
     T a;
-    Cls(T a) : a(a) {}
-    std::string get()
+    Class(T a) : a(a) {}
+    T get()
     {
-        return std::to_string(a);
+        return a;
     };
 };
 void demo()
 {
-    Cls<float> cls1 (1.1);
-    assert(cls1.get() == "1.100000");
+    Class<float> class1 (1.1);
+    assert(class1.get() >= 1.09 and class1.get() <= 1.11);
 }
 }
 
@@ -168,12 +167,12 @@ namespace automatic_weight_unit_conversion {
 // The factors to convert the given weight type to grams.
 struct grams
 {
-    static constexpr float ms_factor = 1.0f;
+    static constexpr float factor = 1.0f;
 };
 
 struct kilograms
 {
-    static constexpr float ms_factor = 1000.0f;
+    static constexpr float factor = 1000.0f;
 };
 
 // This concept can be used to assure that a type is a weight type.
@@ -203,7 +202,7 @@ public:
         if constexpr (std::is_same_v<U, UU>)
             m_value = s.value();
         else
-            m_value = s.value() * UU::ms_factor / U::ms_factor;
+            m_value = s.value() * UU::factor / U::factor;
     }
 
     [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; }
@@ -306,6 +305,53 @@ static_assert(weight_kg.value() == 0.01f);
 
 }
 
+
+namespace automatic_weight_units_simple {
+
+struct grams {
+    constexpr static float factor_to_grams = 1.0f;
+};
+
+struct kilograms {
+    constexpr static float factor_to_grams = 1000.0f;
+};
+
+template <typename T>
+concept weight_unit = std::is_same_v<T, grams> or std::is_same_v<T, kilograms>;
+
+template <weight_unit U>
+class Weight {
+    float m_value{};
+public:
+    Weight() = delete;
+    template <weight_unit UU>
+    explicit Weight (const UU& value) {
+        if constexpr (std::is_same_v<U, UU>)
+            m_value = value;
+        else {
+            decltype(m_value) grams = value * UU::factor_to_grams;
+            m_value = grams / U::factor_to_grams;
+        }
+    }
+    Weight (const float value) {
+        m_value = value;
+    }
+    decltype(m_value) value() const noexcept { return m_value; }
+    explicit operator decltype(m_value) () const noexcept { return m_value; }
+    void value(float value) noexcept { m_value = value; }
+};
+
+
+void demo() {
+    Weight<kilograms> kilogram(1);
+    Weight<grams> grams((kilogram.value()));
+
+    std::cout << grams.value() << std::endl;
+    std::cout << kilogram.value() << std::endl;
+}
+
+
+}
 
 namespace template_specialization {
 
@@ -855,8 +901,10 @@ void demo()
     class_template::demo();
     variable_template::demo();
     class_with_template_methods::demo();
+    automatic_weight_units_simple::demo();
     template_specialization::demo();
     automatic_temperature_unit_conversion::demo();
+
     meta_programming_recursive_calculation::demo();
     variadic_minimum::demo();
     variadic_class_template::demo();

@@ -32,34 +32,34 @@ namespace shared_mutex {
     // 1. A shared lock to enable one or more processes to read from the queue simultaneously.
     // 2. A unique lock so only one thread can write to the queue at any time.
 
-    std::queue<int> the_queue;
-    std::shared_mutex the_shared_mutex;
-    std::condition_variable_any the_cv;
+    std::queue<int> queue;
+    std::shared_mutex shared_mutex;
+    std::condition_variable_any cv_any;
 
-    void consume_queue(const std::stop_token &stoken) {
-        while (!stoken.stop_requested()) {
+    void consume_queue(const std::stop_token &stop_token) {
+        while (!stop_token.stop_requested()) {
             // Wait for the condition variable to be signaled, or for a stop request.
             // This uses a unique lock because it might modify the queue.
-            std::unique_lock lock(the_shared_mutex);
-            the_cv.wait_for(lock, stoken, std::chrono::seconds(1), [&stoken] {
-                return stoken.stop_requested() or not the_queue.empty();
+            std::unique_lock lock(shared_mutex);
+            cv_any.wait_for(lock, stop_token, std::chrono::seconds(1), [&stop_token] {
+                return stop_token.stop_requested() or not queue.empty();
             });
 
-            // If a stop is requested, do that right now.
-            if (stoken.stop_requested())
+            // If a stop is requested, handle that right away.
+            if (stop_token.stop_requested())
                 break;
 
             // Print / remove the value at the front of the queue.
-            std::cout << "Removing " << the_queue.front() << " from queue" << std::endl;
-            the_queue.pop();
+            std::cout << "Removing " << queue.front() << " from queue" << std::endl;
+            queue.pop();
         }
     }
 
 
     bool queue_empty() {
         // This uses a shared lock because it does not modify the queue.
-        std::shared_lock lock(the_shared_mutex);
-        return the_queue.empty();
+        std::shared_lock lock(shared_mutex);
+        return queue.empty();
     }
 
     void demo() {
@@ -71,12 +71,12 @@ namespace shared_mutex {
         for (int i{1}; i <= 5; i++) {
             // This uses a unique lock because it modifies the queue.
             std::cout << "Attempt to obtain a unique lock" << std::endl;
-            std::unique_lock lock(the_shared_mutex);
+            std::unique_lock lock(shared_mutex);
             std::cout << "The unique lock was obtained" << std::endl;
             std::cout << "Push " << i << " onto queue" << std::endl;
-            the_queue.push(i);
+            queue.push(i);
             // Signal the condition variable.
-            the_cv.notify_one();
+            cv_any.notify_one();
             // Wait shortly.
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }

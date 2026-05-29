@@ -17,19 +17,18 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
+#include "searching.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <complex>
-#include <ranges>
-#include <vector>
-
-#include "searching.h"
-
 #include <iostream>
 #include <list>
 #include <numeric>
+#include <ranges>
 #include <regex>
+#include <vector>
 
 #include "clocking.h"
 
@@ -102,7 +101,7 @@ void demo()
     using namespace std::literals;
     static_assert(std::ranges::starts_with("const_cast", "const"sv));
     static_assert(std::ranges::starts_with("constexpr", "const"sv));
-    static_assert(!std::ranges::starts_with("volatile", "const"sv));
+    static_assert(not std::ranges::starts_with("volatile", "const"sv));
 
     constexpr auto ascii_upper = [](char8_t c)
     {
@@ -307,7 +306,7 @@ void demo() {
             return it != copy.end() ? it->score : 0;
         };
 
-        auto get_max_score = [](const std::vector<Student>& students, int year)
+        auto get_max_score_views = [](const std::vector<Student>& students, int year)
         {
             auto max_value = [](auto&& range)
             {
@@ -341,7 +340,7 @@ void demo() {
             assert(score == 140);
         }
         {
-            auto score = get_max_score(students, 2);
+            auto score = get_max_score_views(students, 2);
             assert(score == 140);
         }
         {
@@ -349,7 +348,6 @@ void demo() {
             assert(score == 140);
         }
     }
-
 }
 }
 
@@ -372,9 +370,9 @@ static_assert(std::gcd(6, 7) == 1);
 // If one 0 is included, it returns the other value.
 static_assert(std::gcd(6, 0) == 6);
 
-// Rhe std::lcm calculates the least common  multiple of both integers.
+// The std::lcm calculates the least common multiple of two integers.
 static_assert(std::lcm( 6,  10) == 30);
-// Of one variable is nul, it returns nul.
+// Of one variable is zero, it returns zero.
 static_assert(std::lcm(2, 0) == 0);
 
 void demo() {

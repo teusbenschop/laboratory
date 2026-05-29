@@ -1066,7 +1066,8 @@ struct B : A
 template <typename T>
 void func1() noexcept(sizeof(T) < 4);
 
-decltype(func1<char>()) func2();
+void func2() noexcept(true);
+static_assert(std::is_same_v<decltype(func1<char>), decltype(func2)>);
 
 void demo()
 {
@@ -1079,20 +1080,23 @@ namespace keyword_const {
 struct S
 {
     // Functions with different const qualifiers have different types so may overload each other.
-    int& get() { return i; }
-    const int& get () const { return i; }
-    int i {10};
+    int& get() { return i1; }
+    const int& get () const { return i2; }
+    int i1 {10};
+    int i2 {20};
 };
-
 
 void demo()
 {
     S s1;
-    s1.get()++; // Calls the first.
     int i1 = s1.get(); // Calls the first.
+    assert(i1 == 10);
+    i1 = ++s1.get(); // Calls the first.
+    assert(i1 == 11);
 
     const S s2;
     int i2 = s2.get(); // Calls the second.
+    assert(i2 == 20);
 }
 }
 
@@ -1164,11 +1168,11 @@ void demo() {
 
 
 namespace copy_elision {
-// Copy ilision does not create a temporal copy of an object.
+// Copy elision does not create a temporal copy of an object.
 // It creates the object directly into the target.
-// It also omits side effects of the used constructor or the destructor.
+// It also omits side effects of the used constructor or destructor.
 // Programs that rely on these side effects are not portable.
-// Copy elision is used for return statements ot throw expressions.
+// Copy elision is used for return statements or throw expressions.
 void demo()
 {
 }

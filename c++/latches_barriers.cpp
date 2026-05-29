@@ -25,7 +25,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <random>
 #include <thread>
 #include <vector>
-
 #include "latches_barriers.h"
 
 // Latches and barriers are thread coordination mechanisms
@@ -37,7 +36,7 @@ namespace latches {
 
 // The std::latch is a downward counter which can be used to synchronize threads.
 // The value of the counter is initialized on creation.
-// Threads may block on the latch until the counter is decremented to zero.
+// Threads block on the latch until the counter is decremented to zero.
 // There is no possibility to increase or reset the counter, the latch is single-use.
 
 // The std::barrier is similar to the std::latch with these differences:
@@ -59,7 +58,7 @@ void demo()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         threads.emplace_back([&]
         {
-            std::cout << "Thread " << std::this_thread::get_id() << " waits at latch and decreases it" << std::endl;
+            std::cout << "Thread " << std::this_thread::get_id() << " decreases latch and waits at it" << std::endl;
             latch.arrive_and_wait(); // Or just count_down();
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
             std::cout << "Thread " << std::this_thread::get_id() << " gets past latch" << std::endl;
@@ -74,8 +73,6 @@ void demo()
         thread.join();
     std::cout << "All threads have completed" << std::endl;
 }
-
-
 
 }
 
@@ -115,6 +112,7 @@ void demo()
     // the barrier resets itself to its initial state.
     // Then the barrier can be used again.
     auto barrier = std::barrier{n_dice, on_barrier_completion};
+
     for (size_t i = 0; i < n_dice; i++)
     {
         threads.emplace_back([&, i]
@@ -130,9 +128,7 @@ void demo()
         });
     }
     for (auto&& t : threads)
-    {
         t.join();
-    }
     std::cout << "Number of turns to have all dice on 6: " << n_turns << std::endl;
 }
 }

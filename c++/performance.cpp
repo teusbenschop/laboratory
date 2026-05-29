@@ -129,7 +129,7 @@ void demo()
 
 namespace lambda_is_much_faster_than_bind {
 
-int sum_fn(int a, int b, int c)
+int sum_abc(int a, int b, int c)
 {
     return a + b + c;
 }
@@ -146,7 +146,7 @@ void demo()
                 {
                     const auto lambda_fn = [a, b, c]()
                     {
-                        return sum_fn(a, b, c);
+                        return sum_abc(a, b, c);
                     };
                     sum += lambda_fn();
                 }
@@ -157,7 +157,7 @@ void demo()
             for (int b = 0; b < 100; ++b)
                 for (int c = 0; c < 100; ++c)
                 {
-                    const auto bind_fn = std::bind(sum_fn, a, b, c);
+                    const auto bind_fn = std::bind(sum_abc, a, b, c);
                     sum += bind_fn();
                 }
     }
