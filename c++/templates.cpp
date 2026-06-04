@@ -308,46 +308,54 @@ static_assert(weight_kg.value() == 0.01f);
 
 namespace automatic_weight_units_simple {
 
-struct grams {
-    constexpr static float factor_to_grams = 1.0f;
-};
+struct grams     { static constexpr float factor_to_grams {   1.0f}; };
+struct kilograms { static constexpr float factor_to_grams {1000.0f}; };
 
-struct kilograms {
-    constexpr static float factor_to_grams = 1000.0f;
-};
-
-template <typename T>
-concept weight_unit = std::is_same_v<T, grams> or std::is_same_v<T, kilograms>;
+template <typename U>
+concept weight_unit = std::is_same_v<U, grams> or std::is_same_v<U, kilograms>;
 
 template <weight_unit U>
 class Weight {
     float m_value{};
 public:
-    Weight() = delete;
+    Weight(const float value) : m_value(value) {}
+
     template <weight_unit UU>
-    explicit Weight (const UU& value) {
-        if constexpr (std::is_same_v<U, UU>)
-            m_value = value;
-        else {
-            decltype(m_value) grams = value * UU::factor_to_grams;
-            m_value = grams / U::factor_to_grams;
-        }
+    Weight(const Weight<UU>& s) {
+        const float grams = s.value() * UU::factor_to_grams;
+        m_value = grams / U::factor_to_grams;
     }
-    Weight (const float value) {
-        m_value = value;
-    }
-    decltype(m_value) value() const noexcept { return m_value; }
-    explicit operator decltype(m_value) () const noexcept { return m_value; }
-    void value(float value) noexcept { m_value = value; }
+
+    float value() const { return m_value; }
 };
 
+template <weight_unit U>
+std::ostream& operator<<(std::ostream& os, const Weight<U>& s) noexcept
+{
+    os << s.value();
+    if constexpr (std::is_same_v<U, grams>)
+        os << "g";
+    else if constexpr (std::is_same_v<U, kilograms>)
+        os << "kg";
+    else
+        static_assert(false, "not implemented");
+    return os;
+}
 
 void demo() {
-    Weight<kilograms> kilogram(1);
-    Weight<grams> grams((kilogram.value()));
+    return;
+    Weight<kilograms> kilogram_1(1);
+    Weight<grams> gram_1000 = kilogram_1;
+    std::cout << gram_1000 << std::endl;
 
-    std::cout << grams.value() << std::endl;
-    std::cout << kilogram.value() << std::endl;
+    const auto fn = [] (const Weight<grams> w) {
+        std::cout << w << std::endl;
+    };
+
+    fn(kilogram_1);
+    fn(gram_1000);
+    fn(Weight<kilograms>{2.2f});
+    fn(Weight<grams>{2.2f});
 }
 
 
@@ -355,7 +363,7 @@ void demo() {
 
 namespace template_specialization {
 
-enum Type {generic_type, float_type} type;
+enum Type {none_t, generic_t, float_t} type;
 
 // General class template syntax:
 template <typename T>
@@ -365,7 +373,7 @@ public:
     // Generic class definition.
     Class()
     {
-        type = Type::generic_type;
+        type = generic_t;
     }
 };
 
@@ -377,7 +385,7 @@ public:
     // Specialized class definition for type float.
     Class()
     {
-        type = Type::float_type;
+        type = float_t;
     }
 };
 // Key points:
@@ -389,38 +397,38 @@ public:
 template <typename T>
 void func(T t)
 {
-    type = Type::generic_type;
+    type = generic_t;
 }
 template <>
 void func<float>(float f)
 {
-    type = Type::float_type;
+    type = float_t;
 }
 
 void demo()
 {
+    assert(type == none_t);
     Class<int> ci;
-    assert(type == Type::generic_type);
+    assert(type == generic_t);
     Class<float> cf;
-    assert(type == Type::float_type);
+    assert(type == float_t);
 
     func("a");
-    assert(type == Type::generic_type);
+    assert(type == generic_t);
     func(1.0f);
-    assert(type == Type::float_type);
+    assert(type == float_t);
 }
 }
 
 namespace automatic_temperature_unit_conversion {
 
-// Write a template that automatically converts temperatures between different unit.
+// Write a template that automatically converts temperatures between different units.
 // Kelvin = degrees Celsius + 273.5
 // Degrees Celsius = Kelvin - 273.5
 
-
 struct Kelvin
 {
-    // Calculator to go from Kelvin to Kelvin and vice versa.
+    // Calculators to go from Kelvin to Kelvin and vice versa.
     static constexpr float convert_to_kelvin(const float value) noexcept
     {
         return value;
@@ -432,7 +440,7 @@ struct Kelvin
 };
 struct Celsius
 {
-    // Calculator to go from degrees Celsius to Kelvin and vice versa.
+    // Calculators to go from degrees Celsius to Kelvin and vice versa.
     static constexpr float convert_to_kelvin(const float value) noexcept
     {
         return value + 273.5f;
@@ -454,13 +462,13 @@ class Temperature
 public:
 
     // Copy constructor from same temperature unit should be OK default.
-    Temperature(const Temperature&) = default;
+    constexpr Temperature(const Temperature&) = default;
 
     // Constructor for a given temperature unit using a float.
     constexpr explicit Temperature(const decltype(m_value) value) noexcept : m_value(value) {};
 
     // Function to get/set the value
-    [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; };
+    constexpr decltype(m_value) value() const noexcept { return m_value; };
     constexpr void value(decltype(m_value) value) noexcept { m_value = value; };
 
     // Operator to get the value: Supports static cast.
@@ -514,10 +522,10 @@ namespace meta_programming_recursive_calculation {
 // A factorial of, say, 4 means: multiply all numbers from 4 down to 1.
 
 // This template recursively calls itself to calculate its value.
-template <int N>
+template <int n>
 struct Factorial
 {
-    static constexpr int value = N * Factorial<N - 1>::value;
+    static constexpr int value = n * Factorial<n - 1>::value;
 };
 
 // This template is specific for a passed value of 0.
@@ -529,7 +537,7 @@ struct Factorial<0>
 
 // A recursive template is very expensive to process by the compiler.
 // A recursive constexpr function is much cheaper.
-constexpr int factorial(int n) { return n <= 1 ? 1 : (n * factorial(n - 1));}
+constexpr int factorial(int n) { return n <= 1 ? 1 : n * factorial(n - 1); }
 
 static_assert(Factorial<1>::value == 1);
 static_assert(factorial(1) == 1);
@@ -540,10 +548,10 @@ static_assert(factorial(6) == 720);
 
 
 // Another example of recursive template calls.
-template <int N>
+template <int n>
 struct Power
 {
-    enum { value = 2 * Power<N - 1>::value };
+    enum { value = 2 * Power<n - 1>::value };
 };
 
 template <>
@@ -573,17 +581,17 @@ namespace variadic_minimum {
 
 // Template for one variable, stops recursion.
 template <typename T>
-T min (const T& value)
+T min (const T value)
 {
     return value;
 }
 
 // Template for recursion for more than one variable.
-template <typename T, typename ... Args>
-T min (const T& value, const Args&... rest)
+template <typename T, typename ...Args>
+T min (const T value, const Args... args)
 {
-    T minimum_of_rest = min(rest...);
-    return value < minimum_of_rest ? value : minimum_of_rest;
+    const T rest_min = min(args...);
+    return value < rest_min ? value : rest_min;
 }
 
 void demo()
@@ -593,13 +601,15 @@ void demo()
 }
 }
 
+
+
 namespace variadic_class_template {
 // A variadic class template can be instantiated with any number of template arguments.
 template<typename... Types>
 struct Storage
 {
-    Storage(Types... args) : elements(args...) {}
     std::tuple<Types...> elements;
+    Storage(Types... args) : elements(args...) {}
 };
 
 void demo()
@@ -622,14 +632,13 @@ void demo()
 
 namespace variadic_function_template {
 
-template<typename T, typename... Args>
-constexpr T sum(T t, Args... args)
+template <typename V, typename... Values>
+constexpr V sum (V value, Values... values)
 {
-    if constexpr (sizeof...(args))
-        return t + sum(args...);
-    else
-        return t;
-};
+    if constexpr (sizeof...(values))
+        return value + sum(values...);
+    return value;
+}
 
 static_assert(sum<int>(1) == 1);
 static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
@@ -643,21 +652,21 @@ void demo()
 
 namespace pack_expansion {
 
-template <typename ... Foos>
-void func1 (Foos ... args)
+template <typename ... Args>
+void func1 (Args ... args)
 {
 }
 
-template <typename ... Bars>
-void func2 (Bars ... args)
+template <typename ... Args>
+void func2 (Args ... args)
 {
     func1(&args...); // &args...   : a pack expansion.
                      // &args      : the pattern.
+    // Args ... args expand into: int* i, float* f, char* c, const char** s
+    // &args expands into: &i, &f, &c, &s
 
     func2(1, 1.0f, '1', "1");
-    // Bars ... args expanded into: int i, float f, char c, const char* s
-    // &args expands into: &i, &f, &c, &s
-    // Foos ... args expand into: int* i, float* f, char* c, const char** s
+    // Args ... args expanded into: int i, float f, char c, const char* s
 }
 
 
@@ -678,7 +687,7 @@ void func2 (Bars ... args)
 // Class c(n, ++args...); // Expands into Class::Class(n, ++a1, ++a2, ++a3);
 
 // Pack expansion in brace-enclosed initializers.
-template <typename ...Args>
+template <typename... Args>
 constexpr int func3 (Args... args) {
     const int size = sizeof...(args) + 2;
     int arr[size] = {1, args..., 2};
@@ -700,13 +709,14 @@ void func4 (T1 t1, T2 t2, Args... args) {
 }
 
 // The ellipsis in a function parameter list: the parameter declaration is the pattern for expansion.
-template <typename ... Ts>
+template <typename... Ts>
 void func5 (Ts ... args) {}
 // func5('a', 1); // Ts... expands to void func5(char, int)
 // func(0.1f);    // Ts... expands to void func5(float)
 
-template <typename ...Ts, int... N>
+template <typename... Ts, int... N>
 void func6 (Ts (&...arr)[N]){}
+
 void demo6() {
     int n[1];
     func6<const char, int>("a", n); // Ts (&...arr)[N] expands to:
@@ -723,10 +733,10 @@ void demo6() {
 
 
 // Pack expansion in lambda captures.
-template<class ... Args>
-constexpr int func7(Args...args) {
+template<typename... Args>
+constexpr int func7(Args... args) {
     auto lambda = [args...] { // <- pack expansion.
-        return (args+...);
+        return (args + ...);
     };
     return lambda();
 }
@@ -734,9 +744,9 @@ static_assert(func7(1,2,3) == 6);
 
 
 // Pack expansion in the sizeof... operator.
-template <typename ... Types>
+template <typename... Types>
 struct Sizeof {
-    constexpr static std::size_t size = sizeof ... (Types);
+    constexpr static std::size_t size = sizeof... (Types);
 };
 static_assert(Sizeof<int,char,float>::size == 3);
 
@@ -778,8 +788,8 @@ namespace fold_expressions {
 // 1. Do 1 + 2 > result.
 // 2. Do result + 3 > final result.
 // Right: Start from the right, apply operation, get result, then do next argument:
-// 1. Do 3 + 3 > result.
-// 2. Do result + 1 > final result.
+// 1. Do 2 + 3 > result.
+// 2. Do 1 + result > final result.
 
 template <typename ... Args>
 constexpr int sum(Args...args)
@@ -797,7 +807,7 @@ constexpr int unary_left_fold(Args&& ... args)
     return (... - args); // Dots at left of operator.
 }
 // ((1 - 2) - 3)
-static_assert(unary_left_fold(1,2,3) == -4);
+static_assert(unary_left_fold(1, 2, 3) == -4);
 
 template <typename ... Args>
 constexpr int unary_right_fold(Args&& ... args)
@@ -806,7 +816,7 @@ constexpr int unary_right_fold(Args&& ... args)
     return (args - ...); // Dots at right of operator.
 }
 // (1 - (2 - 3))
-static_assert(unary_right_fold(1,2,3) == 2);
+static_assert(unary_right_fold(1, 2, 3) == 2);
 
 template <typename I, typename ... Args>
 constexpr int binary_left_fold(I init, Args&& ... args)
@@ -815,7 +825,7 @@ constexpr int binary_left_fold(I init, Args&& ... args)
     return (init - ... - args);
 }
 // ((10 - 1) - 2) - 3
-static_assert(binary_left_fold(10, 1,2,3) == 4);
+static_assert(binary_left_fold(10, 1, 2, 3) == 4);
 
 template <typename I, typename ... Args>
 constexpr int binary_right_fold(I init, Args&& ... args)
@@ -824,13 +834,15 @@ constexpr int binary_right_fold(I init, Args&& ... args)
     return (args - ... - init);
 }
 // (1 - (2 - (3 - 10)))
-static_assert(binary_right_fold(10, 1,2,3) == -8);
+static_assert(binary_right_fold(10, 1, 2, 3) == -8);
 
 // Folding over the comma operator.
-template <typename ... Args>
-void comma_operator(std::ostream &os, std::vector<int>& v, const Args&... args) {
-    (void(os << args << " "), ...); // Run function on arg1, then on arg2, and so on.
-    ((v.push_back(args)), ...); // Can leave out "void".
+template <typename... Args>
+void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args)
+{
+    // Run function on arg1, then on arg2, and so on.
+    (void(os << args << " "), ...);
+    ((v.push_back(args)), ...); // Can leave out "void" in both cases.
 }
 
 void demo()
@@ -856,13 +868,9 @@ concept specialization_of_vector = requires(T& t)
 
 template <typename T>
 requires specialization_of_vector<T>
-void func1 (T& v)
-{
-}
+void func1 (T& v) { }
 
-void func2 (specialization_of_vector auto& v)
-{
-}
+void func2 (specialization_of_vector auto& v) { }
 
 void demo()
 {
@@ -874,19 +882,22 @@ void demo()
 
 
 namespace generic_specialization_of_typetrait {
+// See https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2098r1.pdf
 
-template<class T, template<typename...> class Z>
-constexpr bool is_specialisation_of = false;
+template <typename T,
+          template<typename...> typename Primary>
+struct is_specialisation_of : std::false_type {};
 
-template<template<typename...> class T, typename... Args>
-constexpr bool is_specialisation_of<T<Args...>, T> = true;
+template <template<typename...> typename Primary,
+          typename... Args>
+struct is_specialisation_of <Primary<Args...>, Primary> : std::true_type {};
 
-template<class T, template<typename ...> class Z>
-concept specialisation_of = is_specialisation_of<T,Z>;
+template <class T,
+          template<typename...> class Primary>
+concept is_specialisation_of_v = is_specialisation_of<T, Primary>::value;
 
-template<specialisation_of<std::vector> T>
-void func(T c) {
-};
+template<is_specialisation_of_v<std::vector> T>
+void func(T c) { };
 
 void demo()
 {
@@ -894,6 +905,7 @@ void demo()
     func(v);
 }
 }
+
 
 void demo()
 {
@@ -904,7 +916,6 @@ void demo()
     automatic_weight_units_simple::demo();
     template_specialization::demo();
     automatic_temperature_unit_conversion::demo();
-
     meta_programming_recursive_calculation::demo();
     variadic_minimum::demo();
     variadic_class_template::demo();

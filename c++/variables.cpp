@@ -156,13 +156,13 @@ constexpr std::tuple<int, float> tuple(1, 1.0f);
 
 // This creates a Foo object from a tuple.
 constexpr std::pair<Foo, Foo> p1{tuple, tuple};
-static_assert(p1.first.construction == Construction::from_tuple);
-static_assert(p1.second.construction == Construction::from_tuple);
+static_assert(p1.first.construction == from_tuple);
+static_assert(p1.second.construction == from_tuple);
 
 // This creates the same as above but then piecewise, so from an int and a float.
 constexpr std::pair<Foo, Foo> p2{std::piecewise_construct, tuple, tuple};
-static_assert(p2.first.construction == Construction::from_int_float);
-static_assert(p2.second.construction == Construction::from_int_float);
+static_assert(p2.first.construction == from_int_float);
+static_assert(p2.second.construction == from_int_float);
 
 
 void demo()
@@ -180,9 +180,9 @@ namespace forward_as_tuple {
 void demo()
 {
     // The function returns a rvalue.
-    auto rvalue = [] -> std::string
+    auto rvalue = [] -> int
     {
-        return "100";
+        return 100;
     };
 
     // The variable i is a lvalue.
@@ -192,7 +192,7 @@ void demo()
 
     // A lvalue reference binds to a lvalue. Marked with one ampersand (&).
     // A rvalue reference binds to a rvalue. Marked with two ampersands (&&).
-    static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, std::string&&>>);
+    static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, int&&>>);
 }
 }
 
@@ -376,7 +376,7 @@ namespace initialization {
 void demo()
 {
     std::string s1; // Default initialization.
-    //std::string s2(); // Not an initialization but a function declaration.
+    std::string s2(); // Not an initialization but a function declaration.
     std::string s3 = "s3"; // Copy initialization.
     std::string s4("s4"); // Direct initialization.
     std::string s5{'a'}; // List initialization.
@@ -384,6 +384,7 @@ void demo()
     char& c2 = c1[0]; // Reference initialization.
 }
 }
+
 
 namespace designated_initializers {
 // https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers
@@ -440,9 +441,9 @@ namespace enable_shared_from_this {
 // that all share ownership of the object with the original shared_ptr.
 void demo()
 {
-    struct Struct : public std::enable_shared_from_this<Struct>
+    struct Struct : std::enable_shared_from_this<Struct>
     {
-        std::shared_ptr<Struct> getptr()
+        std::shared_ptr<Struct> get_ptr()
         {
             return shared_from_this();
         }
@@ -451,7 +452,7 @@ void demo()
     // The original and derived shared pointers share the same object.
     {
         std::shared_ptr<Struct> object1 = std::make_shared<Struct>();
-        std::shared_ptr<Struct> object2 = object1->getptr();
+        std::shared_ptr<Struct> object2 = object1->get_ptr();
         assert(object1 == object2);
         assert(object1.use_count() == 2);
         assert(object2.use_count() == 2);
@@ -462,7 +463,7 @@ void demo()
     try
     {
         Struct object1;
-        std::shared_ptr<Struct> object2 = object1.getptr();
+        std::shared_ptr<Struct> object2 = object1.get_ptr();
         assert(false); // It should never arrive here.
     }
     catch (std::bad_weak_ptr& e)
@@ -525,32 +526,33 @@ void templated_fn(T)
 
 void demo()
 {
-    Struct<int> s = {1, 2, 3, 4, 5}; // copy list-initialization
-    s.append({6, 7, 8}); // list-initialization in function call
+    Struct<int> s = {1, 2, 3, 4, 5}; // Copy list-initialization.
+    s.append({6, 7, 8}); // List-initialization in function call.
     assert(s.c_arr().second == 8); // Assert the backing array size.
     assert(s.vec.size() == 8);
 
-    // Range-for over brace-init-list
-    for (int x : {-1, -2, -3}) // the rule for auto makes this ranged-for work
+    // Range-for over brace-init-list.
+    for (int x : {-1, -2, -3}) // The rule for auto makes this ranged-for work.
         assert(x == -3 or x == -2 or x == -1);
 
-    auto il1 = {10, 11, 12}; // special rule for auto
+    auto il1 = {10, 11, 12}; // Special rule for auto.
     assert(il1.size() == 3);
 
-    auto il_copy = il1; // a shallow-copy of top-level proxy object
-    assert(il_copy.begin() == il1.begin()); // guaranteed: backing array is the same
+    auto il_copy = il1; // A shallow-copy of top-level proxy object.
+    assert(il_copy.begin() == il1.begin()); // Guaranteed: backing array is the same.
 
     std::initializer_list<int> il2{-3, -2, -1};
-    assert(il2.begin()[2] == -1); // note the replacement for absent operator[]
-    il2 = il1; // shallow-copy
-    assert(il2.begin() == il1.begin()); // guaranteed
+    assert(il2.begin()[2] == -1); // Note the replacement for absent operator[] .
+    il2 = il1; // Shallow-copy.
+    assert(il2.begin() == il1.begin()); // Guaranteed.
 
-    // templated_fn({1, 2, 3}); // compiler error! "{1, 2, 3}" is not an expression.
+    // templated_fn({1, 2, 3}); // Compiler error! "{1, 2, 3}" is not an expression.
     // It has no type, and so T cannot be deduced.
     templated_fn<std::initializer_list<int>>({1, 2, 3}); // OK
     templated_fn<std::vector<int>>({1, 2, 3}); // Also OK
 }
 }
+
 
 namespace pseudo_random_number_generation {
 void demo()

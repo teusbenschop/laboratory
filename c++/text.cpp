@@ -64,8 +64,8 @@ namespace formatting_library {
 // https://en.cppreference.com/w/cpp/utility/format
 void demo()
 {
-    std::string result = std::format("A={} B={} C={}", "a", std::string("b"), 3);
-    assert(result == "A=a B=b C=3");
+    std::string result = std::format("a={} b={} 1={}", "a", std::string("b"), 1);
+    assert(result == "a=a b=b 1=1");
 
     // Formats to an output iterator.
     std::string buffer;
@@ -83,11 +83,9 @@ void demo()
 namespace stream_manipulation {
 void demo()
 {
-    {
-        std::stringstream oss;
-        oss << std::boolalpha << false << " " << std::noboolalpha << true;
-        assert(oss.str() == "false 1");
-    }
+    std::ostringstream oss;
+    oss << std::boolalpha << false << " " << std::noboolalpha << true;
+    assert(oss.str() == "false 1");
 }
 }
 
@@ -139,13 +137,20 @@ void demo()
 
 namespace istream_view {
 void demo() {
-    // Demo of istream_view.
+    // Get the floats from the input string.
     {
-        const auto s{"1.4142 1.618 2.71828 3.14159 6.283"};
-        auto iss = std::istringstream{s};
+        auto iss = std::istringstream{"1.4142 1.618 2.71828 3.14159 6.283"};
         auto floats = std::ranges::istream_view<float>(iss);
         auto result = floats | std::ranges::to<std::vector<float>>();
         std::vector<float> standard = {1.4142, 1.618, 2.71828, 3.14159, 6.283};
+        assert(result == standard);
+    }
+    // Get the separate words.
+    {
+        auto iss = std::istringstream{"how \f was \n yesterday's \t weather?"};
+        auto strings = std::ranges::istream_view<std::string>{iss};
+        const auto result = strings | std::ranges::to<std::vector<std::string>>();
+        std::vector<std::string> standard = {"how", "was", "yesterday's", "weather?"};
         assert(result == standard);
     }
 }
@@ -155,32 +160,35 @@ void demo() {
 namespace templates_printf {
 
 // The base function if no arguments are given, only the format string.
-void template_printf(const char* format)
+void template_print_format(std::ostringstream& oss, const char* format)
 {
-    std::cout << format;
+    oss << format;
 }
 
 // The recursive variadic function.
 template <typename T, typename... Targs>
-void template_printf(const char* format, T value, Targs... args)
+void template_print_format(std::ostringstream& oss, const char* format, T value, Targs... args)
 {
     for (; *format; ++format)
     {
         if (*format == '%')
         {
-            std::cout << value;
-            template_printf(format + 1, args...);
+            oss << value;
+            template_print_format(oss, format + 1, args...);
             return;
         }
-        std::cout << *format;
+        oss << *format;
     }
 }
 
 void demo()
 {
-    //template_printf("% world % %", "Hello", "!", 123);
+    std::ostringstream oss;
+    template_print_format(oss, "% world % %", "Hello", "!", 123);
+    assert(oss.str() == "Hello world ! 123");
 }
 }
+
 
 namespace string_literals {
 // Ordinary literal encoding

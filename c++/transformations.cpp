@@ -135,7 +135,7 @@ void demo() {
         std::ranges::shuffle(numbers, mtg);
 
         // The output is in random order, e.g. 2 4 3 5 1.
-        assert(!std::ranges::is_sorted(numbers ));
+        assert(not std::ranges::is_sorted(numbers ));
     }
 
     // Demo of drop_while.
