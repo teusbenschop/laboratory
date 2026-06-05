@@ -129,7 +129,7 @@ class CopySwapClass
 {
 public:
     // Constructor.
-    CopySwapClass(size_t size) : m_size(size), m_data(new int(size))
+    CopySwapClass(int size) : m_size(size), m_data(new int(size))
     {
     }
 
@@ -158,7 +158,7 @@ public:
     }
 
 private:
-    size_t m_size;
+    int m_size;
     int* m_data;
 };
 

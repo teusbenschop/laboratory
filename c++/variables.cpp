@@ -376,7 +376,7 @@ namespace initialization {
 void demo()
 {
     std::string s1; // Default initialization.
-    std::string s2(); // Not an initialization but a function declaration.
+    //std::string s2(); // Not an initialization but a function declaration.
     std::string s3 = "s3"; // Copy initialization.
     std::string s4("s4"); // Direct initialization.
     std::string s5{'a'}; // List initialization.

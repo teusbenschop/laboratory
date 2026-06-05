@@ -21,6 +21,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <iostream>
 #include <list>
+#include <map>
 #include <sstream>
 #include <type_traits>
 #include <vector>
@@ -39,66 +40,44 @@ constexpr auto sum(T a, T b) -> T { return a + b; }
 static_assert(std::is_same_v<decltype(sum<unsigned>(1, 2)), unsigned>);
 // Omit the type: it takes int.
 static_assert(std::is_same_v<decltype(sum<>(1, 2)), int>);
+static_assert(std::is_same_v<decltype(sum(1, 2)), int>);
 
 }
 
 namespace simple_function_template {
 
-struct Point
-{
-    int x, y;
-    Point operator+(const Point& s) const noexcept
-    {
-        return Point{x + s.x, y + s.y};
-    }
-};
+struct Struct { int v{}; };
 
-// General templates.
+// General template.
 template <typename T>
 T add (T a, T b) noexcept
 {
     return a + b;
 }
-template <typename T>
-int signum (T a) noexcept
-{
-    if (a < 0) return -1;
-    if (a > 0) return 1;
-    return 0;
-}
 
-// Specialized templates.
+// Specialized template.
 template <> // This could be left out.
-Point add (const Point a, const Point b) noexcept
+Struct add (const Struct a, const Struct b) noexcept
 {
-    return Point{a.x + b.x, a.y + b.y};
-}
-template <>
-int signum (const Point a) noexcept
-{
-    if (signum(a.x) < 0 and signum(a.y) < 0) return -1;
-    if (signum(a.x) > 0 and signum(a.y) > 0) return 1;
-    return 0;
+    return Struct{a.v + b.v };
 }
 
 void demo()
 {
-    add(1,1);
-    add(1.1,2.2);
-    Point p {1,1 };
-    add(p,p);
-    Point p2 {2, 2};
-    signum(Point{1,-2});
+    add(1,2);
+    add(1.0f,2.0f);
+    add(std::string("a"), std::string("b"));
+    add(Struct(1),Struct(2));
 }
 }
 
 namespace class_template {
 
 template <typename T>
-struct Class
+struct Struct
 {
     T a;
-    Class(T a) : a(a) {}
+    Struct(T a) : a(a) {}
 };
 
 void demo()
@@ -111,9 +90,9 @@ namespace variable_template {
 
 // Basic variable template.
 template <typename T>
-constexpr T pi = 3.1415926535897932385L;
+constexpr T pi = 3.14f;
 // Instantiate it.
-static_assert(pi<float> > 3.14159 and pi<float> < 3.14160);
+static_assert(pi<float> == 3.14f);
 
 // Variable template as class member. Must be static.
 struct S1 {
@@ -122,13 +101,13 @@ struct S1 {
 };
 static_assert(S1::val<int> == 1);
 
-template<class T>
+template<typename T>
 struct S2
 {
-    static T val; // Declaration of a non-template static data member of a class template.
+    static T val; // Declaration of a templated static data member of a class template.
 };
 
-template<class T>
+template<typename T>
 T S2<T>::val = 1; // Definition of the above.
 
 void demo() {
@@ -139,19 +118,15 @@ void demo() {
 
 namespace class_with_template_methods {
 template <typename T>
-struct Class
+struct Struct
 {
     T a;
-    Class(T a) : a(a) {}
-    T get()
-    {
-        return a;
-    };
+    Struct(T a) : a(a) {}
 };
 void demo()
 {
-    Class<float> class1 (1.1);
-    assert(class1.get() >= 1.09 and class1.get() <= 1.11);
+    Struct<float> s (1.1f);
+    assert(s.a == 1.1f);
 }
 }
 
@@ -167,12 +142,12 @@ namespace automatic_weight_unit_conversion {
 // The factors to convert the given weight type to grams.
 struct grams
 {
-    static constexpr float factor = 1.0f;
+    static constexpr float factor2grams = 1.0f;
 };
 
 struct kilograms
 {
-    static constexpr float factor = 1000.0f;
+    static constexpr float factor2grams = 1000.0f;
 };
 
 // This concept can be used to assure that a type is a weight type.
@@ -202,7 +177,7 @@ public:
         if constexpr (std::is_same_v<U, UU>)
             m_value = s.value();
         else
-            m_value = s.value() * UU::factor / U::factor;
+            m_value = s.value() * UU::factor2grams / U::factor2grams;
     }
 
     [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; }
@@ -343,21 +318,26 @@ std::ostream& operator<<(std::ostream& os, const Weight<U>& s) noexcept
 }
 
 void demo() {
-    return;
     Weight<kilograms> kilogram_1(1);
     Weight<grams> gram_1000 = kilogram_1;
-    std::cout << gram_1000 << std::endl;
+    {
+        std::ostringstream oss;
+        oss << gram_1000;
+        assert(oss.str() == "1000g");
+    }
 
     const auto fn = [] (const Weight<grams> w) {
-        std::cout << w << std::endl;
+        std::ostringstream os;
+        os << w;
+        return os.str();
     };
 
-    fn(kilogram_1);
-    fn(gram_1000);
-    fn(Weight<kilograms>{2.2f});
-    fn(Weight<grams>{2.2f});
-}
+    assert(fn(kilogram_1) == "1000g");
+    assert(fn(gram_1000) == "1000g");
 
+    assert(fn(Weight<kilograms>{2.2f}) == "2200g");
+    assert(fn(Weight<grams>{2.2f}) == "2.2g");
+}
 
 }
 
@@ -365,29 +345,24 @@ namespace template_specialization {
 
 enum Type {none_t, generic_t, float_t} type;
 
-// General class template syntax:
+// General class template syntax.
 template <typename T>
-class Class
-{
-public:
-    // Generic class definition.
-    Class()
-    {
+struct Struct {
+    // Generic constructor.
+    Struct(T t) {
         type = generic_t;
     }
 };
 
-// Specialized class template syntax:
+// Specialized class template syntax.
 template <>
-class Class<float>
-{
-public:
-    // Specialized class definition for type float.
-    Class()
-    {
+struct Struct<float> {
+    // Specialized constructor for type float.
+    Struct(float t) {
         type = float_t;
     }
 };
+
 // Key points:
 // 1. template<> (no type there)
 // 2. Provide class definition for specific type, e.g. Class<float>
@@ -408,12 +383,12 @@ void func<float>(float f)
 void demo()
 {
     assert(type == none_t);
-    Class<int> ci;
+    Struct<int> ci(1);
     assert(type == generic_t);
-    Class<float> cf;
+    Struct<float> cf(1.0f);
     assert(type == float_t);
 
-    func("a");
+    func(1);
     assert(type == generic_t);
     func(1.0f);
     assert(type == float_t);
@@ -856,6 +831,13 @@ void demo()
 }
 
 
+namespace template_template_arguments {
+
+void demo() {
+
+}
+}
+
 namespace typetrait_specialization_of_vector {
 
 template <typename T>
@@ -865,6 +847,12 @@ concept specialization_of_vector = requires(T& t)
     t.data();
     t.reserve(1);
 };
+
+static_assert(specialization_of_vector<std::vector<int>>);
+static_assert(specialization_of_vector<std::vector<std::string>>);
+static_assert(specialization_of_vector<std::vector<std::map<float,float>>>);
+static_assert(not specialization_of_vector<std::list<int>>);
+static_assert(not specialization_of_vector<float>);
 
 template <typename T>
 requires specialization_of_vector<T>
@@ -884,20 +872,31 @@ void demo()
 namespace generic_specialization_of_typetrait {
 // See https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2098r1.pdf
 
-template <typename T,
-          template<typename...> typename Primary>
+template <
+    typename Arg,
+    template<typename... Ts> typename Primary
+>
 struct is_specialisation_of : std::false_type {};
 
-template <template<typename...> typename Primary,
-          typename... Args>
+template <
+    typename... Args,
+    template<typename... Ts> typename Primary
+>
 struct is_specialisation_of <Primary<Args...>, Primary> : std::true_type {};
 
-template <class T,
-          template<typename...> class Primary>
+static_assert(is_specialisation_of<std::vector<int>, std::vector>::value);
+static_assert(not is_specialisation_of<std::vector<int>, std::list>::value);
+static_assert(is_specialisation_of<std::vector<std::map<bool,bool>>, std::vector>::value);
+static_assert(is_specialisation_of<std::list<bool>, std::list>::value);
+static_assert(is_specialisation_of<std::map<bool,bool>, std::map>::value);
+
+template <typename T,
+          template<typename...Args> typename Primary>
 concept is_specialisation_of_v = is_specialisation_of<T, Primary>::value;
 
 template<is_specialisation_of_v<std::vector> T>
 void func(T c) { };
+
 
 void demo()
 {
@@ -922,6 +921,7 @@ void demo()
     variadic_function_template::demo();
     pack_expansion::demo();
     fold_expressions::demo();
+    template_template_arguments::demo();
     typetrait_specialization_of_vector::demo();
     generic_specialization_of_typetrait::demo();
 }
