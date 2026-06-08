@@ -1022,6 +1022,17 @@ void demo()
 }
 
 
+namespace automatic_promotion {
+const unsigned int a = 5;
+const int b = -10;
+static_assert(a + b == 4294967291);
+// Unsigned int plus int : The int is promoted to an unsigned int.
+void demo()
+{
+}
+}
+
+
 void demo()
 {
     forward_like::demo();
@@ -1050,6 +1061,7 @@ void demo()
     is_invocable::demo();
     is_aggregate::demo();
     has_unique_object_representations::demo();
+    automatic_promotion::demo();
 }
 
 
