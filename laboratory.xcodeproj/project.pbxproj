@@ -114,6 +114,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CA0232062D2E947700908318 /* vms */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = vms; sourceTree = "<group>"; };
+		CA4E71BE2FD67C65001256C7 /* freeimage */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = freeimage; sourceTree = "<group>"; };
 		CAABBB0D2D538F40000C75CD /* trv */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = trv; sourceTree = "<group>"; };
 		CAFE3C642F6FEA690078C8CE /* c++23 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "c++23"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -346,6 +347,7 @@
 				CA0F615022342BA500BE6EEF /* fill-image */,
 				CA0F08D11E5DFE30008F91C3 /* flexbox */,
 				CA23C8EF2A518F9300086F1E /* Frameworks */,
+				CA4E71BE2FD67C65001256C7 /* freeimage */,
 				CA57C716297543F900D86BE7 /* freetype */,
 				CA386E991E7B1873006AE4BA /* git */,
 				CA9F72C2206D4ECD00250182 /* gsl */,
