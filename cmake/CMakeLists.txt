@@ -26,7 +26,7 @@ message (STATUS "Install prefix ${CMAKE_INSTALL_PREFIX}")
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 
-# Make a variable default onal ON or OFF.
+# Make a variable default ON or OFF.
 option(USE_LIBRARY1 "Use library 1" ON)
 # Default is ON. Set it off: $ cmake .. -DUSE_LIBRARY1=OFF
 
