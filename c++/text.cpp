@@ -64,8 +64,8 @@ namespace formatting_library {
 // https://en.cppreference.com/w/cpp/utility/format
 void demo()
 {
-    std::string result = std::format("a={} b={} 1={}", "a", std::string("b"), 1);
-    assert(result == "a=a b=b 1=1");
+    std::string result = std::format("c={} s={} 1={}", "c", std::string("s"), 1);
+    assert(result == "c=c s=s 1=1");
 
     // Formats to an output iterator.
     std::string buffer;

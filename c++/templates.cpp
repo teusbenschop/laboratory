@@ -19,6 +19,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "templates.h"
 
 #include <cassert>
+#include <coroutine>
+#include <deque>
 #include <iostream>
 #include <list>
 #include <map>
@@ -816,7 +818,7 @@ template <typename... Args>
 void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args)
 {
     // Run function on arg1, then on arg2, and so on.
-    (void(os << args << " "), ...);
+    (void(os << std::forward<Args>(args) << " "), ...);
     ((v.push_back(args)), ...); // Can leave out "void" in both cases.
 }
 
@@ -833,12 +835,31 @@ void demo()
 
 namespace template_template_arguments {
 
+
+template<typename T, template<typename,typename ...> typename C, typename... Args>
+std::ostream& operator <<(std::ostream& os, const C<T,Args...>& objs)
+{
+    os << __PRETTY_FUNCTION__ << '\n';
+    for (auto const& obj : objs)
+        os << obj << ' ';
+    return os;
+}
+
 void demo() {
+    return;
+    std::vector<float> vf { 1.1, 2.2, 3.3, 4.4 };
+    std::cout << vf << '\n';
+
+    std::list<char> lc { 'a', 'b', 'c', 'd' };
+    std::cout << lc << '\n';
+
+    std::deque<int> di { 1, 2, 3, 4 };
+    std::cout << di << '\n';
 
 }
 }
 
-namespace typetrait_specialization_of_vector {
+namespace typetrait_specialization_of_vector_v1 {
 
 template <typename T>
 concept specialization_of_vector = requires(T& t)
@@ -869,6 +890,30 @@ void demo()
 }
 
 
+namespace typetrait_specialization_of_vector_v2 {
+
+template <typename T>
+struct is_specialization_of_vector : std::false_type {};
+
+template <typename T>
+struct is_specialization_of_vector<std::vector<T>> : std::true_type {};
+
+template <typename T>
+concept is_specialization_of_vector_v = is_specialization_of_vector<T>::value;
+
+static_assert(is_specialization_of_vector_v<std::vector<int>>);
+static_assert(not is_specialization_of_vector_v<std::list<int>>);
+
+const auto func = [](is_specialization_of_vector_v auto& t) {};
+
+void demo()
+{
+    std::vector<int> v;
+    func(v);
+}
+}
+
+
 namespace generic_specialization_of_typetrait {
 // See https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2098r1.pdf
 
@@ -889,6 +934,7 @@ static_assert(not is_specialisation_of<std::vector<int>, std::list>::value);
 static_assert(is_specialisation_of<std::vector<std::map<bool,bool>>, std::vector>::value);
 static_assert(is_specialisation_of<std::list<bool>, std::list>::value);
 static_assert(is_specialisation_of<std::map<bool,bool>, std::map>::value);
+static_assert(is_specialisation_of<std::coroutine_handle<void>, std::coroutine_handle>::value);
 
 template <typename T,
           template<typename...Args> typename Primary>
@@ -902,6 +948,55 @@ void demo()
 {
     std::vector<int> v = {1,2,3,4};
     func(v);
+}
+}
+
+
+namespace is_coroutine_handle {
+
+// Simple concept for whether some type is a coroutine handle.
+
+// A generic handle is std::coroutine_handle<void>
+// A task-specific handle could look like std::coroutine_handle<Promise>
+
+// The std::coroutine_handle<void> and std::coroutine_handle<Promise> are treated by the compiler
+// as completely different, unrelated types
+// Therefore a simple check like std::is_same won't work.
+// We need a way to tell the compiler: "Check if this type is a std::coroutine_handle wrapped around anything."
+
+// The solution is a classic C++ metaprogramming technique called "partial template specialization".
+
+// Step 1: The "Catch-All" Base Case
+// Create a primary template. The default assumption is that the type passed is not a coroutine handle.
+// Inherit from std::false_type (which provides a value = false constant).
+template <typename T>
+struct is_coroutine_handle : std::false_type {};
+// When passing int, double, or std::string into this, they don't match any special rules,
+// so they hit this base case and return false.
+
+// Step 2: The Special Filter
+// Write a "special case" (a partial specialization). This tells the compiler:
+// "If the type looks exactly like std::coroutine_handle<P>, use this version instead!"
+template <typename T>
+struct is_coroutine_handle<std::coroutine_handle<T>> : std::true_type {};
+
+// This hits the specialization (true).
+static_assert(is_coroutine_handle<std::coroutine_handle<void>>::value);
+
+// This also hits the specialization (true).
+struct FakeType {};
+static_assert(is_coroutine_handle<std::coroutine_handle<FakeType>>::value);
+
+// This hits the primary template (false).
+static_assert(not is_coroutine_handle<int>::value);
+
+
+void demo()
+{
+
+
+
+
 }
 }
 
@@ -922,8 +1017,10 @@ void demo()
     pack_expansion::demo();
     fold_expressions::demo();
     template_template_arguments::demo();
-    typetrait_specialization_of_vector::demo();
+    typetrait_specialization_of_vector_v1::demo();
+    typetrait_specialization_of_vector_v2::demo();
     generic_specialization_of_typetrait::demo();
+    is_coroutine_handle::demo();
 }
 }
 

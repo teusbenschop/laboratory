@@ -1178,6 +1178,40 @@ void demo()
 }
 }
 
+
+namespace casting {
+void demo()
+{
+    // The static_cast converts one type to another related type.
+    // Converts between types using a combination of implicit and user-defined conversions.
+    int i = 10;
+    uint ui = static_cast<uint>(i);
+
+    // The dynamic_cast converts within inheritance hierarchies.
+    // Safely converts pointers and references to classes up, down, and sideways along the inheritance hierarchy.
+    struct Base
+    {
+        virtual ~Base() {}
+    };
+    struct Derived : Base { };
+    Base b1;
+    Derived* d1 = dynamic_cast<Derived*>(&b1);
+
+    Derived d2;
+    Base& b2 = dynamic_cast<Base&>(d2);
+
+    // The const_cast adds or removes cv-qualifiers.
+    // Converts between types with different cv-qualification.
+    const int c1 = 0;
+    int c2 = const_cast<int&>(c1);
+
+    // The reinterpret_cast converts type to unrelated type.
+    // Converts between types by reinterpreting the underlying bit pattern.
+    int8_t rc1 = 1;
+    auto* rc2 = reinterpret_cast<uint8_t*>(&rc1);
+}
+}
+
 void demo() {
     alignment::demo();
     alias_declarations_in_init_statements::demo();
@@ -1205,6 +1239,7 @@ void demo() {
     inline_specifier::demo();
     structured_binding::demo();
     copy_elision::demo();
+    casting::demo();
 }
 
 }
