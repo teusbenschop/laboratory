@@ -56,12 +56,12 @@ void demo()
     // For example, "42 seconds" could be represented by a duration consisting of 42 ticks of a 1-second time unit.
 
     {
-        const auto now = std::chrono::system_clock::now();
-        const auto time_point = std::chrono::time_point_cast<std::chrono::minutes, std::chrono::system_clock>(now);
-        const auto duration_minutes = time_point.time_since_epoch();
+        const auto time_point_1 = std::chrono::system_clock::now();
+        const auto time_point_2 = std::chrono::time_point_cast<std::chrono::minutes, std::chrono::system_clock>(time_point_1);
+        const auto duration_minutes = time_point_2.time_since_epoch();
         const long minutes = duration_minutes.count();
         assert(minutes >= 29559654);
-        const auto next_minute = time_point + std::chrono::minutes{1};
+        const auto next_minute = time_point_2 + std::chrono::minutes{1};
         assert(next_minute.time_since_epoch().count() == minutes + 1);
 
         const auto duration_hours = std::chrono::duration_cast<std::chrono::hours>(duration_minutes);
@@ -87,16 +87,16 @@ void demo()
     }
 
     {
-        constexpr auto year_month_day {std::chrono::year(2026)/3/23};
-        static_assert(year_month_day.year() == std::chrono::year(2026));
-        static_assert(year_month_day.month() == std::chrono::month(3));
-        static_assert(year_month_day.day() == std::chrono::day(23));
+        constexpr std::chrono::year_month_day ymd {std::chrono::year(2026)/3/23};
+        static_assert(ymd.year() == std::chrono::year(2026));
+        static_assert(ymd.month() == std::chrono::month(3));
+        static_assert(ymd.day() == std::chrono::day(23));
     }
 
     {
-        const auto utc = std::chrono::system_clock::now();
+        const auto time_point_utc = std::chrono::system_clock::now();
         //std::cout << "UTC time: " << utc << std::endl;
-        const std::time_t time = std::chrono::system_clock::to_time_t(utc);
+        const std::time_t time = std::chrono::system_clock::to_time_t(time_point_utc);
         std::string time_str = std::ctime(&time);
         time_str.pop_back(); // Remove the \n.
         //std::cout << "Local time: " << time_str << std::endl;

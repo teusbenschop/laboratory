@@ -48,8 +48,7 @@ void demo()
     std::future<void> futures[task_count];
     std::atomic<int> outstanding_task_count{task_count};
 
-    // Spawn several tasks which take some of time,
-    // then decrement the outstanding task count.
+    // Spawn several tasks that do some work, then update the global state.
     std::ranges::for_each(futures, [&](std::future<void>& future)
     {
         future = std::async([&]
@@ -58,11 +57,12 @@ void demo()
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(50ms);
 
+            // Update global state.
             ++completion_count;
             --outstanding_task_count;
 
-            // When the task count falls to zero, notify the waiter (the main thread in this case).
-            if (outstanding_task_count == 0)
+            // When the task count gets zero, notify the waiter (the main thread in this case).
+            if (not outstanding_task_count)
             {
                 all_tasks_complete = true;
                 all_tasks_complete.notify_one();
@@ -127,27 +127,26 @@ void demo()
 
 namespace packaged_task {
 // A std::packaged_task wraps any Callable target so that it can be invoked asynchronously.
-// Its return value or exception thrown can be accessed through std::future objects.
+// Its return value or exception thrown can be accessed through the std::future object.
 void demo()
 {
     // No need to pass a promise reference here.
-    [[maybe_unused]] auto task_divide = [](const int a, const int b)
+    auto task_divide = [](const int a, const int b)
     {
-        if (!b)
+        if (not b)
             throw std::runtime_error{"Divide by zero exception"};
         return a / b;
     };
 
-    std::packaged_task<int(int,int)> task(task_divide);
-    auto future = task.get_future();
+    std::packaged_task<int(int,int)> task (task_divide);
+    std::future future = task.get_future();
     std::thread thread(std::move(task), 45, 5);
-    int result {0};
     try {
-        result = future.get();
+        int result = future.get();
+        assert(result == 9);
     } catch (const std::exception& exception) {
         std::cerr << exception.what() << std::endl;
     }
-    assert(result == 9);
     thread.join();
 }
 }
@@ -164,7 +163,7 @@ void demo()
     std::binary_semaphore signal_main_to_thread_semaphore{0};
     std::binary_semaphore signal_thread_to_main_semaphore{0};
 
-    const auto thread_processor = [&]()
+    const auto thread_processor = [&]
     {
         // Wait for a signal from the main process by attempting to acquire (decrement) the semaphore.
         // This call blocks until the semaphore is released (its count is increased) from the main process.
@@ -204,9 +203,9 @@ void demo()
         const auto worker = []
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            const auto thread_id = std::this_thread::get_id();
+            auto thread_id = std::this_thread::get_id();
         };
-        auto jthread = std::jthread{worker};
+        std::jthread t = std::jthread{worker};
         // The jthread will join automatically when it goes out of scope.
     }
 
@@ -272,7 +271,7 @@ void demo()
     std::timed_mutex mx;
     std::condition_variable_any cv; // The _any means: Works with any lock, not just a unique_lock.
 
-    // This lambda function takes a stop token as parameters.
+    // This lambda function takes a stop token as parameter.
     const auto timer = [&](const std::stop_token& stoken)
     {
         // Step 3: Set the timer interval to 100 milliseconds.
@@ -332,7 +331,7 @@ void demo()
     const auto divide = [] (int a, int b, std::promise<int>& promise) {
         try {
             if (not b)
-                throw std::runtime_error("cannot divide by zero");
+                throw std::range_error("");
             const auto result = a / b;
             promise.set_value(result);
         } catch(...) {
@@ -358,8 +357,12 @@ void demo()
         auto future = promise.get_future();
         auto result = future.get();
         assert(false);
-    } catch (const std::exception& exception) {
-        assert(exception.what() == std::string("cannot divide by zero"));
+    }
+    catch (std::range_error& e) {
+        assert(true);
+    }
+    catch (const std::exception& exception) {
+        assert(false);
     }
 }
 }
@@ -378,7 +381,7 @@ void demo()
 
 
 namespace lock_multiple_simultaneously {
-// This demonstrates how to use std::lock to lock multiple locks at once simultaneously.
+// This demonstrates how to use std::lock to lock multiple locks simultaneously.
 // This avoids the risk of having deadlocks in the transfer function.
 void demo()
 {
@@ -387,7 +390,7 @@ void demo()
         std::mutex m_mutex{};
     };
 
-    const auto transfer_money = [](account& from, account& to, int amount) -> void {
+    const auto transfer_money = [](account& from, account& to, int amount) {
         // Define two deferred unique locks.
         auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
         auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
@@ -534,7 +537,7 @@ void demo()
 
 namespace thread_pool {
 
-// Number of threads in the pool is equal to number of cores, but can be adjusted as needed.
+// Number of threads in the pool.
 const std::size_t num_threads = std::thread::hardware_concurrency();
 
 // Storage for the worker threads
@@ -682,14 +685,14 @@ namespace lock_free {
 // without blocking or software locks like mutexes.
 void demo()
 {
-    struct A { int a[100]; };
-    struct B { int b; };
+    struct Array { int a[100]; };
+    struct Integer { int b; };
 
-    assert(std::atomic<A>{}.is_lock_free() == false);
-    assert(std::atomic<B>{}.is_lock_free());
+    assert(std::atomic<Array>{}.is_lock_free() == false);
+    assert(std::atomic<Integer>{}.is_lock_free());
 
-    std::atomic<A> a;
-    std::atomic<B> b;
+    std::atomic<Array> a;
+    std::atomic<Integer> b;
     assert(std::atomic_is_lock_free(&a) == false);
     assert(std::atomic_is_lock_free(&b));
 }

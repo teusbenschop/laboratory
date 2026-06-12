@@ -910,9 +910,12 @@ namespace dangling_references {
 
 const std::string& f()
 {
-    std::string s = "Test";
+    std::string s = "s";
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-stack-address"
     return s; // exits the scope of s:
-    // its destructor is called and its storage deallocated
+    // Its destructor is called and its storage deallocated.
+#pragma GCC diagnostic pop
 }
 
 void demo()

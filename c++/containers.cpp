@@ -197,12 +197,12 @@ void demo()
         std::list<int> list{};
         vector.resize(10);
         list.resize(10);
-        const auto address_vector = std::addressof(vector.front());
-        const auto address_list = std::addressof(list.front());
+        const auto address_vector_before_resize = std::addressof(vector.front());
+        const auto address_list_before_resize = std::addressof(list.front());
         vector.resize(100);
         list.resize(100);
-        assert(address_vector != std::addressof(vector.front()));
-        assert(address_list == std::addressof(list.front()));
+        assert(std::addressof(vector.front()) != address_vector_before_resize);
+        assert(std::addressof(list.front()) == address_list_before_resize);
     }
 
     // The std::vector::erase with two iterators removes the range between the two.
@@ -288,12 +288,12 @@ void demo()
 namespace iterators {
 void demo()
 {
-    //containers
+    // Containers.
     std::vector<int> v (10, 1);
     std::deque<int> d (10, 1);
     std::list<int> l (10, 1);
 
-    //iterators
+    // Iterators.
     std::vector<int>::iterator it1;
     std::vector<int>::const_iterator it2;
     std::vector<int>::reverse_iterator it3;
@@ -390,20 +390,20 @@ void demo()
 
     l2.splice (l2.end (), l3);
     assert(l2.size() == 6); // 1 2 3 4 5 6
-    assert(l3.size() == 0);
+    assert(l3.empty());
 
-    // moving one element - 6
-    std::list<int>::iterator it = l2.begin();
+    // Moving one element - 6.
+    auto it = l2.begin();
     std::advance (it, 2);
-    l1.splice (l1.end (), l2, it);
+    l1.splice (l1.end(), l2, it);
     // l1: 1 2 3 6
     // l2: 4 5 7 8 9
     assert(l1.size() == 4);
     assert(l2.size() == 5);
 
-    //moving range of elements
+    // Moving range of elements.
     it = l1.end ();
-    advance (it, -1);
+    std::advance (it, -1);
     l1.splice (it, l2, l2.begin (), l2.end ());
     // l1: 1 2 3 4 5 7 8 9 6
     assert(l2.size() == 0);
@@ -423,7 +423,7 @@ void demo()
             }
         };
         std::list<int> l {1, 2, 3};
-        l.remove_if (DeleteOdd ());
+        l.remove_if (DeleteOdd());
         std::list<int> standard {2};
         assert(l == standard);
     }
@@ -499,7 +499,7 @@ void demo()
     std::multiset<std::string> bag;
     bag.insert(word);
     assert(bag.contains(word));
-    assert(not bag.contains(""));
+    assert(not bag.contains({}));
 }
 }
 
@@ -515,7 +515,7 @@ void demo()
     };
 
     // A hash function object to provide a fingerprint of the visual characteristics of a Display.
-    struct DisplayHash
+    struct Hash
     {
         size_t operator()(const Display& display) const noexcept
         {
@@ -524,7 +524,7 @@ void demo()
     };
 
     // An Equal-to object to satisfy the visual characteristics' comparison.
-    struct DisplayEquals
+    struct Equals
     {
         bool operator()(const Display& dl, const Display& dr) const noexcept
         {
@@ -533,7 +533,7 @@ void demo()
     };
 
     // An unordered set, with hash function to generate the key, and an equal operator.
-    std::unordered_set<Display, DisplayHash, DisplayEquals> display_set{};
+    std::unordered_set<Display, Hash, Equals> display_set{};
 
     // Insert three Displays into the set.
     // Check that the size is 3.
@@ -628,8 +628,7 @@ void demo()
     // Copy constructor source and target stack object using different storage containers
     // Initialization using predefined container - using different storage object than declared
 
-    assert(q1.size() == 0);
-    assert(q1.empty() == true);
+    assert(q1.empty());
 
     // Methods front / back / push / pop.
     q1.push(1);
@@ -646,18 +645,18 @@ void demo()
 namespace priority_queues {
 void demo()
 {
-    // Default constructor
+    // Default constructor.
     std::priority_queue <int> p1;
 
-    // Copy constructor
+    // Copy constructor.
     std::priority_queue<int> p2 (p1);
 
-    // Initialization using iterators
+    // Initialization using iterators.
     int array[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     std::vector <int> v1 (array, array + 10);
     std::priority_queue<int> q3 (v1.begin (), v1.end ());
 
-    // Using non-default storage (standard it uses the vector)
+    // Using non-default storage (standard it uses the vector).
     std::priority_queue <int, std::deque<int>> p4;
 
     // Providing different comparator type: This makes the minimum value to be at the top.
@@ -770,7 +769,7 @@ void demo()
     std::vector<int> d{100, 200, 300};
     std::vector<int> v{1, 2, 3, 4, 5};
 
-    // when inserting in a sequence container, insertion point advances
+    // When inserting in a sequence container, insertion point advances
     // because each std::insert_iterator::operator= updates the target iterator
     std::ranges::copy(d, std::inserter(v, std::next(v.begin())));
     {
