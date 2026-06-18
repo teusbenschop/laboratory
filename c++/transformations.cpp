@@ -270,7 +270,7 @@ void demo()
         assert(result == 0);
     }
     {
-        constexpr size_t size = 2;
+        constexpr std::size_t size = 2;
         char buf[size]{};
         const std::to_chars_result result = std::to_chars(buf, buf + size, 42);
         assert(result.ec == std::errc());
@@ -278,7 +278,7 @@ void demo()
         assert(str == "42");
     }
     {
-        constexpr size_t size = 10;
+        constexpr std::size_t size = 10;
         char buf[size]{};
         const std::to_chars_result result = std::to_chars(buf, buf + size, 3.1415926535, std::chars_format::fixed, 10);
         assert(result.ec == std::errc::value_too_large);

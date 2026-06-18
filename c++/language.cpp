@@ -129,7 +129,7 @@ namespace literal_suffix_z {
 void demo()
 {
     // Avoid this warning:
-    // comparison of integers of different signs: 'int' and 'size_type' (aka 'unsigned long') [-Wsign-compare]
+    // comparison of integers of different signs: 'int' and 'std::size_type' (aka 'unsigned long') [-Wsign-compare]
     const std::vector<int> v{2, 4, 6, 8};
     for (auto i = 0uz; i < v.size(); ++i) {
         assert(v.at(i));
@@ -304,20 +304,7 @@ void demo()
 }
 }
 
-namespace const_types {
-
-// Immutable:
-const int i1 = 10;
-
-// If possible evaluate it at compile time.
-constexpr int i2 = 10;
-
-// Will be evaluated at compile time if the parameters "var1" and "var2" are known at compile time.
-// Will be evaluated at run time if the parameters are not known at compile time.
-constexpr int constexpr_add(int var1, int var2)
-{
-    return var1 + var2;
-}
+namespace const_types_and_positions {
 
 // Force evaluation of a function at compile time.
 consteval int consteval_add(int var1, int var2)
@@ -330,16 +317,28 @@ constinit int i3 = 1;
 
 void demo()
 {
-    // Can all be evaluated at compile time.
+    // Immutable: can be evaluated at compile time.
+    const int i1 = 10;
     static_assert(i1 == 10);
+
+    // If possible evaluate it at compile time: Can be evaluated at compile time.
+    constexpr int i2 = 10;
     static_assert(i2 == 10);
+
+    // Will be evaluated at compile time if the parameters "var1" and "var2" are known at compile time.
+    // Will be evaluated at run time if the parameters are not known at compile time.
+    constexpr auto constexpr_add = [](int var1, int var2)
+    {
+        return var1 + var2;
+    };
     static_assert(constexpr_add(1, 2) == 3);
     static_assert(constexpr_add(i1, i2) == 20);
 
+    // The global is repeated here for clarity.
+    // constinit int i3 = 1;
     // Variable i3 is assignable at runtime.
     i3 = 2;
     assert(i3 == 2);
-
     // Compile error: the value of 'i3' is not usable in a constant expression
     // static_assert(constexpr_add(i3,i3) == 4);
 
@@ -378,6 +377,36 @@ void demo()
         };
         static_assert(xdigit(2) == '2');
     }
+
+    // Const at left of asterisk: What is pointed to is immutable. Pointer is mutable.
+    const char* left_const {"data is immutable"};
+    left_const++;
+    // *left_const = 'a'; fails to compile.
+
+    // Const at right of asterisk: The pointer is immutable. Data is mutable.
+    char a = 'a';
+    char* const right_const = std::addressof(a);
+    *right_const = 'b';
+    // right_const++; fails to compile.
+    assert(a == 'b');
+
+    // Iterator itself is const. Data is mutable.
+    {
+        std::vector<int> v {1, 2};
+        const decltype(v)::iterator iter = v.begin();
+        *iter = 2;
+        // iter++; // Fails to compile because iter is const.
+    }
+
+    // Iterator is not const. Data is const.
+    {
+        std::vector<int> v {1, 2};
+        decltype(v)::const_iterator iter = v.cbegin();
+        assert(*iter == 1);
+        iter++;
+        assert(*iter == 2);
+        // *iter = 3; // Fails to compile because data is const.
+    }
 }
 }
 
@@ -399,7 +428,7 @@ struct Struct
         return Struct(value + other.value);
     }
 
-    // Overload the function call "()" operator, this makes the struct a functor.
+    // Overload the function call "()" operator, this makes the struct a functor (or function object).
     constexpr int operator()() { return value; }
 
     // Overload the += and the -= and the %= operators.
@@ -1222,7 +1251,7 @@ void demo() {
     static_operators_and_lambdas::demo();
     multidimensional_subscript_operator::demo();
     explicit_object_parameter_this::demo();
-    const_types::demo();
+    const_types_and_positions::demo();
     operator_overloading::demo();
     space_ship_operator::demo();
     at_exit::demo();

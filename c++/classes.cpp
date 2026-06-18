@@ -453,23 +453,25 @@ static_assert(std::is_trivially_move_assignable_v<S1>);
 
 void demo()
 {
+    // Policy: Declare constructors explicit.
+
     {
-        // Call default constructor.
+        // Default constructor.
         struct S
         {
             int value{};
         };
-        S s;
-        assert(s.value == 0);
+        constexpr S s;
+        static_assert(s.value == 0);
     }
     {
-        // Call user-defined default constructor.
+        // User-defined default constructor.
         struct S
         {
-            S() : value(1) {}
+            explicit S() : value(1) {}
             int value{};
         };
-        S s;
+        const S s;
         assert(s.value == 1);
     }
     {
@@ -488,6 +490,7 @@ void demo()
         };
         static_assert(not std::is_destructible_v<S>);
     }
+    // Copy constructor is called when the object is passed by value to a function.
     {
         // Default copy constructor.
         struct S
@@ -509,6 +512,7 @@ void demo()
     }
     {
         // User defined copy constructor.
+        // Constructs new object, copies values from existing object.
         struct S
         {
             S() = default;
@@ -520,13 +524,15 @@ void demo()
         };
         static_assert(std::is_copy_constructible_v<S>);
         static_assert(not std::is_trivially_copy_constructible_v<S>);
-        S s1;
+        S s1; // <-- call default constructor
         s1.value = 1;
-        S s2 = s1;
+        S s2 = s1; // <- call copy constructor
         assert(s2.value == 2);
     }
     {
         // User-defined copy assignment operator.
+        // Copy values from other object into existing object.
+        // Does not construct a new object.
         struct S
         {
             S& operator=(const S& other)

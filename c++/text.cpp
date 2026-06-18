@@ -192,18 +192,18 @@ void demo()
 
 namespace string_literals {
 // Ordinary literal encoding
-const char* cc1 = "abc";
+const char* const cc1 = "abc";
 // UTF-8 string.
-const char8_t* cc2 = u8"abc";
+const char8_t* const cc2 = u8"abc";
 // Raw string literal UTF-8.
-const char8_t* cc3 = u8R"(abc)";
+const char8_t* const cc3 = u8R"(abc)";
 
 // Adjacent string literal are concatenated by the compiler.
 
 void demo()
 {
     // String literals may have embedded null characters but strlen fails on that.
-    const char* cc4 = "abc\0abc";
+    const char* const cc4 = "abc\0abc";
     static_assert(sizeof(cc4) == 8); // including \0 at the end.
     assert(strlen(cc4) == 3);
 }

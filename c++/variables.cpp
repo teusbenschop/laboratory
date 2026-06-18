@@ -937,8 +937,8 @@ static_assert(
     std::is_same_v<
         std::bool_constant<false>,
         std::negation<std::bool_constant<true>>::type
-    >,
-    "");
+    >
+    );
 
 static_assert(std::negation_v<std::bool_constant<false>>);
 

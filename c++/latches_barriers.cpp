@@ -113,7 +113,7 @@ void demo()
     // Then the barrier can be used again.
     auto barrier = std::barrier{n_dice, on_barrier_completion};
 
-    for (size_t i = 0; i < n_dice; i++)
+    for (std::size_t i = 0; i < n_dice; i++)
     {
         threads.emplace_back([&, i]
         {

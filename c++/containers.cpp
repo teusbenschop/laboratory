@@ -517,7 +517,7 @@ void demo()
     // A hash function object to provide a fingerprint of the visual characteristics of a Display.
     struct Hash
     {
-        size_t operator()(const Display& display) const noexcept
+        std::size_t operator()(const Display& display) const noexcept
         {
             return std::hash<std::string>{}(display.message);
         }

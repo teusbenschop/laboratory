@@ -564,7 +564,7 @@ std::atomic standard_sum{0};
 void start_thread_pool()
 {
     // Creating worker threads.
-    for (size_t i = 0; i < num_threads; ++i) {
+    for (std::size_t i = 0; i < num_threads; ++i) {
         threads.emplace_back([] {
             while (true) {
                 std::function<void()> task;
