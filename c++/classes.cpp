@@ -25,13 +25,24 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 namespace classes {
 
-namespace design_idiom_raii {
+namespace resource_acquisition_is_initialization_raii {
 // 1. RAII (Resource Acquisition Is Initialization)
 void demo()
 {
-    std::unique_ptr<int> ptr = std::make_unique<int>(10); // Resource acquired
-    // Use ptr
-    // Resource released automatically when ptr goes out of scope
+    {
+        // Problem: Resource might be leaked.
+        auto* ptr = new int(10);
+        // `Use resource.
+        // throw ...
+        delete ptr;
+    }
+    {
+        // Solution: Use an object to manage the resource.
+        // Can also be a user-defined class to manage the resource.
+        std::unique_ptr<int> ptr = std::make_unique<int>(10); // Resource acquired
+        // Use resource.
+        // Resource released automatically when ptr goes out of scope.
+    }
 }
 }
 
@@ -490,6 +501,13 @@ void demo()
         };
         static_assert(not std::is_destructible_v<S>);
     }
+    {
+        struct S {
+            ~S() noexcept(false) {
+                throw std::runtime_error("destructor should never throw although C++ allows it");
+            }
+        };
+    }
     // Copy constructor is called when the object is passed by value to a function.
     {
         // Default copy constructor.
@@ -537,7 +555,11 @@ void demo()
         {
             S& operator=(const S& other)
             {
-                value = other.value + 1;
+                // Good custom is to handle assignment to self: Avoids data loss in case of pointers (delete / new).
+                if (this != &other) {
+                    value = other.value + 1;
+                }
+                // Good custom to enable chaining: Assignment operators return reference to *this.
                 return *this;
             }
             int value{};
@@ -547,6 +569,8 @@ void demo()
         s2 = s1;
         assert(s2.value == 2);
         assert(s1.value == 1);
+        // Chaining.
+        S s3 = s2 = s1;
     }
     {
         // Deleted move constructor.
@@ -561,8 +585,7 @@ void demo()
         struct S
         {
             S() = default;
-            S(S&& other)
-            {
+            S(S&& other) noexcept {
                 value = other.value + 1;
             }
             int value{};
@@ -575,7 +598,7 @@ void demo()
         // User-defined move assignment operator
         struct S
         {
-            S& operator=(S&& other)
+            S& operator=(S&& other) noexcept
             {
                 value = other.value + 1;
                 return *this;
@@ -610,13 +633,75 @@ void demo()
 }
 }
 
+
+namespace inheritance {
+
+struct Base {
+    explicit Base() = default;
+
+    // User-defined copy constructors and copy assignment operators should copy all members.
+    Base& operator=(const Base& rhs) {
+        base_value = rhs.base_value;
+        return *this;
+    }
+    char base_value {'b'};
+
+    // Rule of thumb: If a base class has virtual functions, declare the destructor virtual to prevent leaks.
+    virtual ~Base() = default;
+
+    virtual void base() { }
+    virtual void base_pure_virtual_function() = 0;
+};
+
+struct Derived : public Base {
+    explicit Derived() = default;
+
+    // Derived copy constructors and copy assignment operators should copy all members so call base copy equivalent.
+    Derived& operator=(const Derived& rhs) {
+        Base::operator=(rhs);
+        derived_value = rhs.derived_value;
+        return *this;
+    }
+    char derived_value {'d'};
+
+    ~Derived() override = default;
+    void base() override { }
+    // Pure virtual function must be implemented in derived class.
+    void base_pure_virtual_function() override { }
+};
+
+// Don't call virtual functions during construction or destruction because
+// such calls will not go to a more derived class than the currently running ctor / dtor.
+
 void demo()
 {
-    design_idiom_raii::demo();
+    {
+        auto* d = new Derived;
+        d->base();
+        d->base_pure_virtual_function();
+        delete d;
+    }
+    {
+        Derived d1;
+        d1.base_value = 'z';
+        Derived d2;
+        assert(d2.base_value == 'b');
+        d2 = d1;
+        // Check Base copy assignment operator was called.
+        assert(d2.base_value == 'z');
+    }
+}
+}
+
+
+void demo()
+{
+    resource_acquisition_is_initialization_raii::demo();
     design_idiom_pimpl::demo();
     design_idiom_crtp::demo();
     design_idiom_copy_swap::demo();
     liskov_substitution_principle::demo();
     constructors::demo();
+    inheritance::demo();
 }
 }
