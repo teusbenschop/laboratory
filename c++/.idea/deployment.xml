@@ -9,6 +9,16 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="[2a02:a444:1de1:0:ae87:a3ff:fe38:a281] (a0b86da9-ef41-4b4e-9088-b1dcaa668a69)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.RrzNXiJuId/c++" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
     </serverData>
   </component>
 </project>

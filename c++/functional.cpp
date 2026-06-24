@@ -340,6 +340,24 @@ void demo()
 }
 
 
+namespace inlining {
+// Only inline small often called functions:
+// * Better debugging
+// * Less code bloat
+// * Better performance
+
+inline int func()
+{
+    return 123;
+}
+
+void demo()
+{
+    assert(func() == 123);
+
+}
+}
+
 void demo() {
     move_only_function::demo();
     brackets_are_optional_for_lambdas::demo();
@@ -350,6 +368,7 @@ void demo() {
     binding::demo();
     member_function::demo();
     demo_not_fn::demo();
+    inlining::demo();
 }
 }
 

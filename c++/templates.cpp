@@ -27,6 +27,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <sstream>
 #include <type_traits>
 #include <vector>
+#include "templates_explicit.h"
 
 namespace templates {
 
@@ -66,6 +67,7 @@ Struct add (const Struct a, const Struct b) noexcept
 
 void demo()
 {
+    // Call template: Compiler instantiates template. This is implicit template instantiation.
     add(1,2);
     add(1.0f,2.0f);
     add(std::string("a"), std::string("b"));
@@ -87,6 +89,26 @@ void demo()
 }
 }
 
+
+namespace non_type_template_parameter {
+// A template placeholder of a constant value.
+
+template <int i>
+float func (float d)
+{
+    if constexpr (i == 10)
+        return 100.0f;
+    if constexpr (std::is_same_v<decltype(i), std::string>)
+        return 200.0f;
+    return d;
+}
+
+void demo()
+{
+    assert (func<10>(0.0f) == 100.0f);
+    assert (func<0>(10.0f) == 10.0f);
+}
+}
 
 namespace variable_template {
 
@@ -993,18 +1015,34 @@ static_assert(not is_coroutine_handle<int>::value);
 
 void demo()
 {
-
-
-
-
 }
 }
+
+namespace explicit_template_instantiation {
+// Normally templates are instantiated implicitly by the compiler on first use.
+// Explicit template instantiation forces the compiler to instantiate templates before the code uses them.
+
+// Template declarations in templates_explicit.h.
+
+// Template definition in templates_explicit.cpp, linked with the project.
+// Explicit definitions in that same file.
+
+void demo()
+{
+    // Template usage.
+    // It only sees the template function declarations. It does not see the definitions.
+    // It relies on the linker to find the definitions.
+    assert (func(1, 1) == 2);
+}
+}
+
 
 
 void demo()
 {
     simple_function_template::demo();
     class_template::demo();
+    non_type_template_parameter::demo();
     variable_template::demo();
     class_with_template_methods::demo();
     automatic_weight_units_simple::demo();
@@ -1021,6 +1059,7 @@ void demo()
     typetrait_specialization_of_vector_v2::demo();
     generic_specialization_of_typetrait::demo();
     is_coroutine_handle::demo();
+    explicit_template_instantiation::demo();
 }
 }
 

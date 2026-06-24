@@ -17,7 +17,7 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include "bad_coding.h"
+#include "good_coding.h"
 #include "bits.h"
 #include "bounds_limits.h"
 #include "classes.h"
@@ -44,6 +44,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "transformations.h"
 #include "unions.h"
 #include "variables.h"
+#include "questions.h"
 
 int main()
 {
@@ -68,7 +69,7 @@ int main()
     templates::demo();
     variables::demo();
     functional::demo();
-    bad_coding::demo();
+    good_coding::demo();
     expected::demo();
     text::demo();
     classes::demo();
@@ -79,6 +80,7 @@ int main()
     unions::demo();
     mathematics::demo();
     performance::demo();
+    questions::demo();
     return EXIT_SUCCESS;
 }
 

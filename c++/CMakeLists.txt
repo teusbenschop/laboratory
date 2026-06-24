@@ -19,7 +19,7 @@ add_executable(cpp
         variables.cpp
         concurrency.cpp
         functional.cpp
-        bad_coding.cpp
+        good_coding.cpp
         expected.cpp
         text.cpp
         classes.cpp
@@ -33,5 +33,7 @@ add_executable(cpp
         unions.cpp
         mathematics.cpp
         performance.cpp
+        questions.cpp
+        templates_explicit.cpp
 
 )

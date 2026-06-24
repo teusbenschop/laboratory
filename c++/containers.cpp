@@ -213,6 +213,15 @@ void demo()
         v.erase(v.begin() + 1, v.begin() + 2);
         assert (v.size() == 3);
     }
+
+    {
+        // Cannot store T& (like int&) in a vector.
+        //std::vector<int&> bla;
+        // Reason: References are not object, cannot be copied, not be moved, like the vector needs.
+
+        // Fails too.
+        // std::array<int&, 1> {one};
+    }
 }
 }
 

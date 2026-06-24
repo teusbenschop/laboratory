@@ -307,6 +307,7 @@ void demo()
 namespace const_types_and_positions {
 
 // Force evaluation of a function at compile time.
+// (Does not work with variables.)
 consteval int consteval_add(int var1, int var2)
 {
     return var1 + var2;
@@ -984,6 +985,16 @@ void demo()
 
 void demo()
 {
+    {
+        // A reference is like an alias.
+        int one = 1;
+        int two = 2;
+        int& iref = one;
+        // Can be reassigned.
+        iref = two;
+        assert(iref == two);
+        assert(one == two);
+    }
     lvalue_references::demo();
     rvalue_references::demo();
     reference_collapsing::demo();
@@ -1221,6 +1232,7 @@ void demo()
 
     // The dynamic_cast converts within inheritance hierarchies.
     // Safely converts pointers and references to classes up, down, and sideways along the inheritance hierarchy.
+    // Will have impact on performance.
     struct Base
     {
         virtual ~Base() {}
@@ -1241,8 +1253,30 @@ void demo()
     // Converts between types by reinterpreting the underlying bit pattern.
     int8_t rc1 = 1;
     auto* rc2 = reinterpret_cast<uint8_t*>(&rc1);
+
+    // General rule: Avoid cast if possible. Avoid C-style casts.
 }
 }
+
+
+namespace type_conversion_operators {
+
+struct S
+{
+    int value {1};
+    explicit operator float() const { return 1.1f; }
+    explicit operator std::string() const { return "1.2"; }
+};
+
+void demo()
+{
+    constexpr S s;
+    static_assert(s.value == 1);
+    assert(static_cast<float>(s) == 1.1f);
+    assert(static_cast<std::string>(s) == "1.2");
+}
+}
+
 
 void demo() {
     alignment::demo();
@@ -1272,6 +1306,7 @@ void demo() {
     structured_binding::demo();
     copy_elision::demo();
     casting::demo();
+    type_conversion_operators::demo();
 }
 
 }

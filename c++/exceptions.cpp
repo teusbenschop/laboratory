@@ -19,10 +19,19 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "exceptions.h"
 #include <exception>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 
 namespace exceptions {
+
+
+// Exception safety
+// * Leak no resources.
+// * No data corruption.
+// * Strong guarantee via copy and swap.
+// * Weak guarantee.
+// * No-throw guarantee.
 
 
 namespace exception_hierarchy {
@@ -32,29 +41,42 @@ namespace exception_hierarchy {
 // Example: The base exception is derived from the standard exception.
 // The type 1 and type 2 exceptions are derived from the base exception.
 
-class BaseException : public std::exception
+class Base : public std::exception
 {
     const std::string m_what;
 public:
-    explicit BaseException(std::string_view what = "") noexcept : m_what(what)
+    explicit Base(std::string_view what = "") noexcept : m_what(what)
     {
     }
     const char* what() const noexcept final override { return m_what.c_str(); }
 };
 
-struct Type1Exception : BaseException
+namespace base {
+
+struct Type1 : Base
 {
-    explicit Type1Exception(std::string_view what = "") noexcept : BaseException(what)
+    explicit Type1(std::string_view what = "") noexcept : Base(what)
     {
     }
 };
 
-struct Type2Exception : BaseException
+struct Type2 : Base
 {
-    explicit Type2Exception(std::string_view what = "") noexcept : BaseException(what)
+    explicit Type2(std::string_view what = "") noexcept : Base(what)
     {
     }
 };
+
+}
+
+
+template<std::derived_from<Base> T, typename... Args>
+T create(Args&& ... args)
+{
+    std::ostringstream oss;
+    (void(oss << std::forward<Args>(args) << ' '), ...);
+    return T(std::move(oss).str());
+}
 
 // This template function gets passed an exception, throws it, and catches it.
 // The "catch" clauses are put in the correct order:
@@ -68,15 +90,15 @@ void demo_exception_catch_hierarchy(const Exception& e)
     {
         throw e;
     }
-    catch (const Type1Exception& exception)
+    catch (const base::Type1& exception)
     {
         std::cout << "Catch Type1Exception" << std::endl;
     }
-    catch (const Type2Exception& exception)
+    catch (const base::Type2& exception)
     {
         std::cout << "Catch Type2Exception" << std::endl;
     }
-    catch (const BaseException& exception)
+    catch (const Base& exception)
     {
         std::cout << "Catch BaseException" << std::endl;
     }
@@ -97,11 +119,11 @@ void demo()
     // It uses dynamic casting to handle the different exceptions.
     const auto dynamic_exception_handler = [](const std::exception* exception)
     {
-        if (const auto* e = dynamic_cast<const Type1Exception*>(exception); e)
+        if (const auto* e = dynamic_cast<const base::Type1*>(exception); e)
             std::cout << "Catch Type1Exception" << std::endl;
-        else if (const auto* e = dynamic_cast<const Type2Exception*>(exception); e)
+        else if (const auto* e = dynamic_cast<const base::Type2*>(exception); e)
             std::cout << "Catch Type2Exception" << std::endl;
-        else if (const auto* e = dynamic_cast<const BaseException*>(exception); e)
+        else if (const auto* e = dynamic_cast<const Base*>(exception); e)
             std::cout << "Catch BaseException" << std::endl;
         else if (const auto* e = dynamic_cast<const std::exception*>(exception); e)
             std::cout << "Catch standard exception" << std::endl;
@@ -113,7 +135,7 @@ void demo()
     try
     {
         std::cout << "Throw Type1Exception" << std::endl;
-        throw Type1Exception();
+        throw base::Type1();
     }
     catch (const std::exception& e)
     {
@@ -122,7 +144,7 @@ void demo()
     try
     {
         std::cout << "Throw Type2Exception" << std::endl;
-        throw Type2Exception();
+        throw base::Type2();
     }
     catch (const std::exception& e)
     {
@@ -131,7 +153,7 @@ void demo()
     try
     {
         std::cout << "Throw BaseException" << std::endl;
-        throw BaseException();
+        throw Base();
     }
     catch (const std::exception& e)
     {
@@ -150,11 +172,11 @@ void demo()
     // Throw different types of exceptions.
     // The template function uses the standard try ... catch idiom.
     std::cout << "Throw Type1Exception" << std::endl;
-    demo_exception_catch_hierarchy(Type1Exception());
+    demo_exception_catch_hierarchy(base::Type1());
     std::cout << "Throw Type2Exception" << std::endl;
-    demo_exception_catch_hierarchy(Type2Exception());
+    demo_exception_catch_hierarchy(base::Type2());
     std::cout << "Throw BaseException" << std::endl;
-    demo_exception_catch_hierarchy(BaseException());
+    demo_exception_catch_hierarchy(Base());
     std::cout << "Throw standard exception" << std::endl;
     demo_exception_catch_hierarchy(std::runtime_error(""));
 }

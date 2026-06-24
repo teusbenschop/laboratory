@@ -649,8 +649,9 @@ struct Base {
     // Rule of thumb: If a base class has virtual functions, declare the destructor virtual to prevent leaks.
     virtual ~Base() = default;
 
-    virtual void base() { }
-    virtual void base_pure_virtual_function() = 0;
+    virtual void pure_virtual_function() = 0;
+    virtual void simple_virtual_function() { /* default implementation */ }
+    void non_virtual_function() { }
 };
 
 struct Derived : public Base {
@@ -665,20 +666,34 @@ struct Derived : public Base {
     char derived_value {'d'};
 
     ~Derived() override = default;
-    void base() override { }
+
     // Pure virtual function must be implemented in derived class.
-    void base_pure_virtual_function() override { }
+    // It inherits the base function declaration.
+    void pure_virtual_function() override { }
+
+    // Simple virtual function may be implemented in derived class.
+    // It inherits the base function declaration and definition.
+    void simple_virtual_function() override { }
+
+    // Hides the base non-virtual function.
+    void base_non_virtual_function();
 };
 
 // Don't call virtual functions during construction or destruction because
 // such calls will not go to a more derived class than the currently running ctor / dtor.
 
+// Names in derived class hide names in base class.
+// This violates Derived "is-a" Base.
+// Making names visible:
+// * using Base::func;
+// * forwarding function: Derived::func() { Base::func(); }
+
 void demo()
 {
     {
         auto* d = new Derived;
-        d->base();
-        d->base_pure_virtual_function();
+        d->simple_virtual_function();
+        d->pure_virtual_function();
         delete d;
     }
     {

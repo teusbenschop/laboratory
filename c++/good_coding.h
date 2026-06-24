@@ -16,25 +16,8 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "bad_coding.h"
+#pragma once
 
-#include <algorithm>
-#include <array>
-
-namespace bad_coding {
-void demo() {
-
-    // A dangling iterator.
-    {
-        // The iterator points to an element in the array.
-        // By the time the iterator is obtained, the array has gone out of scope.
-        // Hence, the iterator is dangling.
-        [[maybe_unused]] auto dangling_iter = std::ranges::max_element(std::array{0, 1, 0, 1});
-        static_assert(std::is_same_v<std::ranges::dangling, decltype(dangling_iter)>);
-        // std::cout << *dangling_iter;
-        // compilation error: no match for 'operator*' (operand type is 'std::ranges::dangling')
-    }
-
-
-}
+namespace good_coding {
+void demo();
 }
