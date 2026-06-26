@@ -710,6 +710,30 @@ void demo()
 }
 
 
+namespace multiple_inheritance {
+
+class Base
+{
+public:
+    void base_function() {};
+};
+
+class Derived1 : virtual public Base { };
+class Derived2 : virtual public Base { };
+
+class Final : public Derived1, public Derived2 { };
+
+void demo()
+{
+    Final final;
+    // Which of the two base functions to call? Ambiguous.
+    // This is: diamond of death.
+    // Solution: virtual inheritance.
+    final.base_function();
+}
+}
+
+
 void demo()
 {
     resource_acquisition_is_initialization_raii::demo();
@@ -719,5 +743,6 @@ void demo()
     liskov_substitution_principle::demo();
     constructors::demo();
     inheritance::demo();
+    multiple_inheritance::demo();
 }
 }

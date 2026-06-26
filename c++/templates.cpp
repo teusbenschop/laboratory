@@ -91,7 +91,7 @@ void demo()
 
 
 namespace non_type_template_parameter {
-// A template placeholder of a constant value.
+// A template placeholder of a constant value, called a non-type parameter.
 
 template <int i>
 float func (float d)
