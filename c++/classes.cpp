@@ -676,6 +676,7 @@ struct Derived : public Base {
     void simple_virtual_function() override { }
 
     // Hides the base non-virtual function.
+    // So never redefine it to prevent unexpected behaviour.
     void base_non_virtual_function();
 };
 
