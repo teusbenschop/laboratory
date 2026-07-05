@@ -150,6 +150,7 @@ void demo()
                     };
                     sum += lambda_fn();
                 }
+        // The lambda takes 6800µs on a give system.
     }
     {
         const auto timer = scoped_timer::scoped_timer<std::chrono::microseconds>{};
@@ -160,15 +161,62 @@ void demo()
                     const auto bind_fn = std::bind(sum_abc, a, b, c);
                     sum += bind_fn();
                 }
+        // The bind takes 45300µs on that same system: Factor 6.6.
     }
 }
 }
 
+
+namespace the_80_20_rule {
+// 80% of resources is used by 20% of code.
+// 80% of memory is used by 20% of code.
+// 80% of maintenance effort is spent on 20% of code.
+// Overall performance of executable is influenced by a small part of it.
+void demo() {}
+}
+
+namespace lazy_evaluation {
+// * Use macro's that execute in only some circumstances, like log_debug.
+// * Use std::ranges::view which is lazy by definition.
+// * Distinguish read (fast) from write (slow).
+// * Lazy reading from database: read when first needed.
+void demo() {}
+}
+
+
+namespace over_eager_evaluation {
+// * Prefetching.
+// * Calculate values in one large chunk and cache results.
+void demo() {}
+}
+
+namespace avoid_temporaries {
+// Temporary object is created when passing by value.
+// Passing by const reference:
+//   If object is of different type, it will be generated (const char* -> std::string, else not.
+void demo()
+{
+    std::string s1 = "1";
+    std::string s2 = "2";
+    std::string s3 = s1 + s1; // Uses temporary.
+    s1 += s2; // No temporary.
+}
+}
+
+// Return value optimization (done by compilers).
+
+// Create overloads for functions to avoid temporaries during type converssions, e.g. std::string / const char*.
 
 void demo()
 {
     hardware_interference::demo();
     pointer_laundering::demo();
     lambda_is_much_faster_than_bind::demo();
+    the_80_20_rule::demo();
+    lazy_evaluation::demo();
+    over_eager_evaluation::demo();
+    avoid_temporaries::demo();
+
+
 }
 }

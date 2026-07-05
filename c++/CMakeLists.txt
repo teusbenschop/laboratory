@@ -35,5 +35,4 @@ add_executable(cpp
         performance.cpp
         questions.cpp
         templates_explicit.cpp
-
 )

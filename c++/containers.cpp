@@ -42,30 +42,30 @@ namespace containers {
 // The sequence containers:
 
 // array
-// fixed-sized inplace contiguous array
+// Fixed-sized inplace contiguous array.
 // Access in constant time (O(1).
 
 // vector
-// Dynamic contiguous array
+// Dynamic contiguous array.
 // Resize is expensive.
 // Random access in constant time O(1) through the index.
 
 // deque
-// Double-ended queue
+// Double-ended queue.
 // Not in contiguous memory.
 // Fast insertion at both ends, no need to reallocate data.
 // Random access is O(1), insertion at ends too, random insertion is O(n) (linear).
 
 // list
-// Doubly-linked list
+// Doubly-linked list.
 // Not in contiguous memory.
 // Insertion and removal is O(1).
 // No random access.
 
 // forward_list
-// Singly-linked list
+// Singly-linked list.
 // Supports fast insertion and removal anywhere.
-// Operator == (searching) has linear complexity O(n)
+// Operator == (searching) has linear complexity O(n).
 
 // The container adaptors:
 
@@ -217,10 +217,14 @@ void demo()
     {
         // Cannot store T& (like int&) in a vector.
         //std::vector<int&> bla;
-        // Reason: References are not object, cannot be copied, not be moved, like the vector needs.
+        // Reason: References are not objects, cannot be copied, not be moved, like the vector needs.
 
         // Fails too.
         // std::array<int&, 1> {one};
+    }
+    {
+        // Container vector<bool> packs 8 bools in one byte.
+        std::vector<bool> b {true, false, true};
     }
 }
 }
@@ -294,35 +298,47 @@ void demo()
 }
 
 
-namespace iterators {
+namespace maps {
 void demo()
 {
-    // Containers.
-    std::vector<int> v (10, 1);
-    std::deque<int> d (10, 1);
-    std::list<int> l (10, 1);
 
+}
+}
+
+namespace iterators {
+
+void demo()
+{
     // Iterators.
-    std::vector<int>::iterator it1;
-    std::vector<int>::const_iterator it2;
-    std::vector<int>::reverse_iterator it3;
-    std::vector<int>::const_reverse_iterator it4;
-
-    std::deque<int>::iterator it5;
-    std::deque<int>::const_iterator it6;
-    std::deque<int>::reverse_iterator it7;
-    std::deque<int>::const_reverse_iterator it8;
-
-    std::list<int>::iterator it9;
-    std::list<int>::const_iterator it10;
-    std::list<int>::reverse_iterator it11;
-    std::list<int>::const_reverse_iterator it12;
+    {
+        std::list<int>::iterator it; // Element pointed at is read/write.
+        std::list<int>::const_iterator cit; // Element pointed at is read-only.
+        std::list<int>::reverse_iterator rit;
+        std::list<int>::const_reverse_iterator crit;
+    }
 
     // .begin()  : points to first element.
     // .end()    : points one past last element.
     // .rbegin() : points to last element.
     // .rend()   : points one before first element.
 
+    // Cannot cast const_iterator to iterator as types are different.
+    // Works via distance and advance.
+    {
+        std::list<int> l(10, 1);
+        auto cit = l.cbegin(); // const_iterator
+        ++cit;
+        auto it = l.begin(); // iterator
+        using cit_t = std::list<int>::const_iterator;
+        std::advance(it, std::distance<cit_t>(it, cit)); // make iterators to point to the same element
+    }
+    {
+        std::vector<int> l {1, 2, 3};
+        const auto rev_it = l.rbegin() + 1;
+        assert(*rev_it == 2);
+        // The .base() points to the item next to the reverse iterator.
+        assert(*rev_it.base() == 3);
+    }
 }
 }
 
@@ -370,6 +386,7 @@ void demo()
     // deque – all iterators will be invalidated, references also,
     // unless insertion at the beginning or end takes place;
     // list – the iterators and the references remain valid.
+    // Use ".reserve()" to avoid reallocations.
 }
 }
 
@@ -444,6 +461,15 @@ void demo()
         l.remove_if (delete_even);
         std::list<int> standard {1, 3};
         assert(l == standard);
+    }
+    {
+        std::vector<int> v {1, 2, 3};
+        for (auto iter = v.begin(); iter != v.end();  /* ++iter */)
+        {
+            // The ::erase returns iterator to element following the erased value.
+            iter = v.erase(iter);
+        }
+        assert(v.empty());
     }
 }
 }
@@ -856,6 +882,15 @@ void demo()
         assert(not inserted);
         assert(iter->second == 2);
     }
+    // Method .insert / .insert_or_assign has better performance than operator []
+    {
+        std::map<int,int> map;
+        // Default construct element.
+        assert(map[0] == 0);
+        // First default construct the element, then copies the new value into it.
+        // So wastes a constructed object.
+        map[1] = 1;
+    }
 }
 }
 
@@ -878,6 +913,7 @@ void demo()
     forward_lists::demo();
     lists::demo();
     arrays::demo();
+    maps::demo();
     iterators::demo();
     sizes::demo();
     assigning::demo();

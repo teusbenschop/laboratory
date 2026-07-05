@@ -45,28 +45,13 @@ class Base : public std::exception
 {
     const std::string m_what;
 public:
-    explicit Base(std::string_view what = "") noexcept : m_what(what)
-    {
-    }
-    const char* what() const noexcept final override { return m_what.c_str(); }
+    explicit Base(std::string_view what = "") noexcept : m_what(what) { }
+    [[nodiscard]] const char* what() const noexcept final { return m_what.c_str(); }
 };
 
 namespace base {
-
-struct Type1 : Base
-{
-    explicit Type1(std::string_view what = "") noexcept : Base(what)
-    {
-    }
-};
-
-struct Type2 : Base
-{
-    explicit Type2(std::string_view what = "") noexcept : Base(what)
-    {
-    }
-};
-
+struct Derived1 : Base { explicit Derived1(std::string_view what = "") noexcept : Base(what) { } };
+struct Derived2 : Base { explicit Derived2(std::string_view what = "") noexcept : Base(what) { } };
 }
 
 
@@ -77,6 +62,7 @@ T create(Args&& ... args)
     (void(oss << std::forward<Args>(args) << ' '), ...);
     return T(std::move(oss).str());
 }
+
 
 // This template function gets passed an exception, throws it, and catches it.
 // The "catch" clauses are put in the correct order:
@@ -90,11 +76,11 @@ void demo_exception_catch_hierarchy(const Exception& e)
     {
         throw e;
     }
-    catch (const base::Type1& exception)
+    catch (const base::Derived1& exception)
     {
         std::cout << "Catch Type1Exception" << std::endl;
     }
-    catch (const base::Type2& exception)
+    catch (const base::Derived2& exception)
     {
         std::cout << "Catch Type2Exception" << std::endl;
     }
@@ -119,9 +105,9 @@ void demo()
     // It uses dynamic casting to handle the different exceptions.
     const auto dynamic_exception_handler = [](const std::exception* exception)
     {
-        if (const auto* e = dynamic_cast<const base::Type1*>(exception); e)
+        if (const auto* e = dynamic_cast<const base::Derived1*>(exception); e)
             std::cout << "Catch Type1Exception" << std::endl;
-        else if (const auto* e = dynamic_cast<const base::Type2*>(exception); e)
+        else if (const auto* e = dynamic_cast<const base::Derived2*>(exception); e)
             std::cout << "Catch Type2Exception" << std::endl;
         else if (const auto* e = dynamic_cast<const Base*>(exception); e)
             std::cout << "Catch BaseException" << std::endl;
@@ -135,7 +121,7 @@ void demo()
     try
     {
         std::cout << "Throw Type1Exception" << std::endl;
-        throw base::Type1();
+        throw base::Derived1();
     }
     catch (const std::exception& e)
     {
@@ -144,7 +130,7 @@ void demo()
     try
     {
         std::cout << "Throw Type2Exception" << std::endl;
-        throw base::Type2();
+        throw base::Derived2();
     }
     catch (const std::exception& e)
     {
@@ -172,9 +158,9 @@ void demo()
     // Throw different types of exceptions.
     // The template function uses the standard try ... catch idiom.
     std::cout << "Throw Type1Exception" << std::endl;
-    demo_exception_catch_hierarchy(base::Type1());
+    demo_exception_catch_hierarchy(base::Derived1());
     std::cout << "Throw Type2Exception" << std::endl;
-    demo_exception_catch_hierarchy(base::Type2());
+    demo_exception_catch_hierarchy(base::Derived2());
     std::cout << "Throw BaseException" << std::endl;
     demo_exception_catch_hierarchy(Base());
     std::cout << "Throw standard exception" << std::endl;
@@ -223,10 +209,19 @@ void demo()
 }
 
 
+namespace throw_during_construction_or_destruction {
+// Throw during constructor: Check which dependent resources should be released.
+// Never throw during destruction. If done, program terminates immediately.
+void demo()
+{
+}
+}
+
 void demo ()
 {
     exception_hierarchy::demo();
     uncaught_exceptions::demo();
+    throw_during_construction_or_destruction::demo();
 }
 
 }

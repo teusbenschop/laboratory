@@ -17,10 +17,13 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "functional.h"
+
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <future>
 #include <iostream>
+#include <numeric>
 
 namespace functional {
 
@@ -354,9 +357,57 @@ inline int func()
 void demo()
 {
     assert(func() == 123);
+}
+}
 
+
+namespace functors {
+
+void demo()
+{
+    {
+        struct Functor
+        {
+            // Overload the function call "()" operator -> struct is now functor.
+            //     return type        parameter             body
+            constexpr int operator()(const int i) const { return i; }
+        };
+    }
+    {
+        struct Generator
+        {
+            int value {0}; // Maintain state.
+            constexpr int operator()() { return ++value; }
+        };
+        constexpr Generator generator;
+        std::vector output (3, 0);
+        std::ranges::generate(output, generator);
+        std::vector standard {1, 2, 3};
+        assert(output == standard);
+    }
+    {
+        struct Unary // Function call operator has one argument.
+        {
+            constexpr int operator()(const int i) const { return i * i; }
+        };
+        std::vector input {1, 2, 3};
+        decltype(input) output(input.size());
+        std::ranges::transform(input, output.begin(), Unary());
+        const decltype(input) standard {1, 4, 9};
+        assert(output == standard);
+    }
+    {
+        struct Binary // The function call operator has two arguments.
+        {
+            constexpr int operator()(const int lhs, const int rhs) const { return lhs - rhs; }
+        };
+        std::vector input {1, 2, 3};
+        const int result = std::accumulate(input.begin(), input.end(), 0, Binary());
+        assert (result == -6); // ((0 - 1) - 2) - 3
+    }
 }
 }
+
 
 void demo() {
     move_only_function::demo();
@@ -369,6 +420,7 @@ void demo() {
     member_function::demo();
     demo_not_fn::demo();
     inlining::demo();
+    functors::demo();
 }
 }
 

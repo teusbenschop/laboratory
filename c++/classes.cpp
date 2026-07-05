@@ -39,7 +39,7 @@ void demo()
     {
         // Solution: Use an object to manage the resource.
         // Can also be a user-defined class to manage the resource.
-        std::unique_ptr<int> ptr = std::make_unique<int>(10); // Resource acquired
+        auto ptr = std::make_unique<int>(10); // Resource acquired
         // Use resource.
         // Resource released automatically when ptr goes out of scope.
     }

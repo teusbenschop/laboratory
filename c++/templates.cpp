@@ -467,8 +467,8 @@ public:
     constexpr explicit Temperature(const decltype(m_value) value) noexcept : m_value(value) {};
 
     // Function to get/set the value
-    constexpr decltype(m_value) value() const noexcept { return m_value; };
-    constexpr void value(decltype(m_value) value) noexcept { m_value = value; };
+    [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; };
+    constexpr void value(const decltype(m_value) value) noexcept { m_value = value; };
 
     // Operator to get the value: Supports static cast.
     constexpr explicit operator decltype(m_value) () const noexcept { return m_value; };
@@ -480,25 +480,22 @@ public:
     template <temperature_unit UU>
     constexpr Temperature(const Temperature<UU>& temperature) noexcept
     {
-        // Because of the default copy constructor above, the following is not needed:
-        // if constexpr (std::is_same_v<U, UU>)
-        //     m_value = temperature.value();
-
         // Step 1: Convert the incoming temperature to Kelvin.
+        const float kelvin = UU::convert_to_kelvin(temperature.value());
         // Step 2: Convert the temperature in Kelvin to the current class's temperature unit.
-        m_value = U::convert_from_kelvin(UU::convert_to_kelvin(temperature.value()));
+        m_value = U::convert_from_kelvin(kelvin);
     }
 };
 
 constexpr Temperature<Celsius> celsius100 (100);
 static_assert(celsius100.value() == 100);
-constexpr Temperature<Kelvin> kelvin1 = celsius100;
-static_assert(kelvin1.value() == 373.5);
+constexpr Temperature<Kelvin> kelvin373 = celsius100;
+static_assert(kelvin373.value() == 373.5);
 
 constexpr Temperature<Kelvin> kelvin100(100);
 static_assert(kelvin100.value() == 100);
-constexpr Temperature<Celsius> celsius1 = kelvin100;
-static_assert(celsius1.value() == -173.5);
+constexpr Temperature<Celsius> celsius173 = kelvin100;
+static_assert(celsius173.value() == -173.5);
 
 constexpr Temperature<Celsius> celsius150 (150);
 static_assert(celsius150.value() == 150);
@@ -512,6 +509,50 @@ void demo()
 }
 }
 
+
+namespace automatic_temperature_unit_conversion_simple {
+// A class that automatically converts temperatures between different units.
+// Kelvin = degrees Celsius + 273.5
+// Degrees Celsius = Kelvin - 273.5
+
+struct Celsius;
+struct Kelvin;
+
+struct Celsius
+{
+    float value {};
+    operator Kelvin() const;
+};
+
+
+struct Kelvin
+{
+    float value {};
+    operator Celsius() const;
+};
+
+Celsius::operator Kelvin() const { return Kelvin(value + 273.5f); }
+Kelvin::operator Celsius() const { return Celsius(value - 273.5f); }
+
+float get_kelvin (const Kelvin kelvin)
+{
+    return kelvin.value;
+}
+
+float get_celsius (const Celsius celsius)
+{
+    return celsius.value;
+}
+
+void demo()
+{
+    Kelvin value400kelvin {400};
+    assert(get_kelvin(value400kelvin) == 400.0f);
+    Celsius value100celsius {100};
+    assert(get_kelvin(value100celsius) == 373.5f);
+    assert(get_celsius(value400kelvin) == 126.5f);
+}
+}
 
 namespace meta_programming_recursive_calculation {
 // What is template metaprogramming?
@@ -1048,6 +1089,7 @@ void demo()
     automatic_weight_units_simple::demo();
     template_specialization::demo();
     automatic_temperature_unit_conversion::demo();
+    automatic_temperature_unit_conversion_simple::demo();
     meta_programming_recursive_calculation::demo();
     variadic_minimum::demo();
     variadic_class_template::demo();

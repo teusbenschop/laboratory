@@ -26,6 +26,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <iostream>
 #include <list>
 #include <numeric>
+#include <random>
 #include <ranges>
 #include <regex>
 #include <vector>
@@ -41,7 +42,7 @@ namespace searching {
 // It returns true if the value is found in the container.
 // It is also possible to pass a comparator.
 namespace binary_search {
-constexpr auto container = std::array<int, 7>{2, 2, 3, 3, 3, 4, 5};
+constexpr auto container = std::array{2, 2, 3, 3, 3, 4, 5};
 static_assert(std::ranges::is_sorted(container));
 static_assert(std::ranges::binary_search(container, 3));
 
@@ -380,6 +381,39 @@ void demo() {
 }
 
 
+namespace mismatch {
+void demo()
+{
+    // The "mismatch" returns iterator to the first mismatch between the two input ranges.
+    std::string_view s1 {"abcd"};
+    std::string_view s2 {"abdd"};
+    auto end = std::ranges::mismatch(s1, s2).in1; // The "in1" refers to the first range (or: in2)
+    assert(*end == 'c');
+    std::string s3 {end, s1.end()};
+    assert(s3 == "cd");
+
+    // See also ranges::lexicographical_compare
+    // Compares two ranges, e.g. two strings.
+    // Returns whether range1 is less than range2.
+    {
+        std::string s1 {"abcd"};
+        std::string s2 {"abcd"};
+
+        std::mt19937 g {std::random_device {}()};
+        for (int i = 0; i < 5; ++i)
+        {
+            bool less = std::ranges::lexicographical_compare(s1, s2);
+            // std::cout << s1 << " ";
+            // std::cout << (less ? "< " : ">=");
+            // std::cout << " " << s2 << std::endl;
+            std::ranges::shuffle(s1, g);
+            std::ranges::shuffle(s2, g);
+        }
+    }
+}
+}
+
+
 void demo() {
     binary_search::demo();
     any_of_all_of_none_of::demo();
@@ -392,5 +426,6 @@ void demo() {
     ranges_find_max::demo();
     find_if::demo();
     find_common_divisor_multiple::demo();
+    mismatch::demo();
 }
 }

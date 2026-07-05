@@ -233,6 +233,55 @@ void demo()
         assert(players.at(1).name == "Rei");
         assert(players.at(2).name == "Nao");
     }
+    {
+        // The partial_sort takes input range (begin, end), and iterator (middle).
+        // Puts the smallest elements of the input range into range (begin, middle).
+        // I.e. sorts the first n elements of a container.
+        std::vector values {6, 3, 2, 7, 4, 1, 5};
+        std::ranges::partial_sort(values, values.begin() + 3);
+        const auto standard = std::vector{1, 2, 3, 7, 6, 4, 5};
+        assert(values == standard);
+    }
+    {
+        // The nth_element takes a range as input, and an iterator pointing to the nth element,
+        // and makes the range begin-nth to be less than the range nth-end.
+        std::vector values {6, 3, 2, 7, 4, 1, 5};
+        std::ranges::nth_element(values, values.begin() + 1);
+        const auto standard = std::vector{1, 2, 3, 4, 5, 6, 7};
+        assert(values == standard);
+        // This implementation sorts everything (which is not forbidden by the standard).
+    }
+    {
+        // The stable_sort sorts the range and preserves the order of equivalent elements.
+        struct People
+        {
+            std::string name{};
+            int age{};
+        };
+        std::vector<People> people {
+            {"Name1", 2}, {"Name1", 1}, {"Name2", 2}, {"Name3", 3}
+        };
+        std::ranges::stable_sort(people, {}, &People::name);
+        assert(people.at(0).age == 2);
+        assert(people.at(1).age == 1);
+        std::ranges::stable_sort(people, {}, &People::age);
+        assert(people.at(0).name == "Name1");
+        assert(people.at(1).name == "Name1");
+        assert(people.at(2).name == "Name2");
+    }
+    {
+        // The stable_partition puts items matching the predicate at the front,
+        // returns an iterator indicating the remainder of items till the end.
+        // It preserves the original order of elements.
+        // The plain "partition" does not preserve the order.
+        std::vector<int> v {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        auto tail = std::ranges::stable_partition(v, [](int i) { return i%2 == 0;});
+        std::vector<int> standard {
+            0, 2, 4, 6, 8, // Partitioned.
+            1, 3, 5, 7, 9 // Remainder.
+        };
+        assert(v == standard);
+    }
 }
 }
 
@@ -415,6 +464,49 @@ void demo()
 }
 
 
+namespace remove_erase {
+void demo()
+{
+    std::string s {"A B C D"};
+    // Removing means: Shifting elements to be kept to the front through move assignment.
+    const auto ret = std::ranges::remove(s, ' '); // Remove all spaces.
+    // Returns range right past the range to be kept.
+    // The input container, a string, remains of same size.
+    assert (s == "ABCDC D");
+    // Actually remove: Remove the part from the iterator to the end of the string.
+    s.erase(ret.begin(), ret.end());
+    assert (s == "ABCD");
+}
+}
+
+
+namespace set_union_difference_intersection {
+void demo()
+{
+    std::vector v1 {1, 2, 3};
+    std::vector v2 {2, 3, 4};
+    decltype(v1) output;
+    std::ranges::set_union(v1, v2, std::back_inserter(output));
+    decltype(v1) standard {1, 2, 3, 4};
+    assert(output == standard);
+
+    // The set_difference copies the elements from the sorted input1 range,
+    // which are not found in the sorted input1 range,
+    // to the output range.
+    output.clear();
+    std::ranges::set_difference(v1, v2, std::back_inserter(output));
+    standard = {1};
+    assert(output == standard);
+
+    // The set_intersection constructs a sorted range with elements found in both sorted input ranges.
+    output.clear();
+    std::ranges::set_intersection(v1, v2, std::back_inserter(output));
+    standard = {2, 3};
+    assert(output == standard);
+}
+}
+
+
 void demo()
 {
     accumulate::demo();
@@ -427,5 +519,7 @@ void demo()
     make_from_tuple::demo();
     scanning::demo();
     reduce::demo();
+    remove_erase::demo();
+    set_union_difference_intersection::demo();
 }
 }

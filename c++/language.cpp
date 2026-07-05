@@ -20,6 +20,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <cmath>
 #include <functional>
+#include <new>
 #include <source_location>
 #include <string>
 #include <type_traits>
@@ -413,13 +414,10 @@ void demo()
 
 
 namespace operator_overloading {
-// A struct with overloaded operators.
 
 struct Struct
 {
-    constexpr Struct(const int value) : value(value)
-    {
-    }
+    constexpr Struct(const int value) : value(value) { }
 
     int value;
 
@@ -430,7 +428,7 @@ struct Struct
     }
 
     // Overload the function call "()" operator, this makes the struct a functor (or function object).
-    constexpr int operator()() { return value; }
+    constexpr int operator()() const { return value; }
 
     // Overload the += and the -= and the %= operators.
     constexpr Struct& operator+=(const Struct& s) noexcept
@@ -450,6 +448,11 @@ struct Struct
         value = value % s.value;
         return *this;
     }
+
+    // Implicit type conversion operator.
+    // Enable static_cast.
+    explicit operator float() const { return static_cast<float>(value); }
+
 };
 
 // Overload the "<<" operator.
@@ -467,8 +470,11 @@ constexpr inline bool operator==(const Struct& l, const Struct& r) noexcept
 
 static_assert(Struct(10) + Struct(20) == 30);
 static_assert(Struct(15)() == 15);
+static_assert(Struct(10)() == 10);
 static_assert(Struct(10) != Struct(20));
 static_assert(Struct(10) == 10);
+
+// Never overload common operators like && || , as that only confuses others.
 
 void demo()
 {
@@ -987,10 +993,10 @@ void demo()
 {
     {
         // A reference is like an alias.
+        // Once it refers a variable, it can never refer to another variable.
         int one = 1;
         int two = 2;
         int& iref = one;
-        // Can be reassigned.
         iref = two;
         assert(iref == two);
         assert(one == two);
@@ -1259,24 +1265,59 @@ void demo()
 }
 
 
-namespace type_conversion_operators {
 
+
+namespace custom_new_and_delete {
+// Declare operator new in global namespace, see bottom.
+
+// Class-specific new/delete operators: static function
 struct S
 {
-    int value {1};
-    explicit operator float() const { return 1.1f; }
-    explicit operator std::string() const { return "1.2"; }
+    static void* operator new(std::size_t count)
+    {
+        std::cout << "class new for size " << count << std::endl;
+        return ::operator new(count);
+    }
+    static void operator delete(void* ptr)
+    {
+        std::cout << "class delete for pointer " << ptr << std::endl;
+        ::operator delete(ptr);
+    }
 };
+
 
 void demo()
 {
-    constexpr S s;
-    static_assert(s.value == 1);
-    assert(static_cast<float>(s) == 1.1f);
-    assert(static_cast<std::string>(s) == "1.2");
+    // std::unique_ptr<S> s = std::make_unique<S>(S());
 }
 }
 
+
+namespace prefix_and_postfix_increment_operators {
+void demo()
+{
+    int i{0};
+    ++i; // More efficient: No copying.
+    i++; // Returns copy of old value: Less efficient.
+    ++++i; // Increase twice.
+    // i++++; operator++ returns const: not assignable.
+}
+}
+
+
+namespace unnamed_namespace {
+
+// Everything in an unnamed namespace is local to the translation unit.
+// In some ways equal to the "static" keyword.
+namespace {
+int i = 0;
+}
+
+void demo()
+{
+    i++;
+};
+}
 
 void demo() {
     alignment::demo();
@@ -1306,7 +1347,32 @@ void demo() {
     structured_binding::demo();
     copy_elision::demo();
     casting::demo();
-    type_conversion_operators::demo();
+    custom_new_and_delete::demo();
+    prefix_and_postfix_increment_operators::demo();
+    unnamed_namespace::demo();
 }
 
 }
+
+
+// void* operator new (std::size_t size)
+// {
+//     std::cout << "new size " << size << std::endl;
+//     if (!size)
+//         ++size; // avoid std::malloc(0) which may return nullptr on success
+//
+//     if (void *ptr = std::malloc(size); ptr)
+//     {
+//         std::cout << "new " << ptr << std::endl;
+//         return ptr;
+//
+//     }
+//
+//     throw std::bad_alloc{};
+// }
+
+// void operator delete (void* ptr)
+// {
+//     std::cout << "delete " << ptr << std::endl;
+//     std::free(ptr);
+// }
