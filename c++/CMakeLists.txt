@@ -35,4 +35,5 @@ add_executable(cpp
         performance.cpp
         questions.cpp
         templates_explicit.cpp
+        design_patterns.cpp
 )

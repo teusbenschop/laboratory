@@ -27,6 +27,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "containers.h"
 #include "coroutines.h"
 #include "counting.h"
+#include "design_patterns.h"
 #include "exceptions.h"
 #include "expected.h"
 #include "filesystem.h"
@@ -81,6 +82,7 @@ int main()
     mathematics::demo();
     performance::demo();
     questions::demo();
+    design_patterns::demo();
     return EXIT_SUCCESS;
 }
 

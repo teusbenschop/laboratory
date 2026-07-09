@@ -31,6 +31,8 @@ namespace performance {
 
 namespace hardware_interference {
 
+// This is design pattern "Data Locality".
+
 // Minimum offset between two objects to avoid false sharing.
 static_assert(std::hardware_destructive_interference_size == 64 or std::hardware_destructive_interference_size == 256);
 
@@ -40,21 +42,24 @@ static_assert(std::hardware_constructive_interference_size == 64);
 void demo()
 {
     return;
+    scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
     std::vector<std::jthread> threads;
     const int hc = std::thread::hardware_concurrency();
 
     for (int number_of_threads = 1; number_of_threads <= hc; ++number_of_threads)
     {
-        // Start all threads at the same time for exact time measurement.
-        std::latch sync(number_of_threads);
-
         // Some individual piece of data for each individual thread.
-        // struct { std::atomic<char> might_be_shared; } global_data[hc];
-
-        // Mitigation: occupy a full cache line.
-        struct alignas(std::hardware_destructive_interference_size) {
+        // 1. The memory for each thread is too near of one another.
+        //    * This causes cache misses / cache thrashing.
+        // 2. Mitigation: occupy a full cache line.
+        //    * Each thread has its data in a separate cache line.
+        //    * This results in cache hits.
+        struct
+        alignas(std::hardware_destructive_interference_size)
+        {
             std::atomic<char> might_be_shared;
-        } global_data[hc];
+        }
+        global_data[hc];
 
         std::atomic<int64_t> total_threads_execution_time_ns(0);
 
@@ -62,12 +67,9 @@ void demo()
         {
             threads.emplace_back([&](int i)
             {
-                // Synchronize thread execution start.
-                sync.arrive_and_wait();
-
                 const auto start = std::chrono::high_resolution_clock::now();
 
-                for (std::size_t r = 10'000'00; r--;)
+                for (std::size_t r = 10'000'00; --r;)
                     global_data[i].might_be_shared.fetch_add(1);
 
                 total_threads_execution_time_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -82,8 +84,8 @@ void demo()
 
         std::cout << "Number of threads " << number_of_threads
         << ": Thread execution time: "
-        << total_threads_execution_time_ns / (1.0e6 * number_of_threads)
-        << std::endl;
+        << static_cast<int>(total_threads_execution_time_ns / (1.0e6 * number_of_threads))
+        << " ns" << std::endl;
     }
 }
 }

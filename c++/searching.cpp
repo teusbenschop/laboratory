@@ -41,6 +41,9 @@ namespace searching {
 // A binary search works if the container is sorted.
 // It returns true if the value is found in the container.
 // It is also possible to pass a comparator.
+// It searches quickly, starting half-way the container,
+// then going up or down, then search the half part again half-way.
+// Complexity = logarithmic: O log(n)
 namespace binary_search {
 constexpr auto container = std::array{2, 2, 3, 3, 3, 4, 5};
 static_assert(std::ranges::is_sorted(container));

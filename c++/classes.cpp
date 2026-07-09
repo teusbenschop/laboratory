@@ -427,8 +427,8 @@ namespace constructors {
 // default constructor: C()
 // copy constructor: C(const C&)
 // copy assignment operator: C operator=(const C&)
-// move constructor: C(C&&)
-// move assignment operator: C operator=(C&&)
+// move constructor: C&(C&&)
+// move assignment operator: C& operator=(C&&)
 // destructor: ~C()
 
 // Compiler generates all six, unless one of them is user defined.

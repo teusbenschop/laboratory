@@ -874,14 +874,35 @@ void demo()
     // Normally this pair {10,10} goes out of scope at function end.
     auto pair10 = [] -> std::pair<int,int> { return {10,10}; };
 
-    // Rvalue reference binds to temporary object, extends lifetime of it.
+    // Rvalue reference binds to temporary object, extends its lifetime.
     std::pair<int,int>&& r1 = pair10();
-    int&& r2 = r1.first + r1.first;
+    int&& r2 = r1.first + r1.second;
     assert(r2 == 20);
 
     // Can modify the rvalue through reference to non-const.
     r1.first++;
     assert(r1.first == 11);
+}
+}
+
+
+namespace rvalue_reference_function_parameter {
+
+void f1(double&& v)
+{
+}
+
+// Pass a rvalue reference to the function.
+void f2 (double&& v)
+{
+    // The variable v is now a lvalue within the function scope.
+    // f1(v); error: no matching function for call to f1
+    f1(std::move(v)); // Must change to rvalue, then call function.
+}
+
+void demo()
+{
+    f2(1);
 }
 }
 
@@ -1003,6 +1024,7 @@ void demo()
     }
     lvalue_references::demo();
     rvalue_references::demo();
+    rvalue_reference_function_parameter::demo();
     reference_collapsing::demo();
     forwarding_references::demo();
     dangling_references::demo();

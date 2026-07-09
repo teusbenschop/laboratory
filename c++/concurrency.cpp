@@ -265,42 +265,6 @@ void demo()
 }
 }
 
-namespace timer_with_jthread_and_timed_mutex_and_condition_variable {
-void demo()
-{
-    std::timed_mutex mx;
-    std::condition_variable_any cv; // The _any means: Works with any lock, not just a unique_lock.
-
-    // This lambda function takes a stop token as parameter.
-    const auto timer = [&](const std::stop_token& stoken)
-    {
-        // Step 3: Set the timer interval to 100 milliseconds.
-        constexpr auto interval = std::chrono::milliseconds(100);
-        while (!stoken.stop_requested())
-        {
-            // Step 4: The stop token has no stop request: Keep going.
-            std::unique_lock ulk(mx);
-            // Step 5: Enter the condition variable which will wait 100 ms or less in case of a thread stop request.
-            if (cv.wait_for(ulk, stoken, interval, [&stoken] { return stoken.stop_requested(); }))
-            {
-                // Step 8: The condition variable got a stop request and so interrupts its waiting state immediately.
-                break;
-            }
-            // Step 6: Run one timer cycle.
-        }
-        // Step 9: The thread function quits and the thread automatically joins.
-    };
-
-    // Step 1: The main thread starts the timer thread.
-    std::jthread thread(timer);
-    // Step 2: The main thread will sleep for 350 milliseconds.
-    std::this_thread::sleep_for(std::chrono::milliseconds(350));
-    // Step 7: The jthread will go out of scope, this sends a stop request to the thread function.
-}
-}
-
-
-
 namespace condition_variables {
 void demo()
 {
@@ -707,7 +671,6 @@ void demo()
     packaged_task::demo();
     semaphores::demo();
     jthread::demo();
-    timer_with_jthread_and_timed_mutex_and_condition_variable::demo();
     condition_variables::demo();
     future_and_promise_and_exception::demo();
     execution_policies::demo();

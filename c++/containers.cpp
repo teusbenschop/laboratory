@@ -39,33 +39,21 @@ Copyright (©) 2021-2026 Teus Benschop.
 namespace containers {
 
 
+// O(1) : constant complexity, does not depend on input size.
+// O(n) : linear complexity, if input size grows, so grows the complexity.
+// O(log n) : logarithmic complexity, the number of operations grows much slower than input size.
+// O(n^2) : quadratic complexity, the number of operations is input size squared.
+// O(2^n) : exponential complexity, each extra input causes number of operations to double.
+// "amortized": runtime it may vary but on average the complexity is ...
+
+
 // The sequence containers:
-
-// array
-// Fixed-sized inplace contiguous array.
-// Access in constant time (O(1).
-
-// vector
-// Dynamic contiguous array.
-// Resize is expensive.
-// Random access in constant time O(1) through the index.
 
 // deque
 // Double-ended queue.
 // Not in contiguous memory.
 // Fast insertion at both ends, no need to reallocate data.
-// Random access is O(1), insertion at ends too, random insertion is O(n) (linear).
-
-// list
-// Doubly-linked list.
-// Not in contiguous memory.
-// Insertion and removal is O(1).
-// No random access.
-
-// forward_list
-// Singly-linked list.
-// Supports fast insertion and removal anywhere.
-// Operator == (searching) has linear complexity O(n).
+// Random access is O(1) (constant), insertion at ends too, random insertion is O(n) (linear).
 
 // The container adaptors:
 
@@ -73,8 +61,32 @@ namespace containers {
 // queue
 // priority_queue
 
+// The association containers.
 
-namespace vectors {
+// set
+// A std::set is sorted, so can do binary_search.
+// Store element on heap, change location never again.
+// Array administration to link the elements.
+
+
+namespace array {
+
+// Fixed-sized inplace contiguous array.
+// Memory layout: |0|1|2|3|4|5|...|n|
+// Access via .front(), via .back(), via .at() is in constant time - O(1).
+
+void demo()
+{
+}
+}
+
+
+namespace vector {
+// Dynamic contiguous array.
+// Resize is expensive.
+// Access in constant time O(1) through the index.
+// Random insert / remove: O(n) where n = number of elements after position, due to moving elements up.
+
 void demo()
 {
     // Vector constructors.
@@ -266,7 +278,14 @@ void demo()
 }
 
 
-namespace lists {
+namespace list {
+// list:         Doubly-linked list - iterate in both directions.
+// forward_list: Singly-linked list - can only iterate forward.
+// Elements not in contiguous memory but scattered over the heap.
+// Access insert remove: O(1).
+// No random access.
+// Operator == (searching) has linear complexity O(n).
+
 void demo()
 {
     std::list<int> list1({ 1, 2, 3 });
@@ -277,6 +296,8 @@ void demo()
     list2.pop_back();
     list2.insert(list2.begin(), 7);
     list2.pop_back();
+    std::forward_list<int> fl1 { 1, 2, 3 };
+    std::erase(fl1, 2);
 }
 }
 
@@ -298,10 +319,15 @@ void demo()
 }
 
 
-namespace maps {
+namespace map {
+// Implemented as a self-balancing binary search tree with nodes allocated on the heap.
+// Each node has left pointer to left child and right pointer to right child.
+// Each node is pair<key,value>.
+// Search, insertion, removal by key: O(log n).
+// Removal by iterator: O(1) (because traversal is not needed as iterator is already given).
+
 void demo()
 {
-
 }
 }
 
@@ -908,12 +934,13 @@ void demo()
 
 void demo()
 {
-    vectors::demo();
+    array::demo();
+    vector::demo();
     deques::demo();
     forward_lists::demo();
-    lists::demo();
+    list::demo();
     arrays::demo();
-    maps::demo();
+    map::demo();
     iterators::demo();
     sizes::demo();
     assigning::demo();
