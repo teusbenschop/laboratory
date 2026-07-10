@@ -31,7 +31,7 @@ void demo()
 {
     {
         // Problem: Resource might be leaked.
-        auto* ptr = new int(10);
+        const int* const ptr = new int(10);
         // `Use resource.
         // throw ...
         delete ptr;
@@ -39,7 +39,7 @@ void demo()
     {
         // Solution: Use an object to manage the resource.
         // Can also be a user-defined class to manage the resource.
-        auto ptr = std::make_unique<int>(10); // Resource acquired
+        const auto ptr = std::make_unique<int>(10); // Resource acquired.
         // Use resource.
         // Resource released automatically when ptr goes out of scope.
     }
@@ -61,16 +61,17 @@ public:
     void work() const;
 
 private:
-    class Pimpl; // Forward declaration.
+    struct Pimpl; // Forward declaration.
     Pimpl* m_pimpl; // Pointer to implementation;
 };
 
-class Public::Pimpl
+struct Public::Pimpl
 {
-public:
-    void internal_work() const
+    int value{};
+    void internal_work()
     {
-        // Implementation details...
+        // Implementation details.
+        ++value;
     }
 };
 
@@ -95,22 +96,18 @@ namespace design_idiom_crtp {
 
 // 3. CRTP (Curiously Recurring Template Pattern).
 
-template <typename Derived>
-class CrtpBase
+template <typename T>
+struct Base
 {
-public:
+    virtual ~Base() = default;
     void common_function()
     {
-        // Base class implementation.
-        static_cast<Derived*>(this)->specific_function(); // Call derived class method.
+        static_cast<T*>(this)->specific_function(); // Call derived class method.
     }
-
-    virtual ~CrtpBase() = default;
 };
 
-class DerivedClass : public CrtpBase<DerivedClass>
+struct Derived : public Base<Derived>
 {
-public:
     void specific_function()
     {
         value++;
@@ -120,10 +117,10 @@ public:
 
 void demo()
 {
-    DerivedClass derived;
+    Derived derived;
     // Call function from base class -> calls the derived function.
     derived.common_function();
-    // Call to the derived function.
+    // Call the derived function.
     derived.specific_function();
     // Assert it ran "specific_function" in both cases.
     assert(derived.value == 2);
@@ -136,35 +133,30 @@ namespace design_idiom_copy_swap {
 // 4. Copy and Swap Idiom
 // It swaps the current object with a copy of the object being assigned.
 
-class CopySwapClass
+class Class
 {
 public:
     // Constructor.
-    CopySwapClass(int size) : m_size(size), m_data(new int(size))
+    Class(int size) : m_size(size), m_data(new int(size))
     {
     }
 
     // Destructor.
-    ~CopySwapClass() { delete m_data; }
+    ~Class() { delete m_data; }
 
     // Copy constructor.
-    CopySwapClass(const CopySwapClass& other)
+    Class(const Class& other)
         : m_size(other.m_size), m_data(new int(other.m_size))
     {
         std::copy(other.m_data, other.m_data + m_size, m_data);
     }
 
-    // The swap function.
-    friend void swap(CopySwapClass& first, CopySwapClass& second) noexcept
-    {
-        std::swap(first.m_size, second.m_size);
-        std::swap(first.m_data, second.m_data);
-    }
-
     // Copy assignment operator using copy and swap.
-    CopySwapClass& operator=(CopySwapClass other) noexcept
+    Class& operator=(Class other) noexcept
     {
-        swap(*this, other);
+        // The other class is passed by value, so copied, and that copy is swapped.
+        std::swap(this->m_size, other.m_size);
+        std::swap(this->m_data, other.m_data);
         return *this;
     }
 
@@ -298,25 +290,23 @@ class Bicycle : public Bike
 {
 public:
     void start_engine() const override { throw std::runtime_error("No engine available"); };
+    // If it had not defined the above function, it would narrow the base class down.
 };
 
 void demo()
 {
-    const auto start_engine = [](const Bike& bike)
+    const auto start_engine = [](const Bike& bike) -> bool
     {
-        bike.start_engine();
+        try {
+            bike.start_engine();
+            return true;
+        } catch (...) { }
+        return false;
     };
     Motorcycle motorcycle;
     Bicycle bicycle;
-    start_engine(motorcycle); // Works.
-    try
-    {
-        start_engine(bicycle); // Throws.
-    }
-    catch (const std::exception& exception)
-    {
-        assert(exception.what() == std::string("No engine available"));
-    }
+    assert(start_engine(motorcycle)); // Works.
+    assert(not start_engine(bicycle)); // Works too.
 }
 }
 
@@ -330,9 +320,7 @@ namespace interface_segregation_principle {
 
 struct BadEmployee
 {
-    BadEmployee()
-    {
-    };
+    virtual ~BadEmployee() = default;
     virtual void serve() = 0;
     virtual void manage() = 0;
 };
@@ -351,9 +339,7 @@ struct BadWaiter : BadEmployee
 
 struct IGoodEmployee
 {
-    IGoodEmployee()
-    {
-    };
+    virtual ~IGoodEmployee() = default;
 };
 
 struct IGoodWaiter : IGoodEmployee
@@ -400,7 +386,7 @@ struct BadLaptop
 struct GoodKeyboard
 {
     virtual ~GoodKeyboard() = default;
-    virtual int get_type() const = 0;
+    [[nodiscard]] virtual int get_type() const = 0;
 };
 
 struct WiredKeyboard : GoodKeyboard
@@ -567,8 +553,8 @@ void demo()
         S s1, s2;
         s1.value = 1;
         s2 = s1;
-        assert(s2.value == 2);
         assert(s1.value == 1);
+        assert(s2.value == 2);
         // Chaining.
         S s3 = s2 = s1;
     }
@@ -592,6 +578,7 @@ void demo()
         };
         S s1;
         S s2 = std::move(s1);
+        assert(s1.value == 0);
         assert(s2.value == 1);
     }
     {
@@ -715,11 +702,12 @@ namespace multiple_inheritance {
 class Base
 {
 public:
+    Base() { std::cout << "Base::Base()" << std::endl; }
     void base_function() {};
 };
 
-class Derived1 : virtual public Base { };
-class Derived2 : virtual public Base { };
+class Derived1 :  public Base { };
+class Derived2 :  public Base { };
 
 class Final : public Derived1, public Derived2 { };
 
