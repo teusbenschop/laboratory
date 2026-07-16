@@ -22,7 +22,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <barrier>
 #include <cassert>
 #include <condition_variable>
-#include <execution>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -42,11 +41,11 @@ namespace atomic_wait {
 // It unblocks the thread if the atomic wait gets another value than the old value passed.
 void demo()
 {
-    constexpr int task_count = 16;
-    std::atomic<bool> all_tasks_complete{false};
+    constexpr int task_count {16};
+    std::atomic all_tasks_complete{false};
     std::atomic<unsigned> completion_count{};
     std::future<void> futures[task_count];
-    std::atomic<int> outstanding_task_count{task_count};
+    std::atomic outstanding_task_count{task_count};
 
     // Spawn several tasks that do some work, then update the global state.
     std::ranges::for_each(futures, [&](std::future<void>& future)
@@ -70,7 +69,7 @@ void demo()
         });
     });
 
-    // Wait here till the atomic variable has a value different from false.
+    // Wait here till the atomic variable gets notified and has a value different from false
     all_tasks_complete.wait(false);
 
     assert(completion_count == task_count);
@@ -80,7 +79,7 @@ void demo()
 
 namespace timed_mutex {
 // If a normal mutex cannot be obtained, this would lead to a deadlock.
-// A timed mutex will assist in such a case.
+// A timed mutex will help here.
 // If a lock is requested on a timed mutex, a timeout can be passed too.
 // If the lock cannot be obtained in time, it falls in a timeout, not in a deadlock.
 
@@ -126,23 +125,24 @@ void demo()
 
 
 namespace packaged_task {
-// A std::packaged_task wraps any Callable target so that it can be invoked asynchronously.
+// A std::packaged_task wraps any callable target so that it can be invoked asynchronously.
 // Its return value or exception thrown can be accessed through the std::future object.
 void demo()
 {
     // No need to pass a promise reference here.
-    auto task_divide = [](const int a, const int b)
+    const auto task_divide = [](const int a, const int b)
     {
         if (not b)
             throw std::runtime_error{"Divide by zero exception"};
         return a / b;
     };
 
+    // ReSharper disable once CppTemplateArgumentsCanBeDeduced
     std::packaged_task<int(int,int)> task (task_divide);
     std::future future = task.get_future();
     std::thread thread(std::move(task), 45, 5);
     try {
-        int result = future.get();
+        const int result = future.get();
         assert(result == 9);
     } catch (const std::exception& exception) {
         std::cerr << exception.what() << std::endl;
@@ -203,56 +203,55 @@ void demo()
         const auto worker = []
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            auto thread_id = std::this_thread::get_id();
         };
-        std::jthread t = std::jthread{worker};
+        std::jthread{worker};
         // The jthread will join automatically when it goes out of scope.
     }
 
     {
         using namespace std::literals::chrono_literals;
-        std::jthread stoppable_thread{
-            [](std::stop_token stoptoken)
+        std::jthread jt{
+            [](const std::stop_token& stop_token)
             {
-                while (!stoptoken.stop_requested())
+                while (!stop_token.stop_requested())
                 {
                     std::this_thread::sleep_for(1ms);
                 }
             }
         };
         std::this_thread::sleep_for(25ms);
-        stoppable_thread.request_stop();
-        //  stoppable_thread.join(); // Not needed here.
+        jt.request_stop();
+        //  jt.join(); // Not needed here.
     }
 
     {
         using namespace std::literals::chrono_literals;
 
         std::mutex mutex{};
-        std::jthread threads[4];
 
         // Common stop source.
         std::stop_source stop_source;
         assert(stop_source.stop_requested() == false);
         assert(stop_source.stop_possible() == true);
 
-        const auto joinable_thread_worker = [&mutex](const int id, std::stop_source stop_source)
+        const auto joinable_thread_worker = [&mutex](const std::stop_source& stop_source)
         {
-            using namespace std::chrono_literals;
-            std::stop_token stoken = stop_source.get_token();
+            const std::stop_token stop_token = stop_source.get_token();
             while (true)
             {
                 std::this_thread::sleep_for(3ms);
                 std::lock_guard lock(mutex);
-                if (stoken.stop_requested())
+                if (stop_token.stop_requested())
                     return;
             }
         };
 
         // Create worker threads.
-        for (int i = 0; i < 4; ++i)
+        // ReSharper disable once CppTooWideScopeInitStatement
+        std::jthread threads[4];
+        for (auto & thread : threads)
         {
-            threads[i] = std::jthread(joinable_thread_worker, i + 1, stop_source);
+            thread = std::jthread(joinable_thread_worker, stop_source);
         }
 
         std::this_thread::sleep_for(7ms);
@@ -260,7 +259,7 @@ void demo()
         // Request a stop once, it will propagate to all derived stop tokens.
         stop_source.request_stop();
 
-        // Note: destructor of jthreads will call join so no need for explicit calls
+        // Note: destructor of jthreads will call join so no need for explicit calls.
     }
 }
 }
@@ -268,31 +267,27 @@ void demo()
 namespace condition_variables {
 void demo()
 {
-    std::condition_variable cv;
-    std::cv_status status;
-
-    const auto timer = [&]()
+    const auto timer = []
     {
+        std::condition_variable cv;
         std::mutex mx;
         std::unique_lock ulk(mx);
-        status = cv.wait_for(ulk, std::chrono::microseconds(100));
+        const std::cv_status status = cv.wait_for(ulk, std::chrono::microseconds(100));
+        // The condition variable ran into a timeout.
+        assert(status == std::cv_status::timeout);
+        // Or else: no_timeout.
     };
-    {
-        std::jthread thread1(timer);
-    }
-    // The condition variable ran into a timeout.
-    assert(status == std::cv_status::timeout);
-    // Or else: no_timeout.
+    std::jthread thread(timer);
 }
 }
 
 
 namespace future_and_promise_and_exception {
 // It is possible to set an exception in a promise.
-// If it is set, then it gets thrown in the calling environment.
+// If it is set, then it gets thrown on future::get() in the calling environment.
 void demo()
 {
-    const auto divide = [] (int a, int b, std::promise<int>& promise) {
+    const auto divide = [] (const int a, const int b, std::promise<int>& promise) {
         try {
             if (not b)
                 throw std::range_error("");
@@ -312,20 +307,20 @@ void demo()
         std::promise<int> promise;
         std::jthread thread {divide, 45, 5, std::ref(promise)};
         auto future = promise.get_future();
-        int result = future.get();
+        const int result = future.get();
         assert (result == 9);
     }
     try {
         std::promise<int> promise;
         std::jthread thread {divide, 45, 0, std::ref(promise)};
         auto future = promise.get_future();
-        auto result = future.get();
+        [[maybe_unused]] auto result = future.get(); // It will throw on .get().
         assert(false);
     }
     catch (std::range_error& e) {
         assert(true);
     }
-    catch (const std::exception& exception) {
+    catch (...) {
         assert(false);
     }
 }
@@ -354,7 +349,7 @@ void demo()
         std::mutex m_mutex{};
     };
 
-    const auto transfer_money = [](account& from, account& to, int amount) {
+    const auto transfer_money = [](account& from, account& to, const int amount) {
         // Define two deferred unique locks.
         auto lock1 = std::unique_lock<std::mutex>{from.m_mutex, std::defer_lock};
         auto lock2 = std::unique_lock<std::mutex>{to.m_mutex, std::defer_lock};
@@ -366,11 +361,11 @@ void demo()
         // End of scope releases locks.
     };
 
-    auto account1 = account{100};
-    auto account2 = account{30};
-    transfer_money(account1, account2, 20);
-    assert (account1.m_balance == 80);
-    assert (account2.m_balance == 50);
+    auto account_from = account{100};
+    auto account_to   = account{30};
+    transfer_money(account_from, account_to, 20);
+    assert (account_from.m_balance == 80);
+    assert (account_to.  m_balance == 50);
 }
 }
 
@@ -383,7 +378,7 @@ void demo()
         int tails{};
     } stats;
 
-    const auto random_int = [](int min, int max) {
+    const auto random_int = [](const int min, const int max) {
         // One engine instance per thread.
         static thread_local auto engine = std::default_random_engine{std::random_device{}()};
         auto distribution = std::uniform_int_distribution<>{min, max};
@@ -392,19 +387,21 @@ void demo()
 
     constexpr int flip_count {5000};
 
-    const auto flip_coin = [&](std::size_t n, auto& outcomes) {
-        auto flip = [&](auto n) {
+    const auto flip_coin = [&](const std::size_t n1, auto& outcomes) {
+        auto flip = [&](auto n2) {
             const auto heads = std::atomic_ref<int>{outcomes.heads};
             const auto tails = std::atomic_ref<int>{outcomes.tails};
-            for (auto i = 0u; i < n; ++i)
-                random_int(0, 1) == 0 ? ++heads : ++tails;
+            for (auto i = 0u; i < n2; ++i)
+            {
+                random_int(0, 1) == 0 ? heads++ : tails++;
+            }
         };
         // Five threads for parallel flipping.
-        std::jthread{flip, n / 5};
-        std::jthread{flip, n / 5};
-        std::jthread{flip, n / 5};
-        std::jthread{flip, n / 5};
-        std::jthread{flip, n / 5};
+        std::jthread jt1{flip, n1 / 5};
+        std::jthread jt2{flip, n1 / 5};
+        std::jthread jt3{flip, n1 / 5};
+        std::jthread jt4{flip, n1 / 5};
+        std::jthread jt5{flip, n1 / 5};
     };
 
     flip_coin(flip_count, stats); // Flip many times.
@@ -416,7 +413,6 @@ void demo()
 namespace barrier_jthread_stop_token {
 void demo()
 {
-    return;
     // This lambda starts the failing processes.
     // On any failure, it restarts the processes.
     const auto resilient_processes = [](const std::stop_token& stop_token)
@@ -502,9 +498,9 @@ void demo()
 namespace thread_pool {
 
 // Number of threads in the pool.
-const std::size_t num_threads = std::thread::hardware_concurrency();
+const std::size_t pool_size = std::thread::hardware_concurrency();
 
-// Storage for the worker threads
+// Storage for the worker threads.
 std::vector<std::jthread> threads;
 
 // Queue of tasks.
@@ -528,7 +524,7 @@ std::atomic standard_sum{0};
 void start_thread_pool()
 {
     // Creating worker threads.
-    for (std::size_t i = 0; i < num_threads; ++i) {
+    for (std::size_t i = 0; i < pool_size; ++i) {
         threads.emplace_back([] {
             while (true) {
                 std::function<void()> task;
@@ -588,7 +584,7 @@ void demo()
     start_thread_pool();
 
     // Enqueue tasks for execution.
-    for (int i = 0; i < num_threads; ++i) {
+    for (int i = 0; i < pool_size; ++i) {
 
         // Store function without parameters.
         auto fn1 = []{
@@ -630,7 +626,7 @@ void demo()
     stop_thread_pool();
 
     // Check whether all tasks ran.
-    assert(result_thread_ids.size() == num_threads * 3);
+    assert(result_thread_ids.size() == pool_size * 3);
 
     // Check all tasks executed the appropriate function.
     assert(result_sum == standard_sum);
@@ -638,7 +634,7 @@ void demo()
     // Check whether all available threads were used.
     result_thread_ids.sort();
     result_thread_ids.unique();
-    assert(result_thread_ids.size() == num_threads);
+    assert(result_thread_ids.size() == pool_size);
 }
 }
 
@@ -655,8 +651,8 @@ void demo()
     assert(std::atomic<Array>{}.is_lock_free() == false);
     assert(std::atomic<Integer>{}.is_lock_free());
 
-    std::atomic<Array> a;
-    std::atomic<Integer> b;
+    constexpr std::atomic<Array> a;
+    constexpr std::atomic<Integer> b;
     assert(std::atomic_is_lock_free(&a) == false);
     assert(std::atomic_is_lock_free(&b));
 }

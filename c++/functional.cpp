@@ -17,7 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "functional.h"
-
 #include <algorithm>
 #include <cassert>
 #include <functional>
@@ -59,15 +58,15 @@ namespace brackets_are_optional_for_lambdas {
 void demo()
 {
     std::string s = "s";
-    auto with_parenthesis = [s1 = s] () {
+    auto with_brackets = [s1 = s] () {
         assert(s1 == "s");
     };
-    with_parenthesis();
+    with_brackets();
 
-    auto without_parenthesis = [s1 = s]  {
+    auto without_brackets = [s1 = s] {
         assert(s1 == "s");
     };
-    without_parenthesis();
+    without_brackets();
 }
 }
 
@@ -84,10 +83,10 @@ void demo()
         // Mark it mutable because it mutates the captured v.
         // Note that it captures v once, and stores it in the lambda function.
         // Hence, the increased v is kept and can be increased once more and so on.
-        auto lambda = [v1](int& v2) mutable
+        auto lambda = [v1](int& v3) mutable
         {
             v1++;
-            v2 = v1;
+            v3 = v1;
         };
         lambda(v2);
         assert(v2 == v1 + 1);
@@ -109,7 +108,7 @@ void demo()
 
     // Capture this (current object).
     {
-        struct S {
+        struct Struct {
             void func() {
                 const auto capture_this = [this] {
                     val++;
@@ -123,7 +122,7 @@ void demo()
             }
             int val {10};
         };
-        S s;
+        Struct s;
         s.func();
     }
 }
@@ -137,7 +136,7 @@ void demo()
     std::function<int(int)> func = nullptr;
 
     // Assign a lambda without capture to the std::function object.
-    func = [](int v)
+    func = [](const int v)
     {
         return v;
     };
@@ -197,14 +196,14 @@ namespace binding {
 // https://cppreference.com/w/cpp/utility/functional/bind.html
 void demo()
 {
-    constexpr auto minus = [](int a, int b) -> int
+    constexpr auto minus = [](const int a, const int b) -> int
     {
         return a - b;
     };
 
     struct Struct
     {
-        constexpr int minus(int a, int b)
+        constexpr int minus(const int a, const int b)
         {
             return a - b;
         }

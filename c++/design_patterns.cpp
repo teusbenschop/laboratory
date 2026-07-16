@@ -17,18 +17,15 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include "design_patterns.h"
-
 #include <algorithm>
 #include <cassert>
 #include <condition_variable>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <ostream>
 #include <queue>
 #include <thread>
 #include <vector>
-#include <__thread/jthread.h>
 
 namespace design_patterns {
 
@@ -93,7 +90,6 @@ struct Common
 };
 class House
 {
-private:
     Common& m_common;
 public:
     explicit House(Common& common) : m_common(common) {}
@@ -214,7 +210,7 @@ public:
         return *instance;
     }
 private:
-    Singleton() { }; // No external entity can instantiate.
+    explicit Singleton() = default; // No external entity can instantiate.
 };
 
 void demo()
@@ -261,7 +257,7 @@ namespace double_buffer {
 // Create a series of sequential operations to appear simultaneous.
 // 1. Rendering engine writes to one framebuffer.
 // 2. Display reads from another framebuffer.
-// 3. Rendered is ready: Switch buffers.
+// 3. Rendering ready: Switch buffers.
 
 class DoubleBuffer
 {
@@ -355,7 +351,7 @@ namespace subclass_sandbox {
 // Define behavior in a subclass using a set of operations provided by the base class.
 // Sandbox:
 // 1. Base class has protected methods that only the subclasses can access.
-// 2. Subclasses don't have randon #includes to nose into other code.
+// 2. Subclasses don't have random #includes to nose into other code.
 void demo()
 {
 }
@@ -419,7 +415,7 @@ public:
 
 void demo()
 {
-    InputComponent input_component;
+    const InputComponent input_component;
     OutputComponent output_component;
     Umbrella umbrella (input_component, output_component);
 }

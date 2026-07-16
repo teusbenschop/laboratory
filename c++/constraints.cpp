@@ -38,9 +38,9 @@ namespace unconstrained_errors {
 
 // An unconstrained template function.
 template <typename T>
-constexpr auto unconstrained_plus(const T& x, const T& y)
+constexpr auto unconstrained_plus(const T& a, const T& b)
 {
-    return x + y;
+    return a + b;
 }
 
 // Call the template with numbers: OK.
@@ -49,7 +49,7 @@ static_assert(unconstrained_plus(1, 2) == 3);
 // Call the template with strings:
 // Oops, it works, but not as intended, it concatenates instead of taking the sum.
 // It would help if the passed types could be constrained.
-static_assert(unconstrained_plus(std::string("a"), std::string("b")) == "ab");
+static_assert(unconstrained_plus(std::string("1"), std::string("2")) == "12");
 
 // Call the template with char pointers:
 // OK, it fails:
@@ -122,7 +122,7 @@ concept range = requires(T& t)
 // Constraining a type with a concept.
 template <typename T>
     requires number<T>
-constexpr auto add_both_template(T a, T b)
+constexpr auto add_both_template(const T& a, const T& b)
 {
     return a + b;
 }
@@ -130,7 +130,7 @@ constexpr auto add_both_template(T a, T b)
 static_assert(add_both_template(10, 11) == 21);
 
 // Using concepts ("number") with abbreviated function templates.
-constexpr number auto add_both_abbreviated(number auto a, number auto b)
+constexpr number auto add_both_abbreviated(const number auto& a, const number auto& b)
 {
     return a + b;
 }
@@ -170,9 +170,9 @@ void constrained_func4(hashable auto a)
 
 
 // A concept that tests whether a struct has a static member function.
-template <typename P>
-concept HasStaticMethod = requires {
-    { P::method_name() };
+template <typename T>
+concept has_static_method = requires {
+    { T::method_name() };
     // The compiler attempts to instantiate this call at compile-time.
     // If the function isn't static (or doesn't exist), this fails.
 };

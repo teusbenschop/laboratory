@@ -702,12 +702,11 @@ namespace multiple_inheritance {
 class Base
 {
 public:
-    Base() { std::cout << "Base::Base()" << std::endl; }
     void base_function() {};
 };
 
-class Derived1 :  public Base { };
-class Derived2 :  public Base { };
+class Derived1 :  public virtual Base { };
+class Derived2 :  public virtual Base { };
 
 class Final : public Derived1, public Derived2 { };
 

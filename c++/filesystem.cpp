@@ -43,7 +43,7 @@ void demo()
         assert(std::filesystem::exists (path) == false);
     }
 
-    std::filesystem::path path(R"(/tmp)");
+    std::filesystem::path path("/tmp");
     for (const auto& directory_entry : std::filesystem::directory_iterator{path})
     {
         std::filesystem::path path = directory_entry.path();

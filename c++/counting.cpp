@@ -20,7 +20,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <ranges>
 #include <string>
 #include <vector>
 
@@ -42,18 +41,18 @@ void demo()
             int score;
         };
         std::vector<Player> players{
-            {"Alice", 10},
-            {"Bob", 10},
-            {"Alice", 10}
+            {"Alice", 1},
+            {"Bob", 2},
+            {"Alice", 3}
         };
         // Count how many players have the name "Alice".
-        long count = std::ranges::count(players, "Alice", &Player::name);
+        const long count = std::ranges::count(players, "Alice", &Player::name);
         assert(count == 2);
     }
 
     {
         std::vector<std::pair<int, int>> pairs {{1,1}, {1,2}, {3,3} };
-        long count = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
+        const long count = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
         assert(count == 2);
     }
 }

@@ -45,13 +45,13 @@ class Base : public std::exception
 {
     const std::string m_what;
 public:
-    explicit Base(std::string_view what = "") noexcept : m_what(what) { }
-    [[nodiscard]] const char* what() const noexcept final { return m_what.c_str(); }
+    explicit Base(const std::string_view what = "") noexcept : m_what(what) { }
+    [[nodiscard]] const char* what() const noexcept override { return m_what.c_str(); }
 };
 
 namespace base {
-struct Derived1 : Base { explicit Derived1(std::string_view what = "") noexcept : Base(what) { } };
-struct Derived2 : Base { explicit Derived2(std::string_view what = "") noexcept : Base(what) { } };
+struct Derived1 : Base { explicit Derived1(const std::string_view what = "") noexcept : Base(what) { } };
+struct Derived2 : Base { explicit Derived2(const std::string_view what = "") noexcept : Base(what) { } };
 }
 
 
@@ -210,7 +210,7 @@ void demo()
 
 
 namespace throw_during_construction_or_destruction {
-// Throw during constructor: Check which dependent resources should be released.
+// Throw in constructor: Check which dependent resources should be released.
 // Never throw during destruction. If done, program terminates immediately.
 void demo()
 {

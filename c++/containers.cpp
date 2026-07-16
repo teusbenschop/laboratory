@@ -47,26 +47,11 @@ namespace containers {
 // "amortized": runtime it may vary but on average the complexity is ...
 
 
-// The sequence containers:
-
-// deque
-// Double-ended queue.
-// Not in contiguous memory.
-// Fast insertion at both ends, no need to reallocate data.
-// Random access is O(1) (constant), insertion at ends too, random insertion is O(n) (linear).
-
 // The container adaptors:
 
 // stack
 // queue
 // priority_queue
-
-// The association containers.
-
-// set
-// A std::set is sorted, so can do binary_search.
-// Store element on heap, change location never again.
-// Array administration to link the elements.
 
 
 namespace array {
@@ -92,7 +77,7 @@ void demo()
     // Vector constructors.
     {
         // Vector constructor with size and one value.
-        std::vector <int>v1 (3, 4);
+        std::vector v1 (3, 4);
         const auto standard = std::vector{4, 4, 4};
         assert(v1 == standard);
         // Vector constructor based on iterators.
@@ -124,7 +109,7 @@ void demo()
         class Class
         {
         public:
-            Class (int number):m_number1 (number), m_number2 (0)
+            Class (const int number):m_number1 (number), m_number2 (0)
             {
                 std::cout << "normal-constructor ";
             }
@@ -155,8 +140,8 @@ void demo()
             }
 
         private:
-            int m_number1;
-            int m_number2;
+            int m_number1{};
+            int m_number2{};
         };
 
         const auto test_constructors = []
@@ -198,7 +183,7 @@ void demo()
                 // Does not call the destructor -> memory leak.
             }
         };
-        // test_destructors();
+        //test_destructors();
     }
 
     // If a std::vector gets resized, it moves all of its data to another memory location.
@@ -220,7 +205,7 @@ void demo()
     // The std::vector::erase with two iterators removes the range between the two.
     // Note that the value of the last iter is not removed.
     {
-        std::vector<int> v{ 1, 2, 3, 4};
+        std::vector v{ 1, 2, 3, 4};
         assert(v.size() == 4);
         v.erase(v.begin() + 1, v.begin() + 2);
         assert (v.size() == 3);
@@ -228,8 +213,8 @@ void demo()
 
     {
         // Cannot store T& (like int&) in a vector.
-        //std::vector<int&> bla;
-        // Reason: References are not objects, cannot be copied, not be moved, like the vector needs.
+        // std::vector<int&> bla;
+        // Reason: References are not objects, cannot be copied or moved, like the vector needs.
 
         // Fails too.
         // std::array<int&, 1> {one};
@@ -242,7 +227,18 @@ void demo()
 }
 
 
-namespace deques {
+namespace queues {
+
+// std::deque
+// Main components on heap:
+// 1. A map (pointer array).
+//    Contiguous array of pointers to data blocks.
+// 2. Data blocks (chunks).
+//    Fixed-size arrays to hold the elements scattered in memory.
+
+// Complexity O(1): Random access, insertion at ends.
+//            O(n): Insertion in middle (due to shifting elements).
+
 void demo()
 {
     // The deque constructors.
@@ -260,11 +256,44 @@ void demo()
         assert(d2.front() == 2);
         assert(d2.back() == 3);
     }
+
+    // The queue: The underlying container is standard a deque.
+
+    // Default constructor.
+    std::queue<int> q1;
+
+    // Copy constructor.
+    std::queue<int> q2 (q1);
+
+    // Initialization using predefined container.
+    int a1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    std::deque<int> d1 (a1, a1 + 10);
+    std::queue<int>q3 (d1);
+
+    // Using non-default storage.
+    std::queue<int, std::list<int>> q4;
+    std::queue<int, std::vector<int>> q5;
+
+    // Non-allowed constructors:
+    // Iterator constructor
+    // Copy constructor source and target stack object using different storage containers
+    // Initialization using predefined container - using different storage object than declared
+
+    assert(q1.empty());
+
+    // Methods front / back / push / pop.
+    q1.push(1);
+    assert(q1.front() == 1);
+    q1.push(2);
+    assert(q1.front() == 1);
+    assert(q1.back() == 2);
+    q1.pop();
+    assert(q1.front() == 2);
 }
 }
 
 
-namespace forward_lists {
+namespace forward_list {
 void demo()
 {
     {
@@ -284,19 +313,19 @@ namespace list {
 // Elements not in contiguous memory but scattered over the heap.
 // Access insert remove: O(1).
 // No random access.
-// Operator == (searching) has linear complexity O(n).
+// Searching has linear complexity O(n).
 
 void demo()
 {
-    std::list<int> list1({ 1, 2, 3 });
-    std::list<int> list2({ 5, 8, 6 });
+    std::list list1({ 1, 2, 3 });
+    std::list list2({ 5, 8, 6 });
     list1.remove(2);
     list2.remove(8);
     list1.pop_back();
     list2.pop_back();
     list2.insert(list2.begin(), 7);
     list2.pop_back();
-    std::forward_list<int> fl1 { 1, 2, 3 };
+    std::forward_list fl1 { 1, 2, 3 };
     std::erase(fl1, 2);
 }
 }
@@ -319,17 +348,52 @@ void demo()
 }
 
 
-namespace map {
+namespace maps {
+// std::map
 // Implemented as a self-balancing binary search tree with nodes allocated on the heap.
 // Each node has left pointer to left child and right pointer to right child.
 // Each node is pair<key,value>.
 // Search, insertion, removal by key: O(log n).
 // Removal by iterator: O(1) (because traversal is not needed as iterator is already given).
 
+// std::unordered_map
+// Implementation:
+// 1. Bucket array on heap: contiguous vector of pointers.
+// 2. Nodes on heap:
+//    * pointer to next bucket.
+//    * stored hash.
+//    * std::pair< key,value>.
+// Search, insertion, deletion: On average O(1).
+// If load factor > 1.0, it does a rehash, which takes time.
+// If some hash keys collide, the bucket contains more data in a slow singly linked list.
+// That causes a worst-case complexity of O(n).
+
 void demo()
 {
 }
 }
+
+
+namespace set {
+
+// set
+// A std::set is sorted, so can do binary search.
+// Store elements in self-balancing binary search tree.
+// Store element scattered on the heap. Elements never change location.
+// Each node:
+// * parent pointer.
+// * left child pointer.
+// * right child pointer.
+// * value = data.
+// Search, insert, delete: O(log n).
+// Iterate: amortized O(1).
+// Clear: O(n).
+
+void demo()
+{
+}
+}
+
 
 namespace iterators {
 
@@ -664,44 +728,6 @@ void demo()
 }
 
 
-namespace queues {
-void demo()
-{
-    // The underlying container is standard a deque.
-
-    // Default constructor.
-    std::queue<int> q1;
-
-    // Copy constructor.
-    std::queue<int> q2 (q1);
-
-    // Initialization using predefined container.
-    int a1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-    std::deque<int> d1 (a1, a1 + 10);
-    std::queue<int>q3 (d1);
-
-    // Using non-default storage.
-    std::queue<int, std::list<int>> q4;
-    std::queue<int, std::vector<int>> q5;
-
-    // Non-allowed constructors:
-    // Iterator constructor
-    // Copy constructor source and target stack object using different storage containers
-    // Initialization using predefined container - using different storage object than declared
-
-    assert(q1.empty());
-
-    // Methods front / back / push / pop.
-    q1.push(1);
-    assert(q1.front() == 1);
-    q1.push(2);
-    assert(q1.front() == 1);
-    assert(q1.back() == 2);
-    q1.pop();
-    assert(q1.front() == 2);
-}
-}
-
 
 namespace priority_queues {
 void demo()
@@ -936,11 +962,12 @@ void demo()
 {
     array::demo();
     vector::demo();
-    deques::demo();
-    forward_lists::demo();
+    queues::demo();
+    forward_list::demo();
     list::demo();
     arrays::demo();
-    map::demo();
+    maps::demo();
+    set::demo();
     iterators::demo();
     sizes::demo();
     assigning::demo();
@@ -953,7 +980,6 @@ void demo()
     containing::demo();
     set_hash_comparators::demo();
     stacks::demo();
-    queues::demo();
     priority_queues::demo();
     span::demo();
     performance::demo();
