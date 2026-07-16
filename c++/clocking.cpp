@@ -76,30 +76,25 @@ void demo()
 
     // A duration consists of a span of time, defined as some number of ticks of some time unit.
     // For example, "42 seconds" could be represented by a duration consisting of 42 ticks of a 1-second time unit.
-    constexpr std::chrono::duration<int, std::ratio<60>> duration_3_minutes = std::chrono::minutes(3);
-    static_assert(duration_3_minutes.count() == 3);
-    static_assert(std::chrono::seconds(10).count() == 10);
-
-
+    {
+        constexpr std::chrono::duration<int, std::ratio<60>> duration_3_minutes = std::chrono::minutes(3);
+        static_assert(duration_3_minutes.count() == 3);
+        static_assert(std::chrono::seconds(10).count() == 10);
+        constexpr std::chrono::duration<int, std::ratio<1>> duration_seconds = std::chrono::duration_cast<std::chrono::seconds>(duration_3_minutes);
+        static_assert(duration_seconds.count() == 180);
+    }
 
     // A time point is a duration of time that has passed since the epoch of a specific clock.
+    std::chrono::time_point<std::chrono::system_clock> tp_now = std::chrono::system_clock::now();
 
+    std::chrono::time_point<std::chrono::system_clock,std::chrono::minutes> tp_now_minutes;;
+    tp_now_minutes = std::chrono::time_point_cast<std::chrono::minutes,std::chrono::system_clock>(tp_now);
 
+    std::chrono::duration<int,std::ratio<1>> d_seconds = tp_now_minutes.time_since_epoch();
+    assert(d_seconds.count() > 1784187900);
 
-
-    {
-        const auto tp1 = std::chrono::system_clock::now();
-        const auto tp2 = std::chrono::time_point_cast<std::chrono::minutes, std::chrono::system_clock>(tp1);
-        const auto duration_minutes = tp2.time_since_epoch();
-        const long minutes = duration_minutes.count();
-        assert(minutes >= 29559654);
-        const auto next_minute = tp2 + std::chrono::minutes{1};
-        assert(next_minute.time_since_epoch().count() == minutes + 1);
-
-        const auto duration_hours = std::chrono::duration_cast<std::chrono::hours>(duration_minutes);
-        const auto hours = duration_hours.count();
-        assert(hours == minutes/60);
-    }
+    auto next_second = d_seconds + std::chrono::seconds(1);
+    assert(next_second.count() == d_seconds.count() + 1);
 
     {
         // Parses a timestamp that approximately matches the RFC 3339 standard.
@@ -113,28 +108,28 @@ void demo()
         // The time zone may also be indicated with a "Z" at the end: Zulu time = UTC.
         std::string format{"%Y-%m-%dT%H:%M:%S"};
         format += timestring.ends_with('Z') ? "%Z" : "%z";
-
-        // std::chrono::time_point<std::chrono::system_clock> tp;
+        std::chrono::time_point<std::chrono::system_clock> tp;
         // iss >> std::chrono::parse(format, tp);
     }
 
     {
-        constexpr auto m = 3;
-        constexpr auto d = 23;
-        constexpr std::chrono::year_month_day ymd {std::chrono::year(2026)/m/d};
-        static_assert(ymd.year() == std::chrono::year(2026));
-        static_assert(ymd.month() == std::chrono::month(m));
-        static_assert(ymd.day() == std::chrono::day(d));
+        constexpr auto year = 2026;
+        constexpr auto month = 3;
+        constexpr auto day = 23;
+        constexpr std::chrono::year_month_day ymd {std::chrono::year(year)/month/day};
+        static_assert(ymd.year() == std::chrono::year(year));
+        static_assert(ymd.month() == std::chrono::month(month));
+        static_assert(ymd.day() == std::chrono::day(day));
     }
 
     {
         const auto time_point_utc = std::chrono::system_clock::now();
-        //std::cout << "UTC time: " << utc << std::endl;
+        // std::cout << "UTC time: " << time_point_utc << std::endl;
         const std::time_t time = std::chrono::system_clock::to_time_t(time_point_utc);
         std::string time_str = std::ctime(&time);
         time_str.pop_back(); // Remove the \n.
-        // std::cout << "Local time: " << time_str << std::endl;
-        // std::cout << std::chrono::current_zone()->to_local(utc) << std::endl;
+        //std::cout << "Local time: " << time_str << std::endl;
+        // std::cout << std::chrono::current_zone()->to_local(time_point_utc) << std::endl;
     }
 
     {

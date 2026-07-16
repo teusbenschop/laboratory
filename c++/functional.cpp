@@ -16,13 +16,13 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "functional.h"
 #include <algorithm>
 #include <cassert>
 #include <functional>
 #include <future>
 #include <iostream>
 #include <numeric>
+#include "functional.h"
 
 namespace functional {
 
@@ -194,13 +194,23 @@ void demo(){}
 namespace binding {
 // Demo of std::bind, including bind_front and bind_back.
 // https://cppreference.com/w/cpp/utility/functional/bind.html
+
+constexpr auto minus = [](const int a, const int b) -> int
+{
+    return a - b;
+};
+
+// The function template std::bind generates a forwarding call wrapper for f.
+// Calling this wrapper is equivalent to invoking f with some of its arguments bound to args.
+
+constexpr auto val1_minus_val2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
+static_assert(val1_minus_val2(1, 2) == -1);
+
+constexpr auto val_minus_3 = std::bind(minus, std::placeholders::_1, 3);
+static_assert(val_minus_3(1) == -2);
+
 void demo()
 {
-    constexpr auto minus = [](const int a, const int b) -> int
-    {
-        return a - b;
-    };
-
     struct Struct
     {
         constexpr int minus(const int a, const int b)
@@ -214,15 +224,6 @@ void demo()
     // Struct instance.
     Struct foo;
 
-    // The function template std::bind generates a forwarding call wrapper for f.
-    // Calling this wrapper is equivalent to invoking f with some of its arguments bound to args.
-
-    const auto value1_minus_value2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
-    assert(value1_minus_value2(1, 2) == -1);
-
-    const auto value_minus_3 = std::bind(minus, std::placeholders::_1, 3);
-    assert(value_minus_3(1) == -2);
-
     // Bind to a pointer to a member function.
     const auto value1_minus_value2_via_member_fn_1 = std::bind(
         &Struct::minus, &foo, std::placeholders::_1, std::placeholders::_2);
@@ -234,7 +235,7 @@ void demo()
 
     // Bind to a pointer to a data member.
     const auto get_value_from_struct = std::bind(&Struct::val10, std::placeholders::_1);
-    assert(get_value_from_struct(foo) == 10);
+    assert(get_value_from_struct(&foo) == 10);
 
     // Function templates std::bind_front and std::bind_back
     // generate a perfect forwarding call wrapper
@@ -244,7 +245,7 @@ void demo()
     const auto fifty_minus_value = std::bind_front(minus, 50);
     assert(fifty_minus_value(3) == 47); // equivalent to `minus(50, 3)`: 47.
 
-    const auto value_minus_fifty = std::bind_back(minus, 50);
+    const auto value_minus_fifty = std::bind_back(minus, 50); // minus(5, 50) : 45.
     assert(value_minus_fifty(5) == -45);
 }
 }
@@ -266,7 +267,7 @@ struct Struct
         return i;
     }
 
-    int add_xy(int x, int y) const
+    [[nodiscard]] int add_xy(const int x, const int y) const
     {
         return data + x + y;
     }
@@ -287,19 +288,19 @@ struct Struct
 
 void demo()
 {
-    Struct s{};
+    Struct struct1 {};
 
     const auto get_greeting = std::mem_fn(&Struct::display_greeting);
-    assert(get_greeting(s) == "hello");
+    assert(get_greeting(struct1) == "hello");
 
     const auto get_number = std::mem_fn(&Struct::display_number);
-    assert(get_number(s, 42) == 42);
+    assert(get_number(struct1, 42) == 42);
 
     const auto get_data = std::mem_fn(&Struct::data);
-    assert(get_data(s) == 7);
+    assert(get_data(struct1) == 7);
 
     const auto add_xy = std::mem_fn(&Struct::add_xy);
-    assert(add_xy(s, 1, 2) == 10);
+    assert(add_xy(struct1, 1, 2) == 10);
 
     const auto s_ptr = std::make_unique<Struct>();
     assert(get_data(s_ptr) == 7);
@@ -315,8 +316,9 @@ void demo()
 
 
 namespace demo_not_fn {
+// Inverts the result of fn.
 
-constexpr bool is_same (int a, int b)
+constexpr bool is_same (const int a, const int b)
 {
     return a == b;
 }
@@ -326,7 +328,7 @@ constexpr auto differs = std::not_fn(is_same);;
 struct S
 {
     int val;
-    bool is_same (int arg) {return val == arg;}
+    [[nodiscard]] bool is_same (const int arg) const {return val == arg;}
 };
 
 auto member_differs = std::not_fn(&S::is_same);
