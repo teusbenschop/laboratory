@@ -41,7 +41,7 @@ namespace latches {
 
 // The std::barrier is similar to the std::latch with these differences:
 // 1. It can be reused.
-// 2. It executes possibly empty callable before unblocking threads.
+// 2. It executes (possibly empty) callable before unblocking threads.
 
 constexpr auto n_threads = 3;
 
@@ -68,7 +68,7 @@ void demo()
 
     std::cout << "Main thread waits at latch till threads have counted it down to zero" << std::endl;
     latch.wait();
-    std::cout << "Main thread get past the latch" << std::endl;
+    std::cout << "Main thread gets past the latch" << std::endl;
     for (auto&& thread : threads)
         thread.join();
     std::cout << "All threads have completed" << std::endl;
@@ -99,7 +99,7 @@ void demo()
 
     // A function to run on completion of a barrier.
     // It checks whether all dice have rolled to six simultaneously.
-    auto on_barrier_completion = [&] -> void
+    auto on_barrier_completion = [&]
     {
         ++n_turns;
         const auto is_six = [](auto i) { return i == 6; };

@@ -17,18 +17,17 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include "text.h"
-
 #include <cassert>
 #include <format>
 #include <iomanip>
 #include <iostream>
 #include <numbers>
 #include <ranges>
-#include <string>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <vector>
+#include "text.h"
 
 
 namespace text {
@@ -42,8 +41,7 @@ static_assert('A' == 0x41);
 
 
 namespace escape_sequences {
-
-void demo() {
+static void demo() {
     // Named universal character escapes.
     // https://www.unicode.org/Public/14.0.0/ucd/NamesList.txt
     assert("\N{CAT FACE}"      == std::string("🐱"));
@@ -54,17 +52,15 @@ void demo() {
     assert("\o{111}"  == std::string("I"));
     assert("\x{A0}"   != std::string(""));
     assert("\u{CAFE}" == std::string("쫾"));
-
 }
-
 }
 
 
 namespace formatting_library {
 // https://en.cppreference.com/w/cpp/utility/format
-void demo()
+static void demo()
 {
-    std::string result = std::format("c={} s={} 1={}", "c", std::string("s"), 1);
+    const std::string result = std::format("c={} s={} 1={}", "c", std::string("s"), 1);
     assert(result == "c=c s=s 1=1");
 
     // Formats to an output iterator.
@@ -81,7 +77,7 @@ void demo()
 
 
 namespace stream_manipulation {
-void demo()
+static void demo()
 {
     std::ostringstream oss;
     oss << std::boolalpha << false << " " << std::noboolalpha << true;
@@ -94,7 +90,7 @@ namespace osyncstream {
 // https://en.cppreference.com/w/cpp/io/basic_osyncstream
 // The class template std::basic_osyncstream is a convenience wrapper for std::basic_syncbuf.
 // It provides a mechanism to synchronize threads writing to the same stream.
-void demo()
+static void demo()
 {
     const auto stream_worker = []([[maybe_unused]] int id) {
         using namespace std::literals::chrono_literals;
@@ -109,18 +105,16 @@ void demo()
     for (int i = 0; i < 4; ++i) {
         threads[i] = std::jthread(stream_worker, i);
     }
-
 }
 }
-
 
 
 
 namespace output_manipulation {
-void demo()
+static void demo()
 {
     {
-        // When filling put the value at the left.
+        // When filling up put the value at the left.
         std::stringstream ss;
         ss << std::left << std::setfill('_') << std::setw(10) << -1.23;
         assert(ss.str() == "-1.23_____");
@@ -136,11 +130,11 @@ void demo()
 
 
 namespace istream_view {
-void demo() {
+static void demo() {
     // Get the floats from the input string.
     {
         auto iss = std::istringstream{"1.4142 1.618 2.71828 3.14159 6.283"};
-        auto floats = std::ranges::istream_view<float>(iss);
+        auto&& floats = std::ranges::istream_view<float>(iss);
         auto result = floats | std::ranges::to<std::vector<float>>();
         std::vector<float> standard = {1.4142, 1.618, 2.71828, 3.14159, 6.283};
         assert(result == standard);
@@ -148,7 +142,7 @@ void demo() {
     // Get the separate words.
     {
         auto iss = std::istringstream{"how \f was \n yesterday's \t weather?"};
-        auto strings = std::ranges::istream_view<std::string>{iss};
+        auto&& strings = std::ranges::istream_view<std::string>{iss};
         const auto result = strings | std::ranges::to<std::vector<std::string>>();
         std::vector<std::string> standard = {"how", "was", "yesterday's", "weather?"};
         assert(result == standard);
@@ -160,14 +154,14 @@ void demo() {
 namespace templates_printf {
 
 // The base function if no arguments are given, only the format string.
-void template_print_format(std::ostringstream& oss, const char* format)
+static void template_print_format(std::ostringstream& oss, const char* format)
 {
     oss << format;
 }
 
 // The recursive variadic function.
 template <typename T, typename... Targs>
-void template_print_format(std::ostringstream& oss, const char* format, T value, Targs... args)
+static void template_print_format(std::ostringstream& oss, const char* format, T value, Targs... args)
 {
     for (; *format; ++format)
     {
@@ -181,7 +175,7 @@ void template_print_format(std::ostringstream& oss, const char* format, T value,
     }
 }
 
-void demo()
+static void demo()
 {
     std::ostringstream oss;
     template_print_format(oss, "% world % %", "Hello", "!", 123);
@@ -200,7 +194,7 @@ const char8_t* const cc3 = u8R"(abc)";
 
 // Adjacent string literal are concatenated by the compiler.
 
-void demo()
+static void demo()
 {
     // String literals may have embedded null characters but strlen fails on that.
     const char* const cc4 = "abc\0abc";
@@ -226,7 +220,7 @@ public:
     }
 
 private:
-    explicit Distance (long double val) : kilometers(val) {}
+    explicit Distance (const long double val) : kilometers(val) {}
     long double kilometers{0.0};
     friend Distance operator""_km(long double val);
     friend Distance operator""_mi(long double val);
@@ -242,7 +236,7 @@ Distance operator""_mi(long double val)
     return Distance(val * Distance::km_per_mile);
 }
 
-void demo_distance()
+static void demo_distance()
 {
     // Must have a decimal point to bind to the operator we defined.
     Distance d{ 402.0_km }; // construct using kilometers

@@ -45,7 +45,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "transformations.h"
 #include "unions.h"
 #include "variables.h"
-#include "questions.h"
 
 int main()
 {
@@ -81,7 +80,6 @@ int main()
     unions::demo();
     mathematics::demo();
     performance::demo();
-    questions::demo();
     design_patterns::demo();
     return EXIT_SUCCESS;
 }

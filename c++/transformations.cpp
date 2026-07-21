@@ -16,30 +16,29 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "transformations.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <charconv>
 #include <iostream>
-#include <numeric>
 #include <ostream>
 #include <random>
 #include <ranges>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
+#include "transformations.h"
 
 namespace transformations {
 
 namespace accumulate {
-constexpr std::array<int, 3> integers{1, 2, 3};
-constexpr auto sum = std::accumulate(integers.cbegin(), integers.cend(), 0);
+constexpr std::array integers{1, 2, 3};
+constexpr auto sum = std::accumulate(integers.cbegin(), integers.cend(), 0); // Default = sum.
 static_assert(sum == 6);
-constexpr auto product = std::accumulate(integers.cbegin(), integers.cend(), 1, std::multiplies<int>());
+constexpr auto product = std::accumulate(integers.cbegin(), integers.cend(), 1, std::multiplies());
 static_assert(product == 6);
 
-void demo()
+static void demo()
 {
     const auto strings = std::vector<std::string>{"a", "b"};
     const std::string init{"init"};
@@ -50,7 +49,7 @@ void demo()
     {
         return std::move(a) + '-' + std::to_string(b);
     };
-    std::string s = std::accumulate(std::next(integers.begin()), integers.end(),
+    const std::string s = std::accumulate(std::next(integers.begin()), integers.end(),
                                     std::to_string(integers.at(0)), // start with first element
                                     dash_fold);
     assert(s == "1-2-3");
@@ -59,36 +58,29 @@ void demo()
 
 
 namespace copy {
-void demo()
+static void demo()
 {
-    constexpr auto values = std::array<int, 3>{1, 2, 3};
-    {
-        std::vector<int> copy{};
-        std::copy(values.begin(), values.end(), std::back_inserter(copy));
-        assert(copy.size() == 3);
-    }
-    {
-        std::vector<int> copy{};
-        std::ranges::copy(values, std::back_inserter(copy));
-        assert(copy.size() == 3);
-    }
+    constexpr auto values = std::array{1, 2, 3};
+    std::vector<int> copy{};
+    std::ranges::copy(values, std::back_inserter(copy));
+    assert(copy.size() == 3);
 }
 }
 
 
 namespace ranges_views_filter_drop_reverse {
-void demo()
+static void demo()
 {
     // Start from a list of numbers.
     const auto numbers = std::vector{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     // Define a function to select even numbers.
     const auto even = [](const int i) -> bool
     {
-        return 0 == i % 2;
+        return i % 2 == 0;
     };
     // Define a view that filters on even numbers, then drops the first number, then reverses them.
     using namespace std::ranges::views;
-    auto result = numbers | filter(even) | drop(1) | reverse;
+    auto&& result = numbers | filter(even) | drop(1) | reverse;
     // The view contains: 8 6 4 2
     for (const int i : result)
         assert(i == 8 or i == 6 or i == 4 or i == 2);
@@ -97,7 +89,7 @@ void demo()
 
 
 namespace ranges_transformations {
-void demo() {
+static void demo() {
     {
         // ranges::transform.
         const auto input = std::vector{1, 2, 3, 4};
@@ -145,7 +137,7 @@ void demo() {
         // beginning at the first element for which the predicate returns false.
         auto v = vec | std::views::drop_while([](auto i) { return i < 5; });
         // Result: 5 4 3 2 1
-        auto result= v | std::ranges::to<std::vector<int>>();
+        auto result = v | std::ranges::to<std::vector<int>>();
         auto standard = std::vector<int>{5, 4, 3, 2, 1};
         assert(result == standard);
     }
@@ -180,7 +172,7 @@ void demo() {
         const auto flattened_view = std::views::join(list_of_lists);
         std::vector<int> result = flattened_view | std::ranges::to<std::vector<int>>();
         // Result: 1 2 3 4 5 5 4 3 2 1
-        const auto standard = std::vector<int>{1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
+        const auto standard = std::vector{1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
         assert(result == standard);
     }
 }
@@ -188,15 +180,16 @@ void demo() {
 
 
 namespace ranges_sorting {
-void demo()
+static void demo()
 {
     {
         // Standard sorting demo.
         std::vector values {6, 3, 2, 7, 4, 1, 5};
-        assert(!std::ranges::is_sorted(values));
-        // Regular C++ sort:
+        assert(not std::ranges::is_sorted(values));
+        // Regular C++ sort.
+        // ReSharper disable once CppUseRangeAlgorithm
         std::sort(values.begin(), values.end());
-        // Ranges sort:
+        // Ranges sort.
         std::ranges::sort(values);
         const auto standard = std::vector{1, 2, 3, 4, 5, 6, 7};
         assert(values == standard);
@@ -235,8 +228,9 @@ void demo()
     }
     {
         // The partial_sort takes input range (begin, end), and iterator (middle).
-        // Puts the smallest elements of the input range into range (begin, middle).
-        // I.e. sorts the first n elements of a container.
+        // It finds the smallest n elements in the entire collection
+        // and places them, sorted, in the range from first up to middle.
+        // The remaining elements from middle to last are left in an unspecified, unsorted order.
         std::vector values {6, 3, 2, 7, 4, 1, 5};
         std::ranges::partial_sort(values, values.begin() + 3);
         const auto standard = std::vector{1, 2, 3, 7, 6, 4, 5};
@@ -245,6 +239,8 @@ void demo()
     {
         // The nth_element takes a range as input, and an iterator pointing to the nth element,
         // and makes the range begin-nth to be less than the range nth-end.
+        // In short it puts one specific element in its correct sorted position,
+        // while partitioning the rest.
         std::vector values {6, 3, 2, 7, 4, 1, 5};
         std::ranges::nth_element(values, values.begin() + 1);
         const auto standard = std::vector{1, 2, 3, 4, 5, 6, 7};
@@ -258,8 +254,11 @@ void demo()
             std::string name{};
             int age{};
         };
-        std::vector<People> people {
-            {"Name1", 2}, {"Name1", 1}, {"Name2", 2}, {"Name3", 3}
+        std::vector<People> people{
+            {.name = "Name1", .age = 2},
+            {.name = "Name1", .age = 1},
+            {.name = "Name2", .age = 2},
+            {.name = "Name3", .age = 3}
         };
         std::ranges::stable_sort(people, {}, &People::name);
         assert(people.at(0).age == 2);
@@ -274,13 +273,14 @@ void demo()
         // returns an iterator indicating the remainder of items till the end.
         // It preserves the original order of elements.
         // The plain "partition" does not preserve the order.
-        std::vector<int> v {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        auto tail = std::ranges::stable_partition(v, [](int i) { return i%2 == 0;});
-        std::vector<int> standard {
+        std::vector v {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        const auto tail = std::ranges::stable_partition(v, [](const int i) { return i%2 == 0;});
+        std::vector standard {
             0, 2, 4, 6, 8, // Partitioned.
             1, 3, 5, 7, 9 // Remainder.
         };
         assert(v == standard);
+        assert(std::distance(v.begin(), tail.begin()) == 5);
     }
 }
 }
@@ -288,31 +288,31 @@ void demo()
 
 namespace charconv {
 // Functions are ultra-fast, basic, non-throwing, non-allocating.
-void demo()
+static void demo()
 {
     {
-        const auto str {"1234"};
+        constexpr auto str {"1234"};
         int result{};
         const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
         assert(ec == std::errc()); // No error.
         assert(result == 1234);
     }
     {
-        const auto str {"123 foo"};
+        constexpr auto str {"123 foo"};
         int result{};
         const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
         assert(ec == std::errc()); // No error.
         assert(result == 123);
     }
     {
-        const auto str {"bar"};
+        constexpr auto str {"bar"};
         int result{};
         const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
         assert(ec == std::errc::invalid_argument); // Not a number.
         assert(result == 0);
     }
     {
-        const auto str {"500000000000"};
+        constexpr auto str {"500000000000"};
         int result{};
         const auto [ptr, ec] = std::from_chars(str, str + strlen(str), result);
         assert(ec == std::errc::result_out_of_range); // Number would have been too large.
@@ -339,15 +339,15 @@ void demo()
 namespace tuple_apply {
 // Run a function on a tuple and pass the tuple elements as arguments to the function.
 
-int add_function (int a, int b) { return a + b; };
+static int add_function (const int a, const int b) { return a + b; };
 
 template <typename T>
-T add_generic (T a, T b) { return a + b; };
+static T add_generic (const T a, const T b) { return a + b; };
 
-auto add_lambda = [] (auto a, auto b) { return a + b; };
+static auto add_lambda = [] (const auto a, const auto b) { return a + b; };
 
 template <typename... Ts>
-std::ostream& operator<< (std::ostream& os, const std::tuple<Ts...>& tuple)
+[[maybe_unused]] static std::ostream& operator<< (std::ostream& os, const std::tuple<Ts...>& tuple)
 {
     std::apply(
         [&os] (const Ts&... args)
@@ -361,7 +361,7 @@ std::ostream& operator<< (std::ostream& os, const std::tuple<Ts...>& tuple)
     return os;
 }
 
-void demo()
+static void demo()
 {
     {
         const int i = std::apply(add_function, std::pair{1, 2});
@@ -372,7 +372,7 @@ void demo()
         assert(i == 3);
     }
     {
-        const int i = std::apply(add_lambda, std::pair{1, 2});
+        constexpr int i = std::apply(add_lambda, std::pair{1, 2});
         assert(i == 3);
     }
     {
@@ -385,17 +385,17 @@ void demo()
 
 
 namespace make_from_tuple {
-void demo()
+static void demo()
 {
     struct Struct
     {
-        Struct(int i, float f, char c) : i(i), f(f), c(c) {};
+        Struct(const int i, const float f, const char c) : i(i), f(f), c(c) {};
         int i{};
         float f{};
         char c{};
     };
 
-    auto tuple = std::tuple<int, float, char>{1, 2.0f, 'c'};
+    constexpr auto tuple = std::tuple<int, float, char>{1, 2.0f, 'c'};
     const Struct strct = std::make_from_tuple<Struct>(std::move(tuple));
     assert(strct.i == 1);
     assert(strct.f == 2.0f);
@@ -405,20 +405,22 @@ void demo()
 
 
 namespace scanning {
-
-void demo()
+static void demo()
 {
     {
         // Default binary operator is summing.
         // Outputs init(=0) -> 0+1(=1) -> 1+2(=3), excludes last element of input.
-        const std::vector data{1, 2, 3};
+        // Named "exclusive" because the n-th element of the input
+        // is "excluded" from the calculation of the n-th output element.
+        const std::vector data{1, 2, 3, 4};
         std::vector<int> out;
         std::exclusive_scan(data.begin(), data.end(), std::back_inserter(out), 0);
-        const std::vector standard {0, 1, 3};
+        const std::vector standard {0, 1, 3, 6};
         assert(out == standard);
     }
     {
-        // Outputs 1 -> 1+2=3, 3+3=6, includes last element.
+        // Outputs 1, 1+2=3, 1+2+3=6, includes last element.
+        // The calculated n-th output "includes" the n-th input element.
         const std::vector data{1, 2, 3};
         std::vector<int> out;
         std::inclusive_scan(data.begin(), data.end(), std::back_inserter(out));
@@ -442,22 +444,22 @@ namespace reduce {
 // or another operator.
 // Behaves like std::accumulate, except it may arbitrarily rearrange and regroup the elements.
 
-void demo()
+static void demo()
 {
-    std::vector data{1, 2, 3};
+    const std::vector data{1, 2, 3};
 
     // Sum of the input data.
-    int sum1 = std::reduce(data.cbegin(), data.cend());
+    const int sum1 = std::reduce(data.cbegin(), data.cend());
     assert(sum1 == 6);
 
     // Take initial value, sum with input data.
-    int init2 = 2;
-    int sum2 = std::reduce(data.cbegin(), data.cend(), init2);
+    constexpr int init2 {2};
+    const int sum2 = std::reduce(data.cbegin(), data.cend(), init2);
     assert(sum2 == 8);
 
     // Same as above, but with product.
-    int init3 = 3;
-    int sum3 = std::reduce(data.cbegin(), data.cend(), init3, std::multiplies<>());
+    constexpr int init3 {3};
+    const int sum3 = std::reduce(data.cbegin(), data.cend(), init3, std::multiplies<>());
     // 3 x 1 x 2 x 3 = 18.
     assert(sum3 == 18);
 }
@@ -465,7 +467,7 @@ void demo()
 
 
 namespace remove_erase {
-void demo()
+static void demo()
 {
     std::string s {"A B C D"};
     // Removing means: Shifting elements to be kept to the front through move assignment.
@@ -481,7 +483,7 @@ void demo()
 
 
 namespace set_union_difference_intersection {
-void demo()
+static void demo()
 {
     std::vector v1 {1, 2, 3};
     std::vector v2 {2, 3, 4};
@@ -491,7 +493,7 @@ void demo()
     assert(output == standard);
 
     // The set_difference copies the elements from the sorted input1 range,
-    // which are not found in the sorted input1 range,
+    // which are not found in the sorted input2 range,
     // to the output range.
     output.clear();
     std::ranges::set_difference(v1, v2, std::back_inserter(output));

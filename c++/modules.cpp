@@ -25,6 +25,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 // export module hello_world;
 // C++20 'module' only available with '-fmodules-ts', which is not yet enabled with '-std=c++20'
 
+// import std; Still fails to compile.
+
 namespace modules {
 void demo() {
 

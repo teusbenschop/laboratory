@@ -44,7 +44,7 @@ void demo()
     return;
     scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
     std::vector<std::jthread> threads;
-    const int hc = std::thread::hardware_concurrency();
+    const unsigned hc = std::thread::hardware_concurrency();
 
     for (int number_of_threads = 1; number_of_threads <= hc; ++number_of_threads)
     {
@@ -65,15 +65,15 @@ void demo()
 
         for (int t = 0; t != number_of_threads; ++t)
         {
-            threads.emplace_back([&](int i)
+            threads.emplace_back([&](const int i)
             {
-                const auto start = std::chrono::high_resolution_clock::now();
+                const auto start = std::chrono::steady_clock::now();
 
-                for (std::size_t r = 10'000'00; --r;)
+                for (std::size_t r {1'000'000}; --r;)
                     global_data[i].might_be_shared.fetch_add(1);
 
                 total_threads_execution_time_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::high_resolution_clock::now() - start
+                    std::chrono::steady_clock::now() - start
                 ).count();
 
             }, t);
@@ -115,14 +115,14 @@ void demo()
     ptr1->~Struct();
 
     // Reuse the same memory for a second Struct.
-    auto* ptr2 = new(raw_memory) Struct {20};
+    const auto* ptr2 = new(raw_memory) Struct {20};
     assert(ptr2->value == 20);
 
     // Using the original pointer here is undefined behavior, although it may work.
     assert(ptr1->value == 20);
 
     // "Launder" (wash) the old pointer to make it valid again.
-    Struct* laundered_ptr = std::launder(ptr1);
+    const Struct* laundered_ptr = std::launder(ptr1);
     assert(laundered_ptr->value == 20);
 }
 }
@@ -131,7 +131,7 @@ void demo()
 
 namespace lambda_is_much_faster_than_bind {
 
-int sum_abc(int a, int b, int c)
+int sum_abc(const int a, const int b, const int c)
 {
     return a + b + c;
 }
@@ -152,7 +152,7 @@ void demo()
                     };
                     sum += lambda_fn();
                 }
-        // The lambda takes 6800µs on a give system.
+        // The lambda takes 6800µs on a given system.
     }
     {
         const auto timer = scoped_timer::scoped_timer<std::chrono::microseconds>{};
@@ -173,12 +173,13 @@ namespace the_80_20_rule {
 // 80% of resources is used by 20% of code.
 // 80% of memory is used by 20% of code.
 // 80% of maintenance effort is spent on 20% of code.
-// Overall performance of executable is influenced by a small part of it.
+// Overall performance of executable is influenced by a small part of the code.
 void demo() {}
 }
 
+
 namespace lazy_evaluation {
-// * Use macro's that execute in only some circumstances, like log_debug.
+// * Use macro's that execute only in some circumstances, like log_debug.
 // * Use std::ranges::view which is lazy by definition.
 // * Distinguish read (fast) from write (slow).
 // * Lazy reading from database: read when first needed.
@@ -192,6 +193,7 @@ namespace over_eager_evaluation {
 void demo() {}
 }
 
+
 namespace avoid_temporaries {
 // Temporary object is created when passing by value.
 // Passing by const reference:
@@ -199,15 +201,15 @@ namespace avoid_temporaries {
 void demo()
 {
     std::string s1 = "1";
-    std::string s2 = "2";
-    std::string s3 = s1 + s1; // Uses temporary.
+    const std::string s2 = "2";
+    const std::string s3 = s1 + s1; // Uses temporary.
     s1 += s2; // No temporary.
 }
 }
 
 // Return value optimization (done by compilers).
 
-// Create overloads for functions to avoid temporaries during type converssions, e.g. std::string / const char*.
+// Create overloads for functions to avoid temporaries during type conversions, e.g. std::string / const char*.
 
 void demo()
 {

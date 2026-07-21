@@ -17,8 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include "searching.h"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -30,7 +28,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <ranges>
 #include <regex>
 #include <vector>
-
+#include "searching.h"
 #include "clocking.h"
 
 
@@ -70,13 +68,15 @@ void demo()
 namespace any_of_all_of_none_of {
 
 // Input of positive numbers.
-constexpr auto numbers = std::array<int, 7>{3, 2, 2, 1, 0, 2, 1};
+constexpr auto numbers = std::array{3, 2, 2, 1, 0, 2, 1};
 
 // Function testing negative number.
-constexpr auto is_negative = [](int i) { return i < 0; };
+constexpr auto is_negative = [](const int i) { return i < 0; };
 
 // None of the numbers is negative.
 static_assert(std::ranges::none_of(numbers, is_negative));
+
+// Not all of the numbers are negative.
 static_assert(not std::ranges::all_of(numbers, is_negative));
 
 // Not any of the numbers is negative.
@@ -97,51 +97,51 @@ namespace starts_with_and_ends_with {
 void demo()
 {
     constexpr std::string_view hello_world{"hello world"};
-    static_assert(hello_world.starts_with("hello"));
+    static_assert(    hello_world.starts_with("hello"));
     static_assert(not hello_world.starts_with("world"));
-    static_assert(hello_world.ends_with('d'));
-    static_assert(not hello_world.ends_with("hello"));
+    static_assert(    hello_world.ends_with  ('d'));
+    static_assert(not hello_world.ends_with  ("hello"));
 
     using namespace std::literals;
-    static_assert(std::ranges::starts_with("const_cast", "const"sv));
-    static_assert(std::ranges::starts_with("constexpr", "const"sv));
-    static_assert(not std::ranges::starts_with("volatile", "const"sv));
+    static_assert(    std::ranges::starts_with("const_cast", "const"sv));
+    static_assert(    std::ranges::starts_with("constexpr",  "const"sv));
+    static_assert(not std::ranges::starts_with("volatile",   "const"sv));
 
-    constexpr auto ascii_upper = [](char8_t c)
+    constexpr auto ascii_upper = [](const char8_t c)
     {
-        return u8'a' <= c && c <= u8'z' ? static_cast<char8_t>(c + u8'A' - u8'a') : c;
+        return u8'a' <= c and c <= u8'z' ? static_cast<char8_t>(c + u8'A' - u8'a') : c;
     };
 
-    constexpr auto cmp_ignore_case = [=](char8_t x, char8_t y)
+    constexpr auto cmp_ignore_case = [=](const char8_t x, const char8_t y)
     {
         return ascii_upper(x) == ascii_upper(y);
     };
 
-    // Projection 1: the projection to apply to the elements of the range to examine.
-    // Projection 2: the projection to apply to the elements of the range to be used as the prefix.
-    static_assert(std::ranges::starts_with(u8"Constantinopolis", u8"constant"sv,{}, ascii_upper, ascii_upper));
-    static_assert(not std::ranges::starts_with(u8"Istanbul", u8"constant"sv,{}, ascii_upper, ascii_upper));
+    // Projection 1: the projection to apply to the elements of the range to examine (Constantinople).
+    // Projection 2: the projection to apply to the elements of the range to be used as the prefix (constant).
+    static_assert(    std::ranges::starts_with(u8"Constantinople", u8"constant"sv,{}, ascii_upper, ascii_upper));
+    static_assert(not std::ranges::starts_with(u8"Istanbul",       u8"constant"sv,{}, ascii_upper, ascii_upper));
     // The predicate: the binary predicate that compares the projected elements.
-    static_assert(std::ranges::starts_with(u8"Metropolis", u8"metro"sv,cmp_ignore_case));
-    static_assert(not std::ranges::starts_with(u8"Acropolis", u8"metro"sv,cmp_ignore_case));
+    static_assert(    std::ranges::starts_with(u8"Amsterdam", u8"ams"sv, cmp_ignore_case));
+    static_assert(not std::ranges::starts_with(u8"Rotterdam", u8"ams"sv, cmp_ignore_case));
 
     constexpr static auto v = {1, 3, 5, 7, 9};
-    constexpr auto odd = [](int x) { return x % 2; };
+    constexpr auto odd = [](const int x) { return x % 2; };
     assert(std::ranges::starts_with(v, std::views::iota(1) | std::views::filter(odd) | std::views::take(3)));
 
-    static_assert(not std::ranges::ends_with("for", "cast"));
-    static_assert(std::ranges::ends_with("dynamic_cast", "cast"));
-    static_assert(not std::ranges::ends_with("as_const", "cast"));
-    static_assert(std::ranges::ends_with("bit_cast", "cast"));
+    static_assert(not std::ranges::ends_with("for",           "cast"));
+    static_assert(    std::ranges::ends_with("dynamic_cast",  "cast"));
+    static_assert(not std::ranges::ends_with("as_const",      "cast"));
+    static_assert(    std::ranges::ends_with("bit_cast",      "cast"));
     static_assert(not std::ranges::ends_with("to_underlying", "cast"));
-    static_assert(std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{3, 4}));
+    static_assert(    std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{3, 4}));
     static_assert(not std::ranges::ends_with(std::array{1, 2, 3, 4}, std::array{4, 5}));
 }
 }
 
 namespace header_compare {
 // https://en.cppreference.com/w/cpp/header/compare
-void demo()
+static void demo()
 {
 }
 }
@@ -157,42 +157,36 @@ static_assert(iter1 == increasing.end());
 constexpr auto decreasing = {3, 2, 1};
 constexpr auto iter2 = std::ranges::adjacent_find(decreasing, is_less);
 static_assert(iter2 == decreasing.begin());
-void demo() {}
+static void demo() {}
 }
 
 
 namespace contains_and_contains_subrange {
-void demo()
+static void demo()
 {
     constexpr auto haystack = std::array{3, 1, 4, 1, 5};
     constexpr auto needle = std::array{1, 4, 1};
     constexpr auto bodkin = std::array{2, 5, 2};
-    static_assert(std::ranges::contains(haystack, 4));
+    static_assert(    std::ranges::contains(haystack, 4));
     static_assert(not std::ranges::contains(haystack, 6));
-    static_assert(std::ranges::contains_subrange(haystack, needle));
+    static_assert(    std::ranges::contains_subrange(haystack, needle));
     static_assert(not std::ranges::contains_subrange(haystack, bodkin));
 
-    constexpr std::array<std::complex<double>, 3> nums{
-            {
-                {1, 2},
-                {3, 4},
-                {5, 6}
-            }
-    };
+    constexpr std::array<std::complex<double>, 3> nums{ { {1, 2}, {3, 4}, {5, 6} } };
     static_assert(std::ranges::contains(nums, std::complex<double>{3, 4}));
 }
 }
 
 
 namespace regex {
-void demo()
+static void demo()
 {
     std::string s =
         R"(Some people, when confronted with a problem, think "I'll use regular expressions." Now they have two problems.)";
 
     // Case-insensitive search for "regular expressions".
-    std::regex self_regex("REGULAR EXPRESSIONS", std::regex_constants::ECMAScript | std::regex_constants::icase);
-    assert(std::regex_search(s, self_regex));
+    std::regex no_case_regex("REGULAR EXPRESSIONS", std::regex_constants::ECMAScript | std::regex_constants::icase);
+    assert(std::regex_search(s, no_case_regex));
 
     // Regex that finds words.
     std::regex word_regex(R"((\w+))");
@@ -227,70 +221,75 @@ void demo()
 
 
 namespace ranges_finding {
-    void demo() {
-        // Simple find integer value.
-        {
-            const auto numbers = std::list{2, 4, 3, 2, 3, 1};
-            auto it = std::ranges::find(numbers, 2);
-            assert(*it == 2);
-        }
+static void demo()
+{
+    // Simple find integer value.
+    {
+        const auto numbers = std::list{2, 4, 3, 2, 3, 1};
+        const auto iter = std::ranges::find(numbers, 2);
+        assert(*iter == 2);
+    }
 
-        // Find by specifying to search on a struct member.
+    // Find by specifying to search on a struct member.
+    {
+        struct Item
         {
-            struct Person
-            {
-                unsigned id;
-                const char* name;
-                const char* job;
-            };
-            std::list<Person> persons{
-                {0, "Ana", "barber"},
-                {1, "Bob", "cook"},
-                {2, "Eve", "builder"}
-            };
-            auto it = std::ranges::find(persons, "Bob", &Person::name);
-            assert(it->id == 1);
-            assert(it->name == std::string("Bob"));
-            assert(it->job == std::string("cook"));
-        }
+            const char* name;
+            const char* job;
+        };
+        std::list<Item> persons{
+            {"Ana", "barber"},
+            {"Bob", "cook"},
+            {"Eve", "builder"}
+        };
+        const auto iter = std::ranges::find(persons, "Bob", &Item::name);
+        assert(iter->name == std::string("Bob"));
+        assert(iter->job == std::string("cook"));
+    }
 
-        // Demo of find on word length.
-        {
-            std::vector<std::string> names {"Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"};
-            auto iterator = std::ranges::find(names, 4, &std::string::size);
-            assert(*iterator == "Lisa");
-        }
+    // Demo of find on word length.
+    {
+        const std::vector<std::string> names{"Apu", "Lisa", "Bart", "Ralph", "Homer", "Maggie"};
+        const auto iter = std::ranges::find(names, 4, &std::string::size);
+        assert(*iter == "Lisa");
+    }
 
-        // Demo of finding duplicates in a range.
+    // Demo of finding duplicates in a range.
+    {
+        auto contains_duplicates_n2 = [](const auto begin, const auto end)
         {
-            auto contains_duplicates_n2 = [](auto begin, auto end)
-            {
-                for (auto it = begin; it != end; ++it)
-                    if (std::find(std::next(it), end, *it) != end)
-                        return true;
-                return false;
-            };
-            const auto contains_duplicates_allocating = [](auto first, auto last)
-            {
-                // As (*first) returns a reference, we have to get the base type using std::decay_t
-                using value_type = std::decay_t<decltype(*first)>;
-                auto copy = std::vector<value_type>(first, last);
-                std::sort(copy.begin(), copy.end());
-                // The std::adjacent_find searches the sorted range for two consecutive equal elements.
-                return std::adjacent_find(copy.begin(), copy.end()) != copy.end();
-            };
-            const auto vals = std::vector{1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 0};
+            for (auto it = begin; it != end; ++it)
+                if (std::find(std::next(it), end, *it) != end)
+                    return true;
+            return false;
+        };
+        const auto contains_duplicates_allocating = [](const auto first, const auto last)
+        {
+            // As (*first) returns a reference, we have to get the base type using std::decay_t
+            using value_type = std::decay_t<decltype(*first)>;
+            auto copy = std::vector<value_type>(first, last);
+            std::sort(copy.begin(), copy.end());
+            // The std::adjacent_find searches the sorted range for two consecutive equal elements.
+            return std::adjacent_find(copy.begin(), copy.end()) != copy.end();
+        };
+        const auto vals = std::vector{1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 0};
+        {
             const auto a = contains_duplicates_n2(vals.cbegin(), vals.cend());
             assert(a);
+            // Takes 807 ns on given system.
+        }
+        {
             const auto b = contains_duplicates_allocating(vals.cbegin(), vals.cend());
             assert(b);
+            // Takes 3111 ns on same system.
         }
     }
+}
 }
 
 
 namespace ranges_find_max {
-void demo() {
+static void demo() {
     // Getting the maximum value.
     {
         struct Student
@@ -306,8 +305,8 @@ void demo() {
             // The student list needs to be copied in order to filter on the year.
             auto copy = std::vector<Student>{};
             std::ranges::copy_if(students, std::back_inserter(copy), by_year);
-            auto it = std::ranges::max_element(copy, std::less{}, &Student::score);
-            return it != copy.end() ? it->score : 0;
+            const auto iter = std::ranges::max_element(copy, std::less{}, &Student::score);
+            return iter != copy.end() ? iter->score : 0;
         };
 
         auto get_max_score_views = [](const std::vector<Student>& students, int year)
@@ -321,14 +320,14 @@ void demo() {
             return max_value(students | std::views::filter(by_year) | std::views::transform(&Student::score));
         };
 
-        auto get_max_score_explicit_views = [](const std::vector<Student>& s, int year)
+        auto get_max_score_explicit_views = [](const std::vector<Student>& students, int year)
         {
-            auto by_year = [year](const auto& s) { return s.year == year; };
-            const auto view1 = std::ranges::ref_view{s}; // Wrap container in a view.
+            auto by_year = [year](const auto& student) { return student.year == year; };
+            const auto view1 = std::ranges::ref_view{students}; // Wrap container in a view.
             const auto view2 = std::ranges::filter_view{view1, by_year};
             auto view3 = std::ranges::transform_view{view2, &Student::score};
-            auto it = std::ranges::max_element(view3);
-            return it != view3.end() ? *it : 0;
+            const auto iter = std::ranges::max_element(view3);
+            return iter != view3.end() ? *iter : 0;
         };
 
         const auto students = std::vector<Student>{
@@ -340,15 +339,15 @@ void demo() {
             {3, 130, "F"},
         };
         {
-            auto score = get_max_score_copy(students, 2);
+            const auto score = get_max_score_copy(students, 2);
             assert(score == 140);
         }
         {
-            auto score = get_max_score_views(students, 2);
+            const auto score = get_max_score_views(students, 2);
             assert(score == 140);
         }
         {
-            auto score = get_max_score_explicit_views(students, 2);
+            const auto score = get_max_score_explicit_views(students, 2);
             assert(score == 140);
         }
     }
@@ -358,9 +357,9 @@ void demo() {
 
 namespace find_if {
 // Demo of ranges::find_if
-void demo() {
+static void demo() {
     const auto values = {4, 1, 3, 2};
-    const auto is_even = [](int x) { return x % 2 == 0; };
+    const auto is_even = [](const int x) { return x % 2 == 0; };
     const auto iter = std::ranges::find_if(values, is_even);
     assert(*iter == 4);
 }
@@ -375,25 +374,27 @@ static_assert(std::gcd(6, 7) == 1);
 static_assert(std::gcd(6, 0) == 6);
 
 // The std::lcm calculates the least common multiple of two integers.
-static_assert(std::lcm( 6,  10) == 30);
+static_assert(std::lcm(6,  10) == 30);
 // Of one variable is zero, it returns zero.
 static_assert(std::lcm(2, 0) == 0);
 
-void demo() {
+static void demo() {
 }
 }
 
 
 namespace mismatch {
-void demo()
+static void demo()
 {
     // The "mismatch" returns iterator to the first mismatch between the two input ranges.
-    std::string_view s1 {"abcd"};
-    std::string_view s2 {"abdd"};
-    auto end = std::ranges::mismatch(s1, s2).in1; // The "in1" refers to the first range (or: in2)
-    assert(*end == 'c');
-    std::string s3 {end, s1.end()};
-    assert(s3 == "cd");
+    {
+        std::string_view s1 {"abcd"};
+        std::string_view s2 {"abdd"};
+        const auto end = std::ranges::mismatch(s1, s2).in1; // The "in1" refers to the first range (or: in2)
+        assert(*end == 'c');
+        const std::string s3 {end, s1.end()};
+        assert(s3 == "cd");
+    }
 
     // See also ranges::lexicographical_compare
     // Compares two ranges, e.g. two strings.

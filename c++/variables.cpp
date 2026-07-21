@@ -17,8 +17,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 
-#include "variables.h"
-
 #include <algorithm>
 #include <any>
 #include <cassert>
@@ -32,6 +30,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <utility>
 #include <variant>
 #include <vector>
+#include "variables.h"
 
 namespace variables {
 
@@ -86,7 +85,7 @@ struct FarStates
 
     auto&& from_ptr(this auto&& self)
     {
-        if (!self.pointer)
+        if (not self.pointer)
             throw std::bad_optional_access{};
         return std::forward_like<decltype(self)>(*self.pointer);
         // It is not good to use *std::forward<decltype(self)>(self).ptr, because
@@ -94,7 +93,7 @@ struct FarStates
     }
 };
 
-void demo()
+static void demo()
 {
     return;
 
@@ -132,8 +131,11 @@ void demo()
 
 namespace piecewise_construct {
 
+namespace {
 enum Construction { none, from_tuple, from_int_float };
+}
 
+namespace {
 struct Foo
 {
     Construction construction {none};
@@ -150,6 +152,7 @@ struct Foo
         construction = from_int_float;
     }
 };
+}
 
 
 constexpr std::tuple<int, float> tuple(1, 1.0f);
@@ -165,7 +168,7 @@ static_assert(p2.first.construction == from_int_float);
 static_assert(p2.second.construction == from_int_float);
 
 
-void demo()
+static void demo()
 {
 }
 }
@@ -177,15 +180,15 @@ namespace forward_as_tuple {
 // It determines the types of the elements of the arguments.
 // - If it receives a lvalue then it will have a lvalue reference.
 // - If it receives a rvalue then it will have a rvalue reference.
-void demo()
+static void demo()
 {
-    // The function returns a rvalue.
+    // This returns a rvalue.
     auto rvalue = [] -> int
     {
         return 100;
     };
 
-    // The variable i is a lvalue.
+    // This is a lvalue.
     int lvalue = 100;
 
     [[maybe_unused]] auto tuple = std::forward_as_tuple(lvalue, rvalue());
@@ -193,12 +196,14 @@ void demo()
     // A lvalue reference binds to a lvalue. Marked with one ampersand (&).
     // A rvalue reference binds to a rvalue. Marked with two ampersands (&&).
     static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, int&&>>);
+    // Unlike a std::vector etc, a std::tuple can contain references,
+    // because it does not do allocation, it is only syntactic sugar.
 }
 }
 
 
 namespace auto_x_decay_copy {
-void demo()
+static void demo()
 {
     // A decay-copy is a copy of a variable which has lost some properties.
     // How does auto(x) help?
@@ -239,7 +244,8 @@ constexpr S s1 =
 {
     1,
     {
-        2, 3,
+        2,
+        3,
         { 4, 5, 6 },
     }
 };
@@ -325,30 +331,30 @@ static_assert(std_ar1[2] == 3);
 // int a[] = {1, 2.0}; // narrowing conversion from double to int:
 // error in C++11, okay in C++03
 
-std::string ars[] = {
-    std::string("one"),        // copy-initialization
+[[maybe_unused]] constexpr std::string ars[] = {
+    std::string("one"),       // copy-initialization
     "two",                    // conversion, then copy-initialization
     {'t', 'h', 'r', 'e', 'e'} // list-initialization
 };
 
 union U
 {
-    int a;
-    const char* b;
+    int i;
+    const char* c;
 };
 constexpr U u1 = {1};   // OK, first member of the union
-static_assert(u1.a == 1);
+static_assert(u1.i == 1);
 // U u2 = {0, "asdf"}; // error: too many initializers for union
 // U u3 = {"asdf"};    // error: invalid conversion to int
 
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace variant {
-void demo()
+static void demo()
 {
     // Initialized with the monostate as that is the first variant.
     std::variant<std::monostate, int, float> variant;
@@ -359,7 +365,7 @@ void demo()
         std::get<int>(variant);
         assert(false);
     }
-    catch (const std::bad_variant_access& e)
+    catch (const std::bad_variant_access&)
     {
         assert(true);
     }
@@ -373,7 +379,7 @@ void demo()
 
 
 namespace initialization {
-void demo()
+static void demo()
 {
     std::string s1; // Default initialization.
     //std::string s2(); // Not an initialization but a function declaration.
@@ -417,7 +423,7 @@ static_assert(s3.o == 33);
 static_assert(s3.n == 42);
 static_assert(s3.m == 21);
 
-void demo()
+static void demo()
 {
 }
 }
@@ -425,7 +431,7 @@ void demo()
 
 
 namespace mathematical_functions {
-void demo()
+static void demo()
 {
     assert(std::ceil(1.2f) == 2);
 }
@@ -439,7 +445,7 @@ namespace enable_shared_from_this {
 // that is currently managed by a std::shared_ptr
 // to safely generate additional std::shared_ptr instances, pt1, pt2 etc.,
 // that all share ownership of the object with the original shared_ptr.
-void demo()
+static void demo()
 {
     struct Struct : std::enable_shared_from_this<Struct>
     {
@@ -451,8 +457,8 @@ void demo()
 
     // The original and derived shared pointers share the same object.
     {
-        std::shared_ptr<Struct> object1 = std::make_shared<Struct>();
-        std::shared_ptr<Struct> object2 = object1->get_ptr();
+        const auto object1 = std::make_shared<Struct>();
+        const std::shared_ptr<Struct> object2 = object1->get_ptr();
         assert(object1 == object2);
         assert(object1.use_count() == 2);
         assert(object2.use_count() == 2);
@@ -463,7 +469,7 @@ void demo()
     try
     {
         Struct object1;
-        std::shared_ptr<Struct> object2 = object1.get_ptr();
+        [[maybe_unused]] std::shared_ptr<Struct> object2 = object1.get_ptr();
         assert(false); // It should never arrive here.
     }
     catch (std::bad_weak_ptr& e)
@@ -475,7 +481,7 @@ void demo()
 
 
 namespace swapping_and_exchanging {
-void demo()
+static void demo()
 {
     {
         // Swap values in a and b.
@@ -520,11 +526,11 @@ struct Struct
 };
 
 template <typename T>
-void templated_fn(T)
+static void templated_fn(T)
 {
 }
 
-void demo()
+static void demo()
 {
     Struct<int> s = {1, 2, 3, 4, 5}; // Copy list-initialization.
     s.append({6, 7, 8}); // List-initialization in function call.
@@ -532,14 +538,14 @@ void demo()
     assert(s.vec.size() == 8);
 
     // Range-for over brace-init-list.
-    for (int x : {-1, -2, -3}) // The rule for auto makes this ranged-for work.
+    for (const int x : {-1, -2, -3}) // The rule for auto makes this ranged-for work.
         assert(x == -3 or x == -2 or x == -1);
 
-    auto il1 = {10, 11, 12}; // Special rule for auto.
+    const auto il1 = {10, 11, 12}; // Special rule for auto.
     assert(il1.size() == 3);
 
-    auto il_copy = il1; // A shallow-copy of top-level proxy object.
-    assert(il_copy.begin() == il1.begin()); // Guaranteed: backing array is the same.
+    const auto il_shallow_copy = il1; // A shallow-copy of top-level proxy object.
+    assert(il_shallow_copy.begin() == il1.begin()); // Guaranteed: backing array is the same.
 
     std::initializer_list<int> il2{-3, -2, -1};
     assert(il2.begin()[2] == -1); // Note the replacement for absent operator[] .
@@ -555,13 +561,13 @@ void demo()
 
 
 namespace pseudo_random_number_generation {
-void demo()
+static void demo()
 {
     {
         // Poisson distribution.
         // The probability of an event happening a certain number of times within a given interval of time.
         // Construct it around a given mean event count.
-        constexpr float mean_event_count{4.5};
+        constexpr float mean_event_count{4.5f};
         std::poisson_distribution<int> distribution(mean_event_count);
         std::default_random_engine generator;
 
@@ -617,7 +623,7 @@ void demo()
 
 
 namespace heterogenous_collections_with_variant {
-void demo()
+static void demo()
 {
     using variant_t = std::variant<int, std::string, bool>;
     {
@@ -628,17 +634,19 @@ void demo()
         constexpr std::string needle {"needle"};
         const auto v = std::vector<variant_t>{42, needle, true};
         for (const auto& item : v) {
-            std::visit([](auto&& x)
+            std::visit([&needle](auto&& x)
             {
-            //assert ((x == 42) or (std::string(x) == needle) or (x == true));
-            // std::cout << "Variant has: " << x << std::endl;
+                std::ostringstream oss{};
+                oss << std::boolalpha << x;
+                assert((oss.str() == "42") or (oss.str() == needle) or (oss.str() == "true"));
             }, item);
         }
-        const auto num_bools = std::ranges::count_if(v, [](const auto& item) {
-          return std::holds_alternative<bool>(item);
+        const auto num_bools = std::ranges::count_if(v, [](const auto& item)
+        {
+            return std::holds_alternative<bool>(item);
         });
         assert(num_bools == 1);
-        auto contains_needle_string = std::ranges::any_of(v, [&](const auto& item) {
+        const auto contains_needle_string = std::ranges::any_of(v, [&](const auto& item) {
           return std::holds_alternative<std::string>(item) and std::get<std::string>(item) == needle;
         });
         assert(contains_needle_string);
@@ -648,13 +656,13 @@ void demo()
 
 
 namespace range_fillup {
-void demo() {
+static void demo() {
     {
         // Demonstration of ranges fill.
         std::vector<int> v(5);
         std::ranges::fill(v, 123);
-        // The output will be:  123 123 123 123 123
-        const std::vector<int> standard = {123, 123, 123, 123, 123};
+        // The output will be this:
+        const std::vector standard = {123, 123, 123, 123, 123};
         assert(v == standard);
     }
     {
@@ -665,18 +673,16 @@ void demo() {
     }
     {
         // Demonstration of ranges iota.
-        auto v = std::list<int>(6);
+        auto list = std::list<int>(6);
         // Fill the list with ascending values: 0, 1, 2, ...
-        std::iota(v.begin(), v.end(), 0);
+        std::ranges::iota(list, 0);
         const auto standard = std::list<int>({0, 1, 2, 3, 4, 5});
-        assert(v == standard);
-        //std::ranges::iota(v, 0);
+        assert(list == standard);
 
         // A vector of iterators.
         // Fill with iterators to consecutive list's elements.
-        std::vector<std::list<int>::iterator> vec(v.size());
-        std::iota(vec.begin(), vec.end(), v.begin());
-        //std::ranges::iota(vec.begin(), vec.end(), list.begin());
+        std::vector<std::list<int>::iterator> vec(list.size());
+        std::ranges::iota(vec, list.begin());
     }
 }
 }
@@ -694,7 +700,7 @@ using Pair = std::pair<T, T>;
 Pair<int> p {1, 2}; // Equals std::pair<int, int>.
 static_assert(std::is_same_v<Pair<int>, std::pair<int, int>>);
 
-void demo()
+static void demo()
 {
 }
 }
@@ -704,17 +710,17 @@ namespace perfect_forwarding {
 // Perfect forwarding means that the function forwards its arguments
 // without changing its lvalue or rvalue.
 
-std::string value;
-void overloaded_function(int&  i) { value = "lvalue"; }
-void overloaded_function(int&& i) { value = "rvalue"; }
+static std::string value;
+static void overloaded_function(int&  i) { value = "lvalue"; }
+static void overloaded_function(int&& i) { value = "rvalue"; }
 
 template<typename Arg>
-void template_function(Arg&& arg)
+static void template_function(Arg&& arg)
 {
     overloaded_function(std::forward<Arg>(arg));
 }
 
-void demo()
+static void demo()
 {
     int i = 10;
     template_function(i);
@@ -736,7 +742,7 @@ namespace storage_duration {
 // Use of the declared name refers to the entity associated with the current thread.
 thread_local int thread_local_var = 0;
 
-void demo()
+static void demo()
 {
     // Instance 1 of the variable.
     thread_local_var++;
@@ -769,13 +775,13 @@ constexpr auto seq = std::integer_sequence<int, 1, 2, 3>();
 static_assert(seq.size() == 3);
 
 template <typename T, T... vals>
-std::vector<T> assemble(std::integer_sequence<T, vals...> is) {
+static std::vector<T> assemble(std::integer_sequence<T, vals...> is) {
     std::vector<T> v;
     (void(v.emplace_back(vals)), ...);
     return v;
 }
 
-void demo() {
+static void demo() {
     const auto standard = std::vector<int>{1, 2, 3};
     assert(assemble(seq) == standard);
 }
@@ -783,7 +789,7 @@ void demo() {
 
 
 namespace demo_any {
-void demo()
+static void demo()
 {
     // Holds any type.
     std::any any;
@@ -822,7 +828,7 @@ void demo()
 
     // Store lambda into std::any and run it.
     typedef std::function<void()> lambda;
-    auto any3 = std::make_any<lambda>([&any] (){any = std::string("lambda"); });
+    auto any3 = std::make_any<lambda>([&any] {any = std::string("lambda"); });
     std::any_cast<lambda>(any3)();
     assert(std::any_cast<std::string>(any) == "lambda");
 }
@@ -830,7 +836,7 @@ void demo()
 
 
 namespace demo_as_const {
-void demo()
+static void demo()
 {
     std::string s1 = "test";
     const std::string& s2 = std::as_const(s1);
@@ -844,7 +850,7 @@ void demo()
 
 namespace byte {
 // The std::byte models a collection of bits, supports bitshift operations with an integer, and other bit operations.
-void demo()
+static void demo()
 {
     // std::byte y = 1; // error: cannot convert int to byte
     std::byte b{1}; // OK.
@@ -857,7 +863,7 @@ void demo()
     int i1 = arr[std::to_integer<int>(b)]; // OK
     int i2 = arr[std::to_underlying(b)];   // OK
 
-    auto to_int = [](std::byte b) {return std::to_integer<int>(b);};
+    const auto to_int = [](const std::byte b) {return std::to_integer<int>(b);};
 
     b = std::byte{42};
     assert(to_int(b) == 0b00101010);
@@ -885,30 +891,31 @@ namespace conjunction_disjunction_negation {
 // The std::conjunction perform a logical AND on a variadic pack of boolean values.
 // The std::disjunction does a logical OR on a variadic pack of booleans.
 
-bool all_the_same {};
+static bool all_the_same {};
 
-// The function is enabled if all types Ts... are the same as type T.
+// The concept passes if all types Ts... are the same as type T.
 template <typename T, typename ...Ts>
-std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>
-func(T, Ts...)
+concept all_ts_are_t = std::conjunction_v<std::is_same<T, Ts>...>;
+
+template <typename T, typename ...Ts>
+requires all_ts_are_t<T, Ts...>
+static void func(T, Ts...)
 {
     all_the_same = true;
 }
 
-// The function is enabled if all types Ts... are not the same as type T.
+// The concept passes if all types Ts... are not the same as type T.
 template <typename T, typename ...Ts>
-std::enable_if_t<not std::conjunction_v<std::is_same<T, Ts>...>>
-func(T, Ts...)
+concept not_all_ts_are_t = not all_ts_are_t<T, Ts...>;
+
+template <typename T, typename ...Ts>
+requires not_all_ts_are_t<T, Ts...>
+static void func(T, Ts...)
 {
     all_the_same = false;
 }
 
-template <typename T, typename ...Ts>
-constexpr bool all_types_the_same = std::conjunction_v<std::is_same<T, Ts>...>;
-static_assert(all_types_the_same<int, int, int>);
-static_assert(not all_types_the_same<int, int, float>);
-
-void demo_conjunction()
+static void demo_conjunction()
 {
     func(1, 2, 3);
     assert(all_the_same);
@@ -926,7 +933,7 @@ static_assert(std::disjunction<int2, int4>::value == 2);
 // Returns true based on the first element:
 static_assert(std::disjunction_v<int2, int4>);
 
-void demo_disjunction()
+static void demo_disjunction()
 {
 }
 
@@ -942,7 +949,7 @@ static_assert(
 
 static_assert(std::negation_v<std::bool_constant<false>>);
 
-void demo_negation()
+static void demo_negation()
 {
 }
 
@@ -965,7 +972,7 @@ auto func(char) -> int (*)()
 static_assert(std::is_invocable_r_v<int(*)(), decltype(func), char>);
 static_assert(not std::is_invocable_r_v<int(*)(), decltype(func), void>);
 
-void demo() {}
+static void demo() {}
 }
 
 
@@ -988,7 +995,7 @@ struct NonAggregate
 };
 static_assert(not std::is_aggregate_v<NonAggregate>);
 
-void demo()
+static void demo()
 {
 }
 }
@@ -1016,18 +1023,18 @@ static_assert(not std::has_unique_object_representations_v<Padded>);
 static_assert(std::has_unique_object_representations_v<bool>);  // x86
 // static_assert(not std::has_unique_object_representations_v<bool>); // ARM
 
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace automatic_promotion {
-const unsigned int a = 5;
-const int b = -10;
+constexpr unsigned int a = 5;
+constexpr int b = -10;
 static_assert(a + b == 4294967291);
 // Unsigned int plus int : The int is promoted to an unsigned int.
-void demo()
+static void demo()
 {
 }
 }

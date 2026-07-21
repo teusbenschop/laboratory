@@ -257,12 +257,12 @@ namespace member_function {
 
 struct Struct
 {
-    std::string display_greeting()
+    [[nodiscard]] std::string display_greeting() const
     {
         return "hello";
     }
 
-    int display_number(int i)
+    [[nodiscard]] int display_number(const int i) const
     {
         return i;
     }
@@ -273,12 +273,12 @@ struct Struct
     }
 
     template <typename... Args>
-    int add_many1(Args... args) const
+    [[nodiscard]] int add_many1(Args... args) const
     {
         return data + (args + ...);
     }
 
-    auto add_many2(auto... args) const
+    [[nodiscard]] auto add_many2(auto... args) const
     {
         return data + (args + ...);
     }
@@ -290,26 +290,26 @@ void demo()
 {
     Struct struct1 {};
 
-    const auto get_greeting = std::mem_fn(&Struct::display_greeting);
+    constexpr auto get_greeting = std::mem_fn(&Struct::display_greeting);
     assert(get_greeting(struct1) == "hello");
 
-    const auto get_number = std::mem_fn(&Struct::display_number);
+    constexpr auto get_number = std::mem_fn(&Struct::display_number);
     assert(get_number(struct1, 42) == 42);
 
-    const auto get_data = std::mem_fn(&Struct::data);
+    constexpr auto get_data = std::mem_fn(&Struct::data);
     assert(get_data(struct1) == 7);
 
-    const auto add_xy = std::mem_fn(&Struct::add_xy);
+    constexpr auto add_xy = std::mem_fn(&Struct::add_xy);
     assert(add_xy(struct1, 1, 2) == 10);
 
     const auto s_ptr = std::make_unique<Struct>();
     assert(get_data(s_ptr) == 7);
     assert(add_xy(s_ptr, 1, 2) == 10);
 
-    const auto add_many = std::mem_fn(&Struct::add_many1<short, int, long>);
+    constexpr auto add_many = std::mem_fn(&Struct::add_many1<short, int, long>);
     assert(add_many(s_ptr, 1, 2, 3) == 13);
 
-    const auto add_them = std::mem_fn(&Struct::add_many2<short, int, float, double>);
+    constexpr auto add_them = std::mem_fn(&Struct::add_many2<short, int, float, double>);
     assert(add_them(s_ptr, 5, 7, 10.0f, 13.0) == 42);
 }
 }
@@ -323,7 +323,7 @@ constexpr bool is_same (const int a, const int b)
     return a == b;
 }
 
-constexpr auto differs = std::not_fn(is_same);;
+constexpr auto differs = std::not_fn(is_same);
 
 struct S
 {
@@ -383,7 +383,7 @@ void demo()
         constexpr Generator generator;
         std::vector output (3, 0);
         std::ranges::generate(output, generator);
-        std::vector standard {1, 2, 3};
+        const std::vector standard {1, 2, 3};
         assert(output == standard);
     }
     {

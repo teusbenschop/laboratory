@@ -16,7 +16,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "language.h"
 #include <cassert>
 #include <cmath>
 #include <functional>
@@ -26,6 +25,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include "language.h"
 #include "clocking.h"
 
 
@@ -116,10 +116,10 @@ void demo()
 namespace alias_declarations_in_init_statements {
 void demo()
 {
-    std::vector v {1, 2, 3};
-    for (using I = int; I e : v)
+    const std::vector v {1, 2, 3};
+    for (using I = int; const I e : v)
         assert((e));
-    for (typedef int I; I e : v)
+    for (typedef int I; const I e : v)
         assert((e));
 }
 }
@@ -132,7 +132,7 @@ void demo()
     // Avoid this warning:
     // comparison of integers of different signs: 'int' and 'std::size_type' (aka 'unsigned long') [-Wsign-compare]
     const std::vector<int> v{2, 4, 6, 8};
-    for (auto i = 0uz; i < v.size(); ++i) {
+    for (auto i = 0uz; i < v.size(); ++i) { // NOLINT(*-loop-convert)
         assert(v.at(i));
     }
 }
@@ -158,17 +158,16 @@ namespace static_operators_and_lambdas {
 struct Struct
 {
     // Static operators: Can call them without the object instance.
-    static int operator()(int a, int b) { return a + b; }
+    static int operator()(const int a, const int b) { return a + b; }
 };
 
 void demo()
 {
-    Struct s;
-
     // This creates an object (and perhaps the optimizer removes it again).
     assert(Struct{}(1, 0) == 1);
 
-    // This calls the static method on the already created object above.
+    // This calls the static method on the already created object.
+    constexpr Struct s;
     assert(s(1, 0) == 1);
 
     // This does not create an object. It just calls the static method.
@@ -345,7 +344,7 @@ void demo()
     // static_assert(constexpr_add(i3,i3) == 4);
 
     // The variable is initialized at runtime although the function is constexpr.
-    int i4 = constexpr_add(i3, i3);
+    const int i4 = constexpr_add(i3, i3);
     assert(i4 == 4);
 
     // OK, evaluated at compile-time.
@@ -371,13 +370,13 @@ void demo()
     static_assert(if_constexpr_add(1, 2) == 3);
 
     {
-        constexpr auto xdigit = [](int n) -> char
+        constexpr auto digit_n = [](const int n) -> char
         {
             // This is a constexpr variable in a constexpr lambda function: OK in C++23.
             constexpr const char digits[] = "0123456789";
             return digits[n];
         };
-        static_assert(xdigit(2) == '2');
+        static_assert(digit_n(2) == '2');
     }
 
     // Const at left of asterisk: What is pointed to is immutable. Pointer is mutable.
@@ -394,7 +393,7 @@ void demo()
 
     // Iterator itself is const. Data is mutable.
     {
-        std::vector<int> v {1, 2};
+        std::vector v {1, 2};
         const decltype(v)::iterator iter = v.begin();
         *iter = 2;
         // iter++; // Fails to compile because iter is const.
@@ -417,12 +416,12 @@ namespace operator_overloading {
 
 struct Struct
 {
-    constexpr Struct(const int value) : value(value) { }
+    explicit constexpr Struct(const int value) : value(value) { }
 
     int value;
 
     // Overload the "+" operator.
-    constexpr Struct operator+(const Struct& other)
+    constexpr Struct operator+(const Struct& other) const
     {
         return Struct(value + other.value);
     }
@@ -431,28 +430,27 @@ struct Struct
     constexpr int operator()() const { return value; }
 
     // Overload the += and the -= and the %= operators.
-    constexpr Struct& operator+=(const Struct& s) noexcept
+    constexpr Struct& operator+=(const Struct& other) noexcept
     {
-        value += s.value;
+        value += other.value;
         return *this;
     }
 
-    constexpr Struct& operator-=(const Struct& s) noexcept
+    constexpr Struct& operator-=(const Struct& other) noexcept
     {
-        value -= s.value;
+        value -= other.value;
         return *this;
     }
 
-    constexpr Struct& operator%=(const Struct& s) noexcept
+    constexpr Struct& operator%=(const Struct& other) noexcept
     {
-        value = value % s.value;
+        value %= other.value;
         return *this;
     }
 
     // Implicit type conversion operator.
     // Enable static_cast.
     explicit operator float() const { return static_cast<float>(value); }
-
 };
 
 // Overload the "<<" operator.
@@ -463,16 +461,16 @@ std::ostream& operator<<(std::ostream& os, const Struct& s) noexcept
 }
 
 // Overload the "==" operator.
-constexpr inline bool operator==(const Struct& l, const Struct& r) noexcept
+constexpr inline bool operator==(const Struct& lhs, const Struct& rhs) noexcept
 {
-    return l.value == r.value;
+    return lhs.value == rhs.value;
 }
 
-static_assert(Struct(10) + Struct(20) == 30);
+static_assert(Struct(10) + Struct(20) == Struct(30));
 static_assert(Struct(15)() == 15);
 static_assert(Struct(10)() == 10);
 static_assert(Struct(10) != Struct(20));
-static_assert(Struct(10) == 10);
+static_assert(Struct(10) == Struct(10));
 
 // Never overload common operators like && || , as that only confuses others.
 
@@ -480,11 +478,11 @@ void demo()
 {
     Struct s(10);
     s += Struct(5);
-    assert(s == 15);
+    assert(s == Struct(15));
     s -= Struct(1);
-    assert(s == 14);
+    assert(s == Struct(14));
     s %= Struct(5);
-    assert(s == 4);
+    assert(s == Struct(4));
 }
 }
 
@@ -508,9 +506,9 @@ struct Version
 };
 
 static_assert(Version(1, 1) != Version(1, 2));
-static_assert(Version(1, 1) < Version(1, 2));
+static_assert(Version(1, 1) <  Version(1, 2));
 static_assert(Version(1, 1) <= Version(1, 2));
-static_assert(Version(1, 2) > Version(1, 1));
+static_assert(Version(1, 2) >  Version(1, 1));
 static_assert(Version(1, 2) >= Version(1, 1));
 static_assert(Version(1, 1) == Version(1, 1));
 
@@ -569,7 +567,7 @@ constexpr double power(double x, long long n) noexcept
       return 1;
 }
 
-constexpr long long factorial(long long n) noexcept
+constexpr long factorial(const long n) noexcept
 {
     if (n > 1) [[likely]]
       return n * factorial(n - 1);
@@ -577,7 +575,7 @@ constexpr long long factorial(long long n) noexcept
       return 1;
 }
 
-constexpr double cosine(double x) noexcept
+constexpr double cosine(const double x) noexcept
 {
     constexpr long long precision{16LL};
     double y{};
@@ -588,7 +586,6 @@ constexpr double cosine(double x) noexcept
 
 void demo()
 {
-
 }
 }
 
@@ -644,7 +641,7 @@ void demo()
 {
     struct Struct
     {
-        Struct(const std::string& name) : name(name)
+        explicit Struct(std::string name) : name(std::move(name))
         {
         }
         std::string name;
@@ -719,7 +716,7 @@ class Planet
 {
 };
 
-class Mars : public Planet
+class Earth : public Planet
 {
 };
 
@@ -727,11 +724,11 @@ class Sun
 {
 };
 
-static_assert(std::is_base_of_v<Planet, Mars>);
-static_assert(std::derived_from<Mars, Planet>);
-static_assert(std::is_convertible_v<Mars, Planet>);
+static_assert(std::is_base_of_v<Planet, Earth>);
+static_assert(std::derived_from<Earth, Planet>);
+static_assert(std::is_convertible_v<Earth, Planet>);
 static_assert(not std::is_base_of_v<Planet, Sun>);
-static_assert(not std::is_base_of_v<Mars, Planet>);
+static_assert(not std::is_base_of_v<Earth, Planet>);
 
 static_assert(std::is_scoped_enum_v<int> == false);
 
@@ -863,6 +860,19 @@ void demo()
     std::string str = "ab";
     char_number(str, 1) = 'a'; // The function call is lvalue, can be assigned to.
     assert(str == "aa");
+
+    {
+        // A reference is like an alias.
+        // Once it refers a variable, it can never refer to another variable.
+        int one = 1;
+        constexpr int two = 2;
+        int& int_ref = one;
+        // Assignment to reference does not change what the reference points to but changes the referenced object.
+        int_ref = two;
+        assert(int_ref == two);
+        assert(one == two);
+    }
+
 }
 }
 
@@ -880,7 +890,7 @@ void demo()
     assert(r2 == 20);
 
     // Can modify the rvalue through reference to non-const.
-    r1.first++;
+    ++r1.first;
     assert(r1.first == 11);
 }
 }
@@ -895,7 +905,7 @@ void f1(double&& v)
 // Pass a rvalue reference to the function.
 void f2 (double&& v)
 {
-    // The variable v is now a lvalue within the function scope.
+    // The variable v is now a lvalue within the function scope (because it has a name).
     // f1(v); error: no matching function for call to f1
     f1(std::move(v)); // Must change to rvalue, then call function.
 }
@@ -913,24 +923,24 @@ namespace reference_collapsing {
 // All other combinations form lvalue reference.
 void demo()
 {
-    typedef int&  lref;
-    typedef int&& rref;
+    typedef int&  l_val_ref;
+    typedef int&& r_val_ref;
+
     int n;
 
-    lref&  r1 = n;
+    l_val_ref&  r1 = n;
     static_assert(std::is_lvalue_reference_v<decltype(r1)>);
 
-    lref&& r2 = n;
+    l_val_ref&& r2 = n;
     static_assert(std::is_lvalue_reference_v<decltype(r2)>);
 
-    rref&  r3 = n;
+    r_val_ref&  r3 = n;
     static_assert(std::is_lvalue_reference_v<decltype(r3)>);
 
-    rref&& r4 = 1;
+    r_val_ref&& r4 = 1;
     static_assert(std::is_rvalue_reference_v<decltype(r4)>);
 }
 }
-
 
 
 namespace forwarding_references {
@@ -995,16 +1005,16 @@ void demo()
     };
 
     int n1{1};
-    int n2{2};
-    int n3{3};
+    int n2{3};
+    int n3{5};
 
-    std::function<void()> bound_fn = std::bind(fn, n1, std::ref(n2), std::cref(n3));
+    const std::function<void()> bound_fn = std::bind(fn, n1, std::ref(n2), std::cref(n3));
 
     bound_fn();
 
     assert(n1 == 1); // This is left unchanged, because it was passed by value to the function.
-    assert(n2 == 3); // This was passed by reference, and got increased by the function.
-    assert(n3 == 3); // Passed by const reference, could not get increased.
+    assert(n2 == 4); // This was passed by reference, and got increased by the function.
+    assert(n3 == 5); // Passed by const reference, could not get increased.
 }
 }
 
@@ -1012,16 +1022,6 @@ void demo()
 
 void demo()
 {
-    {
-        // A reference is like an alias.
-        // Once it refers a variable, it can never refer to another variable.
-        int one = 1;
-        int two = 2;
-        int& iref = one;
-        iref = two;
-        assert(iref == two);
-        assert(one == two);
-    }
     lvalue_references::demo();
     rvalue_references::demo();
     rvalue_reference_function_parameter::demo();
@@ -1050,7 +1050,7 @@ void demo()
     // But time measurements could not detect a real improvement.
     int sum = 0;
     {
-        //scoped_timer::scoped_timer<std::chrono::nanoseconds> timer;
+        // scoped_timer::scoped_timer<std::chrono::nanoseconds> timer;
         for (int i = 0; i < 1000; i++)
         {
             derived derived;
@@ -1063,11 +1063,12 @@ void demo()
 
 
 namespace enums {
+namespace {
 
 // An unscoped enum.
 enum Enum1 {red, green, yellow};
-constexpr Enum1 e = green;
-static_assert(e == green);
+constexpr Enum1 e1 = green;
+static_assert(e1 == green);
 
 // Unscoped enum with assignment.
 enum Enum2 {a2, b2, c2 = 10, d2 = c2 + 5};
@@ -1078,7 +1079,7 @@ static_assert(d2 == 15);
 
 // Scoped enum.
 enum class ScopedEnum1 { red, green = 10, yellow };
-ScopedEnum1 se1 = ScopedEnum1::red;
+constexpr auto se1 = ScopedEnum1::red;
 
 // Demo using enum.
 enum class Fruit { apple, pear };
@@ -1086,15 +1087,34 @@ struct S
 {
     using enum Fruit; // This brings apple and pear into the struct scope.
 };
-S s;
+constexpr S s;
 static_assert(s.apple == Fruit::apple);
+
+// Default underlying type is int.
+constexpr auto f1 = Fruit{0};
+constexpr Fruit f2 {10}; // Compiles, but 10 is outside enum.
 
 // Demo class enum with specified underlying type.
 enum class Height : char { low = 'l', high = 'h' };
 static_assert(sizeof(Height::low) == 1);
 
-void demo()
+// Iterating over enums: Define prefix increment operator.
+enum class Iterable {_start_, one, two, three, _end_};
+Iterable& operator++(Iterable& iter)
 {
+    int i = static_cast<int>(iter);
+    return iter = static_cast<Iterable>(++i);
+}
+
+}
+static void demo()
+{
+    int sum{0};
+    for (auto iter = Iterable::_start_; iter <= Iterable::_end_; ++iter)
+    {
+        sum += static_cast<int>(iter);
+    }
+    assert(sum == 10); // 0 + 1 + 2 + 3 + 4.
 }
 }
 
@@ -1165,8 +1185,8 @@ void demo()
     i1 = ++s1.get(); // Calls the first.
     assert(i1 == 11);
 
-    const S s2;
-    int i2 = s2.get(); // Calls the second.
+    constexpr S s2;
+    const int i2 = s2.get(); // Calls the second.
     assert(i2 == 20);
 }
 }
@@ -1201,7 +1221,7 @@ void demo() {
     {
         // Binding to an array.
         int a[2] = {1, 2};
-        // Creates e[2], copies a into e. Then xcr refers to e[0] and yc to e[1].
+        // Creates e[2], copies a into e. Then xc refers to a[0] and yc to a[1].
         auto [xc, yc] = a;
         // Variable xr refers to a[0] and yr to a[1].
         auto& [xr, yr] = a;
@@ -1253,9 +1273,9 @@ void demo()
 namespace casting {
 void demo()
 {
-    // The static_cast converts one type to another related type.
+    // The static_cast converts one type to a related type.
     // Converts between types using a combination of implicit and user-defined conversions.
-    int i = 10;
+    const int i = 10;
     uint ui = static_cast<uint>(i);
 
     // The dynamic_cast converts within inheritance hierarchies.
@@ -1263,7 +1283,7 @@ void demo()
     // Will have impact on performance.
     struct Base
     {
-        virtual ~Base() {}
+        virtual ~Base() = default;
     };
     struct Derived : Base { };
     Base b1;
@@ -1276,13 +1296,16 @@ void demo()
     // Converts between types with different cv-qualification.
     const int c1 = 0;
     int c2 = const_cast<int&>(c1);
+    ++c2;
 
     // The reinterpret_cast converts type to unrelated type.
     // Converts between types by reinterpreting the underlying bit pattern.
     int8_t rc1 = 1;
     auto* rc2 = reinterpret_cast<uint8_t*>(&rc1);
 
-    // General rule: Avoid cast if possible. Avoid C-style casts.
+    // General rules:
+    // 1. Avoid cast if possible.
+    // 2. Avoid C-style casts.
 }
 }
 
@@ -1292,10 +1315,10 @@ void demo()
 namespace custom_new_and_delete {
 // Declare operator new in global namespace, see bottom.
 
-// Class-specific new/delete operators: static function
+// Class-specific new/delete operators: static function.
 struct S
 {
-    static void* operator new(std::size_t count)
+    static void* operator new(const std::size_t count)
     {
         std::cout << "class new for size " << count << std::endl;
         return ::operator new(count);
@@ -1335,10 +1358,23 @@ namespace {
 int i = 0;
 }
 
-void demo()
+static void demo()
 {
-    i++;
+    ++i;
 };
+}
+
+
+namespace initialization_vs_assignment {
+
+unsigned u1 {0}; // Initialization (chaaper).
+unsigned u2 = 0;  // Assignment (more expensive)
+
+// error: non-constant-expression cannot be narrowed from type 'unsigned int' to 'int' in initializer list
+// int i1 {u1};
+// implicit narrowing conversion.
+int i2 = u2;
+
 }
 
 void demo() {

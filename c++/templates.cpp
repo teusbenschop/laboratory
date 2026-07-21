@@ -16,8 +16,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "templates.h"
-
 #include <cassert>
 #include <coroutine>
 #include <deque>
@@ -27,6 +25,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <sstream>
 #include <type_traits>
 #include <vector>
+#include "templates.h"
 #include "templates_explicit.h"
 
 namespace templates {
@@ -37,7 +36,7 @@ namespace templates {
 namespace default_type {
 
 template <typename T = int>
-constexpr auto sum(T a, T b) -> T { return a + b; }
+static constexpr auto sum(T a, T b) -> T { return a + b; }
 
 // Pass the type.
 static_assert(std::is_same_v<decltype(sum<unsigned>(1, 2)), unsigned>);
@@ -65,13 +64,13 @@ Struct add (const Struct a, const Struct b) noexcept
     return Struct{a.v + b.v };
 }
 
-void demo()
+static void demo()
 {
     // Call template: Compiler instantiates template. This is implicit template instantiation.
     add(1,2);
-    add(1.0f,2.0f);
+    add(1.0f, 2.0f);
     add(std::string("a"), std::string("b"));
-    add(Struct(1),Struct(2));
+    add(Struct(1), Struct(2));
 }
 }
 
@@ -84,7 +83,7 @@ struct Struct
     Struct(T a) : a(a) {}
 };
 
-void demo()
+static void demo()
 {
 }
 }
@@ -94,7 +93,7 @@ namespace non_type_template_parameter {
 // A template placeholder of a constant value, called a non-type parameter.
 
 template <int i>
-float func (float d)
+float func (const float d)
 {
     if constexpr (i == 10)
         return 100.0f;
@@ -103,7 +102,7 @@ float func (float d)
     return d;
 }
 
-void demo()
+static void demo()
 {
     assert (func<10>(0.0f) == 100.0f);
     assert (func<0>(10.0f) == 10.0f);
@@ -117,6 +116,7 @@ template <typename T>
 constexpr T pi = 3.14f;
 // Instantiate it.
 static_assert(pi<float> == 3.14f);
+static_assert(pi<int> == 3);
 
 // Variable template as class member. Must be static.
 struct S1 {
@@ -134,7 +134,7 @@ struct S2
 template<typename T>
 T S2<T>::val = 1; // Definition of the above.
 
-void demo() {
+static void demo() {
     assert(S2<int>::val == 1);
 }
 }
@@ -147,7 +147,8 @@ struct Struct
     T a;
     Struct(T a) : a(a) {}
 };
-void demo()
+
+static void demo()
 {
     Struct<float> s (1.1f);
     assert(s.a == 1.1f);
@@ -190,7 +191,7 @@ public:
     {
     }
 
-    // This constructor is a template, the compiler generates multiple constructors:
+    // This copy constructor is a template, the compiler generates multiple constructors:
     // 1. Create a kilogram from a gram.
     // 2. Create a kilogram from a kilogram.
     // 3. Create a gram from a kilogram.
@@ -305,6 +306,7 @@ static_assert(weight_kg.value() == 0.01f);
 }
 
 
+
 namespace automatic_weight_units_simple {
 
 struct grams     { static constexpr float factor_to_grams {   1.0f}; };
@@ -341,9 +343,9 @@ std::ostream& operator<<(std::ostream& os, const Weight<U>& s) noexcept
     return os;
 }
 
-void demo() {
-    Weight<kilograms> kilogram_1(1);
-    Weight<grams> gram_1000 = kilogram_1;
+static void demo() {
+    const Weight<kilograms> kilogram_1(1);
+    const Weight<grams> gram_1000 = kilogram_1;
     {
         std::ostringstream oss;
         oss << gram_1000;
@@ -369,53 +371,49 @@ namespace template_specialization {
 
 enum Type {none_t, generic_t, float_t} type;
 
-// General class template syntax.
+// Generic class template syntax.
 template <typename T>
 struct Struct {
     // Generic constructor.
-    Struct(T t) {
+    constexpr explicit Struct(T) {
         type = generic_t;
     }
+    Type type{none_t};
 };
 
 // Specialized class template syntax.
 template <>
 struct Struct<float> {
     // Specialized constructor for type float.
-    Struct(float t) {
+    constexpr explicit Struct(float) {
         type = float_t;
     }
+    Type type{none_t};
 };
+
+static_assert(Struct{0}.type == generic_t);
+static_assert(Struct{0.0f}.type == float_t);
 
 // Key points:
 // 1. template<> (no type there)
 // 2. Provide class definition for specific type, e.g. Class<float>
 
-
 // Generic function template.
 template <typename T>
-void func(T t)
+constexpr Type func(T)
 {
-    type = generic_t;
+    return generic_t;
 }
 template <>
-void func<float>(float f)
+constexpr Type func(float)
 {
-    type = float_t;
+    return float_t;
 }
+static_assert(func(1)    == generic_t);
+static_assert(func(1.0f) == float_t);
 
-void demo()
+static void demo()
 {
-    assert(type == none_t);
-    Struct<int> ci(1);
-    assert(type == generic_t);
-    Struct<float> cf(1.0f);
-    assert(type == float_t);
-
-    func(1);
-    assert(type == generic_t);
-    func(1.0f);
-    assert(type == float_t);
 }
 }
 
@@ -504,7 +502,7 @@ static_assert(celsius2.value() == 150);
 static_assert(celsius150 == celsius2);
 
 
-void demo()
+static void demo()
 {
 }
 }
@@ -523,7 +521,6 @@ struct Celsius
     float value {};
     operator Kelvin() const;
 };
-
 
 struct Kelvin
 {
@@ -544,13 +541,13 @@ float get_celsius (const Celsius celsius)
     return celsius.value;
 }
 
-void demo()
+static void demo()
 {
-    Kelvin value400kelvin {400};
-    assert(get_kelvin(value400kelvin) == 400.0f);
-    Celsius value100celsius {100};
-    assert(get_kelvin(value100celsius) == 373.5f);
-    assert(get_celsius(value400kelvin) == 126.5f);
+    const Kelvin _400kelvin {400};
+    assert(get_kelvin(_400kelvin) == 400.0f);
+    const Celsius _100celsius {100};
+    assert(get_kelvin(_100celsius) == 373.5f);
+    assert(get_celsius(_400kelvin) == 126.5f);
 }
 }
 
@@ -565,19 +562,19 @@ namespace meta_programming_recursive_calculation {
 template <int n>
 struct Factorial
 {
-    static constexpr int value = n * Factorial<n - 1>::value;
+    static constexpr int value {n * Factorial<n - 1>::value};
 };
 
 // This template is specific for a passed value of 0.
 template <>
 struct Factorial<0>
 {
-    static constexpr int value = 1;
+    static constexpr int value {1};
 };
 
 // A recursive template is very expensive to process by the compiler.
 // A recursive constexpr function is much cheaper.
-constexpr int factorial(int n) { return n <= 1 ? 1 : n * factorial(n - 1); }
+static constexpr int factorial(const int n) { return n <= 1 ? 1 : n * factorial(n - 1); }
 
 static_assert(Factorial<1>::value == 1);
 static_assert(factorial(1) == 1);
@@ -610,7 +607,7 @@ static_assert(Power<8>::value == 256);
 // 4. The compiler sees that the value from Power<7> is needed.
 // 5. The compiler keeps creating new instances of Power<n> till Power<0>.
 // 6. The compiler now can create Power<8>.
-void demo()
+static void demo()
 {
 }
 }
@@ -634,13 +631,12 @@ T min (const T value, const Args... args)
     return value < rest_min ? value : rest_min;
 }
 
-void demo()
+static void demo()
 {
     assert(min(2.4, 7.5) == 2.4);
     assert(min(2, 3, 4, 5, 6, 1) == 1);
 }
 }
-
 
 
 namespace variadic_class_template {
@@ -649,20 +645,20 @@ template<typename... Types>
 struct Storage
 {
     std::tuple<Types...> elements;
-    Storage(Types... args) : elements(args...) {}
+    explicit Storage(Types... args) : elements(args...) {}
 };
 
-void demo()
+static void demo()
 {
     {
         Storage<> s; // Types contains no arguments (this has no application).
     }
     {
-        Storage<int> s(1); // Types contains one argument: int.
+        const Storage<int> s(1); // Types contains one argument: int.
         assert(std::get<0>(s.elements) == 1);
     }
     {
-        Storage<int, float> s(1, 1.0f); // Types contains two arguments: int and float.
+        const Storage<int, float> s(1, 1.0f); // Types contains two arguments: int and float.
         assert(std::get<0>(s.elements) == 1);
         assert(std::get<1>(s.elements) == 1.0f);
     }
@@ -672,8 +668,8 @@ void demo()
 
 namespace variadic_function_template {
 
-template <typename V, typename... Values>
-constexpr V sum (V value, Values... values)
+template <typename Value, typename... Values>
+static constexpr Value sum (Value value, Values... values)
 {
     if constexpr (sizeof...(values))
         return value + sum(values...);
@@ -682,9 +678,9 @@ constexpr V sum (V value, Values... values)
 
 static_assert(sum<int>(1) == 1);
 static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
-static_assert(sum<int>(1, 2, 3, 4) == 10);
+static_assert(sum<unsigned>(1, 2, 3, 4) == 10);
 
-void demo()
+static void demo()
 {
 }
 }
@@ -693,19 +689,19 @@ void demo()
 namespace pack_expansion {
 
 template <typename ... Args>
-void func1 (Args ... args)
+static void func1 (Args ... args)
 {
 }
 
 template <typename ... Args>
-void func2 (Args ... args)
+static void func2 (Args ... args)
 {
     func1(&args...); // &args...   : a pack expansion.
                      // &args      : the pattern.
     // Args ... args expand into: int* i, float* f, char* c, const char** s
     // &args expands into: &i, &f, &c, &s
 
-    func2(1, 1.0f, '1', "1");
+    func1(1, 1.0f, '1', "1");
     // Args ... args expanded into: int i, float f, char c, const char* s
 }
 
@@ -723,8 +719,8 @@ void func2 (Args ... args)
 // f(h(a1, a2, a3) + a1, h(a1, a2, a3) + a2, h(a1, a2, a3) + a3)
 
 // Pack expansion in parentheses works the same as in function argument lists.
-// Class c(&args...);   // Expands into Class::Class(&a1, &a2, &a3)
-// Class c(n, ++args...); // Expands into Class::Class(n, ++a1, ++a2, ++a3);
+// Class c(&args...);     // Expands into Class::Class(&a1, &a2, &a3)
+// Class c(n, ++args...); // Expands into Class::Class(n, ++a1, ++a2, ++a3)
 
 // Pack expansion in brace-enclosed initializers.
 template <typename... Args>
@@ -734,7 +730,7 @@ constexpr int func3 (Args... args) {
 
     // The initializer lists guarantee sequencing.
     // They can therefore be used to call a function on each element of a pack, in order.
-    int sum = 0;
+    int sum {0};
     int dummy[sizeof...(Args)] = {(sum += args, 0)...};
     return sum;
 }
@@ -742,10 +738,10 @@ static_assert (func3(1, 2, 3) == 6);
 
 // Pack expansion in template argument lists.
 template <typename T1, typename T2, typename... Args>
-void func4 (T1 t1, T2 t2, Args... args) {
+static void func4 (T1 t1, T2 t2, Args... args) {
     std::tuple<T1, T2, Args...> tup1; // expands to std::tuple<t1, t2, a1, a2, a3>
     std::tuple<Args..., T1, T2> tup2; // expands to std::tuple<a1, a2, a3, t1, t2>
-    std::tuple<T1, Args..., T2> tup3; // expands to std::tuple<t1, a1, a2, a4, t2>
+    std::tuple<T1, Args..., T2> tup3; // expands to std::tuple<t1, a1, a2, a3, t2>
 }
 
 // The ellipsis in a function parameter list: the parameter declaration is the pattern for expansion.
@@ -810,7 +806,7 @@ struct Derived : Bases...
 // static_assert(first_plus_last(std::string("a")) == "aa");
 
 
-void demo()
+static void demo()
 {
     demo6();
 }
@@ -832,16 +828,16 @@ namespace fold_expressions {
 // 2. Do 1 + result > final result.
 
 template <typename ... Args>
-constexpr int sum(Args...args)
+static constexpr int sum(Args...args)
 {
     return (args + ...);
 }
 static_assert(sum(1) == 1);
-static_assert(sum(1, 2, 3) == 6);
+static_assert(sum(2, 3, 4) == 9);
 
 
 template <typename ... Args>
-constexpr int unary_left_fold(Args&& ... args)
+static constexpr int unary_left_fold(Args&& ... args)
 {
     // (((arg1 - arg2) - ...) - argN)
     return (... - args); // Dots at left of operator.
@@ -850,7 +846,7 @@ constexpr int unary_left_fold(Args&& ... args)
 static_assert(unary_left_fold(1, 2, 3) == -4);
 
 template <typename ... Args>
-constexpr int unary_right_fold(Args&& ... args)
+static constexpr int unary_right_fold(Args&& ... args)
 {
     // (arg1 - (... - (argN-1 - argN)))
     return (args - ...); // Dots at right of operator.
@@ -882,10 +878,11 @@ void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args)
 {
     // Run function on arg1, then on arg2, and so on.
     (void(os << std::forward<Args>(args) << " "), ...);
-    ((v.push_back(args)), ...); // Can leave out "void" in both cases.
+    (void(v.push_back(args)), ...);
+    // Can leave out "void" in both cases.
 }
 
-void demo()
+static void demo()
 {
     std::ostringstream oss;
     std::vector<int> v;
@@ -908,7 +905,7 @@ std::ostream& operator <<(std::ostream& os, const C<T,Args...>& objs)
     return os;
 }
 
-void demo() {
+static void demo() {
     return;
     std::vector<float> vf { 1.1, 2.2, 3.3, 4.4 };
     std::cout << vf << '\n';
@@ -923,6 +920,7 @@ void demo() {
 }
 
 namespace typetrait_specialization_of_vector_v1 {
+
 
 template <typename T>
 concept specialization_of_vector = requires(T& t)
@@ -969,7 +967,7 @@ static_assert(not is_specialization_of_vector_v<std::list<int>>);
 
 const auto func = [](is_specialization_of_vector_v auto& t) {};
 
-void demo()
+static void demo()
 {
     std::vector<int> v;
     func(v);
@@ -992,22 +990,22 @@ template <
 >
 struct is_specialisation_of <Primary<Args...>, Primary> : std::true_type {};
 
-static_assert(is_specialisation_of<std::vector<int>, std::vector>::value);
+static_assert(    is_specialisation_of<std::vector<int>, std::vector>::value);
 static_assert(not is_specialisation_of<std::vector<int>, std::list>::value);
-static_assert(is_specialisation_of<std::vector<std::map<bool,bool>>, std::vector>::value);
-static_assert(is_specialisation_of<std::list<bool>, std::list>::value);
-static_assert(is_specialisation_of<std::map<bool,bool>, std::map>::value);
-static_assert(is_specialisation_of<std::coroutine_handle<void>, std::coroutine_handle>::value);
+static_assert(    is_specialisation_of<std::vector<std::map<bool,bool>>, std::vector>::value);
+static_assert(    is_specialisation_of<std::list<bool>, std::list>::value);
+static_assert(    is_specialisation_of<std::map<bool,bool>, std::map>::value);
+static_assert(    is_specialisation_of<std::coroutine_handle<void>, std::coroutine_handle>::value);
 
 template <typename T,
           template<typename...Args> typename Primary>
 concept is_specialisation_of_v = is_specialisation_of<T, Primary>::value;
 
 template<is_specialisation_of_v<std::vector> T>
-void func(T c) { };
+static void func(T c) { };
 
 
-void demo()
+static void demo()
 {
     std::vector<int> v = {1,2,3,4};
     func(v);
@@ -1029,7 +1027,7 @@ namespace is_coroutine_handle {
 
 // The solution is a classic C++ metaprogramming technique called "partial template specialization".
 
-// Step 1: The "Catch-All" Base Case
+// Step 1: The catch-all base case.
 // Create a primary template. The default assumption is that the type passed is not a coroutine handle.
 // Inherit from std::false_type (which provides a value = false constant).
 template <typename T>
@@ -1037,7 +1035,7 @@ struct is_coroutine_handle : std::false_type {};
 // When passing int, double, or std::string into this, they don't match any special rules,
 // so they hit this base case and return false.
 
-// Step 2: The Special Filter
+// Step 2: The special filter.
 // Write a "special case" (a partial specialization). This tells the compiler:
 // "If the type looks exactly like std::coroutine_handle<P>, use this version instead!"
 template <typename T>
@@ -1054,10 +1052,11 @@ static_assert(is_coroutine_handle<std::coroutine_handle<FakeType>>::value);
 static_assert(not is_coroutine_handle<int>::value);
 
 
-void demo()
+static void demo()
 {
 }
 }
+
 
 namespace explicit_template_instantiation {
 // Normally templates are instantiated implicitly by the compiler on first use.
@@ -1068,7 +1067,7 @@ namespace explicit_template_instantiation {
 // Template definition in templates_explicit.cpp, linked with the project.
 // Explicit definitions in that same file.
 
-void demo()
+static void demo()
 {
     // Template usage.
     // It only sees the template function declarations. It does not see the definitions.

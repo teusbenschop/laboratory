@@ -33,7 +33,6 @@ add_executable(cpp
         unions.cpp
         mathematics.cpp
         performance.cpp
-        questions.cpp
         templates_explicit.cpp
         design_patterns.cpp
 )

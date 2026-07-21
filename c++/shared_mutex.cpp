@@ -16,14 +16,13 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "shared_mutex.h"
-
 #include <chrono>
 #include <condition_variable>
 #include <iostream>
 #include <queue>
 #include <shared_mutex>
 #include <thread>
+#include "shared_mutex.h"
 
 namespace shared_mutex {
     // This example code features a queue.
@@ -37,7 +36,7 @@ namespace shared_mutex {
     std::condition_variable_any cv_any;
 
     void consume_queue(const std::stop_token &stop_token) {
-        while (!stop_token.stop_requested()) {
+        while (not stop_token.stop_requested()) {
             // Wait for the condition variable to be signaled, or for a stop request.
             // This uses a unique lock because it might modify the queue.
             std::unique_lock lock(shared_mutex);
@@ -50,13 +49,12 @@ namespace shared_mutex {
                 break;
 
             // Print / remove the value at the front of the queue.
-            std::cout << "Removing " << queue.front() << " from queue" << std::endl;
+            std::cout << "remove " << queue.front() << " ";
             queue.pop();
         }
     }
 
-
-    bool queue_empty() {
+    static bool queue_empty() {
         // This uses a shared lock because it does not modify the queue.
         std::shared_lock lock(shared_mutex);
         return queue.empty();
@@ -66,19 +64,19 @@ namespace shared_mutex {
 
         return;
 
-        std::jthread consumer(consume_queue);
+        [[maybe_unused]] std::jthread consumer(consume_queue);
 
         for (int i{1}; i <= 5; i++) {
-            // This uses a unique lock because it modifies the queue.
-            std::cout << "Attempt to obtain a unique lock" << std::endl;
-            std::unique_lock lock(shared_mutex);
-            std::cout << "The unique lock was obtained" << std::endl;
-            std::cout << "Push " << i << " onto queue" << std::endl;
-            queue.push(i);
-            // Signal the condition variable.
-            cv_any.notify_one();
+            {
+                // This uses a unique lock because it modifies the queue.
+                std::unique_lock lock(shared_mutex);
+                std::cout << "push " << i << " ";
+                queue.push(i);
+                // Signal the condition variable.
+                cv_any.notify_one();
+            }
             // Wait shortly.
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
 
         // Wait till the queue is empty.

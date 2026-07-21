@@ -16,12 +16,11 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "unions.h"
-
 #include <cassert>
 #include <iostream>
 #include <ostream>
 #include <vector>
+#include "unions.h"
 
 namespace unions {
 
@@ -133,7 +132,7 @@ void demo()
         i = 10;
         assert(i == 10);
         ch = "hello";
-        assert(ch == "hello");
+        assert(ch == std::string("hello"));
         assert(i != 10);
     }
     {

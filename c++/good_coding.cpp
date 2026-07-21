@@ -16,10 +16,9 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "good_coding.h"
-
 #include <algorithm>
 #include <array>
+#include "good_coding.h"
 
 namespace good_coding {
 
