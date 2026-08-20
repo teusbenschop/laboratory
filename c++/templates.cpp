@@ -16,6 +16,7 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+// #import std;
 #include <cassert>
 #include <coroutine>
 #include <deque>
@@ -36,26 +37,29 @@ namespace templates {
 namespace default_type {
 
 template <typename T = int>
-static constexpr auto sum(T a, T b) -> T { return a + b; }
+static constexpr T sum(T a, T b) noexcept { return a + b; }
 
 // Pass the type.
 static_assert(std::is_same_v<decltype(sum<unsigned>(1, 2)), unsigned>);
 // Omit the type: it takes int.
-static_assert(std::is_same_v<decltype(sum<>(1, 2)), int>);
-static_assert(std::is_same_v<decltype(sum(1, 2)), int>);
+static_assert(std::is_same_v<decltype(sum<>(2, 3)), int>);
+static_assert(std::is_same_v<decltype(sum  (4, 5)), int>);
 
+static void demo()
+{
+}
 }
 
 namespace simple_function_template {
 
-struct Struct { int v{}; };
-
 // General template.
 template <typename T>
-T add (T a, T b) noexcept
+static T add (T a, T b) noexcept
 {
     return a + b;
 }
+
+struct Struct { int v{}; };
 
 // Specialized template.
 template <> // This could be left out.
@@ -67,10 +71,10 @@ Struct add (const Struct a, const Struct b) noexcept
 static void demo()
 {
     // Call template: Compiler instantiates template. This is implicit template instantiation.
-    add(1,2);
-    add(1.0f, 2.0f);
+    add(1,                2);
+    add(1.0f,             2.0f);
     add(std::string("a"), std::string("b"));
-    add(Struct(1), Struct(2));
+    add(Struct(1),        Struct(2));
 }
 }
 
@@ -97,8 +101,6 @@ float func (const float d)
 {
     if constexpr (i == 10)
         return 100.0f;
-    if constexpr (std::is_same_v<decltype(i), std::string>)
-        return 200.0f;
     return d;
 }
 
@@ -369,53 +371,89 @@ static void demo() {
 
 namespace template_specialization {
 
-enum Type {none_t, generic_t, float_t} type;
+// https://en.cppreference.com/cpp/language/template_specialization
+// https://en.cppreference.com/cpp/language/partial_specialization
 
-// Generic class template syntax.
-template <typename T>
+
+// Generic class template.
+template<typename T, typename U>
 struct Struct {
-    // Generic constructor.
-    constexpr explicit Struct(T) {
-        type = generic_t;
-    }
-    Type type{none_t};
+    constexpr explicit Struct( T t, U u) : m_t(t), m_u(u) {}
+    T m_t;
+    U m_u;
 };
 
-// Specialized class template syntax.
-template <>
-struct Struct<float> {
-    // Specialized constructor for type float.
-    constexpr explicit Struct(float) {
-        type = float_t;
-    }
-    Type type{none_t};
+// Partial class template specialisation.
+template<typename T>
+struct Struct<T, int> {
+    constexpr explicit Struct( T t, const int u) : m_t(t), m_u(u * 2) {}
+    T   m_t;
+    int m_u;
 };
 
-static_assert(Struct{0}.type == generic_t);
-static_assert(Struct{0.0f}.type == float_t);
-
-// Key points:
-// 1. template<> (no type there)
-// 2. Provide class definition for specific type, e.g. Class<float>
+// Full class template specialisation.
+template<>
+struct Struct<std::string, float> {
+    constexpr explicit Struct( std::string t, const float u) : m_t(std::move(t)), m_u(u * 3) {}
+    std::string m_t {};
+    float       m_u {};
+};
 
 // Generic function template.
-template <typename T>
-constexpr Type func(T)
+template<typename T, typename U>
+static std::pair<T,U> process(T t, U u)
 {
-    return generic_t;
+    return {t, u};
 }
+
+// Partial function template specialisation.
+// template<typename T>
+// process<T, int>(T t, int u) { }
+// error: function template partial specialization is not allowed
+
+// Solution: use function overloading as alternative.
+template<typename T>
+static std::pair<T,int> process(T t, int u)
+{
+    return {++t, ++u};
+}
+
+// Full template function specialisation.
 template <>
-constexpr Type func(float)
+std::pair<std::string, std::string> process<std::string, std::string>(std::string t, std::string u)
 {
-    return float_t;
+    return {std::move(t) + "t", std::move(u) + "u"};
 }
-static_assert(func(1)    == generic_t);
-static_assert(func(1.0f) == float_t);
+
 
 static void demo()
 {
+    // Generic class template.
+    constexpr Struct<int, unsigned int> storage1(10, 10);
+    assert(storage1.m_t == 10 and storage1.m_u == 10);
+
+    // Partially specialized class template.
+    const Struct<std::string, int> storage("partial", 50);
+    assert(storage.m_t == "partial" and storage.m_u == 100);
+
+    // Fully specialized class template.
+    const Struct<std::string, float> storage3("full", 5.0f);
+    assert(storage3.m_t == "full" and storage3.m_u == 15.0f);
+
+    // Generic function template.
+    const auto result1 = process<unsigned, unsigned>(1u, 2u);
+    assert(result1.first == 1u and result1.second == 2u);
+
+    // Using function overloading as partially specialized function template.
+    const auto result2 = process<int>(5, 10);
+    assert(result2.first == 6 and result2.second == 11);
+
+    // Fully specialised function template.
+    const auto result3 = process<std::string, std::string>("1", "2");
+    assert(result3.first == "1t" and result3.second == "2u");
 }
 }
+
 
 namespace automatic_temperature_unit_conversion {
 
@@ -528,7 +566,7 @@ struct Kelvin
     operator Celsius() const;
 };
 
-Celsius::operator Kelvin() const { return Kelvin(value + 273.5f); }
+Celsius::operator Kelvin() const { return Kelvin (value + 273.5f); }
 Kelvin::operator Celsius() const { return Celsius(value - 273.5f); }
 
 float get_kelvin (const Kelvin kelvin)
@@ -613,19 +651,39 @@ static void demo()
 }
 
 
+namespace variadic_function_templates {
+
+template <typename Value, typename... Values>
+static constexpr Value sum (Value value, Values... values)
+{
+    if constexpr (sizeof...(values))
+        return value + sum(values...);
+    return value;
+}
+
+static_assert(sum<int>(1) == 1);
+static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
+static_assert(sum<unsigned>(1, 2, 3, 4) == 10);
+
+static void demo()
+{
+}
+}
+
+
 namespace variadic_minimum {
 // Calculate minimum of values through variadic template.
 
 // Template for one variable, stops recursion.
 template <typename T>
-T min (const T value)
+static T min (const T value)
 {
     return value;
 }
 
 // Template for recursion for more than one variable.
 template <typename T, typename ...Args>
-T min (const T value, const Args... args)
+static T min (const T value, const Args... args)
 {
     const T rest_min = min(args...);
     return value < rest_min ? value : rest_min;
@@ -662,26 +720,6 @@ static void demo()
         assert(std::get<0>(s.elements) == 1);
         assert(std::get<1>(s.elements) == 1.0f);
     }
-}
-}
-
-
-namespace variadic_function_template {
-
-template <typename Value, typename... Values>
-static constexpr Value sum (Value value, Values... values)
-{
-    if constexpr (sizeof...(values))
-        return value + sum(values...);
-    return value;
-}
-
-static_assert(sum<int>(1) == 1);
-static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
-static_assert(sum<unsigned>(1, 2, 3, 4) == 10);
-
-static void demo()
-{
 }
 }
 
@@ -922,27 +960,27 @@ static void demo() {
 namespace typetrait_specialization_of_vector_v1 {
 
 
-template <typename T>
-concept specialization_of_vector = requires(T& t)
+template <typename V>
+concept specialization_of_vector = requires(V& v)
 {
-    t.begin();
-    t.data();
-    t.reserve(1);
+    v.begin();
+    v.data();
+    v.reserve(1);
 };
 
-static_assert(specialization_of_vector<std::vector<int>>);
-static_assert(specialization_of_vector<std::vector<std::string>>);
-static_assert(specialization_of_vector<std::vector<std::map<float,float>>>);
+static_assert(    specialization_of_vector<std::vector<int>>);
+static_assert(    specialization_of_vector<std::vector<std::string>>);
+static_assert(    specialization_of_vector<std::vector<std::map<float,float>>>);
 static_assert(not specialization_of_vector<std::list<int>>);
 static_assert(not specialization_of_vector<float>);
 
-template <typename T>
-requires specialization_of_vector<T>
-void func1 (T& v) { }
+template <typename V>
+requires specialization_of_vector<V>
+static void func1 (V& v) { }
 
-void func2 (specialization_of_vector auto& v) { }
+static void func2 (specialization_of_vector auto& v) { }
 
-void demo()
+static void demo()
 {
     std::vector<int> v;
     func1(v);
@@ -962,7 +1000,8 @@ struct is_specialization_of_vector<std::vector<T>> : std::true_type {};
 template <typename T>
 concept is_specialization_of_vector_v = is_specialization_of_vector<T>::value;
 
-static_assert(is_specialization_of_vector_v<std::vector<int>>);
+static_assert(    is_specialization_of_vector_v<std::vector<int>>);
+static_assert(    is_specialization_of_vector_v<std::vector<std::string>>);
 static_assert(not is_specialization_of_vector_v<std::list<int>>);
 
 const auto func = [](is_specialization_of_vector_v auto& t) {};
@@ -996,6 +1035,7 @@ static_assert(    is_specialisation_of<std::vector<std::map<bool,bool>>, std::ve
 static_assert(    is_specialisation_of<std::list<bool>, std::list>::value);
 static_assert(    is_specialisation_of<std::map<bool,bool>, std::map>::value);
 static_assert(    is_specialisation_of<std::coroutine_handle<void>, std::coroutine_handle>::value);
+static_assert(    is_specialisation_of<std::tuple<bool,int,char>, std::tuple>::value);
 
 template <typename T,
           template<typename...Args> typename Primary>
@@ -1077,9 +1117,48 @@ static void demo()
 }
 
 
+namespace template_deduction_guides {
+
+// The template deduction guide tells the compiler
+// how to map constructor arguments to class template parameters.
+// It enables class template argument deduction (CTAD).
+
+// Before C++17: Specify types or use helper.
+static std::pair<int, float> pair1(1, 2.3f);
+static auto pair2 = std::make_pair(1, 2.3f);
+
+// C++17 and later: Types are implicitly deduced.
+static std::pair pair3(1, 2.3f);
+// Deduced as std::pair<int, float>.
+// The compiler writes "implicit deduction guides" to achieve this.
+
+// When the compiler cannot figure out the types,
+// then a "user-defined deduction guide" is needed.
+
+// Syntax:
+// Map a constructor pattern on the left to the target template type on the right.
+
+template <typename T>
+struct Wrapper {
+    T value;
+    Wrapper(T v) : value(v) {}
+};
+
+// Deduction guide forcing decay (converts array types to pointers)
+template <typename T>
+Wrapper(T) -> Wrapper<std::decay_t<T>>;
+
+static Wrapper w("hello"); // Deducts Wrapper<const char*> instead of Wrapper<const char[6]>
+
+static void demo ()
+{
+}
+}
+
 
 void demo()
 {
+    default_type::demo();
     simple_function_template::demo();
     class_template::demo();
     non_type_template_parameter::demo();
@@ -1090,9 +1169,9 @@ void demo()
     automatic_temperature_unit_conversion::demo();
     automatic_temperature_unit_conversion_simple::demo();
     meta_programming_recursive_calculation::demo();
+    variadic_function_templates::demo();
     variadic_minimum::demo();
     variadic_class_template::demo();
-    variadic_function_template::demo();
     pack_expansion::demo();
     fold_expressions::demo();
     template_template_arguments::demo();
@@ -1101,6 +1180,7 @@ void demo()
     generic_specialization_of_typetrait::demo();
     is_coroutine_handle::demo();
     explicit_template_instantiation::demo();
+    template_deduction_guides::demo();
 }
 }
 

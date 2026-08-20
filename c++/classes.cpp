@@ -16,18 +16,17 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "classes.h"
-
 #include <cassert>
 #include <iostream>
 #include <memory>
 #include <ostream>
+#include "classes.h"
 
 namespace classes {
 
 namespace resource_acquisition_is_initialization_raii {
-// 1. RAII (Resource Acquisition Is Initialization)
-void demo()
+// RAII (Resource Acquisition Is Initialization)
+static void demo()
 {
     {
         // Problem: Resource might be leaked.
@@ -39,7 +38,7 @@ void demo()
     {
         // Solution: Use an object to manage the resource.
         // Can also be a user-defined class to manage the resource.
-        const auto ptr = std::make_unique<int>(10); // Resource acquired.
+        [[maybe_unused]] const auto ptr = std::make_unique<int>(10); // Resource acquired.
         // Use resource.
         // Resource released automatically when ptr goes out of scope.
     }
@@ -47,8 +46,8 @@ void demo()
 }
 
 
-namespace design_idiom_pimpl {
-// 2. Pimpl (Pointer to Implementation)
+namespace pointer_to_implementation_pimpl {
+// Pimpl (Pointer to Implementation)
 // Public interface is in header file.
 // Private implementation is in another file.
 // The public interface has a pointer to the implementation.
@@ -86,15 +85,15 @@ void Public::work() const
     m_pimpl->internal_work();
 }
 
-void demo()
+static void demo()
 {
 }
 }
 
 
-namespace design_idiom_crtp {
+namespace curiously_recurring_template_pattern_crtp {
 
-// 3. CRTP (Curiously Recurring Template Pattern).
+// CRTP (Curiously Recurring Template Pattern).
 
 template <typename T>
 struct Base
@@ -106,7 +105,7 @@ struct Base
     }
 };
 
-struct Derived : public Base<Derived>
+struct Derived : Base<Derived>
 {
     void specific_function()
     {
@@ -115,7 +114,7 @@ struct Derived : public Base<Derived>
     int value{};
 };
 
-void demo()
+static void demo()
 {
     Derived derived;
     // Call function from base class -> calls the derived function.
@@ -130,14 +129,14 @@ void demo()
 
 namespace design_idiom_copy_swap {
 
-// 4. Copy and Swap Idiom
+// Copy and Swap Idiom
 // It swaps the current object with a copy of the object being assigned.
 
 class Class
 {
 public:
     // Constructor.
-    Class(int size) : m_size(size), m_data(new int(size))
+    explicit Class(const int size) : m_size(size), m_data(new int(size))
     {
     }
 
@@ -165,15 +164,15 @@ private:
     int* m_data;
 };
 
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace single_responsibility_principle {
-// 1. Single Responsibility Principle
-// ----------------------------------
+// Single Responsibility Principle
+// -------------------------------
 // A class should have only one reason to change.
 
 // Class with 3 responsibilities, hence 3 reasons to change.
@@ -226,8 +225,8 @@ class SaveInvoice
 
 
 namespace open_closed_principle {
-// 2. Open-Closed Principle
-// ------------------------
+// Open-Closed Principle
+// ---------------------
 // Open for extension, closed for modification.
 // Add new functionality without altering existing functionality.
 // Existing code: Class save to database.
@@ -268,9 +267,9 @@ public:
 
 
 namespace liskov_substitution_principle {
-// 3. Liskov Substitution Principle
-// --------------------------------
-// The derived (sub)class should be passable instead of the base (parent) class.
+// Liskov Substitution Principle
+// -----------------------------
+// The derived class should be passable instead of the base class.
 // The derived class should extend the capabilities of the base class and not narrow it down.
 class Bike
 {
@@ -293,7 +292,7 @@ public:
     // If it had not defined the above function, it would narrow the base class down.
 };
 
-void demo()
+static void demo()
 {
     const auto start_engine = [](const Bike& bike) -> bool
     {
@@ -305,15 +304,15 @@ void demo()
     };
     Motorcycle motorcycle;
     Bicycle bicycle;
-    assert(start_engine(motorcycle)); // Works.
-    assert(not start_engine(bicycle)); // Works too.
+    assert(    start_engine(motorcycle));
+    assert(not start_engine(bicycle));
 }
 }
 
 
 namespace interface_segregation_principle {
-// 4. Interface Segregation Principle
-// ----------------------------------
+// Interface Segregation Principle
+// -------------------------------
 // Split larger interfaces up into more specific ones.
 // Clients should only know about methods of interest to them.
 // Clients should not be forced to depend on methods it does not use.
@@ -333,7 +332,7 @@ struct BadWaiter : BadEmployee
 
     void manage() override
     {
-        /* not my work */
+        // not my work
     }
 };
 
@@ -365,8 +364,8 @@ struct Director : IGoodManager
 
 
 namespace dependency_inversion_principle {
-// 5. Dependency Inversion Principle
-// ---------------------------------
+// Dependency Inversion Principle
+// ------------------------------
 // A class should depend on interfaces or abstract classes rather than on concrete types.
 // This makes the class more flexible.
 
@@ -418,7 +417,7 @@ namespace constructors {
 // destructor: ~C()
 
 // Compiler generates all six, unless one of them is user defined.
-// Force generation by declaring = default.
+// Force generation by declaring: = default.
 
 // A constructor is trivial if not user-defined, and no virtual inheritance.
 
@@ -447,8 +446,7 @@ static_assert(std::is_nothrow_move_assignable_v<S1>);
 static_assert(std::is_trivially_move_assignable_v<S1>);
 
 
-
-void demo()
+static void demo()
 {
     // Policy: Declare constructors explicit.
 
@@ -530,7 +528,7 @@ void demo()
         static_assert(not std::is_trivially_copy_constructible_v<S>);
         S s1; // <-- call default constructor
         s1.value = 1;
-        S s2 = s1; // <- call copy constructor
+        const S s2 = s1; // <- call copy constructor
         assert(s2.value == 2);
     }
     {
@@ -577,7 +575,7 @@ void demo()
             int value{};
         };
         S s1;
-        S s2 = std::move(s1);
+        const S s2 = std::move(s1);
         assert(s1.value == 0);
         assert(s2.value == 1);
     }
@@ -609,7 +607,7 @@ void demo()
         // Inheriting constructors.
         struct Base
         {
-            Base(int, ...) { }
+            explicit Base(int, ...) { }
         };
         struct Derived : Base
         {
@@ -641,7 +639,7 @@ struct Base {
     void non_virtual_function() { }
 };
 
-struct Derived : public Base {
+struct Derived : Base {
     explicit Derived() = default;
 
     // Derived copy constructors and copy assignment operators should copy all members so call base copy equivalent.
@@ -676,7 +674,7 @@ struct Derived : public Base {
 // * using Base::func;
 // * forwarding function: Derived::func() { Base::func(); }
 
-void demo()
+static void demo()
 {
     {
         auto* d = new Derived;
@@ -710,7 +708,7 @@ class Derived2 :  public virtual Base { };
 
 class Final : public Derived1, public Derived2 { };
 
-void demo()
+static void demo()
 {
     Final final;
     // Which of the two base functions to call? Ambiguous.
@@ -721,15 +719,46 @@ void demo()
 }
 
 
+namespace inheritance_with_constructor_parameter_pack {
+
+struct Base {
+    Base() = delete;
+    template <typename... Args>
+    explicit Base(Args&&... args)
+    {
+        // std::cout << "Call base constructor with " << sizeof...(Args) << " arguments" << std::endl;
+    }
+};
+
+struct Derived1 : Base {
+    // Inherit all constructors from Base automatically.
+    using Base::Base;
+};
+
+struct Derived2 : Base
+{
+    // Capture the pack using Args&&... and define constructor.
+    template <typename... Args>
+    explicit Derived2(Args&& ... args) : Base(std::forward<Args>(args)...) { }
+};
+
+static void demo()
+{
+    Derived1 derived1(1, 2.3, "hello");
+    Derived2 derived2(1, 2.3, "hello");
+}
+}
+
 void demo()
 {
     resource_acquisition_is_initialization_raii::demo();
-    design_idiom_pimpl::demo();
-    design_idiom_crtp::demo();
+    pointer_to_implementation_pimpl::demo();
+    curiously_recurring_template_pattern_crtp::demo();
     design_idiom_copy_swap::demo();
     liskov_substitution_principle::demo();
     constructors::demo();
     inheritance::demo();
     multiple_inheritance::demo();
+    inheritance_with_constructor_parameter_pack::demo();
 }
 }

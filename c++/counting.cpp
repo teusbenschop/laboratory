@@ -16,12 +16,12 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "counting.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <string>
 #include <vector>
+#include "counting.h"
 
 namespace counting {
 
@@ -30,28 +30,29 @@ constexpr auto numbers = std::array{3, 3, 2, 1, 3, 1, 3};
 // Count how often a given number occurs.
 static_assert(std::ranges::count(numbers, 3) == 4);
 
-constexpr auto predicate = [](int i) { return i == 3; };
+constexpr auto predicate = [](const int i) { return i == 3; };
 static_assert(std::ranges::count_if(numbers, predicate) == 4);
 
 void demo()
 {
     {
-        struct Player {
+        struct Item {
             std::string name;
-            int score;
+            int id;
         };
-        std::vector<Player> players{
-            {"Alice", 1},
-            {"Bob", 2},
-            {"Alice", 3}
+        const std::vector<Item> items{
+            {"Foo", 1},
+            {"Bar", 2},
+            {"Foo", 3}
         };
-        // Count how many players have the name "Alice".
-        const long count = std::ranges::count(players, "Alice", &Player::name);
+        // Count how many items have the name "Foo".
+        const long count = std::ranges::count(items, "Foo", &Item::name);
         assert(count == 2);
     }
 
     {
-        std::vector<std::pair<int, int>> pairs {{1,1}, {1,2}, {3,3} };
+        const std::vector<std::pair<int, int>> pairs {{1,1}, {1,2}, {3,3} };
+        // Count how many pairs have 1 as their first value.
         const long count = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
         assert(count == 2);
     }

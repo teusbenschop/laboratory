@@ -68,7 +68,7 @@ private:
     BaseCommand* negative;
 };
 
-void demo()
+static void demo()
 {
     ForwardCommand forward;
     BackwardCommand backward;
@@ -98,7 +98,7 @@ public:
     int rooms {4};
 };
 
-void demo()
+static void demo()
 {
     Common common;
     const House house1(common);
@@ -139,7 +139,7 @@ public:
     void register_observer(Observer* observer) {observers.push_back(observer);};
     void notify(const int id)
     {
-        std::ranges::for_each(observers, [id](const auto& observer)
+        std::ranges::for_each(observers, [id](const auto observer)
         {
            observer->on_notify(id);
         });
@@ -154,12 +154,12 @@ public:
     ~ConcreteSubject() override = default;
 };
 
-void demo()
+static void demo()
 {
     // Have some "observers", objects to receive the notifications.
     ConcreteObserver observer1, observer2;
 
-    // Have a "subject", that is, a part that generates notifications.
+    // Have a "subject" that generates notifications.
     // Add observers, as many as needed.
     ConcreteSubject concrete_subject;
     concrete_subject.register_observer(&observer1);
@@ -188,7 +188,7 @@ std::unique_ptr<T> spawn()
     return std::make_unique<T>();
 }
 
-void demo()
+static void demo()
 {
     spawn<Struct1>();
     spawn<Struct2>();
@@ -213,9 +213,9 @@ private:
     explicit Singleton() = default; // No external entity can instantiate.
 };
 
-void demo()
+static void demo()
 {
-    const auto& singleton = Singleton::instance();
+    [[maybe_unused]] auto& singleton = Singleton::instance();
 }
 }
 
@@ -246,7 +246,7 @@ state state_machine(const state state, const int input)
     return state;
 }
 
-void demo()
+static void demo()
 {
     assert(state_machine(state::sitting, 1) == state::standing);
 }
@@ -264,18 +264,19 @@ class DoubleBuffer
     std::vector<int> write_buffer;
     std::vector<int> read_buffer {1};
 public:
-    void write_to_buffer(const int i) { write_buffer.push_back(i); }
-    int read_from_buffer(int& v) const { return read_buffer.at(v); }
+    void write(const int i) { write_buffer.push_back(i); }
+    int read(int& v) const { return read_buffer.at(v); }
     void switch_buffer () { std::swap(write_buffer, read_buffer); } // Or switch pointers or references.
 };
-void demo()
+
+static void demo()
 {
     // Engine writes to buffer.
     DoubleBuffer double_buffer;
-    double_buffer.write_to_buffer(1);
+    double_buffer.write(1);
     // Display reads from buffer.
     int pixel = 0;
-    [[maybe_unused]] const int i = double_buffer.read_from_buffer(pixel);
+    [[maybe_unused]] const int i = double_buffer.read(pixel);
     // On next frame: Switch the buffers.
     double_buffer.switch_buffer();
     // Start over again.
@@ -286,10 +287,10 @@ void demo()
 namespace game_loop {
 // Have independent running loop to process things, not depending on input like batch programs.
 // Employs a timer with a jthread and timed mutex and condition variable.
-void demo()
+static void demo()
 {
-    std::timed_mutex mx;
-    std::condition_variable_any cv; // The _any means: Works with any lock, not just a unique_lock.
+    std::timed_mutex mtx;
+    std::condition_variable_any cva; // The _any means: Works with any lock, not just a unique_lock.
 
     // This lambda function takes a stop token as parameter.
     const auto timer = [&](const std::stop_token& stoken)
@@ -299,9 +300,9 @@ void demo()
         while (!stoken.stop_requested())
         {
             // Step 4: The stop token has no stop request: Keep going.
-            std::unique_lock ulk(mx);
+            std::unique_lock ulk(mtx);
             // Step 5: Enter the condition variable which will wait 100 ms or less in case of a thread stop request.
-            if (cv.wait_for(ulk, stoken, interval, [&stoken] { return stoken.stop_requested(); }))
+            if (cva.wait_for(ulk, stoken, interval, [&stoken] { return stoken.stop_requested(); }))
             {
                 // Step 8: The condition variable got a stop request and so interrupts its waiting state immediately.
                 break;
@@ -327,7 +328,8 @@ struct Entity
     void update() {++state;}
     int state{};
 };
-void demo()
+
+static void demo()
 {
     Entity entity;
     // The loop
@@ -341,7 +343,7 @@ void demo()
 namespace bytecode {
 // Make an interpreter, and bytecode that runs in it.
 // Slower than native code. Easier to update by changing a blob of data.
-void demo()
+static void demo()
 {
 }
 }
@@ -352,7 +354,7 @@ namespace subclass_sandbox {
 // Sandbox:
 // 1. Base class has protected methods that only the subclasses can access.
 // 2. Subclasses don't have random #includes to nose into other code.
-void demo()
+static void demo()
 {
 }
 }
@@ -377,7 +379,7 @@ public:
     explicit Typed(Type& type) : m_type(type) {}
 };
 
-void demo()
+static void demo()
 {
     Type type1(1);
     Type type2(2);
@@ -413,7 +415,7 @@ public:
     {}
 };
 
-void demo()
+static void demo()
 {
     const InputComponent input_component;
     OutputComponent output_component;
@@ -428,10 +430,10 @@ std::queue<int> message_queue;
 // 1. Single-cast queue.
 // 2. Broadcast queue (multiple listeners).
 // 3. Work queue (multiple listeners, one takes the job).
-void demo()
+static void demo()
 {
     message_queue.push(1);
-    int m = message_queue.front();
+    const int m = message_queue.front();
     message_queue.pop();
 }
 }
@@ -447,7 +449,7 @@ static Service service{}; // The live service object.
 
 static const Service& locate_service() { return service; };  // The service locator.
 
-void demo()
+static void demo()
 {
     const auto& service = locate_service();
 }
@@ -461,7 +463,8 @@ struct Work
     bool dirty{false};
     void do_heavy_work(){}
 };
-void demo()
+
+static void demo()
 {
     Work work;
     if (work.dirty)
@@ -482,9 +485,10 @@ struct ReusableObject
     bool in_use {false};
     int data{};
 };
-void demo()
+
+static void demo()
 {
-    // The pool with very many reusable objects, all not in use yet.
+    // The pool with very many reusable objects, not all in use yet.
     std::vector<ReusableObject> reusable_objects(10'000);
     // Start using them.
     for (int i = 0; i < 100; i++)
@@ -499,7 +503,7 @@ void demo()
 namespace spatial_partition {
 // Place objects in arrays which indicate the distance from one object to another.
 // This makes it faster to locate objects relative to each other depending on distance.
-void demo()
+static void demo()
 {
 }
 }

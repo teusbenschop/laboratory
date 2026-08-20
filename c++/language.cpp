@@ -40,7 +40,7 @@ static_assert(sizeof(float) == 4);
 static_assert(sizeof(double) == 8);
 
 // Each member of the struct begins at its natural size.
-// The entire struct is padded till the size of the largest member.
+// The entire struct is padded till a multiple of the size of the largest member.
 
 
 struct S1
@@ -102,19 +102,21 @@ static_assert(sizeof(S6) == 2);
 static_assert(alignof(S6) == 1);
 
 // Can specify desired alignment.
-struct alignas(16) S7 {
-};
+namespace {
+struct alignas(16) S7 { };
+}
+static_assert(sizeof(S7) == 16);
 static_assert(alignof(S7) == 16);
 
 
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace alias_declarations_in_init_statements {
-void demo()
+static void demo()
 {
     const std::vector v {1, 2, 3};
     for (using I = int; const I e : v)
@@ -127,12 +129,12 @@ void demo()
 
 
 namespace literal_suffix_z {
-void demo()
+static void demo()
 {
     // Avoid this warning:
     // comparison of integers of different signs: 'int' and 'std::size_type' (aka 'unsigned long') [-Wsign-compare]
     const std::vector<int> v{2, 4, 6, 8};
-    for (auto i = 0uz; i < v.size(); ++i) { // NOLINT(*-loop-convert)
+    for (auto i = 0uz; i < v.size(); ++i) {
         assert(v.at(i));
     }
 }
@@ -155,23 +157,25 @@ std::float128_t f128 = 0.0;
 
 namespace static_operators_and_lambdas {
 
+namespace {
 struct Struct
 {
     // Static operators: Can call them without the object instance.
-    static int operator()(const int a, const int b) { return a + b; }
+    static int operator()() { return 2; }
 };
+}
 
-void demo()
+static void demo()
 {
     // This creates an object (and perhaps the optimizer removes it again).
-    assert(Struct{}(1, 0) == 1);
+    assert(Struct{}() == 2);
 
     // This calls the static method on the already created object.
     constexpr Struct s;
-    assert(s(1, 0) == 1);
+    assert(s() == 2);
 
     // This does not create an object. It just calls the static method.
-    assert(Struct::operator()(1, 0) == 1);
+    assert(Struct::operator()() == 2);
 
     // Lambda's can be made static too.
     int x {0};
@@ -192,9 +196,10 @@ void demo()
 
 
 namespace multidimensional_subscript_operator {
-void demo()
+static void demo()
 {
     int array3d[4][3][2]{};
+    assert(array3d[3][2][1] == 0);
     array3d[3][2][1] = 321;
     assert(array3d[3][2][1] == 321);
 }
@@ -240,10 +245,10 @@ struct Struct
     // explicit object parameter allows deduction of type and value category,
     // this language feature is called “deducing this”.
     template<typename Self>
-    void f2(this Self&& self);
+    void f2(this Self&& self) {};
 
     // Pass object by value: makes a copy of “*this”.
-    void f3(this Struct self, int i);
+    void f3(this Struct self, int i) {};
 
     // Error: “const” not allowed here
     // void p(this Struct) const;
@@ -270,14 +275,12 @@ struct Struct
     }
 };
 
-void demo()
+static void demo()
 {
     struct Y
     {
         int f(int, int) const& {return 1;};
         int g(this Y const& self, int, int) {
-            if (&self == &self)
-                return 1;
             return 1;
         };
     };
@@ -304,6 +307,7 @@ void demo()
 }
 }
 
+
 namespace const_types_and_positions {
 
 // Force evaluation of a function at compile time.
@@ -314,9 +318,9 @@ consteval int consteval_add(int var1, int var2)
 }
 
 // Static initialization. Force evaluation at compile time. The variable is not const.
-constinit int i3 = 1;
+static constinit int i3 = 1;
 
-void demo()
+static void demo()
 {
     // Immutable: can be evaluated at compile time.
     const int i1 = 10;
@@ -328,7 +332,7 @@ void demo()
 
     // Will be evaluated at compile time if the parameters "var1" and "var2" are known at compile time.
     // Will be evaluated at run time if the parameters are not known at compile time.
-    constexpr auto constexpr_add = [](int var1, int var2)
+    constexpr auto constexpr_add = [](const int var1, const int var2)
     {
         return var1 + var2;
     };
@@ -404,7 +408,7 @@ void demo()
         std::vector<int> v {1, 2};
         decltype(v)::const_iterator iter = v.cbegin();
         assert(*iter == 1);
-        iter++;
+        ++iter;
         assert(*iter == 2);
         // *iter = 3; // Fails to compile because data is const.
     }
@@ -429,22 +433,10 @@ struct Struct
     // Overload the function call "()" operator, this makes the struct a functor (or function object).
     constexpr int operator()() const { return value; }
 
-    // Overload the += and the -= and the %= operators.
+    // Overload the += operator (similar -= , %=, and so on.
     constexpr Struct& operator+=(const Struct& other) noexcept
     {
         value += other.value;
-        return *this;
-    }
-
-    constexpr Struct& operator-=(const Struct& other) noexcept
-    {
-        value -= other.value;
-        return *this;
-    }
-
-    constexpr Struct& operator%=(const Struct& other) noexcept
-    {
-        value %= other.value;
         return *this;
     }
 
@@ -454,14 +446,14 @@ struct Struct
 };
 
 // Overload the "<<" operator.
-std::ostream& operator<<(std::ostream& os, const Struct& s) noexcept
+static std::ostream& operator<<(std::ostream& os, const Struct& s) noexcept
 {
     os << s.value;
     return os;
 }
 
 // Overload the "==" operator.
-constexpr inline bool operator==(const Struct& lhs, const Struct& rhs) noexcept
+static constexpr inline bool operator==(const Struct& lhs, const Struct& rhs) noexcept
 {
     return lhs.value == rhs.value;
 }
@@ -474,21 +466,17 @@ static_assert(Struct(10) == Struct(10));
 
 // Never overload common operators like && || , as that only confuses others.
 
-void demo()
+static void demo()
 {
     Struct s(10);
     s += Struct(5);
     assert(s == Struct(15));
-    s -= Struct(1);
-    assert(s == Struct(14));
-    s %= Struct(5);
-    assert(s == Struct(4));
 }
 }
 
 
 
-namespace space_ship_operator {
+namespace spaceship_operator {
 // Demo of the spaceship ( <=> ) operator in C++20.
 struct Version
 {
@@ -500,7 +488,7 @@ struct Version
     // The compiler considers all fields, in this case major and minor.
     // If the first field is smaller than or greater than, the comparison is complete.
     // If the first fields are the same,
-    // then it considers the second field, and so on,
+    // then it considers the second field in the same way, and so on,
     // till it completes the comparison.
     constexpr auto operator<=>(const Version&) const noexcept = default;
 };
@@ -520,18 +508,18 @@ static_assert(result != std::partial_ordering::greater);
 static_assert(result == std::partial_ordering::equivalent);
 static_assert(result != std::partial_ordering::unordered);
 
-void demo(){}
+static void demo(){}
 }
 
 
 namespace at_exit {
-void demo()
+static void demo()
 {
-    const auto fn = []
+    const auto exit_fn = []
     {
         assert(true); // To see the effect on exit: Set to false.
     };
-    std::atexit(fn); // Register "fn" to run at normal program exit.
+    std::atexit(exit_fn); // Register "fn" to run at normal program exit.
 }
 }
 
@@ -544,13 +532,13 @@ namespace attribute_assume {
 // https://en.cppreference.com/w/cpp/language/attributes/assume
 // One correct way to use them is to follow assertions with assumptions.
 
-auto f = [] (auto x) {
+static auto f = [] (auto x) {
     // Compiler may assume x is positive.
     assert(x > 0);
     [[assume(x > 0)]];
 };
 
-void demo() {f(1);}
+static void demo() {f(1);}
 
 }
 
@@ -559,7 +547,7 @@ namespace attribute_likely_unlikely {
 // https://en.cppreference.com/w/cpp/language/attributes/likely
 // Attribute to hint the compiler for the likely or unlikely path of execution,
 // allowing the compiler to optimize the code.
-constexpr double power(double x, long long n) noexcept
+static constexpr double power(const double x, const long long n) noexcept
 {
     if (n > 0) [[likely]]
       return x * std::pow(x, n - 1);
@@ -567,7 +555,7 @@ constexpr double power(double x, long long n) noexcept
       return 1;
 }
 
-constexpr long factorial(const long n) noexcept
+static constexpr long factorial(const long n) noexcept
 {
     if (n > 1) [[likely]]
       return n * factorial(n - 1);
@@ -575,16 +563,16 @@ constexpr long factorial(const long n) noexcept
       return 1;
 }
 
-constexpr double cosine(const double x) noexcept
+static constexpr double cosine(const double x) noexcept
 {
     constexpr long long precision{16LL};
     double y{};
     for (auto n{0LL}; n < precision; n += 2LL) [[likely]]
-      y += pow(x, n) / (n & 2LL ? -factorial(n) : factorial(n));
+      y += pow(x, n) / ((n & 2LL) ? -factorial(n) : factorial(n));
     return y;
 }
 
-void demo()
+static void demo()
 {
 }
 }
@@ -630,14 +618,14 @@ struct W
 };
 static_assert(sizeof(W) == 3);
 
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace basic_memory_management {
-void demo()
+static void demo()
 {
     struct Struct
     {
@@ -650,7 +638,7 @@ void demo()
     // Established way.
     {
         // Allocate sufficient memory for the object.
-        auto* memory = std::malloc(sizeof(Struct));
+        auto* memory = malloc(sizeof(Struct));
         // Construct new object in existing memory.
         auto* object = new(memory) Struct("hello");
         assert(object->name == "hello");
@@ -688,17 +676,15 @@ static_assert(std::is_same_v<std::remove_cvref_t<const int[2]>, int[2]>);
 static_assert(std::is_same_v<std::remove_cvref_t<const int(&)[2]>, int[2]>);
 static_assert(std::is_same_v<std::remove_cvref_t<int(int)>, int(int)>);
 
-void demo()
+static void demo()
 {
-    auto power = [](const auto& v, int n)
+    auto power = [](const auto& v, int n) noexcept
     {
         //auto product = decltype(v){1};
         //typename std::remove_cvref<decltype(v)>::type product {1};
         std::remove_cvref_t<decltype(v)> product{1};
         for (int i = 0; i < n; i++)
-        {
             product *= v;
-        }
         return product;
     };
     assert(power(2, 4) == 16);
@@ -730,12 +716,11 @@ static_assert(std::is_convertible_v<Earth, Planet>);
 static_assert(not std::is_base_of_v<Planet, Sun>);
 static_assert(not std::is_base_of_v<Earth, Planet>);
 
-static_assert(std::is_scoped_enum_v<int> == false);
+static_assert(not std::is_scoped_enum_v<int>);
 
 class A
 {
 };
-
 static_assert(not std::is_scoped_enum_v<A>);
 
 enum B { self_test = std::is_scoped_enum_v<B> };
@@ -746,13 +731,11 @@ static_assert(not self_test);
 enum struct C
 {
 };
-
 static_assert(std::is_scoped_enum_v<C>);
 
 enum class D : int
 {
 };
-
 static_assert(std::is_scoped_enum_v<D>);
 
 enum class E;
@@ -802,17 +785,13 @@ static_assert(std::is_scoped_enum_v<E>);
 //    static_assert(std::reference_constructs_from_temporary_v<int&&, long&&> == true);
 //    static_assert(std::reference_constructs_from_temporary_v<int&&, long> == true);
 
-
-void demo()
+static void demo()
 {
     struct foo
     {
         void m() { }
-
         void m() const { }
-
         void m() volatile { }
-
         void m() const volatile { }
     };
     foo{}.m();
@@ -825,45 +804,68 @@ void demo()
 
 namespace source_location {
 // https://en.cppreference.com/w/cpp/utility/source_location
-void demo()
+static void demo()
 {
     constexpr int line = __LINE__;
-    const std::source_location location = std::source_location::current();
+    constexpr std::source_location location = std::source_location::current();
     const std::string file_name = location.file_name();
     assert(file_name.contains("language.cpp"));
-    assert(location.line() == line + 1);
-    assert(location.column() == 43);
-    assert(location.function_name() == std::string("void language::source_location::demo()"));
+    static_assert(location.line() == line + 1);
+    assert(location.column() == 47);
+    static_assert(location.function_name() == std::string_view("void language::source_location::demo()"));
 }
 }
 
 
-namespace references {
-// General rule of thumb about whether something is a lvalue or rvalue reference.
-// 1. If you can take the address of an expression, the expression is a lvalue.
-// 2. If the expression is a lvalue reference (e.g., T& or const T&, etc.),
-// that expression is a lvalue.
-// Otherwise, the expression is a rvalue.
+namespace value_categories {
+// The glvalue (generalized lvalue).
+// 1. Has address in memory.
+// 2. Can it be moved or hijacked?
+//    * No:  lvalue.
+//    * Yes: xvalue (expiring value).
+
+// The rvalue.
+// * Can it be moved or hijacked?
+//   * No:  prvalue (pure rvalue).
+//   * Yes: xvalue (expiring value).
+
+//            Expressions
+//            /         \
+//       glvalues     rvalues
+//       /      \     /     \
+//  lvalues     xvalues    prvalues
+
 // Conceptually, rvalues correspond to temporary objects,
 // such as those returned from functions or created through implicit type conversions.
 // Most literal values (e.g., 10 and 5.3) are rvalues.
 
+static void demo()
+{
+}
+}
+
+
+namespace value_category_references {
+
 namespace lvalue_references {
 // The lvalue reference aliases an existing object (optionally with different cv-qualification).
-void demo()
+static void demo()
 {
-    // When a function's return type is lvalue reference, the function call expression becomes a lvalue expression.
-    auto char_number = [] (std::string& s, std::size_t n) -> char&
     {
-        return s.at(n); // The string::at() returns a reference to char.
-    };
-    std::string str = "ab";
-    char_number(str, 1) = 'a'; // The function call is lvalue, can be assigned to.
-    assert(str == "aa");
+        // When a function's return type is an lvalue reference,
+        // the function call expression becomes an lvalue expression.
+        auto char_number = [] (std::string& s, const std::size_t n) -> char&
+        {
+            return s.at(n); // The string::at() returns a reference to char.
+        };
+        std::string str = "ab";
+        char_number(str, 1) = 'a'; // The function call is lvalue, can be assigned to.
+        assert(str == "aa");
+    }
 
     {
         // A reference is like an alias.
-        // Once it refers a variable, it can never refer to another variable.
+        // Once it refers a variable, it can never be updated to refer to another variable.
         int one = 1;
         constexpr int two = 2;
         int& int_ref = one;
@@ -878,7 +880,7 @@ void demo()
 
 
 namespace rvalue_references {
-void demo()
+static void demo()
 {
     // This function returns a rvalue of temporary pair {10,10}.
     // Normally this pair {10,10} goes out of scope at function end.
@@ -897,36 +899,33 @@ void demo()
 
 
 namespace rvalue_reference_function_parameter {
-
-void f1(double&& v)
-{
-}
+static void f1(float&&) { }
 
 // Pass a rvalue reference to the function.
-void f2 (double&& v)
+static void f2 (float&& v)
 {
     // The variable v is now a lvalue within the function scope (because it has a name).
     // f1(v); error: no matching function for call to f1
     f1(std::move(v)); // Must change to rvalue, then call function.
 }
 
-void demo()
+static void demo()
 {
-    f2(1);
+    f2(1.0f);
 }
 }
 
 
 namespace reference_collapsing {
 // Have references to references.
-// A rvalue reference to rvalue reference collapses to rvalue reference.
-// All other combinations form lvalue reference.
-void demo()
+// An rvalue reference to rvalue reference collapses to rvalue reference.
+// All other combinations collapse to an lvalue reference.
+static void demo()
 {
-    typedef int&  l_val_ref;
-    typedef int&& r_val_ref;
+    using l_val_ref = int&;
+    using r_val_ref = int&&;
 
-    int n;
+    int n{0};
 
     l_val_ref&  r1 = n;
     static_assert(std::is_lvalue_reference_v<decltype(r1)>);
@@ -948,7 +947,7 @@ namespace forwarding_references {
 
 // General rule of thumb:
 // If a variable or parameter is declared to have type T&& for some deduced type T,
-// that variable or parameter is a forwarding reference (or: universal reference).
+// that variable or parameter is a forwarding reference (or universal reference).
 // A 'const' makes it a rvalue reference: const T&&
 
 // The forwarding (universal) reference makes perfect forwarding possible.
@@ -959,7 +958,7 @@ T func(T&& t) // t is forwarding reference
     return std::forward<T>(t); // Perfect forwarding.
 }
 
-void demo()
+static void demo()
 {
     int i = 1;
     int& i2 = func(i); // Returns lvalue reference.
@@ -985,17 +984,17 @@ const std::string& f()
 #pragma GCC diagnostic pop
 }
 
-void demo()
+static void demo()
 {
     const std::string& r = f(); // dangling reference
-    //assert(r == "Test");; // undefined behavior: reads from a dangling reference
-    //std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
+    // assert(r == "Test");; // undefined behavior: reads from a dangling reference
+    // std::string s = f(); // undefined behavior: copy-initializes from a dangling reference
 }
 }
 
 
 namespace reference_wrappers {
-void demo()
+static void demo()
 {
     const auto fn = [](int& n1, int& n2, const int& n3)
     {
@@ -1006,21 +1005,38 @@ void demo()
 
     int n1{1};
     int n2{3};
-    int n3{5};
+    const int n3{5};
 
     const std::function<void()> bound_fn = std::bind(fn, n1, std::ref(n2), std::cref(n3));
 
     bound_fn();
 
-    assert(n1 == 1); // This is left unchanged, because it was passed by value to the function.
+    assert(n1 == 1); // This is left unchanged, because it was passed by value to the bind call.
     assert(n2 == 4); // This was passed by reference, and got increased by the function.
     assert(n3 == 5); // Passed by const reference, could not get increased.
 }
 }
 
 
+namespace decltype_with_double_brackets {
+// Single brackets decltype(x) gives the declared type of the variable x.
+// Double brackets decltype((x)) treat x as an expression.
+static void demo()
+{
+    // lvalue -> lvalue reference.
+    int x{};
+    static_assert(std::is_lvalue_reference_v<decltype((x))>);
 
-void demo()
+    // prvalue -> plain type = T
+    static_assert(std::is_same_v<decltype((10)), int>);
+
+    // xvalue -> rvalue reference = T&&
+    static_assert(std::is_rvalue_reference_v<decltype((std::move(x)))>);
+}
+}
+
+
+static void demo()
 {
     lvalue_references::demo();
     rvalue_references::demo();
@@ -1029,13 +1045,30 @@ void demo()
     forwarding_references::demo();
     dangling_references::demo();
     reference_wrappers::demo();
+    decltype_with_double_brackets::demo();
 }
 }
 
+
+namespace embed {
+// C++26 feature.
+static void demo()
+{
+    constexpr unsigned char d[]
+    {
+#embed "embed.txt"
+    };
+    std::ranges::for_each(d, [](auto c)
+    {
+//        std::cout << c << std::endl;
+    });
+}
+}
 
 namespace final {
 
 struct base {
+    virtual ~base() = default;
     virtual int f() const = 0;
 };
 
@@ -1043,7 +1076,7 @@ struct derived final : base {
     int f() const override { return 1; }
 };
 
-void demo()
+static void demo()
 {
     // According to the theory the function call in a final class is faster
     // due to devirtualization, so the compiler knows that derived.f can only call the overriding f.
@@ -1102,8 +1135,8 @@ static_assert(sizeof(Height::low) == 1);
 enum class Iterable {_start_, one, two, three, _end_};
 Iterable& operator++(Iterable& iter)
 {
-    int i = static_cast<int>(iter);
-    return iter = static_cast<Iterable>(++i);
+    auto i = std::to_underlying(iter);
+    return iter = static_cast<std::decay_t<decltype(iter)>>(++i);
 }
 
 }
@@ -1112,7 +1145,7 @@ static void demo()
     int sum{0};
     for (auto iter = Iterable::_start_; iter <= Iterable::_end_; ++iter)
     {
-        sum += static_cast<int>(iter);
+        sum += std::to_underlying(iter);
     }
     assert(sum == 10); // 0 + 1 + 2 + 3 + 4.
 }
@@ -1123,7 +1156,7 @@ namespace noexcept_specifier {
 // noexcept : the function is declared not to throw.
 
 // Results in std::terminate no matter whether caller uses try...catch block.
-void noexcept_but_throw () noexcept
+static void noexcept_but_throw () noexcept
 {
     // throw 1;
 }
@@ -1160,7 +1193,7 @@ void func1() noexcept(sizeof(T) < 4);
 void func2() noexcept(true);
 static_assert(std::is_same_v<decltype(func1<char>), decltype(func2)>);
 
-void demo()
+static void demo()
 {
 }
 }
@@ -1172,12 +1205,12 @@ struct S
 {
     // Functions with different const qualifiers have different types so may overload each other.
     int& get() { return i1; }
-    const int& get () const { return i2; }
+    const int& get() const { return i2; }
     int i1 {10};
     int i2 {20};
 };
 
-void demo()
+static void demo()
 {
     S s1;
     int i1 = s1.get(); // Calls the first.
@@ -1196,12 +1229,12 @@ namespace unspecified_order_of_evaluation {
 // Order of evaluation of any part of any expression is unspecified.
 // Not to confuse this with the associativity of operators.
 
-int a() { return std::puts("a"); }
-int b() { return std::puts("b"); }
-int c() { return std::puts("c"); }
-void z(int, int, int) {}
+static int a() { return std::puts("a"); }
+static int b() { return std::puts("b"); }
+static int c() { return std::puts("c"); }
+static void z(int, int, int) {}
 
-void demo()
+static void demo()
 {
     return;
     z(a(), b(), c()); // all 6 permutations of output are allowed, e.g. "b c a".
@@ -1217,10 +1250,10 @@ inline void demo() { } // Inline function.
 
 
 namespace structured_binding {
-void demo() {
+static void demo() {
     {
         // Binding to an array.
-        int a[2] = {1, 2};
+        constexpr int a[2] = {1, 2};
         // Creates e[2], copies a into e. Then xc refers to a[0] and yc to a[1].
         auto [xc, yc] = a;
         // Variable xr refers to a[0] and yr to a[1].
@@ -1244,14 +1277,14 @@ void demo() {
         // Binding to data members.
         struct S
         {
-            mutable int i : 2;
+            mutable int i;
             char c;
         };
         auto func = [] -> S { return S{1, '1'}; };
         const auto [i2, c2] = func();
         assert(i2 == 1);
         assert(c2 == '1');
-        i2 = -2;      // OK because member is mutable.
+        i2 = 2;      // OK because member is mutable.
         // c2 = '2';  // Error: c2 is const-qualified
     }
 }
@@ -1264,44 +1297,63 @@ namespace copy_elision {
 // It also omits side effects of the used constructor or destructor.
 // Programs that rely on these side effects are not portable.
 // Copy elision is used for return statements or throw expressions.
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace casting {
-void demo()
+static void demo()
 {
     // The static_cast converts one type to a related type.
     // Converts between types using a combination of implicit and user-defined conversions.
-    const int i = 10;
-    uint ui = static_cast<uint>(i);
+    {
+        const int i = 10;
+        uint ui = static_cast<uint>(i);
+    }
 
     // The dynamic_cast converts within inheritance hierarchies.
     // Safely converts pointers and references to classes up, down, and sideways along the inheritance hierarchy.
     // Will have impact on performance.
-    struct Base
     {
-        virtual ~Base() = default;
-    };
-    struct Derived : Base { };
-    Base b1;
-    Derived* d1 = dynamic_cast<Derived*>(&b1);
+        struct Base
+        {
+            virtual ~Base() = default;
+        };
+        struct Derived : Base { };
+        Base base1;
+        Derived* derived1 = dynamic_cast<Derived*>(&base1);
 
-    Derived d2;
-    Base& b2 = dynamic_cast<Base&>(d2);
+        Derived derived2;
+        Base& base2 = dynamic_cast<Base&>(derived2);
+
+        try
+        {
+            struct Unrelated {};
+            Unrelated& unrelated1 = dynamic_cast<Unrelated&>(base1);
+            assert(false); // Never gets here.
+        }
+        catch (const std::bad_cast& exception)
+        {
+            assert(exception.what() == std::string("std::bad_cast"));
+        }
+    }
 
     // The const_cast adds or removes cv-qualifiers.
     // Converts between types with different cv-qualification.
-    const int c1 = 0;
-    int c2 = const_cast<int&>(c1);
-    ++c2;
+    {
+        const int c1 {0};
+        int c2 = const_cast<int&>(c1);
+        ++c2;
+    }
 
     // The reinterpret_cast converts type to unrelated type.
     // Converts between types by reinterpreting the underlying bit pattern.
-    int8_t rc1 = 1;
-    auto* rc2 = reinterpret_cast<uint8_t*>(&rc1);
+    {
+        int8_t rc1 = 1;
+        auto* rc2 = reinterpret_cast<uint8_t*>(&rc1);
+    }
 
     // General rules:
     // 1. Avoid cast if possible.
@@ -1331,7 +1383,7 @@ struct S
 };
 
 
-void demo()
+static void demo()
 {
     // std::unique_ptr<S> s = std::make_unique<S>(S());
 }
@@ -1339,7 +1391,7 @@ void demo()
 
 
 namespace prefix_and_postfix_increment_operators {
-void demo()
+static void demo()
 {
     int i{0};
     ++i; // More efficient: No copying.
@@ -1367,8 +1419,8 @@ static void demo()
 
 namespace initialization_vs_assignment {
 
-unsigned u1 {0}; // Initialization (chaaper).
-unsigned u2 = 0;  // Assignment (more expensive)
+unsigned u1 {0}; // Initialization (cheaper).
+unsigned u2 = 0; // Assignment (more expensive)
 
 // error: non-constant-expression cannot be narrowed from type 'unsigned int' to 'int' in initializer list
 // int i1 {u1};
@@ -1376,6 +1428,41 @@ unsigned u2 = 0;  // Assignment (more expensive)
 int i2 = u2;
 
 }
+
+
+namespace argument_dependent_lookup {
+static void demo()
+{
+    // Argument-Dependent Lookup (ADL),
+    // also known as Koenig Lookup,
+    // is a core mechanism in C++
+    // that allows the compiler to find a function
+    // without an explicit namespace prefix
+    // by searching the namespace(s) of the function's argument(s).
+}
+}
+
+
+namespace conditional_operator {
+// The expression form of the "if" statement.
+static void demo()
+{
+    constexpr int negative {-1};
+    constexpr int zero {0};
+    constexpr int positive {1};
+
+    assert(zero == 0 ? true : false); // simple form.
+
+    const auto compare = [=] (const int lhs, const int rhs)
+    {
+        return lhs == rhs ? zero : lhs < rhs ? negative : positive; // chaining two operators.
+    };
+    assert(compare(1, 1) == zero);
+    assert(compare(2, 3) == negative);
+    assert(compare(4, 3) == positive);
+}
+}
+
 
 void demo() {
     alignment::demo();
@@ -1386,7 +1473,7 @@ void demo() {
     explicit_object_parameter_this::demo();
     const_types_and_positions::demo();
     operator_overloading::demo();
-    space_ship_operator::demo();
+    spaceship_operator::demo();
     at_exit::demo();
     attribute_assume::demo();
     attribute_likely_unlikely::demo();
@@ -1395,7 +1482,9 @@ void demo() {
     remove_const_volatile_reference::demo();
     simple_type_traits::demo();
     source_location::demo();
-    references::demo();
+    value_categories::demo();
+    value_category_references::demo();
+    embed::demo();
     final::demo();
     enums::demo();
     noexcept_specifier::demo();
@@ -1408,6 +1497,8 @@ void demo() {
     custom_new_and_delete::demo();
     prefix_and_postfix_increment_operators::demo();
     unnamed_namespace::demo();
+    argument_dependent_lookup::demo();
+    conditional_operator::demo();
 }
 
 }

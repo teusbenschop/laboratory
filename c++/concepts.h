@@ -18,14 +18,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #pragma once
 
-namespace unconstrained_errors {
-void demo();
-}
-
-namespace constraint_derived_from {
-void demo();
-}
-
-namespace demonstrate_constraints {
+namespace concepts {
 void demo();
 }

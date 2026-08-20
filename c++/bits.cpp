@@ -16,23 +16,22 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "bits.h"
-
 #include <bit>
 #include <bitset>
-#include <cassert>
-#include <iostream>
-#include <iomanip>
 #include <sstream>
+#include "bits.h"
 
 namespace bits {
 // https://en.cppreference.com/w/cpp/header/bit
 
 
 // The system's endian-ness.
-constexpr auto endian{std::endian::native};
-static_assert(endian != std::endian::big);
-static_assert(endian == std::endian::little);
+static_assert(std::endian::native != std::endian::big);
+static_assert(std::endian::native == std::endian::little);
+
+// Big endian storage for 0x1234
+// Address 0x00 (lowest) byte 0x12 most significant byte stored first.
+// Address 0x01 (next)   byte 0x34 least significant byte stored last.
 
 
 // Demo of std::bit_cast.
@@ -49,6 +48,15 @@ static_assert(std::has_single_bit(2u));
 
 static_assert(std::bitset<4>(2u).to_string() == "0010");
 
+// Check if all / any / none bits are set.
+static_assert(std::bitset<2>(0b11).all());
+static_assert(std::bitset<2>(0b01).any());
+static_assert(std::bitset<2>(0b00).none());
+static_assert(std::bitset<2>(0b01).count() == 1);
+
+// Flip bit number.
+static_assert(std::bitset<2>().flip(1) == std::bitset<2>(0b10)); // Bit number.
+static_assert(std::bitset<2>().flip() == std::bitset<2>(0b11)); // All bits.
 
 // rotl - Rotate bits to the left.
 // rotr - Rotate bits to the right.
@@ -56,14 +64,13 @@ constexpr uint8_t ui2 = 0b0010;
 static_assert(std::rotl(ui2, 1) == 0b0100);
 static_assert(std::rotr(ui2, 1) == 0b0001);
 
-
 // The std::byteswap reverses the bytes in the given integer value n.
 
 // Swapping one byte results in the same byte.
 static_assert(std::byteswap('a') == 'a');
 
 // Swap bytes for U16.
-constexpr auto u16 = std::uint16_t(0xCAFE);
+constexpr auto u16 = static_cast<std::uint16_t>(0xCAFE);
 static_assert(std::byteswap(u16) == 0xFECA); // <- Two bytes swapped: CAFE -> FECA.
 
 // Swap bytes for U32.

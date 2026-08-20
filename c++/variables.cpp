@@ -30,6 +30,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <utility>
 #include <variant>
 #include <vector>
+#include <type_traits>
+#include <ranges>
 #include "variables.h"
 
 namespace variables {
@@ -198,6 +200,11 @@ static void demo()
     static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, int&&>>);
     // Unlike a std::vector etc, a std::tuple can contain references,
     // because it does not do allocation, it is only syntactic sugar.
+
+    // Can read and write via std::get on tuple.
+    assert(std::get<0>(tuple) == 100);
+    std::get<0>(tuple) += 10;
+    assert(std::get<0>(tuple) == 110);
 }
 }
 
@@ -377,6 +384,43 @@ static void demo()
 }
 }
 
+
+namespace variant_visit {
+
+struct Base {};
+struct Derived : Base {};
+
+// Helper type for the visitor.
+template<class... Ts>
+struct overloads : Ts... { using Ts::operator()...; };
+
+using variant_t = std::variant<int, std::string, Derived>;
+
+static void demo()
+{
+    std::string output{};
+    const auto visitor = overloads
+    {
+        [&](const int i)             { output = std::to_string(i); },
+        [&](const std::string_view s){ output = s; },
+        [&](const Base&)             { output = "base"; }
+    };
+    // The std::visit below applies operator() to the visitor (overloads) object,
+    // which selects the most appropriate lambda to call based on overloading rules.
+
+    variant_t variant = 42;
+    std::visit(visitor, variant);
+    assert (output == "42");
+
+    variant = "abc";
+    std::visit(visitor, variant);
+    assert (output == "abc");
+
+    variant = Derived();
+    std::visit(visitor, variant);
+    assert (output == "base");
+}
+}
 
 namespace initialization {
 static void demo()
@@ -561,15 +605,20 @@ static void demo()
 
 
 namespace pseudo_random_number_generation {
+// Random number generator consists of 2 or 3 parts:
+// * Optional: a random seed.
+// * Engine: produces random values.
+// * Distribution: maps the values into mathematical distribution.
 static void demo()
 {
     {
+        std::default_random_engine engine;
+
         // Poisson distribution.
         // The probability of an event happening a certain number of times within a given interval of time.
         // Construct it around a given mean event count.
         constexpr float mean_event_count{4.5f};
         std::poisson_distribution<int> distribution(mean_event_count);
-        std::default_random_engine generator;
 
         // Store how often an event occurs.
         constexpr int array_size{10};
@@ -580,7 +629,7 @@ static void demo()
 
         for (int i = 0; i < number_of_experiments; ++i)
         {
-            const int number = distribution(generator);
+            const int number = distribution(engine);
             if (number < array_size) events[number]++;
         }
 
@@ -605,14 +654,14 @@ static void demo()
             // A seed source for the random number engine.
             std::random_device rd;
             // A Mersenne Twister_random engine seeded with the random device.
-            std::mt19937 mt_generator(rd());
+            std::mt19937 mt_engine(rd());
             // A uniform distribution between 1 and 6 inclusive.
             std::uniform_int_distribution<> uniform_distribution(1, 6);
 
             // Throw the dice multiple times.
             // std::cout << "Normal distribution for throwing a dice" << std::endl;
             // for (int n = 0; n < 20; n++)
-            //     std::cout << uniform_distribution(mt_generator) << " ";
+            //     std::cout << uniform_distribution(mt_engine) << " ";
             // std::cout << std::endl;
             // The above will have a normal distribution like this:
             // 4 5 6 6 3 6 6 1 6 1 6 1 1 4 2 2 1 5 1 2
@@ -622,7 +671,7 @@ static void demo()
 }
 
 
-namespace heterogenous_collections_with_variant {
+namespace heterogeneous_collections_with_variant {
 static void demo()
 {
     using variant_t = std::variant<int, std::string, bool>;
@@ -673,16 +722,21 @@ static void demo() {
     }
     {
         // Demonstration of ranges iota.
-        auto list = std::list<int>(6);
+        auto list1 = std::list<int>(6);
         // Fill the list with ascending values: 0, 1, 2, ...
-        std::ranges::iota(list, 0);
-        const auto standard = std::list<int>({0, 1, 2, 3, 4, 5});
-        assert(list == standard);
+        std::ranges::iota(list1, 0);
+        const auto standard = std::list({0, 1, 2, 3, 4, 5});
+        assert(list1 == standard);
 
         // A vector of iterators.
         // Fill with iterators to consecutive list's elements.
-        std::vector<std::list<int>::iterator> vec(list.size());
-        std::ranges::iota(vec, list.begin());
+        std::vector<std::list<int>::iterator> list2(list1.size());
+        std::ranges::iota(list2, list1.begin());
+
+        // A finite iota view.
+        auto&& range = std::views::iota(0, 9); // 0 1 2 3 4 5 6 7 8.
+        assert (range.size() == 9);
+        assert (*range.begin() == 0);
     }
 }
 }
@@ -709,6 +763,8 @@ static void demo()
 namespace perfect_forwarding {
 // Perfect forwarding means that the function forwards its arguments
 // without changing its lvalue or rvalue.
+// The std::forward is a better std::move.
+// After forwarding an argument, it can't be used anymore, it now has another owner.
 
 static std::string value;
 static void overloaded_function(int&  i) { value = "lvalue"; }
@@ -1040,6 +1096,86 @@ static void demo()
 }
 
 
+namespace range_value_type {
+
+namespace {
+enum class classification { integral, floating_point, other };
+}
+
+template <std::ranges::range R>
+static std::pair<int, classification> analyze(R&& r) {
+    using value_t = std::ranges::range_value_t<R>;
+    if constexpr (std::is_integral_v<value_t>)
+        return {sizeof(value_t), classification::integral};
+    if constexpr (std::is_floating_point_v<value_t>)
+        return {sizeof(value_t), classification::floating_point};
+    return {sizeof(value_t), classification::other};
+}
+
+static void demo()
+{
+    std::vector<int> numbers = {1, 2, 3, 4};
+    assert(analyze(numbers) == std::make_pair(sizeof(int), classification::integral));
+
+    std::vector<double> decimals = {1.1, 2.2, 3.3};
+    assert(analyze(decimals) == std::make_pair(sizeof(double), classification::floating_point));
+
+    std::string text = "Hello C++20";
+    auto analysis = analyze(text);
+    assert(analyze(text) == std::make_pair(sizeof(char), classification::integral));
+}
+}
+
+
+namespace weak_ptr {
+// The std::weak_ptr is smart pointer.
+// Holds non-owning (weak) reference to object managed by std::shared_ptr.
+
+// Classic usage is breaking the cycling reference problem, that is, the circular dependency.
+
+
+static void demo()
+{
+    {
+        struct Parent;
+        struct Child;
+        struct Parent { std::shared_ptr<Child> child; };
+        struct Child { std::shared_ptr<Parent> parent; };
+        const auto parent = std::make_shared<Parent>();
+        const auto child = std::make_shared<Child>();
+        parent->child = child;
+        child->parent = parent; // Creates dependency cycle.
+    }
+    // Objects go out of scope, don't get destroyed -> memory leak.
+
+    // Solution: Let child have a weak reference to parent.
+    {
+        struct Parent;
+        struct Child;
+        struct Parent { std::shared_ptr<Child> child; };
+        struct Child
+        {
+            // Broken dependency cycle: The weak ptr does not increase the reference count.
+            std::weak_ptr<Parent> parent;
+            void access_parent() const
+            {
+                // To use a weak_ptr, you must "lock" it to temporarily get a shared_ptr.
+                if (auto shared_parent = parent.lock()) {
+                    // Successfully accessed parent.
+                } else {
+                    // Parent is already dead/destroyed.
+                }
+            }
+        };
+        const auto parent = std::make_shared<Parent>();
+        const auto child = std::make_shared<Child>();
+        parent->child = child;
+        child->parent = parent;
+    }
+    // Out of scope: Reference count drops to 0 -> Destroy both objects.
+}
+}
+
 void demo()
 {
     forward_like::demo();
@@ -1048,6 +1184,7 @@ void demo()
     auto_x_decay_copy::demo();
     aggregate_initialization::demo();
     variant::demo();
+    variant_visit::demo();
     initialization::demo();
     designated_initializers::demo();
     mathematical_functions::demo();
@@ -1055,7 +1192,7 @@ void demo()
     swapping_and_exchanging::demo();
     initializer_list::demo();
     pseudo_random_number_generation::demo();
-    heterogenous_collections_with_variant::demo();
+    heterogeneous_collections_with_variant::demo();
     range_fillup::demo();
     aliases::demo();
     perfect_forwarding::demo();
@@ -1069,6 +1206,8 @@ void demo()
     is_aggregate::demo();
     has_unique_object_representations::demo();
     automatic_promotion::demo();
+    range_value_type::demo();
+    weak_ptr::demo();
 }
 
 

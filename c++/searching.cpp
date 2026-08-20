@@ -191,16 +191,16 @@ static void demo()
     // Regex that finds words.
     std::regex word_regex(R"((\w+))");
     auto words_begin = std::sregex_iterator(s.begin(), s.end(), word_regex);
-    auto words_end = std::sregex_iterator();
+    auto words_end = std::sregex_iterator(); // Default regex iterator is the end.
 
     // The number of words found.
     assert(std::distance(words_begin, words_end) == 18);
 
     // Words it found:
     // Some people when confronted with a problem think I ll use regular expressions Now they have two problems
-    for (std::sregex_iterator i = words_begin; i != words_end; ++i)
+    for (std::sregex_iterator iter = words_begin; iter != words_end; ++iter)
     {
-        std::smatch match = *i;
+        std::smatch match = *iter;
         [[maybe_unused]] std::string match_str = match.str();
     }
 
@@ -216,6 +216,9 @@ static void demo()
         assert(std::regex_match("good@mail.com", regex));
         assert(not std::regex_match("@bad.com", regex));
     }
+
+    // Lazy match: Shortest possible match.
+    // Greedy match: Largest possible match.
 }
 }
 

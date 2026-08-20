@@ -57,13 +57,23 @@ static void demo()
 }
 
 
-namespace copy {
+namespace copying {
 static void demo()
 {
-    constexpr auto values = std::array{1, 2, 3};
-    std::vector<int> copy{};
-    std::ranges::copy(values, std::back_inserter(copy));
-    assert(copy.size() == 3);
+    {
+        constexpr auto values = std::array{1, 2, 3};
+        std::vector<int> copy{};
+        std::ranges::copy(values, std::back_inserter(copy));
+        assert(copy.size() == 3);
+    }
+    {
+        constexpr auto values = std::array{1, 1, 2, 2, 3, 3, 2, 2, 1, 1};
+        std::vector<int> unique_copy{};
+        std::ranges::unique_copy(values, std::back_inserter(unique_copy));
+        // Copies values skipping consecutive equal elements.
+        decltype(unique_copy) standard {1, 2, 3, 2, 1};
+        assert(unique_copy == standard);
+    }
 }
 }
 
@@ -174,6 +184,14 @@ static void demo() {
         // Result: 1 2 3 4 5 5 4 3 2 1
         const auto standard = std::vector{1, 2, 3, 4, 5, 5, 4, 3, 2, 1};
         assert(result == standard);
+    }
+
+    // Demo of element<n>.
+    {
+        const std::vector<std::tuple<int, int>> vec { {  1, 2 }, {  3, 4 } };
+        auto&& range = vec | std::views::elements<0>;
+        for (const int i : range)
+            assert(i == 1 or i == 3);
     }
 }
 }
@@ -512,7 +530,7 @@ static void demo()
 void demo()
 {
     accumulate::demo();
-    copy::demo();
+    copying::demo();
     ranges_views_filter_drop_reverse::demo();
     ranges_transformations::demo();
     ranges_sorting::demo();

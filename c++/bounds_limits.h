@@ -18,10 +18,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #pragma once
 
-namespace lower_bound_and_upper_bound {
+namespace bounds_limits {
 void demo();
 }
 
-namespace min_max_clamp_ranges_minmax {
-void demo();
-}

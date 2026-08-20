@@ -23,7 +23,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "classes.h"
 #include "clocking.h"
 #include "concurrency.h"
-#include "constraints.h"
+#include "concepts.h"
 #include "containers.h"
 #include "coroutines.h"
 #include "counting.h"
@@ -48,16 +48,14 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 int main()
 {
+    bits::demo();
     scoped_timer::demo();
     searching::demo();
-    lower_bound_and_upper_bound::demo();
+    bounds_limits::demo();
     counting::demo();
-    min_max_clamp_ranges_minmax::demo();
     latches::demo();
     barriers::demo();
-    unconstrained_errors::demo();
-    constraint_derived_from::demo();
-    demonstrate_constraints::demo();
+    concepts::demo();
     shared_mutex::demo();
     clocking::demo();
     filesystem::demo();
@@ -75,8 +73,8 @@ int main()
     classes::demo();
     exceptions::demo();
     transformations::demo();
-    bits::demo();
-    linux::demo();
+    // bits::demo();
+    _linux::demo();
     unions::demo();
     mathematics::demo();
     performance::demo();

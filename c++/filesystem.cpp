@@ -19,9 +19,12 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "filesystem.h"
 #include <cassert>
 #include <filesystem>
+#include <iostream>
 #include <string>
 
 namespace filesystem {
+
+static_assert(std::filesystem::path::preferred_separator == '/');
 
 void demo()
 {
@@ -30,8 +33,6 @@ void demo()
         const auto dirname = p.parent_path().string();
         assert(dirname == "/var/log");
     }
-
-    assert(std::filesystem::path::preferred_separator == '/');
 
     {
         std::filesystem::path p("log");
@@ -46,9 +47,19 @@ void demo()
     std::filesystem::path path("/tmp");
     for (const auto& directory_entry : std::filesystem::directory_iterator{path})
     {
-        std::filesystem::path path = directory_entry.path();
-        assert(!path.empty());
+        std::filesystem::path file = directory_entry.path();
+        assert(!file.empty());
     }
+
+    try
+    {
+        std::filesystem::copy("a", "b"); // throws.
+    }
+    catch (...) { }
+    std::error_code ec;
+    std::filesystem::copy("a", "b", ec); // does not throw but fills error code.
+    assert(ec.value() == 2);
+    assert(ec.message() == "No such file or directory");
 }
 
 }

@@ -24,6 +24,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <numeric>
 #include "functional.h"
 
+
 namespace functional {
 
 
@@ -34,9 +35,10 @@ namespace move_only_function {
 // It's a streamlined alternative to std::function,
 // designed for cases where you're working with move-only types
 // like std::unique_ptr or other non-copyable resources.
-void demo()
+static void demo()
 {
-    std::packaged_task<float()> packaged_task([]{ return 1.1f; });
+    // ReSharper disable once CppTemplateArgumentsCanBeDeduced
+    std::packaged_task<float()> packaged_task([] noexcept { return 1.1f; });
 
     std::future<float> future = packaged_task.get_future();
 
@@ -55,10 +57,10 @@ void demo()
 
 
 namespace brackets_are_optional_for_lambdas {
-void demo()
+static void demo()
 {
-    std::string s = "s";
-    auto with_brackets = [s1 = s] () {
+    std::string s {"s"};
+    auto with_brackets = [s1 = s] noexcept {
         assert(s1 == "s");
     };
     with_brackets();
@@ -72,7 +74,7 @@ void demo()
 
 
 namespace lambda_capture {
-void demo()
+static void demo()
 {
     // Capture by value.
     {
@@ -130,10 +132,10 @@ void demo()
 
 
 namespace assign_lambda_with_and_without_capture_to_same_function_object {
-void demo()
+static void demo()
 {
     // Create an unassigned std::function object.
-    std::function<int(int)> func = nullptr;
+    std::function<int(int)> func {nullptr};
 
     // Assign a lambda without capture to the std::function object.
     func = [](const int v)
@@ -144,7 +146,7 @@ void demo()
 
     // Assign a lambda with capture to the same std::function object.
     auto v42 = 42;
-    func = [v42](int v)
+    func = [v42](const int v) noexcept
     {
         return v + v42;
     };
@@ -154,20 +156,17 @@ void demo()
 
 
 namespace stateless_lambda_function {
-// A stateless lambda function does not retain any data or memory
-// from one execution to the next.
-constexpr auto stateless1 = []
-{
-};
+// A stateless lambda function does not retain any data or memory from one execution to the next.
+constexpr auto stateless1 = [] { };
 // It is assignable.
 constexpr auto stateless2 = stateless1;
 // Default-constructible (i.e. constructor without parameters, or with default parameters).
-static_assert(std::is_default_constructible_v<decltype(stateless1)>); // passes
+static_assert(std::is_default_constructible_v<decltype(stateless1)>);
 constexpr decltype(stateless1) stateless3;
-static_assert(std::is_same_v<decltype(stateless1), decltype(stateless2)>); // passes
-static_assert(std::is_same_v<decltype(stateless1), decltype(stateless3)>); // passes
-static_assert(std::is_same_v<decltype(stateless2), decltype(stateless3)>); // passes
-void demo()
+static_assert(std::is_same_v<decltype(stateless1), decltype(stateless2)>);
+static_assert(std::is_same_v<decltype(stateless1), decltype(stateless3)>);
+static_assert(std::is_same_v<decltype(stateless2), decltype(stateless3)>);
+static void demo()
 {
 }
 }
@@ -176,8 +175,8 @@ void demo()
 namespace keyword_auto_for_lambdas {
 // Can use "typename T" or "auto" for lambda functions.
 constexpr auto lambda_typename = []<typename T>(T v) -> T {
-    T val2 = v;
-    decltype(v) val3 = v;
+    [[maybe_unused]] T val2 = v;
+    [[maybe_unused]] decltype(v) val3 = v;
     return v + 1;
 };
 constexpr auto lambda_auto = [](auto v) -> auto { return v + 1; };
@@ -187,7 +186,7 @@ static_assert(lambda_typename(1) == 2);
 static_assert(lambda_auto(1) == 2);
 static_assert(lambda_typename(static_cast<std::uint64_t>(41)) == 42);
 static_assert(lambda_auto(static_cast<std::uint64_t>(41)) == 42);
-void demo(){}
+static void demo(){}
 }
 
 
@@ -203,16 +202,17 @@ constexpr auto minus = [](const int a, const int b) -> int
 // The function template std::bind generates a forwarding call wrapper for f.
 // Calling this wrapper is equivalent to invoking f with some of its arguments bound to args.
 
-constexpr auto val1_minus_val2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
-static_assert(val1_minus_val2(1, 2) == -1);
+constexpr auto value1_minus_value2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
+static_assert(value1_minus_value2(1, 2) == -1);
 
-constexpr auto val_minus_3 = std::bind(minus, std::placeholders::_1, 3);
-static_assert(val_minus_3(1) == -2);
+constexpr auto value_minus_3 = std::bind(minus, std::placeholders::_1, 3);
+static_assert(value_minus_3(1) == -2);
 
-void demo()
+static void demo()
 {
     struct Struct
     {
+        // ReSharper disable once CppMemberFunctionMayBeStatic
         constexpr int minus(const int a, const int b)
         {
             return a - b;
@@ -257,12 +257,12 @@ namespace member_function {
 
 struct Struct
 {
-    [[nodiscard]] std::string display_greeting() const
+    [[nodiscard]] constexpr std::string get_greeting() noexcept
     {
         return "hello";
     }
 
-    [[nodiscard]] int display_number(const int i) const
+    [[nodiscard]] constexpr int get_number(const int i) noexcept
     {
         return i;
     }
@@ -273,12 +273,12 @@ struct Struct
     }
 
     template <typename... Args>
-    [[nodiscard]] int add_many1(Args... args) const
+    [[nodiscard]] int add_many1(Args&&... args) const
     {
         return data + (args + ...);
     }
 
-    [[nodiscard]] auto add_many2(auto... args) const
+    [[nodiscard]] auto add_many2(auto&&... args) const
     {
         return data + (args + ...);
     }
@@ -286,14 +286,14 @@ struct Struct
     const int data = 7;
 };
 
-void demo()
+static void demo()
 {
     Struct struct1 {};
 
-    constexpr auto get_greeting = std::mem_fn(&Struct::display_greeting);
+    constexpr auto get_greeting = std::mem_fn(&Struct::get_greeting);
     assert(get_greeting(struct1) == "hello");
 
-    constexpr auto get_number = std::mem_fn(&Struct::display_number);
+    constexpr auto get_number = std::mem_fn(&Struct::get_number);
     assert(get_number(struct1, 42) == 42);
 
     constexpr auto get_data = std::mem_fn(&Struct::data);
@@ -318,27 +318,27 @@ void demo()
 namespace demo_not_fn {
 // Inverts the result of fn.
 
-constexpr bool is_same (const int a, const int b)
+static constexpr bool free_fn_is_same (const int a, const int b)
 {
     return a == b;
 }
+static_assert(free_fn_is_same(8, 8));
 
-constexpr auto differs = std::not_fn(is_same);
+constexpr auto free_fn_differs = std::not_fn(free_fn_is_same);
+static_assert(free_fn_differs(8, 9));
 
+namespace {
 struct S
 {
     int val;
     [[nodiscard]] bool is_same (const int arg) const {return val == arg;}
 };
+}
 
-auto member_differs = std::not_fn(&S::is_same);
+static auto member_differs = std::not_fn(&S::is_same);
 
-void demo()
+static void demo()
 {
-    // Free function.
-    static_assert(is_same(8, 8));
-    static_assert(differs(8, 9));
-    // Member function.
     assert(member_differs(S{3}, 4));
 }
 }
@@ -355,7 +355,7 @@ inline int func()
     return 123;
 }
 
-void demo()
+static void demo()
 {
     assert(func() == 123);
 }
@@ -363,13 +363,12 @@ void demo()
 
 
 namespace functors {
-
-void demo()
+static void demo()
 {
     {
         struct Functor
         {
-            // Overload the function call "()" operator -> struct is now functor.
+            // Overload the function call "()" operator -> struct becomes a functor.
             //     return type        parameter             body
             constexpr int operator()(const int i) const { return i; }
         };
@@ -381,7 +380,7 @@ void demo()
             constexpr int operator()() { return ++value; }
         };
         constexpr Generator generator;
-        std::vector output (3, 0);
+        std::vector<int> output(3);
         std::ranges::generate(output, generator);
         const std::vector standard {1, 2, 3};
         assert(output == standard);
@@ -391,10 +390,10 @@ void demo()
         {
             constexpr int operator()(const int i) const { return i * i; }
         };
-        std::vector input {1, 2, 3};
-        decltype(input) output(input.size());
+        const std::vector input {1, 2, 3};
+        std::remove_const_t<decltype(input)> output(input.size());
         std::ranges::transform(input, output.begin(), Unary());
-        const decltype(input) standard {1, 4, 9};
+        decltype(input) standard {1, 4, 9};
         assert(output == standard);
     }
     {
@@ -402,8 +401,8 @@ void demo()
         {
             constexpr int operator()(const int lhs, const int rhs) const { return lhs - rhs; }
         };
-        std::vector input {1, 2, 3};
-        const int result = std::accumulate(input.begin(), input.end(), 0, Binary());
+        const std::vector input {1, 2, 3};
+        const int result = std::accumulate(input.cbegin(), input.cend(), 0, Binary());
         assert (result == -6); // ((0 - 1) - 2) - 3
     }
 }

@@ -26,9 +26,8 @@ namespace scoped_timer {
 
 void demo()
 {
-    return;
-    const auto timer = scoped_timer<std::chrono::microseconds>{};
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    // const auto timer = scoped_timer<std::chrono::microseconds>{};
+    // std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
 }
@@ -87,7 +86,7 @@ void demo()
     // A time point is a duration of time that has passed since the epoch of a specific clock.
     std::chrono::time_point<std::chrono::system_clock> tp_now = std::chrono::system_clock::now();
 
-    std::chrono::time_point<std::chrono::system_clock,std::chrono::minutes> tp_now_minutes;;
+    std::chrono::time_point<std::chrono::system_clock,std::chrono::minutes> tp_now_minutes;
     tp_now_minutes = std::chrono::time_point_cast<std::chrono::minutes,std::chrono::system_clock>(tp_now);
 
     std::chrono::duration<int,std::ratio<1>> d_seconds = tp_now_minutes.time_since_epoch();
@@ -109,17 +108,34 @@ void demo()
         std::string format{"%Y-%m-%dT%H:%M:%S"};
         format += timestring.ends_with('Z') ? "%Z" : "%z";
         std::chrono::time_point<std::chrono::system_clock> tp;
-        // iss >> std::chrono::parse(format, tp);
+        //iss >> std::chrono::parse(format, tp);
     }
 
     {
-        constexpr auto year = 2026;
-        constexpr auto month = 3;
-        constexpr auto day = 23;
+        constexpr int year {2026};
+        constexpr int month {3};
+        constexpr int day = {23};
         constexpr std::chrono::year_month_day ymd {std::chrono::year(year)/month/day};
         static_assert(ymd.year() == std::chrono::year(year));
         static_assert(ymd.month() == std::chrono::month(month));
         static_assert(ymd.day() == std::chrono::day(day));
+        static_assert(ymd.ok());
+    }
+
+    {
+        using namespace std::literals;
+        constexpr std::chrono::year_month_day ymd {2026y/ std::chrono::April/10};
+        constexpr std::chrono::year_month_day invalid {2026y/0/10};
+        static_assert(not invalid.ok());
+    }
+
+    {
+        // Time point with days precision.
+        auto sd = std::chrono::sys_days(std::chrono::February/25/2022);
+        // Add a week, this knows about leap years.
+        sd += std::chrono::days(7);
+        auto week_later = std::chrono::sys_days(std::chrono::March/4/2022);
+        assert(sd == week_later);
     }
 
     {
@@ -142,5 +158,11 @@ void demo()
         oss << std::put_time(&tm, "%c %Z") << std::endl;
     }
 
+    {
+        // auto now = std::chrono::system_clock::now();
+        // std::chrono::zoned_time ztp {std::chrono::current_zone(), tp };
+        // const std::chrono::time_zone est {"Europe/Copenhagen"};
+        // std::chrono::zoned_time ztp2 {&est, tp }
+    }
 }
 }

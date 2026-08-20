@@ -18,6 +18,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 #pragma once
 
-namespace linux {
+namespace _linux {
 void demo();
 }

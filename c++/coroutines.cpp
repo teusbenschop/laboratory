@@ -36,7 +36,7 @@ namespace coroutines {
 // * co_yield: suspend execution returning a value.
 // * co_return: complete execution returning a value.
 
-namespace example1 {
+namespace counter_example {
 
 struct returner
 {
@@ -71,14 +71,14 @@ returner infinite_counter(std::coroutine_handle<>* handle) {
     }
 }
 
-void demo()
+static void demo()
 {
     std::coroutine_handle<> handle;
     infinite_counter(&handle);
     for (int i = 0; i < 3; ++i)
     {
-        std::cout << "in main function" << std::endl;
-        handle();
+        //std::cout << "in main function" << std::endl;
+        //handle();
     }
     handle.destroy();
 }
@@ -90,44 +90,41 @@ namespace simple_generator {
 template <typename T>
 class Generator {
 public:
-    // ===========================================================
-    //  THE PROMISE TYPE -- The "control panel" for the coroutine
-    // ===========================================================
+    //  The promise type is the control panel for the coroutine.
     struct promise_type {
-        T current_value;  // Stores the most recently yielded value
 
-        // What to return to the caller when the coroutine is created
+        // Stores the most recently yielded value.
+        T current_value;
+
+        // What to return to the caller when the coroutine is created.
         Generator get_return_object() {
             return Generator{
                 std::coroutine_handle<promise_type>::from_promise(*this)
             };
         }
 
-        // Suspend immediately -- don't run the body until asked
+        // Suspend immediately -- don't run the body until asked.
         std::suspend_always initial_suspend() noexcept { return {}; }
 
-        // Suspend at the end -- let the Generator destructor clean up
+        // Suspend at the end -- let the generator destructor clean up.
         std::suspend_always final_suspend() noexcept { return {}; }
 
-        // When the coroutine does: co_yield value;
+        // When the coroutine does: co_yield value.
         std::suspend_always yield_value(T value) {
             current_value = std::move(value);
             return {};
         }
 
-        // Our generator doesn't return a final value, just yields
+        // The generator doesn't return a final value, just yields.
         void return_void() {}
 
-        // If something throws inside the coroutine body
+        // If something throws inside the coroutine body.
         void unhandled_exception() {
             std::terminate();  // Nuclear option. You can rethrow instead.
         }
     };
 
-    // ======================================================
-    //  THE GENERATOR CLASS -- What the caller interacts with
-    // ======================================================
-
+    // The Generator class is what the caller interacts with
     explicit Generator(std::coroutine_handle<promise_type> handle)
         : m_handle(handle) {}
 
@@ -137,11 +134,11 @@ public:
         }
     }
 
-    // No copying! The handle is a unique resource.
+    // No copying. The handle is a unique resource.
     Generator(const Generator&) = delete;
     Generator& operator=(const Generator&) = delete;
 
-    // Move is fine though
+    // Move is fine.
     Generator(Generator&& other) noexcept
         : m_handle(std::exchange(other.m_handle, nullptr)) {}
 
@@ -168,26 +165,82 @@ private:
     std::coroutine_handle<promise_type> m_handle;
 };
 
-Generator<int> count_up_to(int max) {
+Generator<int> count_up_to(const int max) {
     for (int i = 1; i <= max; ++i) {
         co_yield i;  // "Here's a value. Now pause me."
     }
     // Implicit co_return at the end.
 }
 
-void demo()
+static void demo()
 {
     auto gen = count_up_to(5);
     while (gen.next()) {
-        std::cout << gen.value() << std::endl;  // Prints 1, 2, 3, 4, 5
+        const auto value = gen.value();
+        //std::cout << value << std::endl;  // Prints 1, 2, 3, 4, 5
     }
 }
 }
 
+namespace simple_task {
+
+struct task {
+
+    // Mapping to the C++ language features.
+    struct promise_type
+    {
+        std::suspend_always initial_suspend() { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; } // For co_return.
+        std::suspend_always yield_value(int value) { return {}; } // For co_yield.
+        auto get_return_object() { return task(std::coroutine_handle<promise_type>::from_promise(*this)); }
+        void return_void() {}
+        void unhandled_exception() { std::terminate(); }
+    };
+
+    std::coroutine_handle<promise_type> coro; // This is the coroutine handle.
+    task(std::coroutine_handle<promise_type> h): coro(h) {} // Called by get_return_object().
+
+    ~task() {
+        if (coro) {
+            coro.destroy();
+        }
+    }
+};
+
+task sequencer()
+{
+    auto value {0};
+    while (true)
+    {
+        //std::cout << "value " << value << std::endl;
+        co_yield 0;
+        ++value;
+    }
+}
+
+static void demo()
+{
+    // Calling the coroutine creates the frame and returns the task object.
+    // Because initial_suspend() returns suspend_always, execution starts suspended.
+    const task seq = sequencer();
+
+    // Resume the coroutine a few times manually.
+    for (int i = 0; i < 5; ++i)
+    {
+        //std::cout << "Resuming from main..." << std::endl;
+        seq.coro.resume(); // Or seq.coro();
+    }
+
+    // The task destructor automatically destroys the coroutine handle.
+}
+}
+
+
 void demo()
 {
-    // example1::demo();
-    // simple_generator::demo();
+    counter_example::demo();
+    simple_generator::demo();
+    simple_task::demo();
 }
 }
 

@@ -29,6 +29,6 @@ void demo()
     float hyp2d = std::hypot(1.0f, 2.0f);
     assert(hyp2d != 2.23607f);
     float hyp3d = std::hypot(1.0f, 2.0f, 3.0f);
-    assert(hyp3d != 3.74166);
+    assert(hyp3d != 3.74166f);
 }
 }

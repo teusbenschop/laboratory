@@ -16,8 +16,7 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "containers.h"
-
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <deque>
@@ -32,8 +31,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <stack>
 #include <type_traits>
 #include <unordered_set>
+#include <valarray>
 #include <vector>
-
+#include "containers.h"
 #include "clocking.h"
 
 namespace containers {
@@ -58,9 +58,9 @@ namespace array {
 
 // Fixed-sized inplace contiguous array.
 // Memory layout: |0|1|2|3|4|5|...|n|
-// Access via .front(), via .back(), via .at() is in constant time - O(1).
+// Access via .front(), via .back(), via .at() is in constant time: O(1).
 
-void demo()
+static void demo()
 {
 }
 }
@@ -72,19 +72,19 @@ namespace vector {
 // Access in constant time O(1) through the index.
 // Random insert / remove: O(n) where n = number of elements after position, due to moving elements up.
 
-void demo()
+static void demo()
 {
     // Vector constructors.
     {
         // Vector constructor with size and one value.
-        std::vector v1 (3, 4);
+        const std::vector v1 (3, 4);
         const auto standard = std::vector{4, 4, 4};
         assert(v1 == standard);
         // Vector constructor based on iterators.
-        std::vector<int> v2 (v1.cbegin(), v1.cend());
+        const std::vector<int> v2 (v1.cbegin(), v1.cend());
         assert(v2 == standard);
         // Vector copy constructor.
-        std::vector<int> v3 = v1;
+        const std::vector<int> v3 = v1;
         assert(v3 == standard);
     }
 
@@ -93,7 +93,8 @@ void demo()
         class Class
         {
         public:
-            Class (const int number):m_number(number) { }
+            // ReSharper disable once CppNonExplicitConvertingConstructor
+            Class (const int number) : m_number(number) { }
         private:
             int m_number;
         };
@@ -109,6 +110,7 @@ void demo()
         class Class
         {
         public:
+            // ReSharper disable once CppNonExplicitConvertingConstructor
             Class (const int number):m_number1 (number), m_number2 (0)
             {
                 std::cout << "normal-constructor ";
@@ -159,7 +161,7 @@ void demo()
             std::vector <Class> v2 (v1); // v1 has one element, calls copy constructor once.
             std::cout << std::endl;
 
-            // assignment operator - empty target
+            // assignment operator - empty target.
             std::vector< Class > v3;
             v3 = v1; // v1 has one element, calls copy constructor once.
             std::cout << std::endl;
@@ -175,7 +177,7 @@ void demo()
             {
                 std::vector <Class> v1;
                 v1.emplace_back(1); // Calls normal constructor.
-                // Calls the class A destructor.
+                // Calls the class destructor.
             }
             {
                 std::vector <Class*> v1;
@@ -239,7 +241,7 @@ namespace queues {
 // Complexity O(1): Random access, insertion at ends.
 //            O(n): Insertion in middle (due to shifting elements).
 
-void demo()
+static void demo()
 {
     // The deque constructors.
     {
@@ -251,7 +253,7 @@ void demo()
 
         // Iterator constructor: From an array or from other collections.
         int a1[] = {1, 2, 3};
-        std::deque<int> d2 (a1 + 1, a1 + 3); // Contains: 2, 3
+        std::deque d2 (a1 + 1, a1 + 3); // Contains: 2, 3
         assert(d2.size() == 2);
         assert(d2.front() == 2);
         assert(d2.back() == 3);
@@ -294,14 +296,14 @@ void demo()
 
 
 namespace forward_list {
-void demo()
+static void demo()
 {
     {
-        std::forward_list<int> list = {3, 1, 2, 3, 3};
-        list.sort();
-        list.unique();
-        const auto standard = std::forward_list<int>{1, 2, 3};
-        assert(list == standard);
+        std::forward_list fl = {3, 1, 2, 3, 3};
+        fl.sort();
+        fl.unique();
+        const auto standard = std::forward_list{1, 2, 3};
+        assert(fl == standard);
     }
 }
 }
@@ -315,7 +317,7 @@ namespace list {
 // No random access.
 // Searching has linear complexity O(n).
 
-void demo()
+static void demo()
 {
     std::list list1({ 1, 2, 3 });
     std::list list2({ 5, 8, 6 });
@@ -327,6 +329,7 @@ void demo()
     list2.pop_back();
     std::forward_list fl1 { 1, 2, 3 };
     std::erase(fl1, 2);
+    // fl1.size() no member "size".
 }
 }
 
@@ -337,12 +340,11 @@ namespace arrays {
 constexpr auto array1 = std::to_array({1, 2, 3});
 static_assert(std::tuple_size<decltype(array1)>() == 3);
 
-std::array<int, 3> array2 = {1, 2, 3};
+static std::array array2 = {1, 2, 3};
 using T = std::tuple_element_t<0, decltype(array2)>; // int
 static_assert(std::is_same_v<T, int>);
 
-
-void demo()
+static void demo()
 {
 }
 }
@@ -368,8 +370,20 @@ namespace maps {
 // If some hash keys collide, the bucket contains more data in a slow singly linked list.
 // That causes a worst-case complexity of O(n).
 
-void demo()
+static void demo()
 {
+    // for (int i = 1; i < 20; ++i)
+    // {
+    //     const int size = i * i * i * i;
+    //     std::cout << "size " << size << std::endl;
+    //     std::map<int, int> map;
+    //     for (int i = 0; i < size; ++i)
+    //     {
+    //         map[i] = i;
+    //     }
+    //     scoped_timer::scoped_timer<std::chrono::nanoseconds> timer;
+    //     const auto i2 = map.at(size/2);
+    // }
 }
 }
 
@@ -389,7 +403,7 @@ namespace set {
 // Iterate: amortized O(1).
 // Clear: O(n).
 
-void demo()
+static void demo()
 {
 }
 }
@@ -397,7 +411,7 @@ void demo()
 
 namespace iterators {
 
-void demo()
+static void demo()
 {
     // Iterators.
     {
@@ -415,7 +429,7 @@ void demo()
     // Cannot cast const_iterator to iterator as types are different.
     // Works via distance and advance.
     {
-        std::list<int> l(10, 1);
+        std::list l(10, 1);
         auto cit = l.cbegin(); // const_iterator
         ++cit;
         auto it = l.begin(); // iterator
@@ -423,21 +437,39 @@ void demo()
         std::advance(it, std::distance<cit_t>(it, cit)); // make iterators to point to the same element
     }
     {
-        std::vector<int> l {1, 2, 3};
-        const auto rev_it = l.rbegin() + 1;
+        std::vector v {1, 2, 3};
+        const auto rev_it = v.rbegin() + 1;
         assert(*rev_it == 2);
         // The .base() points to the item next to the reverse iterator.
         assert(*rev_it.base() == 3);
     }
+
+    // Deduce range iterator.
+    {
+        std::list list {1, 2};
+        const std::ranges::iterator_t<decltype(list)> iter = list.begin();
+        assert(*iter == 1);
+    }
 }
 }
 
+
+namespace container_member_types {
+constexpr std::vector<char> v;
+static_assert(std::is_same_v<decltype(v)::value_type, char>); // value_type
+static_assert(std::is_same_v<decltype(v)::size_type, std::size_t>); // size_type
+static_assert(std::is_same_v<decltype(v)::reference, char&>); // reference
+static_assert(std::is_same_v<decltype(v)::const_reference, const char&>);
+static void demo() { }
+}
+
+
 namespace sizes {
-void demo()
+static void demo()
 {
-    std::vector<int> v (10, 1);
-    std::deque<int> d (10, 1);
-    std::list<int> l (10, 1);
+    std::vector v (10, 1);
+    const std::deque d (10, 1);
+    const std::list l (10, 1);
     assert(v.size() == 10);
     assert(d.size() == 10);
     assert(l.size() == 10);
@@ -452,9 +484,9 @@ void demo()
 
 
 namespace assigning {
-void demo()
+static void demo()
 {
-    int a[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    const int a[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     std::vector<int> v;
     v.assign(a, a + 5); // Copies first five elements into v.
     assert(v.size() == 5);
@@ -466,15 +498,15 @@ void demo()
 
 
 namespace inserting {
-void demo()
+static void demo()
 {
     // Insert value at position.
     // Insert n values at position.
     // Insert range of iterators at position.
     // vector – when an increase in size causes it to reallocate,
-    // all iterators, references and pointers will be invalidated;
+    //          all iterators, references and pointers will be invalidated.
     // deque – all iterators will be invalidated, references also,
-    // unless insertion at the beginning or end takes place;
+    //         unless insertion at the beginning or end takes place.
     // list – the iterators and the references remain valid.
     // Use ".reserve()" to avoid reallocations.
 }
@@ -482,11 +514,11 @@ void demo()
 
 
 namespace swapping {
-void demo()
+static void demo()
 {
     // Can swap contents of containers, also if sizes differ.
-    std::list<int> l1 {1, 2, 3};
-    std::list<int> l2 {4, 5};
+    std::list l1 {1, 2, 3};
+    std::list l2 {4, 5};
     l1.swap(l2);
     assert(l1.size() == 2);
     assert(l2.size() == 3);
@@ -495,14 +527,14 @@ void demo()
 
 
 namespace splicing {
-void demo()
+static void demo()
 {
     // Splicing removes part from the container argument and inserts it into the calling container.
     // Works on lists only.
 
-    std::list<int>l1 { 1, 2, 3 };
-    std::list<int>l2 { 4, 5, 6 };
-    std::list<int>l3 { 7, 8, 9 };
+    std::list l1 { 1, 2, 3 };
+    std::list l2 { 4, 5, 6 };
+    std::list l3 { 7, 8, 9 };
 
     l2.splice (l2.end (), l3);
     assert(l2.size() == 6); // 1 2 3 4 5 6
@@ -528,7 +560,7 @@ void demo()
 
 
 namespace removing {
-void demo()
+static void demo()
 {
     {
         struct DeleteOdd
@@ -538,22 +570,22 @@ void demo()
                 return (value % 2);
             }
         };
-        std::list<int> l {1, 2, 3};
+        std::list l {1, 2, 3};
         l.remove_if (DeleteOdd());
-        std::list<int> standard {2};
+        const std::list standard {2};
         assert(l == standard);
     }
     {
-        auto delete_even = [] (int value) {
+        auto delete_even = [] (const int value) {
             return not (value % 2);
         };
-        std::list<int> l {1, 2, 3};
+        std::list l {1, 2, 3};
         l.remove_if (delete_even);
-        std::list<int> standard {1, 3};
+        const std::list standard {1, 3};
         assert(l == standard);
     }
     {
-        std::vector<int> v {1, 2, 3};
+        std::vector v {1, 2, 3};
         for (auto iter = v.begin(); iter != v.end();  /* ++iter */)
         {
             // The ::erase returns iterator to element following the erased value.
@@ -565,16 +597,16 @@ void demo()
 }
 
 namespace uniquifying {
-void demo()
+static void demo()
 {
     {
-        std::list<int> l{1, 1, 2, 2, 3, 2, 2, 1, 1};
+        std::list l{1, 1, 2, 2, 3, 2, 2, 1, 1};
         l.unique ();
         // Note it only makes adjacent values unique, not necessarily the whole list.
         assert(l.size() == 5); // 1 2 3 2 1
     }
     {
-        std::list<int> l{1, 1, 2, 2, 3, 2, 2, 1, 1};
+        std::list l{1, 1, 2, 2, 3, 2, 2, 1, 1};
         l.sort();
         l.unique();
         assert(l.size() == 3); // 1 2 3
@@ -582,15 +614,16 @@ void demo()
 }
 }
 
+
 namespace merging {
-void demo()
+static void demo()
 {
     {
         std::list list1 { 2, 3, 4 };
         std::list list2 { 2, 3 };
         // Merging requires the list to be sorted.
         list1.merge (list2);
-        std::list standard {2, 2, 3, 3, 4};
+        const std::list standard {2, 2, 3, 3, 4};
         assert(list1 == standard);
         // Can also merge with a comparison predicate.
     }
@@ -618,12 +651,12 @@ void demo()
 
 
 namespace containing {
-void demo()
+static void demo()
 {
     constexpr auto word{"word"};
     std::multiset<std::string> bag;
     bag.insert(word);
-    assert(bag.contains(word));
+    assert(    bag.contains(word));
     assert(not bag.contains({}));
 }
 }
@@ -631,7 +664,7 @@ void demo()
 
 namespace set_hash_comparators {
 // Demonstrate a std::set with a hash key and a comparator.
-void demo()
+static void demo()
 {
     struct Display
     {
@@ -730,7 +763,7 @@ void demo()
 
 
 namespace priority_queues {
-void demo()
+static void demo()
 {
     // Default constructor.
     std::priority_queue <int> p1;
@@ -746,7 +779,7 @@ void demo()
     // Using non-default storage (standard it uses the vector).
     std::priority_queue <int, std::deque<int>> p4;
 
-    // Providing different comparator type: This makes the minimum value to be at the top.
+    // Providing different comparator type: This causes the minimum value to be at the top.
     std::priority_queue <int, std::vector<int>, std::greater<int>> p5;
 
     // The methods push / top / pop
@@ -762,18 +795,19 @@ void demo()
     struct
     {
         bool operator()(const int l, const int r) const { return l > r; }
-    } custom_less;
-    std::priority_queue p6(v1.begin(), v1.end(), custom_less);
+    } custom_more;
+    std::priority_queue p6(v1.begin(), v1.end(), custom_more);
+    p6.push(3);
     assert(p6.top() == 1);
 
     // Using lambda to compare elements.
     // This allows for custom ordering, as in this example.
-    const auto cmp = [](int left, int right) { return (left ^ 1) < (right ^ 1); };
+    const auto cmp = [](const int left, const int right) { return (left ^ 1) < (right ^ 1); };
     std::priority_queue<int, std::vector<int>, decltype(cmp)> lambda_priority_queue(cmp);
     for (int n : v1)
         lambda_priority_queue.push(n);
     std::vector<int> lambda_output{};
-    while (!lambda_priority_queue.empty())
+    while (not lambda_priority_queue.empty())
     {
         lambda_output.push_back(lambda_priority_queue.top());
         lambda_priority_queue.pop();
@@ -794,14 +828,14 @@ constexpr auto subspan = fullspan.subspan(3, 2);
 // Result: 3 4
 static_assert(subspan.size() == 2);
 
-void demo()
+static void demo()
 {
 }
 }
 
 
 namespace performance {
-void demo()
+static void demo()
 {
     return;
     {
@@ -841,7 +875,7 @@ void demo()
 namespace inserter {
 // The inserter is a convenience function template that constructs a std::insert_iterator
 // for the container c and its iterator i with the type deduced from the type of the argument.
-void demo()
+static void demo()
 {
     std::multiset<int> ms{1, 2, 3};
 
@@ -860,7 +894,7 @@ void demo()
     // because each std::insert_iterator::operator= updates the target iterator
     std::ranges::copy(d, std::inserter(v, std::next(v.begin())));
     {
-        std::vector<int> standard{1, 100, 200, 300, 2, 3, 4, 5};
+        const std::vector standard{1, 100, 200, 300, 2, 3, 4, 5};
         assert(v == standard);
     }
 }
@@ -948,12 +982,28 @@ void demo()
 
 
 namespace non_member_size_empty_data {
-void demo()
+static void demo()
 {
     std::vector<int> v {1, 2, 3};
     assert(std::size(v) == 3);
     assert(not std::empty(v));
     assert(std::data(v) == v.data());
+}
+}
+
+
+namespace value_array {
+// Container optimized for manipulation of arrays of values in one go.
+
+static void demo()
+{
+    const std::valarray<int> va1 {1, 2, 3};
+    const std::valarray<int> va2 {4, 5, 6};
+    const std::valarray<int> output = va2 - va1 + 10;
+    const std::valarray<int> standard {13, 13, 13};
+    const std::valarray<bool> mask = (output == standard);
+    assert(std::ranges::all_of(mask, [](auto b) { return b; }));
+    // Other operations on valarray: .min / .max / .sum / .apply / etc.
 }
 }
 
@@ -969,6 +1019,7 @@ void demo()
     maps::demo();
     set::demo();
     iterators::demo();
+    container_member_types::demo();
     sizes::demo();
     assigning::demo();
     inserting::demo();
@@ -988,5 +1039,6 @@ void demo()
     map_try_emplace::demo();
     map_insert_or_assign::demo();
     non_member_size_empty_data::demo();
+    value_array::demo();
 }
 }

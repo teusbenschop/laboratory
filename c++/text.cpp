@@ -28,6 +28,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <thread>
 #include <vector>
 #include "text.h"
+#include "clocking.h"
 
 
 namespace text {
@@ -60,18 +61,80 @@ namespace formatting_library {
 // https://en.cppreference.com/w/cpp/utility/format
 static void demo()
 {
-    const std::string result = std::format("c={} s={} 1={}", "c", std::string("s"), 1);
-    assert(result == "c=c s=s 1=1");
+    {
+        const std::string result = std::format("c={} s={} 1={}", "c", std::string("s"), 1);
+        assert(result == "c=c s=s 1=1");
+    }
+    {
+        // Numbered replacement fields:
+        // - Can be out of order.
+        // - Can format arguments(s) more than once.
+        const std::string result = std::format("{2} {1} {0} {1} {2}", "a", "b", "c");
+        assert (result == "c b a b c");
+    }
+    {
+        // Format specifiers for fill and align.
+        constexpr char c = 120;
+        assert(std::format("{:6}", 42)    == "    42");
+        assert(std::format("{:6}", 'x')   == "x     ");
+        assert(std::format("{:_<6}", 'x') == "x_____");
+        assert(std::format("{:_>6}", 'x') == "_____x");
+        assert(std::format("{:_^6}", 'x') == "__x___");
+        assert(std::format("{:6d}", c)    == "   120");
+        assert(std::format("{:6}", true)  == "true  ");
+        // Format specifiers for sign and space.
+        // space: Use a leading space for non-negative numbers.
+        //        Use a minus sign for negative numbers.
+        double inf = std::numeric_limits<double>::infinity();
+        double nan = std::numeric_limits<double>::quiet_NaN();
+        assert(std::format("{0:},{0:+},{0:-},{0: }", 1)   == "1,+1,1, 1");
+        assert(std::format("{0:},{0:+},{0:-},{0: }", -1)  == "-1,-1,-1,-1");
+        assert(std::format("{0:},{0:+},{0:-},{0: }", inf) == "inf,+inf,inf, inf");
+        assert(std::format("{0:},{0:+},{0:-},{0: }", nan) == "nan,+nan,nan, nan");
+        // Format specifiers for width and precision.
+        float pi = 3.14f;
+        assert(std::format("{:10f}", pi)           == "  3.140000"); // width = 10
+        assert(std::format("{:{}f}", pi, 10)       == "  3.140000"); // width = 10
+        assert(std::format("{:.5f}", pi)           == "3.14000");    // precision = 5
+        assert(std::format("{:.{}f}", pi, 5)       == "3.14000");    // precision = 5
+        assert(std::format("{:10.5f}", pi)         == "   3.14000"); // width = 10, precision = 5
+        assert(std::format("{:{}.{}f}", pi, 10, 5) == "   3.14000"); // width = 10, precision = 5
+    }
+    {
+        // Formats to an output iterator.
+        std::string buffer;
+        std::format_to
+        (
+            std::back_inserter(buffer), // the output iterator.
+            "Hello, C++{}!", // the format string.
+            20 // the argument(s).
+        );
+        assert(buffer == "Hello, C++20!");
+    }
+}
+}
 
-    // Formats to an output iterator.
-    std::string buffer;
-    std::format_to
-    (
-        std::back_inserter(buffer), // the output iterator.
-        "Hello, C++{}!", // the format string.
-        20 // the argument(s).
-    );
-    assert(buffer == "Hello, C++20!");
+
+namespace vformat_demo {
+// Takes dynamic format strings.
+template<typename... Args>
+static std::string func(const std::format_string<Args...> fmt, Args&&... args)
+{
+    return std::vformat(fmt.get(), std::make_format_args(args...));
+}
+
+static void demo()
+{
+    const std::string s1 = func("{}{} {}{}", "Hello", ',', "C++", -1 + 2 * 3 * 4);
+    assert (s1 == "Hello, C++23");
+    const std::string dynamic_format_string = "User [{1}] triggered event ID: {0}";
+
+    const auto func = [](const std::string& dynamic_fmt, int id, std::string_view user) {
+        // std::format(dynamic_fmt, id, user) would fail to compile here
+        return std::vformat(dynamic_fmt, std::make_format_args(id, user));
+    };
+    std::string config_fmt = "User {1} logged in with id {0}";
+    assert(func(config_fmt, 123, "Foo") == "User Foo logged in with id 123");
 }
 }
 
@@ -79,12 +142,81 @@ static void demo()
 namespace stream_manipulation {
 static void demo()
 {
-    std::ostringstream oss;
-    oss << std::boolalpha << false << " " << std::noboolalpha << true;
-    assert(oss.str() == "false 1");
+    {
+        std::ostringstream oss;
+        oss << std::boolalpha << false << " " << std::noboolalpha << true;
+        assert(oss.str() == "false 1");
+    }
+    {
+        std::istringstream iss {1};
+        int i;
+        iss >> i;
+        assert(iss.eof()); // Read till end-of-file.
+    }
+    {
+        std::istringstream iss {"a"};
+        int i;
+        iss >> i;
+        assert(iss.fail()); // Failed to put "a" to int.
+    }
+    {
+        std::istringstream iss;
+        iss.clear();
+        iss.setstate(
+            std::ios_base::goodbit // no error
+            | std::ios_base::badbit // irrecoverable stream error
+            | std::ios_base::failbit // formatting or extraction error
+            | std::ios_base::eofbit); // end-of-file reached.
+    }
+    // The std::istream_iterator and std::ostream_iterator are adapters
+    // to treat input and output streams as ranges.
+    {
+        std::istringstream input("10 20 30 40 50");
+
+        std::istream_iterator<int> begin_iter(input);
+        std::istream_iterator<int> end_iter; // Default constructor represents end-of-stream.
+
+        // Fill a container via both stream iterators.
+        std::vector<int> numbers(begin_iter, end_iter);
+
+        // Output the read via an ostream_iterator.
+        std::ostringstream output;
+        // The second argument " " acts as a delimiter after every item written.
+        std::ostream_iterator<int> output_stream(output, " ");
+
+        std::ranges::copy(numbers, output_stream);
+        assert(output.str() == "10 20 30 40 50 ");
+    }
 }
 }
 
+
+namespace stream_str_view {
+
+struct str {}; struct view{};
+constexpr size_t count {1000};
+
+template <typename T>
+static void test(const std::string& input)
+{
+    scoped_timer::scoped_timer<std::chrono::microseconds> timer;
+    for (std::decay_t<decltype(count)> i {0}; i < count; ++i)
+    {
+        std::stringstream ss{input};
+        if constexpr (std::is_same_v<T, str>)
+            auto s = ss.str(); // Create copy -> slower
+        if constexpr (std::is_same_v<T, view>)
+            auto s = ss.view(); // Return string_view, no copy -> faster.
+    }
+}
+
+static void demo()
+{
+    const std::string input ('a', count);
+    // test<str>(input);
+    // test<view>(input);
+}
+}
 
 namespace osyncstream {
 // https://en.cppreference.com/w/cpp/io/basic_osyncstream
@@ -191,8 +323,12 @@ const char* const cc1 = "abc";
 const char8_t* const cc2 = u8"abc";
 // Raw string literal UTF-8.
 const char8_t* const cc3 = u8R"(abc)";
-
 // Adjacent string literal are concatenated by the compiler.
+
+// The std::string string literal.
+using namespace std::literals;
+static auto hello = "hello"s;
+static_assert(std::is_same_v<decltype(hello), std::string>);
 
 static void demo()
 {
@@ -208,7 +344,7 @@ namespace user_defined_literals {
 
 // Create user-defined types by defining a user-defined suffix.
 
-struct Distance
+class Distance
 {
 public:
     constexpr static long double km_per_mile = 1.609344L;
@@ -261,9 +397,48 @@ constexpr long double operator""_degrees_to_radians(long double degrees)
 
 static_assert(90.0_degrees_to_radians >= 1.57 and 90.0_degrees_to_radians <= 1.58);
 
-void demo()
+static void demo()
 {
     demo_distance();
+}
+}
+
+
+namespace string_operator_square_brackets_versus_dot_at {
+
+// The string operator [] does not do bounds checking -> faster / unsafe.
+// The string operator at() does bounds checking -> slower / safe.
+constexpr unsigned size {100000};
+namespace { struct brackets{}; struct at{}; }
+
+template <typename T>
+static void speed_test()
+{
+    //scoped_timer::scoped_timer<std::chrono::microseconds> timer;
+    const std::string input ("1", size);
+    for (unsigned i = 0; i < size; ++i)
+    {
+        if constexpr (std::is_same_v<T, brackets>)
+            const char c = input[i];
+        if constexpr (std::is_same_v<T, at>)
+            const char c = input.at(i);
+    }
+}
+
+static void demo()
+{
+    speed_test<brackets>();
+    speed_test<at>();
+    std::string s;
+}
+}
+
+
+namespace logging {
+// The std::clog write to std::cerr and is buffered unlike std::cerr.
+// Example: std::clog << 1;
+static void demo()
+{
 }
 }
 
@@ -271,13 +446,17 @@ void demo()
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
+    vformat_demo::demo();
     stream_manipulation::demo();
+    stream_str_view::demo();
     osyncstream::demo();
     output_manipulation::demo();
     istream_view::demo();
     templates_printf::demo();
     string_literals::demo();
     user_defined_literals::demo();
+    string_operator_square_brackets_versus_dot_at::demo();
+    logging::demo();
 }
 
 

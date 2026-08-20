@@ -9,10 +9,20 @@
           </mappings>
         </serverdata>
       </paths>
-      <paths name="Remote Host (28eb0bd9-17f9-41f0-aa41-e1fdbf85fc8c)">
+      <paths name="Debian sid (28eb0bd9-17f9-41f0-aa41-e1fdbf85fc8c)">
         <serverdata>
           <mappings>
             <mapping deploy="/tmp/tmp.WINRNRgJH6/c++" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="Ubuntu server (a940ad08-18c2-42f8-8b69-980500463179)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.flkwgBSwuy/c++" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />

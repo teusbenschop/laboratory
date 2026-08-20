@@ -22,7 +22,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <initializer_list>
 #include <iostream>
 
-namespace linux {
+namespace _linux {
 
 namespace signals {
 void demo()
