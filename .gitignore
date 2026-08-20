@@ -102,3 +102,4 @@ android/kotlin/gradle/wrapper/gradle-wrapper.jar
 android/TabLayout/gradle/wrapper/gradle-wrapper.jar
 android/MyApplication/gradle/wrapper/gradle-wrapper.jar
 /android/filedownload/gradle/wrapper
+/ncurses/c++-api/build
