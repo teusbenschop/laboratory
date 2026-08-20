@@ -16,16 +16,16 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "performance.h"
-#include "clocking.h"
 #include <cassert>
 #include <functional>
 #include <iostream>
 #include <latch>
+#include <memory_resource>
 #include <new>
 #include <thread>
 #include <vector>
-#include <memory_resource>
+#include "performance.h"
+#include "clocking.h"
 
 namespace performance {
 
@@ -198,7 +198,7 @@ void demo() {}
 namespace avoid_temporaries {
 // Temporary object is created when passing by value.
 // Passing by const reference:
-//   If object is of different type, it will be generated (const char* -> std::string, else not.
+//   If object is of different type, it will be generated (const char* -> std::string), else not.
 static void demo()
 {
     std::string s1 = "1";
@@ -213,14 +213,16 @@ static void demo()
 
 
 namespace heap_fragmentation_and_pool_allocator {
-// Using a queue, for example, and passing many objects through it, will cause heap fragmentation.
+// Using a queue, for example,
+// and passing very many objects through it, where the queue size fluctuates wildly,
+// will cause heap fragmentation.
 // Solution is using a pool allocator.
 
 
 static void demo()
 {
     // Optional options.
-    std::pmr::pool_options options{
+    constexpr std::pmr::pool_options options{
         .max_blocks_per_chunk = 64, // Max number of blocks to allocate at once from upstream.
         .largest_required_pool_block = 512 // Largest allocation through this pool, anything higher goes upstream.
     };

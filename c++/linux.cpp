@@ -35,8 +35,7 @@ void demo()
     // Sending a Linux signal can be handled in various ways.
     // 1. It gets handled right away.
     // 2. The process ignores it, nothing happens.
-    // 3. The kernel keeps that signal pending,
-    //    and delivers it to the process when the process asks for it.
+    // 3. The kernel keeps that signal pending and the process polls for that.
 
     // A set of signals that the kernel will not deliver to the process asynchronically.
     // The kernel will block those signals and deliver them when asked to do so.

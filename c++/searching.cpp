@@ -40,7 +40,7 @@ namespace searching {
 // It returns true if the value is found in the container.
 // It is also possible to pass a comparator.
 // It searches quickly, starting half-way the container,
-// then going up or down, then search the half part again half-way.
+// then going up or down, then search the half part again half-way, and so on.
 // Complexity = logarithmic: O log(n)
 namespace binary_search {
 constexpr auto container = std::array{2, 2, 3, 3, 3, 4, 5};
@@ -76,10 +76,10 @@ constexpr auto is_negative = [](const int i) { return i < 0; };
 // None of the numbers is negative.
 static_assert(std::ranges::none_of(numbers, is_negative));
 
-// Not all of the numbers are negative.
+// Not all the numbers are negative.
 static_assert(not std::ranges::all_of(numbers, is_negative));
 
-// Not any of the numbers is negative.
+// Not any number is negative.
 static_assert(not std::ranges::any_of(numbers, is_negative));
 
 void demo()

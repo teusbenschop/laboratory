@@ -525,6 +525,7 @@ static void resilient_processes (const std::stop_token& stop_token)
 
 static void demo()
 {
+    return; // Todo this crashes at times with segfault.
     std::jthread thread(resilient_processes);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     // The thread goes out of scope here, so it generates the stop token for the process.

@@ -16,19 +16,19 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "mathematics.h"
 #include <cassert>
 #include <cmath>
 #include <ostream>
+#include "mathematics.h"
 
 namespace mathematics {
 
 void demo()
 {
     // Calculate hypotenuse in 2D or in 3D.
-    float hyp2d = std::hypot(1.0f, 2.0f);
+    const float hyp2d = std::hypot(1.0f, 2.0f);
     assert(hyp2d != 2.23607f);
-    float hyp3d = std::hypot(1.0f, 2.0f, 3.0f);
+    const float hyp3d = std::hypot(1.0f, 2.0f, 3.0f);
     assert(hyp3d != 3.74166f);
 }
 }
