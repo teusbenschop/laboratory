@@ -16,13 +16,13 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-// #import std;
 #include <cassert>
 #include <coroutine>
 #include <deque>
 #include <iostream>
 #include <list>
 #include <map>
+#include <numeric>
 #include <sstream>
 #include <type_traits>
 #include <vector>
@@ -31,8 +31,11 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 namespace templates {
 
-// Template programming is about letting the compiler deal with the types.
-// Template metaprogramming is about letting the compiler calculate values.
+// Template programming:
+// Using templates as a placeholder mechanism to write functions or classes that work with any data type.
+
+// Template Metaprogramming (TMP):
+// Writing programs within the template system that the compiler executes during compilation.
 
 namespace default_type {
 
@@ -97,16 +100,16 @@ namespace non_type_template_parameter {
 // A template placeholder of a constant value, called a non-type parameter.
 
 template <int i>
-float func (const float d)
+static float func (const float f)
 {
     if constexpr (i == 10)
-        return 100.0f;
-    return d;
+        return i + f;
+    return f;
 }
 
 static void demo()
 {
-    assert (func<10>(0.0f) == 100.0f);
+    assert (func<10>(1.0f) == 11.0f);
     assert (func<0>(10.0f) == 10.0f);
 }
 }
@@ -160,22 +163,16 @@ static void demo()
 
 
 namespace automatic_weight_unit_conversion {
-// These are strong types for weights.
-// The class automatically converts to the desired unit when it gets passed to a function.
+// Strong types for weights.
+// The class automatically converts to the desired unit when it gets passed to a function by value
+// The various copy constructors do the conversion.
 // For example if a function expects a weight in grams,
 // and the code passes a weight in kilograms,
 // then the compiler automatically converts the passed unit to the expected unit.
 
 // The factors to convert the given weight type to grams.
-struct grams
-{
-    static constexpr float factor2grams = 1.0f;
-};
-
-struct kilograms
-{
-    static constexpr float factor2grams = 1000.0f;
-};
+struct grams     { static constexpr float factor2grams =    1.0f; };
+struct kilograms { static constexpr float factor2grams = 1000.0f; };
 
 // This concept can be used to assure that a type is a weight type.
 template <typename T>
@@ -189,9 +186,7 @@ class Weight
 public:
     constexpr Weight() noexcept = default;
     // Constructor taking a float, so the weight is equal to the float passed.
-    constexpr explicit Weight(const decltype(m_value) v) noexcept : m_value(v)
-    {
-    }
+    constexpr explicit Weight(const decltype(m_value) v) noexcept : m_value(v) { }
 
     // This copy constructor is a template, the compiler generates multiple constructors:
     // 1. Create a kilogram from a gram.
@@ -199,102 +194,18 @@ public:
     // 3. Create a gram from a kilogram.
     // 4. Create a gram from a gram.
     template <weight_unit UU>
-    constexpr Weight(const Weight<UU>& s) noexcept
+    constexpr Weight(const Weight<UU>& other) noexcept
     {
         if constexpr (std::is_same_v<U, UU>)
-            m_value = s.value();
+            m_value = other.value();
         else
-            m_value = s.value() * UU::factor2grams / U::factor2grams;
+            m_value = other.value() * UU::factor2grams / U::factor2grams;
     }
 
     [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; }
-    explicit constexpr operator decltype(m_value)() const noexcept { return m_value; } // Support static cast.
-    constexpr void value(const decltype(m_value) v) noexcept { m_value = v; }
-    auto operator<=>(const Weight<U>&) const noexcept = default;
-
-    // Allow for basic arithmetic operations:
-    constexpr Weight<U>& operator+=(const Weight<U>& s) noexcept
-    {
-        m_value += s.value();
-        return *this;
-    }
-
-    constexpr Weight<U>& operator-=(const Weight<U>& s) noexcept
-    {
-        m_value -= s.value();
-        return *this;
-    }
-
-    constexpr Weight<U>& operator*=(const Weight<U>& s) noexcept
-    {
-        m_value *= s.value();
-        return *this;
-    }
-
-    constexpr Weight<U>& operator*=(const decltype(m_value) v) noexcept
-    {
-        m_value *= v;
-        return *this;
-    }
-
-    constexpr Weight<U>& operator/=(const Weight<U>& s) noexcept
-    {
-        m_value /= s.value();
-        return *this;
-    }
-
-    constexpr Weight<U>& operator/=(const decltype(m_value) v) noexcept
-    {
-        m_value /= v;
-        return *this;
-    }
+    [[nodiscard]] explicit constexpr operator decltype(m_value)() const noexcept { return m_value; } // Support static cast.
 };
 
-template <weight_unit UL, weight_unit UR>
-Weight<UL> operator+(Weight<UL> l, const Weight<UR> r) noexcept { return l += r; }
-
-template <weight_unit UL, weight_unit UR>
-constexpr Weight<UL> operator-(Weight<UL> l, const Weight<UR> r) noexcept { return l -= r; }
-
-template <weight_unit UL, weight_unit UR>
-constexpr Weight<UL> operator*(Weight<UL> l, const Weight<UR> r) noexcept { return l *= r; }
-
-template <weight_unit U>
-constexpr Weight<U> operator*(Weight<U> l, const float r) noexcept { return l *= r; }
-
-template <weight_unit UL, weight_unit UR>
-constexpr Weight<UL> operator/(Weight<UL> l, const Weight<UR> r) noexcept { return l /= r; }
-
-template <weight_unit U>
-constexpr Weight<U> operator/(Weight<U> l, const float r) noexcept { return l /= r; }
-
-template <weight_unit U>
-inline std::ostream& operator<<(std::ostream& os, const Weight<U>& s) noexcept
-{
-    os << s.value() << " ";
-    if constexpr (std::is_same_v<U, grams>)
-        os << "g";
-    else if constexpr (std::is_same_v<U, kilograms>)
-        os << "kg";
-    else
-        os << "<unknown weight unit>";
-    return os;
-}
-
-// Some quality tests.
-static_assert(std::is_constructible_v<Weight<grams>, float>);
-static_assert(std::is_nothrow_constructible_v<Weight<grams>, float>);
-
-static_assert(std::is_default_constructible_v<Weight<grams>>);
-static_assert(std::is_nothrow_default_constructible_v<Weight<grams>>);
-
-static_assert(std::is_copy_constructible_v<Weight<grams>>);
-static_assert(std::is_trivially_copy_constructible_v<Weight<grams>>);
-static_assert(std::is_nothrow_copy_constructible_v<Weight<grams>>);
-
-static_assert(std::is_move_constructible_v<Weight<grams>>);
-static_assert(std::is_trivially_move_constructible_v<Weight<grams>>);
-static_assert(std::is_nothrow_move_constructible_v<Weight<grams>>);
 
 constexpr auto weight_100_kg = Weight<kilograms>(100);
 constexpr auto weight_10_g = Weight<grams>(10);
@@ -305,69 +216,9 @@ static_assert(weight_g.value() == 100000);
 constexpr Weight<kilograms> weight_kg = weight_10_g;
 static_assert(weight_kg.value() == 0.01f);
 
+static void demo() {}
 }
 
-
-
-namespace automatic_weight_units_simple {
-
-struct grams     { static constexpr float factor_to_grams {   1.0f}; };
-struct kilograms { static constexpr float factor_to_grams {1000.0f}; };
-
-template <typename U>
-concept weight_unit = std::is_same_v<U, grams> or std::is_same_v<U, kilograms>;
-
-template <weight_unit U>
-class Weight {
-    float m_value{};
-public:
-    Weight(const float value) : m_value(value) {}
-
-    template <weight_unit UU>
-    Weight(const Weight<UU>& s) {
-        const float grams = s.value() * UU::factor_to_grams;
-        m_value = grams / U::factor_to_grams;
-    }
-
-    float value() const { return m_value; }
-};
-
-template <weight_unit U>
-std::ostream& operator<<(std::ostream& os, const Weight<U>& s) noexcept
-{
-    os << s.value();
-    if constexpr (std::is_same_v<U, grams>)
-        os << "g";
-    else if constexpr (std::is_same_v<U, kilograms>)
-        os << "kg";
-    else
-        static_assert(false, "not implemented");
-    return os;
-}
-
-static void demo() {
-    const Weight<kilograms> kilogram_1(1);
-    const Weight<grams> gram_1000 = kilogram_1;
-    {
-        std::ostringstream oss;
-        oss << gram_1000;
-        assert(oss.str() == "1000g");
-    }
-
-    const auto fn = [] (const Weight<grams> w) {
-        std::ostringstream os;
-        os << w;
-        return os.str();
-    };
-
-    assert(fn(kilogram_1) == "1000g");
-    assert(fn(gram_1000) == "1000g");
-
-    assert(fn(Weight<kilograms>{2.2f}) == "2200g");
-    assert(fn(Weight<grams>{2.2f}) == "2.2g");
-}
-
-}
 
 namespace template_specialization {
 
@@ -378,7 +229,7 @@ namespace template_specialization {
 // Generic class template.
 template<typename T, typename U>
 struct Struct {
-    constexpr explicit Struct( T t, U u) : m_t(t), m_u(u) {}
+    constexpr Struct( T t, U u) : m_t(t), m_u(u) {}
     T m_t;
     U m_u;
 };
@@ -386,7 +237,7 @@ struct Struct {
 // Partial class template specialisation.
 template<typename T>
 struct Struct<T, int> {
-    constexpr explicit Struct( T t, const int u) : m_t(t), m_u(u * 2) {}
+    constexpr Struct( T t, const int u) : m_t(t), m_u(u * 2) {}
     T   m_t;
     int m_u;
 };
@@ -394,7 +245,7 @@ struct Struct<T, int> {
 // Full class template specialisation.
 template<>
 struct Struct<std::string, float> {
-    constexpr explicit Struct( std::string t, const float u) : m_t(std::move(t)), m_u(u * 3) {}
+    constexpr Struct( std::string t, const float u) : m_t(std::move(t)), m_u(u * 3) {}
     std::string m_t {};
     float       m_u {};
 };
@@ -557,35 +408,29 @@ struct Kelvin;
 struct Celsius
 {
     float value {};
-    operator Kelvin() const;
+    constexpr operator Kelvin() const;
 };
 
 struct Kelvin
 {
     float value {};
-    operator Celsius() const;
+    constexpr operator Celsius() const;
 };
 
-Celsius::operator Kelvin() const { return Kelvin (value + 273.5f); }
-Kelvin::operator Celsius() const { return Celsius(value - 273.5f); }
+constexpr Celsius::operator Kelvin() const { return Kelvin (value + 273.5f); }
+constexpr Kelvin::operator Celsius() const { return Celsius(value - 273.5f); }
 
-float get_kelvin (const Kelvin kelvin)
-{
-    return kelvin.value;
-}
+static constexpr float get_kelvin  (const Kelvin  kelvin ) { return kelvin.value; }
+static constexpr float get_celsius (const Celsius celsius) { return celsius.value; }
 
-float get_celsius (const Celsius celsius)
-{
-    return celsius.value;
-}
+constexpr Kelvin _400kelvin {400};
+static_assert(get_kelvin(_400kelvin) == 400.0f);
+constexpr Celsius _100celsius {100};
+static_assert(get_kelvin(_100celsius) == 373.5f);
+static_assert(get_celsius(_400kelvin) == 126.5f);
 
 static void demo()
 {
-    const Kelvin _400kelvin {400};
-    assert(get_kelvin(_400kelvin) == 400.0f);
-    const Celsius _100celsius {100};
-    assert(get_kelvin(_100celsius) == 373.5f);
-    assert(get_celsius(_400kelvin) == 126.5f);
 }
 }
 
@@ -611,8 +456,8 @@ struct Factorial<0>
 };
 
 // A recursive template is very expensive to process by the compiler.
-// A recursive constexpr function is much cheaper.
-static constexpr int factorial(const int n) { return n <= 1 ? 1 : n * factorial(n - 1); }
+// A recursive constexpr / consteval function is much cheaper.
+static consteval int factorial(const int n) { return n <= 1 ? 1 : n * factorial(n - 1); }
 
 static_assert(Factorial<1>::value == 1);
 static_assert(factorial(1) == 1);
@@ -727,12 +572,10 @@ static void demo()
 namespace pack_expansion {
 
 template <typename ... Args>
-static void func1 (Args ... args)
-{
-}
+static constexpr void func1 (Args ... args) { }
 
 template <typename ... Args>
-static void func2 (Args ... args)
+static constexpr bool func2 (Args ... args)
 {
     func1(&args...); // &args...   : a pack expansion.
                      // &args      : the pattern.
@@ -741,8 +584,9 @@ static void func2 (Args ... args)
 
     func1(1, 1.0f, '1', "1");
     // Args ... args expanded into: int i, float f, char c, const char* s
+    return true;
 }
-
+static_assert(func2(2, 3));
 
 // Pack expansion in function argument lists.
 // f(args...);      // Expands into f(a1, a2, a3);
@@ -763,38 +607,40 @@ static void func2 (Args ... args)
 // Pack expansion in brace-enclosed initializers.
 template <typename... Args>
 constexpr int func3 (Args... args) {
-    const int size = sizeof...(args) + 2;
-    int arr[size] = {1, args..., 2};
+
+    // Fill an array with integers.
+    constexpr int size = sizeof...(args) + 2;
+    int arr1[size] = {1, args..., 2};
+
+    // Iterate over pack, take sum.
+    const std::array<int, sizeof...(args)> arr2 {args...};
+    const int sum1 = std::accumulate(arr2.begin(), arr2.end(), 0);
 
     // The initializer lists guarantee sequencing.
     // They can therefore be used to call a function on each element of a pack, in order.
-    int sum {0};
-    int dummy[sizeof...(Args)] = {(sum += args, 0)...};
-    return sum;
+    int sum2 {0};
+    int dummy[sizeof...(Args)] = {(sum2 += args, 0)...};
+    return sum2;
 }
 static_assert (func3(1, 2, 3) == 6);
 
 // Pack expansion in template argument lists.
 template <typename T1, typename T2, typename... Args>
 static void func4 (T1 t1, T2 t2, Args... args) {
+    std::tuple<Args...>         tup0; // expands to std::tuple<t1, t2, t3>
     std::tuple<T1, T2, Args...> tup1; // expands to std::tuple<t1, t2, a1, a2, a3>
     std::tuple<Args..., T1, T2> tup2; // expands to std::tuple<a1, a2, a3, t1, t2>
     std::tuple<T1, Args..., T2> tup3; // expands to std::tuple<t1, a1, a2, a3, t2>
 }
 
 // The ellipsis in a function parameter list: the parameter declaration is the pattern for expansion.
-template <typename... Ts>
-void func5 (Ts ... args) {}
-// func5('a', 1); // Ts... expands to void func5(char, int)
-// func(0.1f);    // Ts... expands to void func5(float)
+template <typename... Args>
+static constexpr bool func5 (Args ... args) {return true;}
+static_assert(func5('a', 1)); // Args... expands to void func5(char, int)
+static_assert(func5(0.1f));   // Args... expands to void func5(float)
 
-template <typename... Ts, int... N>
-void func6 (Ts (&...arr)[N]){}
 
-void demo6() {
-    int n[1];
-    func6<const char, int>("a", n); // Ts (&...arr)[N] expands to:
-    //                                        const char (&)[2], int(&)[1]
+static void demo6() {
 }
 
 // Pack expansion in base specifiers and member initializer lists.
@@ -819,11 +665,13 @@ static_assert(func7(1,2,3) == 6);
 
 // Pack expansion in the sizeof... operator.
 template <typename... Types>
-struct Sizeof {
+struct SizeOf {
     constexpr static std::size_t size = sizeof... (Types);
 };
-static_assert(Sizeof<int,char,float>::size == 3);
-
+static_assert(SizeOf<int,char,float>::size == 3);
+static void demo_sizeof()
+{
+}
 
 // Pack expansion in using-declarations.
 template <class ... Bases>
@@ -834,19 +682,30 @@ struct Derived : Bases...
 // Derived<B, D> d; // OK: B::g and D::g introduced.
 
 
-// Pack indexing (C++26).
-// consteval auto first_plus_last(auto ... args) {
-//     return args...[0] + args...[sizeof...(args) - 1];
-// }
-// static_assert(first_plus_last(1,2,3) == 4);
-// static_assert(first_plus_last(1,2) == 3);
-// static_assert(first_plus_last(1) == 2);
-// static_assert(first_plus_last(std::string("a")) == "aa");
+// Argument pack indexing (C++26).
+consteval auto first_plus_last26(auto ... args) {
+    return args...[0] + args...[sizeof...(args) - 1];
+}
+// Pre-C++26 argument pack indexing.
+consteval auto first_plus_last20(auto ... args)
+{
+    std::tuple<decltype(args)...> tuple {args...};
+    return std::get<0>(tuple) + std::get<sizeof...(args) - 1>(tuple);
+}
+static_assert(first_plus_last26(1,2,3) == 4);
+static_assert(first_plus_last20(1,2,3) == 4);
+static_assert(first_plus_last26(1,2) == 3);
+static_assert(first_plus_last20(1,2) == 3);
+static_assert(first_plus_last26(1) == 2);
+static_assert(first_plus_last20(1) == 2);
+static_assert(first_plus_last26(std::string("a")) == "aa");
+static_assert(first_plus_last20(std::string("a")) == "aa");
 
 
 static void demo()
 {
     demo6();
+    demo_sizeof();
 }
 }
 
@@ -902,7 +761,7 @@ constexpr int binary_left_fold(I init, Args&& ... args)
 static_assert(binary_left_fold(10, 1, 2, 3) == 4);
 
 template <typename I, typename ... Args>
-constexpr int binary_right_fold(I init, Args&& ... args)
+static constexpr int binary_right_fold(I init, Args&& ... args)
 {
     // (arg1 - (... - (argN−1 - (argN - I))))
     return (args - ... - init);
@@ -912,7 +771,7 @@ static_assert(binary_right_fold(10, 1, 2, 3) == -8);
 
 // Folding over the comma operator.
 template <typename... Args>
-void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args)
+static void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args)
 {
     // Run function on arg1, then on arg2, and so on.
     (void(os << std::forward<Args>(args) << " "), ...);
@@ -922,8 +781,8 @@ void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args)
 
 static void demo()
 {
-    std::ostringstream oss;
-    std::vector<int> v;
+    std::ostringstream oss {};
+    std::vector<int> v {};
     comma_operator(oss, v, 1, 2, 3);
     assert(oss.str() == "1 2 3 ");
     assert(v == std::vector<int>({1, 2, 3}));
@@ -935,7 +794,7 @@ namespace template_template_arguments {
 
 
 template<typename T, template<typename,typename ...> typename C, typename... Args>
-std::ostream& operator <<(std::ostream& os, const C<T,Args...>& objs)
+static std::ostream& operator <<(std::ostream& os, const C<T,Args...>& objs)
 {
     os << __PRETTY_FUNCTION__ << '\n';
     for (auto const& obj : objs)
@@ -943,7 +802,8 @@ std::ostream& operator <<(std::ostream& os, const C<T,Args...>& objs)
     return os;
 }
 
-static void demo() {
+static void demo()
+{
     return;
     std::vector<float> vf { 1.1, 2.2, 3.3, 4.4 };
     std::cout << vf << '\n';
@@ -959,13 +819,12 @@ static void demo() {
 
 namespace typetrait_specialization_of_vector_v1 {
 
-
-template <typename V>
-concept specialization_of_vector = requires(V& v)
+template <typename Container>
+concept specialization_of_vector = requires (Container& container)
 {
-    v.begin();
-    v.data();
-    v.reserve(1);
+    container.begin();
+    container.end();
+    container.reserve(1);
 };
 
 static_assert(    specialization_of_vector<std::vector<int>>);
@@ -1002,7 +861,9 @@ concept is_specialization_of_vector_v = is_specialization_of_vector<T>::value;
 
 static_assert(    is_specialization_of_vector_v<std::vector<int>>);
 static_assert(    is_specialization_of_vector_v<std::vector<std::string>>);
+static_assert(    is_specialization_of_vector_v<std::vector<std::list<int>>>);
 static_assert(not is_specialization_of_vector_v<std::list<int>>);
+static_assert(not is_specialization_of_vector_v<int>);
 
 const auto func = [](is_specialization_of_vector_v auto& t) {};
 
@@ -1029,25 +890,27 @@ template <
 >
 struct is_specialisation_of <Primary<Args...>, Primary> : std::true_type {};
 
-static_assert(    is_specialisation_of<std::vector<int>, std::vector>::value);
-static_assert(not is_specialisation_of<std::vector<int>, std::list>::value);
-static_assert(    is_specialisation_of<std::vector<std::map<bool,bool>>, std::vector>::value);
-static_assert(    is_specialisation_of<std::list<bool>, std::list>::value);
-static_assert(    is_specialisation_of<std::map<bool,bool>, std::map>::value);
-static_assert(    is_specialisation_of<std::coroutine_handle<void>, std::coroutine_handle>::value);
-static_assert(    is_specialisation_of<std::tuple<bool,int,char>, std::tuple>::value);
+template <
+    typename Specialization,
+    template<typename...Ts> typename Primary
+>
+concept is_specialisation_of_v = is_specialisation_of<Specialization, Primary>::value;
 
-template <typename T,
-          template<typename...Args> typename Primary>
-concept is_specialisation_of_v = is_specialisation_of<T, Primary>::value;
+static_assert(    is_specialisation_of_v<std::vector<int>, std::vector>);
+static_assert(not is_specialisation_of_v<std::vector<int>, std::list>);
+static_assert(not is_specialisation_of_v<std::list<int>, std::map>);
+static_assert(    is_specialisation_of_v<std::vector<std::map<bool,bool>>, std::vector>);
+static_assert(    is_specialisation_of_v<std::list<bool>, std::list>);
+static_assert(    is_specialisation_of_v<std::map<bool,bool>, std::map>);
+static_assert(    is_specialisation_of_v<std::coroutine_handle<void>, std::coroutine_handle>);
+static_assert(    is_specialisation_of_v<std::tuple<bool,int,char>, std::tuple>);
 
 template<is_specialisation_of_v<std::vector> T>
 static void func(T c) { };
 
-
 static void demo()
 {
-    std::vector<int> v = {1,2,3,4};
+    const std::vector<int> v = {1,2,3,4};
     func(v);
 }
 }
@@ -1077,19 +940,22 @@ struct is_coroutine_handle : std::false_type {};
 
 // Step 2: The special filter.
 // Write a "special case" (a partial specialization). This tells the compiler:
-// "If the type looks exactly like std::coroutine_handle<P>, use this version instead!"
+// "If the type looks exactly like std::coroutine_handle<T>, use this version instead".
 template <typename T>
 struct is_coroutine_handle<std::coroutine_handle<T>> : std::true_type {};
 
+template <typename T>
+concept is_coroutine_handle_v = is_coroutine_handle<T>::value;
+
 // This hits the specialization (true).
-static_assert(is_coroutine_handle<std::coroutine_handle<void>>::value);
+static_assert(is_coroutine_handle_v<std::coroutine_handle<void>>);
 
 // This also hits the specialization (true).
 struct FakeType {};
-static_assert(is_coroutine_handle<std::coroutine_handle<FakeType>>::value);
+static_assert(is_coroutine_handle_v<std::coroutine_handle<FakeType>>);
 
 // This hits the primary template (false).
-static_assert(not is_coroutine_handle<int>::value);
+static_assert(not is_coroutine_handle_v<int>);
 
 
 static void demo()
@@ -1164,7 +1030,7 @@ void demo()
     non_type_template_parameter::demo();
     variable_template::demo();
     class_with_template_methods::demo();
-    automatic_weight_units_simple::demo();
+    automatic_weight_unit_conversion::demo();
     template_specialization::demo();
     automatic_temperature_unit_conversion::demo();
     automatic_temperature_unit_conversion_simple::demo();

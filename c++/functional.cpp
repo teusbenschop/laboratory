@@ -409,6 +409,75 @@ static void demo()
 }
 
 
+namespace invoke {
+// https://en.cppreference.com/w/cpp/utility/functional/invoke.html
+// The std::invoke_r<R> (C++23) is a version of std::invoke
+// that explicitly specifies the intended return type R,
+// allowing for controlled type deduction.
+
+static void demo()
+{
+    // Invoke a free function.
+    {
+        const auto free_fn = [](const int i) { return i; };
+        constexpr int i = std::invoke(free_fn, -9);
+        assert(i == -9);
+    }
+
+    // Invoke a lambda.
+    {
+        constexpr int i = std::invoke([](){ return 10; });
+        assert(i == 10);
+    }
+
+    {
+        struct Struct
+        {
+            explicit Struct(const int num) : m_num(num) {}
+            int return_add(const int i) const {
+                return m_num + i;
+            }
+            int m_num;
+        };
+
+        const Struct strct (123);
+
+        // Invoke a member function.
+        const int mf = std::invoke(&Struct::return_add, strct, 1);
+        assert(mf == 124);
+
+        // Invoke (i.e., access) data member m_num.
+        const int dm = std::invoke(&Struct::m_num, strct);
+        assert(dm == 123);
+    }
+
+    {
+        struct Functor
+        {
+            int operator()(const int i) const { return i; }
+        };
+        // Invoke a function object.
+        const int i = std::invoke(Functor(), 18);
+        assert(i == 18);
+    }
+
+    {
+        // Invoke a lambda converting result from int to float.
+        const auto add = [](const int x, const int y){ return x + y; };
+        const auto f = std::invoke_r<float>(add, 11, 22);
+        assert(f == 33.0f);
+        static_assert(std::is_same<decltype(f), const float>());
+    }
+
+    {
+        const auto return_number = [](const int i) { return i; };
+        // Invoke lambda converting result from int to void.
+        std::invoke_r<void>(return_number, 44);
+    }
+}
+}
+
+
 void demo() {
     move_only_function::demo();
     brackets_are_optional_for_lambdas::demo();
@@ -421,6 +490,7 @@ void demo() {
     demo_not_fn::demo();
     inlining::demo();
     functors::demo();
+    invoke::demo();
 }
 }
 

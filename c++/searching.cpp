@@ -269,8 +269,8 @@ static void demo()
         const auto contains_duplicates_allocating = [](const auto first, const auto last)
         {
             // As (*first) returns a reference, we have to get the base type using std::decay_t
-            using value_type = std::decay_t<decltype(*first)>;
-            auto copy = std::vector<value_type>(first, last);
+            using value_t = std::decay_t<decltype(*first)>;
+            auto copy = std::vector<value_t>(first, last);
             std::sort(copy.begin(), copy.end());
             // The std::adjacent_find searches the sorted range for two consecutive equal elements.
             return std::adjacent_find(copy.begin(), copy.end()) != copy.end();

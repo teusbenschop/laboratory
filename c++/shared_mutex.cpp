@@ -31,11 +31,11 @@ namespace shared_mutex {
     // 1. A shared lock to enable one or more processes to read from the queue simultaneously.
     // 2. A unique lock so only one thread can write to the queue at any time.
 
-    std::queue<int> queue;
-    std::shared_mutex shared_mutex;
-    std::condition_variable_any cv_any;
+    static std::queue<int> queue;
+    static std::shared_mutex shared_mutex;
+    static std::condition_variable_any cv_any;
 
-    void consume_queue(const std::stop_token &stop_token) {
+    static void consume_queue(const std::stop_token &stop_token) {
         while (not stop_token.stop_requested()) {
             // Wait for the condition variable to be signaled, or for a stop request.
             // This uses a unique lock because it might modify the queue.
@@ -66,7 +66,7 @@ namespace shared_mutex {
 
         [[maybe_unused]] std::jthread consumer(consume_queue);
 
-        for (int i{1}; i <= 5; i++) {
+        for (int i{1}; i <= 5; ++i) {
             {
                 // This uses a unique lock because it modifies the queue.
                 std::unique_lock lock(shared_mutex);
@@ -80,7 +80,7 @@ namespace shared_mutex {
         }
 
         // Wait till the queue is empty.
-        while (!queue_empty())
+        while (not queue_empty())
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }

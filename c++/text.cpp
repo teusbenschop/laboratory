@@ -20,7 +20,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <cassert>
 #include <format>
 #include <iomanip>
-#include <iostream>
 #include <numbers>
 #include <ranges>
 #include <sstream>
@@ -133,7 +132,7 @@ static void demo()
         // std::format(dynamic_fmt, id, user) would fail to compile here
         return std::vformat(dynamic_fmt, std::make_format_args(id, user));
     };
-    std::string config_fmt = "User {1} logged in with id {0}";
+    const std::string config_fmt = "User {1} logged in with id {0}";
     assert(func(config_fmt, 123, "Foo") == "User Foo logged in with id 123");
 }
 }
@@ -193,7 +192,8 @@ static void demo()
 
 namespace stream_str_view {
 
-struct str {}; struct view{};
+struct str {};
+struct view{};
 constexpr size_t count {1000};
 
 template <typename T>
@@ -212,11 +212,13 @@ static void test(const std::string& input)
 
 static void demo()
 {
-    const std::string input ('a', count);
+    const std::string input (count, 'a');
     // test<str>(input);
     // test<view>(input);
 }
 }
+
+
 
 namespace osyncstream {
 // https://en.cppreference.com/w/cpp/io/basic_osyncstream
@@ -252,7 +254,7 @@ static void demo()
         assert(ss.str() == "-1.23_____");
     }
     {
-        // When filling up put the value at the right (this is the default normally).
+        // When filling up put the value at the right (this is the default).
         std::stringstream ss;
         ss << std::right << std::setfill('_') << std::setw(10) << -1.23;
         assert(ss.str() == "_____-1.23");

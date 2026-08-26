@@ -17,14 +17,19 @@ Copyright (©) 2021-2026 Teus Benschop.
  */
 
 #include <cassert>
+#include <charconv>
 #include <cmath>
+#include <expected>
 #include <functional>
+#include <iomanip>
 #include <new>
+#include <ranges>
 #include <source_location>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <__ranges/transform_view.h>
 #include "language.h"
 #include "clocking.h"
 
@@ -693,6 +698,7 @@ static void demo()
 
 
 namespace simple_type_traits {
+
 static_assert(std::is_same_v<uint8_t, unsigned char>);
 static_assert(std::is_floating_point_v<decltype(3.f)>);
 static_assert(std::is_unsigned_v<unsigned int>);
@@ -784,6 +790,17 @@ static_assert(std::is_scoped_enum_v<E>);
 //    static_assert(std::reference_constructs_from_temporary_v<const int&, int&&> == false);
 //    static_assert(std::reference_constructs_from_temporary_v<int&&, long&&> == true);
 //    static_assert(std::reference_constructs_from_temporary_v<int&&, long> == true);
+
+// https://en.cppreference.com/w/cpp/types/common_reference.html
+// Determines the common reference type of the types T...,
+// that is, the type to which all the types in T... can be converted or bound.
+static_assert(std::same_as<int&, std::common_reference_t<
+              std::add_lvalue_reference_t<int>,
+              std::add_lvalue_reference_t<int>&,
+              std::add_lvalue_reference_t<int>&&
+              >>);
+
+
 
 static void demo()
 {
@@ -1464,6 +1481,174 @@ static void demo()
 }
 
 
+namespace to_underlying_and_underlying_type_t {
+// https://en.cppreference.com/w/cpp/utility/to_underlying.html
+// Converts an enumeration to its underlying type.
+// Equivalent to: return static_cast<std::underlying_type_t<Enum>>(e);.
+static void demo()
+{
+    enum class EnumClass : unsigned { e };
+    static_assert(std::is_same_v<unsigned, decltype(std::to_underlying(EnumClass::e))>);
+    static_assert(std::is_same_v<unsigned, std::underlying_type_t<EnumClass>>);
+
+    enum class ColorMask : std::uint32_t
+    {
+        red =   0xFF,
+        green = (red   << 8),
+        blue =  (green << 8),
+        alpha = (blue  << 8)
+      };
+    static_assert(std::is_same_v<std::uint32_t, decltype(std::to_underlying(ColorMask::red))>);
+    static_assert(std::is_same_v<std::uint32_t, std::underlying_type_t<ColorMask>>);
+}
+}
+
+
+namespace unreachable_and_fallthrough {
+// https://en.cppreference.com/w/cpp/utility/unreachable.html
+// Invokes undefined behavior at a given point.
+static void demo()
+{
+    enum class EnumClass {a, b, c} ec;
+
+    const auto func = [](const EnumClass input)
+    {
+        switch (input)
+        {
+        using enum EnumClass;
+        case a: [[fallthrough]];
+        case b: [[fallthrough]];
+        case c: return "c";
+        default:
+            std::unreachable(); // Invokes undefined behaviour, perhaps optimize this away.
+        }
+    };
+
+    func(EnumClass::c);
+}
+}
+
+
+namespace monadic_operations_on_optional {
+// Monadic operations (transform, or_else, and and_then)
+// for std::optional (P0798R8) and std::expected (P2505R5)
+static void demo()
+{
+    // and_then
+    // Returns the result of the given function on the contained value if it exists,
+    // or an empty optional otherwise.
+
+    // transform
+    // Returns an optional containing the transformed contained value if it exists,
+    // or an empty optional otherwise.
+
+    // or_else
+    // Returns the optional itself if it contains a value,
+    // or the result of the given function otherwise.
+
+    const std::vector<std::optional<std::string>> v
+    {
+        "1234", "15 foo", "bar", "42", "5000000000", " 5", std::nullopt, "-43"
+    };
+
+    const auto transform_func = [](auto&& o) {
+
+        const auto to_int = [](std::string_view sv) -> std::optional<int>
+        {
+            int r{};
+            auto [ptr, ec]{std::from_chars(sv.data(), sv.data() + sv.size(), r)};
+            if (ec == std::errc())
+                return r;
+            else
+                return std::nullopt;
+        };
+
+        using namespace std::literals;
+
+        return o
+        // if optional is nullopt convert it to optional with "" string
+          .or_else([]{ return std::optional{""s}; })
+        // flatmap from strings to ints (making empty optionals where it fails)
+          .and_then(to_int)
+        // map int to int + 1
+          .transform([](int n) { return n + 1; })
+        // convert back to strings
+          .transform([](int n) { return std::to_string(n); })
+        // replace all empty optionals that were left by
+        // and_then and ignored by transforms with "NaN"
+          .value_or("NaN");
+    };
+
+    const auto output = v | std::ranges::views::transform(transform_func) | std::ranges::to<std::vector<std::string>>();
+
+    const std::vector<std::string> standard  {
+        "1235", "16", "NaN", "43", "NaN", "NaN", "NaN", "-42"
+    };
+    assert (output == standard);
+
+}
+}
+
+
+namespace monadic_operations_on_expected {
+static void demo()
+{
+    const std::vector<std::optional<std::string>> inputs{
+        "1234",
+        "15 foo",
+        "bar",
+        "42",
+        "5000000000",
+        " 5",
+        std::nullopt,
+        "-43"
+    };
+
+    // Instance std::expected<T, E> provides a way to store either of two values.
+    // An instance of std::expected always holds a value:
+    // either the expected value of type T, or the unexpected value of type E.
+    // This vocabulary type requires the header <expected>.
+    // With std::expected you can implement functions that either return a value or an error.
+
+    const auto get_int = [](const auto input) -> std::expected<int, std::string> {
+        try {
+            return std::stoi (input.value_or(""));
+        } catch (const std::exception& exception) {
+            return std::unexpected(exception.what());
+        }
+    };
+
+    // Template std::expected supports monadic operations for convenient function composition.
+    // expected.and_then
+    // Returns the result of the given function call if it exists or an empty std::expected.
+    // expected.transform
+    // Returns a std::expected containing its transformed value or an empty std::expected.
+    // expected.or_else
+    // Returns the std::expected if it contains a value.
+    // Otherwise returns the result of the given function.
+    // expected.transform_error
+    // Returns the std::expected if it contains an expected value.
+    // Otherwise returns a std::expected that contains a transformed unexpected value.
+
+    for (const auto& input : inputs) {
+        // std::cout << std::left << std::setw(12) << std::quoted(input.value_or("nullopt")) << " -> ";
+        const auto result = get_int(input)
+          .transform( [](const int n) { return n + 1; })
+        ;
+        if (result)
+        {
+            // std::cout << result.value();
+        }
+        else
+        {
+            // std::cout << result.error();
+        }
+        // std::cout << std::endl;
+    }
+}
+}
+
+
 void demo() {
     alignment::demo();
     alias_declarations_in_init_statements::demo();
@@ -1499,29 +1684,10 @@ void demo() {
     unnamed_namespace::demo();
     argument_dependent_lookup::demo();
     conditional_operator::demo();
+    to_underlying_and_underlying_type_t::demo();
+    unreachable_and_fallthrough::demo();
+    monadic_operations_on_optional::demo();
+    monadic_operations_on_expected::demo();
 }
 
 }
-
-
-// void* operator new (std::size_t size)
-// {
-//     std::cout << "new size " << size << std::endl;
-//     if (!size)
-//         ++size; // avoid std::malloc(0) which may return nullptr on success
-//
-//     if (void *ptr = std::malloc(size); ptr)
-//     {
-//         std::cout << "new " << ptr << std::endl;
-//         return ptr;
-//
-//     }
-//
-//     throw std::bad_alloc{};
-// }
-
-// void operator delete (void* ptr)
-// {
-//     std::cout << "delete " << ptr << std::endl;
-//     std::free(ptr);
-// }

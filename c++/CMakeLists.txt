@@ -7,36 +7,37 @@ project(cpp)
 set(CMAKE_CXX_STANDARD 26)
 
 add_executable(cpp
-        main.cpp
-        clocking.cpp
-        searching.cpp
-        bounds_limits.cpp
-        counting.cpp
-        latches_barriers.cpp
+	main.cpp
+	clocking.cpp
+	searching.cpp
+	bounds_limits.cpp
+	counting.cpp
+	latches_barriers.cpp
 	concepts.cpp
-        containers.cpp
-        containers.h
-        language.cpp
-        templates.cpp
-        shared_mutex.cpp
-        variables.cpp
-        concurrency.cpp
-        functional.cpp
-        good_coding.cpp
-        expected.cpp
-        text.cpp
-        classes.cpp
-        modules.cpp
-        coroutines.cpp
-        exceptions.cpp
-        transformations.cpp
-        bits.cpp
-        filesystem.cpp
-        linux.cpp
-        unions.cpp
-        mathematics.cpp
-        performance.cpp
-        templates_explicit.cpp
-        design_patterns.cpp
+	containers.cpp
+	containers.h
+	language.cpp
+	templates.cpp
+	shared_mutex.cpp
+	variables.cpp
+	concurrency.cpp
+	functional.cpp
+	good_coding.cpp
+	expected.cpp
+	text.cpp
+	classes.cpp
+	modules.cpp
+	coroutines.cpp
+	exceptions.cpp
+	transformations.cpp
+	bits.cpp
+	filesystem.cpp
+	linux.cpp
+	unions.cpp
+	mathematics.cpp
+	performance.cpp
+	templates_explicit.cpp
+	design_patterns.cpp
+	cpp23.cpp
 
 )

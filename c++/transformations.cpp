@@ -20,7 +20,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <array>
 #include <cassert>
 #include <charconv>
+#include <iomanip>
 #include <iostream>
+#include <list>
 #include <ostream>
 #include <random>
 #include <ranges>
@@ -527,6 +529,305 @@ static void demo()
 }
 
 
+namespace adjacent_view {
+
+// https://en.cppreference.com/w/cpp/ranges/adjacent_view.html
+
+// The std::adjacent_view is a range adaptor that takes a view,
+// and produces a view whose ith element (a “window”) is a std::tuple
+// that holds N references to the elements [i, i + N - 1] of the original view.
+
+static void demo()
+{
+    constexpr std::array v{1, 2, 3, 4, 5, 6};
+
+    // for (int i{}; std::tuple t : v | std::views::adjacent<3>)
+    // {
+    //   auto [t0, t1, t2] = t;
+    //   std::cout << std::format("e = {:<{}}[{} {} {}]", "", 2 * i++, t0, t1, t2) << std::endl;
+    // }
+
+    // Output:
+    //  v = [1 2 3 4 5 6]
+    //  e = [1 2 3]
+    //  e =   [2 3 4]
+    //  e =     [3 4 5]
+    //  e =       [4 5 6]
+}
+}
+
+
+namespace views_as_const {
+static void demo()
+{
+    int x[]{1, 2, 3, 4, 5};
+
+    auto v1 = x | std::views::drop(2);
+    assert(v1.back() == 5);
+    ++v1[0]; // OK, can modify non-const element
+
+    // auto v2 = x | std::views::drop(2) | std::views::as_const;
+    // assert(v2.back() == 5);
+    // ++v2[0]; // Compile-time error, cannot modify const element
+}
+}
+
+
+namespace views_as_rvalue {
+static void demo()
+{
+    const std::vector<std::string> original_words = { "The", "\N{FOX FACE}", "failed", "to", "cheat" };
+
+    std::vector<std::string> old_words = original_words;
+
+    std::vector<std::string> new_words {};
+
+    // Move strings from words into new_words.
+    std::ranges::copy (old_words | std::views::as_rvalue, std::back_inserter(new_words));
+
+    // All the old words are now empty.
+    assert(std::ranges::all_of(old_words, [](const auto& word) { return word.empty(); }));
+
+    // The new words now contain the original words.
+    assert(new_words == original_words);
+}
+}
+
+
+namespace views_cartesian_product {
+static void demo()
+{
+    const auto x = std::array{'A', 'B'};
+    const auto y = std::vector{1, 2, 3};
+    const auto z = std::list<std::string>{"α", "β", "γ", "δ"};
+
+    const auto print = [](std::tuple<char const&, int const&, std::string const&> t, const int pos)
+    {
+        const auto& [a, b, c] = t;
+        std::cout << '(' << a << ' ' << b << ' ' << c << ')' << (pos % 4 ? " " : "\n");
+    };
+
+    // Does not compile on macOS 26.
+    // for (int i{1}; auto const& tuple : std::views::cartesian_product(x, y, z))
+    //     print(tuple, i++);
+
+    // Output:
+    //  (A 1 α) (A 1 β) (A 1 γ) (A 1 δ)
+    //  (A 2 α) (A 2 β) (A 2 γ) (A 2 δ)
+    //  (A 3 α) (A 3 β) (A 3 γ) (A 3 δ)
+    //  (B 1 α) (B 1 β) (B 1 γ) (B 1 δ)
+    //  (B 2 α) (B 2 β) (B 2 γ) (B 2 δ)
+    //  (B 3 α) (B 3 β) (B 3 γ) (B 3 δ)
+}
+}
+
+
+namespace views_chunk_by {
+static void demo()
+{
+    const auto output_chunks = [](auto&& view, const std::string_view separator = ", ") -> std::string
+    {
+        std::ostringstream oss{};
+        for (auto const subrange : view)
+        {
+            oss << '[';
+            for (std::string_view prefix; auto&& elem : subrange)
+                oss << prefix << elem, prefix = separator;
+            oss << "] ";
+        }
+        std::string result = std::move(oss).str();
+        result.pop_back();
+        return result;
+    };
+
+    // How chunk_by works:
+    // It traverses the sequence and starts a new chunk
+    // whenever the binary predicate returns false for two adjacent elements.
+    // So if the predicate returns true, it will stay in the current chunk.
+
+    {
+        std::initializer_list il = {1, 2, 3, 1, 2, 3, 3, 3, 1, 2, 3};
+        auto fn = std::ranges::less{};
+        auto view1 = il | std::views::chunk_by(fn);
+        assert(output_chunks(view1) == "[1, 2, 3] [1, 2, 3] [3] [3] [1, 2, 3]");
+    }
+
+    {
+        std::initializer_list il = {1, 2, 3, 4, 4, 0, 2, 3, 3, 3, 2, 1};
+        auto fn = std::ranges::not_equal_to{};
+        auto view2 = il | std::views::chunk_by(fn);
+        assert(output_chunks(view2) == "[1, 2, 3, 4] [4, 0, 2, 3] [3] [3, 2, 1]");
+    }
+
+    {
+        std::string_view sv = "__cpp_lib_ranges_chunk_by";
+        auto fn = [](auto&& x, auto&& y) { return not(x == '_' or y == '_'); };
+        auto view3 = sv | std::views::chunk_by(fn);
+        assert (output_chunks(view3, "") == "[_] [_] [cpp] [_] [lib] [_] [ranges] [_] [chunk] [_] [by]");
+    }
+
+    {
+        std::string_view sv = "\u007a\u00df\u6c34\u{1f34c}"; // "zß水🍌"
+        auto fn = [](auto, auto ß) { return 128 == ((128 + 64) & ß); };
+        auto view4 = sv | std::views::chunk_by(fn);
+        assert (output_chunks(view4, "") == "[z] [ß] [水] [🍌]");
+    }
+}
+}
+
+
+namespace views_chunk {
+static void demo()
+{
+    [[maybe_unused]] auto print_subrange = [](std::ranges::viewable_range auto&& r)
+    {
+        std::cout << '[';
+        for (int pos{}; auto elem : r)
+            std::cout << (pos++ ? " " : "") << elem;
+        std::cout << "] ";
+    };
+
+    [[maybe_unused]] const auto v = {1, 2, 3, 4, 5, 6};
+
+    // Does not yet compile on macOS 26.
+    for (const unsigned width : std::views::iota(1U, 2U + v.size()))
+    {
+      // auto const chunks = v | std::views::chunk(width);
+      // std::cout << "chunk(" << width << "): ";
+      // std::ranges::for_each(chunks, print_subrange);
+      // std::cout << std::endl;
+    }
+
+    // Output:
+    //  chunk(1): [1] [2] [3] [4] [5] [6]
+    //  chunk(2): [1 2] [3 4] [5 6]
+    //  chunk(3): [1 2 3] [4 5 6]
+    //  chunk(4): [1 2 3 4] [5 6]
+    //  chunk(5): [1 2 3 4 5] [6]
+    //  chunk(6): [1 2 3 4 5 6]
+    //  chunk(7): [1 2 3 4 5 6]
+}
+}
+
+namespace views_enumerate {
+static void demo()
+{
+    // Does not yet compile on macOS 26.
+    // std::vector days {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    // for(const auto & [index, value] : std::views::enumerate(days)) {
+    //   std::cout << index << " " << value << std::endl;
+    // }
+
+    // Output:
+    //  0 Sun
+    //  1 Mon
+    //  2 Tue
+    //  3 Wed
+    //  4 Thu
+    //  5 Fri
+    //  6 Sat
+}
+}
+
+
+namespace views_join_with {
+static void demo()
+{
+    using namespace std::literals;
+    const std::vector input {"This"sv, "is"sv, "a"sv, "test"sv};
+    const std::vector output = input | std::views::join_with(' ') | std::ranges::to<std::vector<char>>();
+    const std::vector standard = {'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't'};
+    assert (output == standard);
+}
+}
+
+
+namespace views_repeat {
+static void demo()
+{
+    using namespace std::literals;
+
+    // Bounded overload.
+    {
+        std::ostringstream oss{};
+        for (auto s : std::views::repeat("a"sv, 3))
+            oss << s;
+        assert(oss.str() == "aaa");
+    }
+
+    // Unbounded overload.
+    {
+        std::ostringstream oss{};
+        for (auto s : std::views::repeat("a"sv) | std::views::take(3))
+            oss << s;
+        assert(oss.str() == "aaa");
+    }
+}
+}
+
+
+namespace views_slide {
+static void demo()
+{
+    [[maybe_unused]] const auto print_subrange = [](std::ranges::viewable_range auto&& r)
+    {
+        std::cout << '[';
+        for (char space[]{0,0}; auto elem : r)
+            std::cout << space << elem, *space = ' ';
+        std::cout << "] ";
+    };
+
+    const auto v = {1, 2, 3, 4, 5, 6};
+
+    // Does not yet compile on macOS 26.
+    // std::cout << "All sliding windows of width:" << std::endl;
+    // for (const unsigned width : std::views::iota(1U, 1U + v.size()))
+    // {
+    //     const auto windows = v | std::views::slide(width);
+    //     std::cout << "W = " << width << ": ";
+    //     std::ranges::for_each(windows, print_subrange);
+    //     std::cout << std::endl;
+    // }
+
+    // Output:
+    //  All sliding windows of width W:
+    //  W = 1: [1] [2] [3] [4] [5] [6]
+    //  W = 2: [1 2] [2 3] [3 4] [4 5] [5 6]
+    //  W = 3: [1 2 3] [2 3 4] [3 4 5] [4 5 6]
+    //  W = 4: [1 2 3 4] [2 3 4 5] [3 4 5 6]
+    //  W = 5: [1 2 3 4 5] [2 3 4 5 6]
+    //  W = 6: [1 2 3 4 5 6]
+}
+}
+
+
+namespace views_stride {
+static void demo()
+{
+    using namespace std::literals;
+
+    const auto print = [](std::ranges::viewable_range auto&& v, std::string_view separator = " ")
+    {
+        for (auto const& x : v)
+            std::cout << x << separator;
+        std::cout << std::endl;
+    };
+
+    print(std::views::iota(1, 13));
+    // 1 2 3 4 5 6 7 8 9 10 11 12
+
+    //  print(std::views::iota(1, 13) | std::views::stride(3));
+    // 1 4 7 10
+
+    //  print(std::views::iota(1, 13) | std::views::stride(3) | std::views::reverse);
+    // 10 7 4 1
+
+    //  print(std::views::iota(1, 13) | std::views::reverse | std::views::stride(3));
+    // 12 9 6 3
+}
+}
+
+
 void demo()
 {
     accumulate::demo();
@@ -541,5 +842,16 @@ void demo()
     reduce::demo();
     remove_erase::demo();
     set_union_difference_intersection::demo();
+    adjacent_view::demo();
+    views_as_const::demo();
+    views_as_rvalue::demo();
+    views_cartesian_product::demo();
+    views_chunk_by::demo();
+    views_chunk::demo();
+    views_enumerate::demo();
+    views_join_with::demo();
+    views_repeat::demo();
+    views_slide::demo();
+    views_stride::demo();
 }
 }

@@ -23,6 +23,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <string>
 
 
+
 namespace exceptions {
 
 
@@ -221,11 +222,22 @@ static void demo()
 }
 }
 
+namespace stack_trace_library {
+// https://en.cppreference.com/w/cpp/header/stacktrace.html
+// https://www.robopenguins.com/backtraces/
+static void demo()
+{
+    // MacOS 26.5.2 does not yet have the headers for this library.
+}
+}
+
+
 void demo ()
 {
     exception_hierarchy_and_constructor_parameter_pack::demo();
     uncaught_exceptions::demo();
     throw_during_construction_or_destruction::demo();
+    stack_trace_library::demo();
 }
 
 }
