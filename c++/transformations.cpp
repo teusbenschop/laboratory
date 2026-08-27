@@ -26,6 +26,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <ostream>
 #include <random>
 #include <ranges>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -813,7 +814,7 @@ static void demo()
         std::cout << std::endl;
     };
 
-    print(std::views::iota(1, 13));
+    //print(std::views::iota(1, 13));
     // 1 2 3 4 5 6 7 8 9 10 11 12
 
     //  print(std::views::iota(1, 13) | std::views::stride(3));
@@ -827,6 +828,155 @@ static void demo()
 }
 }
 
+
+namespace views_zip {
+static void demo()
+{
+    const auto accumulate = [] (auto const& range) -> std::string {
+        std::ostringstream oss;
+        for (auto&& element : range)
+            oss << element << ' ';
+        std::string result(std::move(oss).str());
+        result.pop_back();
+        return std::move(result);
+    };
+
+    std::vector vector {1, 2, 3, 4};
+    std::list<std::string> list {"α", "β", "γ", "δ", "ε"};
+    std::array array {'A', 'B', 'C', 'D', 'E', 'F'};
+
+    for (std::tuple<int&, std::string&, char&> element : std::views::zip(vector, list, array))
+    {
+        static int offset{0};
+        const int i = std::get<0>(element);
+        const std::string s = std::get<1>(element);
+        const char c = std::get<2>(element);
+        switch (++offset)
+        {
+        case 1:
+            assert (i == 1);
+            assert (s == "α");
+            assert (c == 'A');
+            break;
+        case 2:
+            assert (i == 2);
+            assert (s == "β");
+            assert (c == 'B');
+            break;
+        case 3:
+            assert (i == 3);
+            assert (s == "γ");
+            assert (c == 'C');
+            break;
+        case 4:
+            assert (i == 4);
+            assert (s == "δ");
+            assert (c == 'D');
+            break;
+            default: ;
+        }
+        // Modify the element of the array: Make it a small letter.
+        std::get<char&>(element) += ('a' - 'A');
+    }
+
+    assert(accumulate(array) == "a b c d E F");
+}
+}
+
+
+namespace views_zip_transform {
+static void demo()
+{
+    const auto accumulate = [](auto&& r) -> std::string {
+        std::ostringstream oss{};
+        for (char o[]{0,' ',0}; auto const& e : r)
+            oss << o << e, *o = ',';
+        oss << "}";
+        std::string result = std::move(oss).str();
+        result.pop_back();
+        std::cout << result << std::endl;
+        return result;
+    };
+
+    auto v1 = std::vector<float>{1, 2, 3};
+    auto v2 = std::list<short>{1, 2, 3, 4};
+    auto v3 = std::to_array({1, 2, 3, 4, 5});
+    // accumulate(v1);
+    // accumulate(v2);
+    // accumulate(v3);
+
+    [[maybe_unused]] const auto add = [](auto a, auto b, auto c) { return a + b + c; };
+    //auto sum = std::views::zip_transform(add, v1, v2, v3);
+    //print("sum: ", sum);
+
+    // Output:
+    // v1:  {1, 2, 3}
+    // v2:  {1, 2, 3, 4}
+    // v3:  {1, 2, 3, 4, 5}
+    // sum: {3, 6, 9}
+}
+}
+
+
+namespace range_adaptor_closure {
+// https://en.cppreference.com/w/cpp/ranges/range_adaptor_closure.html
+// A Range Adaptor Closure Object is a specialized, unary function object,
+// designed to enable the pipe operator ( | ) syntax.
+
+static void demo()
+{
+    // Define Slice as a range adaptor closure.
+    struct Slice : std::ranges::range_adaptor_closure<Slice>
+    {
+        std::size_t start {0};
+        std::size_t end {std::string_view::npos};
+
+        constexpr std::string_view operator()(const std::string_view sv) const
+        {
+            return sv.substr(start, end - start);
+        }
+    };
+
+    constexpr std::string_view str = "0123456789";
+
+    constexpr auto start {1};
+    constexpr auto width {5};
+    constexpr Slice slice {.start = start, .end = start + width};
+
+    // Use Slice as a normal function object.
+    constexpr auto sv1 = slice(str);
+    static_assert(sv1 == "12345");
+
+    // Use Slice as a range adaptor closure object.
+    constexpr auto sv2 = str | slice;
+    static_assert(sv2 == "12345");
+
+    // Range adaptor closures can be composed.
+    constexpr auto slice_and_drop = slice | std::views::drop(2);
+    static_assert((str | slice_and_drop) == "345");
+}
+}
+
+
+namespace ranges_to {
+// Convert a range to a container like a vector, list, and so on.
+
+static void demo()
+{
+    // Via closure.
+    const std::vector standard = {1, 2, 3, 4};
+    auto result = std::views::iota(1, 5) | std::ranges::to<std::vector>();
+    assert (result == standard);
+    static_assert(std::same_as<decltype(result), std::vector<int>>);
+
+    // Direct init.
+    // Argument type is convertible to result value type.
+    constexpr char array[]{'a', 'b', '\0', 'c'};
+    constexpr auto str_to = std::ranges::to<std::string>(array);
+    static_assert(str_to == "ab");
+    static_assert(str_to.size() == 2);
+}
+}
 
 void demo()
 {
@@ -853,5 +1003,9 @@ void demo()
     views_repeat::demo();
     views_slide::demo();
     views_stride::demo();
+    views_zip::demo();
+    views_zip_transform::demo();
+    range_adaptor_closure::demo();
+    ranges_to::demo();
 }
 }

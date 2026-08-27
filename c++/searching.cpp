@@ -21,6 +21,8 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <array>
 #include <cassert>
 #include <complex>
+#include <forward_list>
+#include <iomanip>
 #include <iostream>
 #include <list>
 #include <numeric>
@@ -421,6 +423,133 @@ static void demo()
 }
 
 
+namespace ranges_find_last {
+
+static void demo()
+{
+    constexpr static auto v = {1, 2, 3, 1, 2, 3, 1, 2};
+
+    {
+        constexpr auto i1 = std::ranges::find_last(v.begin(), v.end(), 3);
+        constexpr auto i2 = std::ranges::find_last(v, 3);
+        static_assert(std::ranges::distance(v.begin(), i1.begin()) == 5);
+        static_assert(std::ranges::distance(v.begin(), i2.begin()) == 5);
+    }
+    {
+        constexpr auto i1 = std::ranges::find_last(v.begin(), v.end(), -3);
+        constexpr auto i2 = std::ranges::find_last(v, -3);
+        static_assert(i1.begin() == v.end());
+        static_assert(i2.begin() == v.end());
+    }
+
+    constexpr auto abs = [](const int x) { return x < 0 ? -x : x; };
+
+    {
+        constexpr auto pred = [](const int x) { return x == 3; };
+        constexpr auto i1 = std::ranges::find_last_if(v.begin(), v.end(), pred, abs);
+        constexpr auto i2 = std::ranges::find_last_if(v, pred, abs);
+        static_assert(std::ranges::distance(v.begin(), i1.begin()) == 5);
+        static_assert(std::ranges::distance(v.begin(), i2.begin()) == 5);
+    }
+    {
+        constexpr auto pred = [](const int x) { return x == -3; };
+        constexpr auto i1 = std::ranges::find_last_if(v.begin(), v.end(), pred, abs);
+        constexpr auto i2 = std::ranges::find_last_if(v, pred, abs);
+        static_assert(i1.begin() == v.end());
+        static_assert(i2.begin() == v.end());
+    }
+
+    {
+        constexpr auto pred = [](const int x) { return x == 1 or x == 2; };
+        constexpr auto i1 = std::ranges::find_last_if_not(v.begin(), v.end(), pred, abs);
+        constexpr auto i2 = std::ranges::find_last_if_not(v, pred, abs);
+        static_assert(std::ranges::distance(v.begin(), i1.begin()) == 5);
+        static_assert(std::ranges::distance(v.begin(), i2.begin()) == 5);
+    }
+    {
+        constexpr auto pred = [](const int x) { return x == 1 or x == 2 or x == 3; };
+        constexpr auto i1 = std::ranges::find_last_if_not(v.begin(), v.end(), pred, abs);
+        constexpr auto i2 = std::ranges::find_last_if_not(v, pred, abs);
+        static_assert(i1.begin() == v.end());
+        static_assert(i2.begin() == v.end());
+    }
+
+    {
+        using P = std::pair<std::string_view, int>;
+        const std::forward_list<P> list{
+            {"one", 1}, {"two", 2}, {"three", 3},
+            {"one", 4}, {"two", 5}, {"three", 6},
+        };
+        [[maybe_unused]] auto cmp_one = [](const std::string_view& s) { return s == "one"; };
+
+        // Find last elements that satisfy the comparator, and projecting pair::first
+        const auto subrange = std::ranges::find_last_if(list, cmp_one, &P::first);
+
+        // The found element and the tail after it.
+        // for (auto&& e : subrange)
+        //     std::cout << '{' << std::quoted(e.first) << ", " << e.second << "} ";
+        // Output:
+        //  {"one", 4} {"two", 5} {"three", 6}
+
+        const auto i3 = std::ranges::find_last(list, P{"three", 3});
+        assert(i3.begin()->first == "three" && i3.begin()->second == 3);
+    }
+}
+}
+
+
+namespace std_identify {
+// The std::identity is a standard function object introduced in C++20
+// that acts as the mathematical identity function,
+// meaning its function call operator returns its argument completely unchanged.
+
+struct Pair
+{
+    int n;
+    std::string s;
+    friend std::ostream& operator<<(std::ostream& os, const Pair& p) {
+        return os << '{' << p.n << ", " << p.s << '}';
+    }
+};
+
+// Can make projected (modified) elements of a range visible.
+template<std::ranges::input_range R, typename Projection = std::identity> //<- Notice the default projection.
+static std::string make_visible(std::string_view const rem, R&& range, Projection projection = {})
+{
+    std::ostringstream oss{};
+    oss << '{';
+    const auto func = [&oss, O = 0](const auto& o) mutable {
+        oss << (O++ ? ", " : "") << o;
+    };
+    std::ranges::for_each(range, func, projection);
+    oss << "}";
+    std::string result = std::move(oss).str();
+    return result;
+}
+
+
+static void demo()
+{
+    const auto v = {
+        Pair {.n = 1, .s = "one"},
+             {.n = 2, .s = "two"},
+             {.n = 3, .s = "three"}
+    };
+    // Make visible using std::identity as a projection.
+    assert (make_visible("Print : ", v) == "{{1, one}, {2, two}, {3, three}}");
+    // Project the Pair::n.
+    assert (make_visible("", v, &Pair::n) == "{1, 2, 3}");
+    // Project the Pair::s.
+    assert (make_visible("", v, &Pair::s) == "{one, two, three}");
+    // Print using custom closure as a projection.
+    const auto custom_closure = [](Pair const& p) {
+        return std::to_string(p.n) + ':' + p.s;
+    };
+    assert (make_visible("", v, custom_closure) == "{1:one, 2:two, 3:three}");
+}
+}
+
+
 void demo() {
     binary_search::demo();
     any_of_all_of_none_of::demo();
@@ -434,5 +563,7 @@ void demo() {
     find_if::demo();
     find_common_divisor_multiple::demo();
     mismatch::demo();
+    ranges_find_last::demo();
+    std_identify::demo();
 }
 }
