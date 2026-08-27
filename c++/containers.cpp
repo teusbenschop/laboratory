@@ -409,6 +409,29 @@ static void demo()
 }
 
 
+namespace flat_set {
+// The flat set is a container adaptor
+// that gives the functionality of an associative container
+// that stores a sorted set of unique objects of type Key.
+// Sorting is done using the key comparison function Compare.
+static void demo() {
+    // Does not yet compile on macOS 26.
+}
+}
+
+
+namespace flat_map {
+// The flat map is a container adaptor
+// that gives the functionality of an associative container
+// that contains key-value pairs with unique keys.
+// Keys are sorted by using the comparison function Compare.
+
+static void demo() {
+    // Does not yet compile on macOS 26.
+}
+}
+
+
 namespace iterators {
 
 static void demo()
@@ -834,6 +857,40 @@ static void demo()
 }
 
 
+namespace mdspan {
+// A non-owning multidimensional array reference.
+// The std::mdspan is a multidimensional array view
+// that maps a multidimensional index to an element of the array.
+// The mapping and element access policies are configurable,
+// and the underlying array need not be contiguous or even exist in memory at all.
+
+static void demo() {
+
+    std::vector v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+
+    // View data as contiguous memory representing 2 rows of 6 integers each.
+    // auto ms2 = std::mdspan(v.data(), 2, 6);
+
+    // View the same data as a 3D array 2 x 3 x 2.
+    // auto ms3 = std::mdspan(v.data(), 2, 3, 2);
+
+    // Write data using 2D view.
+    // for (std::size_t i = 0; i != ms2.extent(0); i++)
+    //     for (std::size_t j = 0; j != ms2.extent(1); j++)
+    //         ms2[i, j] = i * 1000 + j;
+
+    // Read back using 3D view.
+    // for (std::size_t i = 0; i != ms3.extent(0); i++) {
+    //     std::println("slice @ i = {}", i);
+    //     for (std::size_t j = 0; j != ms3.extent(1); j++) {
+    //         for (std::size_t k = 0; k != ms3.extent(2); k++)
+    //             std::print("{} ", ms3[i, j, k]);
+    //         std::println("");
+    //     }
+    // }
+}
+}
+
 namespace performance {
 static void demo()
 {
@@ -1018,6 +1075,8 @@ void demo()
     arrays::demo();
     maps::demo();
     set::demo();
+    flat_set::demo();
+    flat_map::demo();
     iterators::demo();
     container_member_types::demo();
     sizes::demo();
@@ -1033,6 +1092,7 @@ void demo()
     stacks::demo();
     priority_queues::demo();
     span::demo();
+    mdspan::demo();
     performance::demo();
     inserter::demo();
     extraction::demo();

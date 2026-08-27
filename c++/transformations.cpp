@@ -20,6 +20,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <array>
 #include <cassert>
 #include <charconv>
+#include <complex>
 #include <iomanip>
 #include <iostream>
 #include <list>
@@ -978,6 +979,136 @@ static void demo()
 }
 }
 
+
+namespace std_identity {
+// The std::identity is a standard function object introduced in C++20
+// that acts as the mathematical identity function,
+// meaning its function call operator returns its argument completely unchanged.
+
+struct Pair
+{
+    int n;
+    std::string s;
+    friend std::ostream& operator<<(std::ostream& os, const Pair& p) {
+        return os << '{' << p.n << ", " << p.s << '}';
+    }
+};
+
+// Converts projected (modified) elements of a range to a string.
+template<std::ranges::input_range Range, typename Projection = std::identity> //<- Notice the default projection.
+static std::string range_to_string(Range &&range, Projection projection = {})
+{
+    std::ostringstream oss{};
+    oss << '{';
+    const auto func = [&oss, offset = 0](auto&& item) mutable {
+        oss << (offset++ ? ", " : "") << std::forward<decltype(item)>(item);
+    };
+    std::ranges::for_each(range, func, projection);
+    oss << "}";
+    std::string result = std::move(oss).str();
+    return result;
+}
+
+
+static void demo()
+{
+    const auto v = {
+        Pair {.n = 1, .s = "one"},
+             {.n = 2, .s = "two"},
+             {.n = 3, .s = "three"}
+    };
+    // Make visible using std::identity as a projection.
+    assert (range_to_string(v) == "{{1, one}, {2, two}, {3, three}}");
+    // Project the Pair::n.
+    assert (range_to_string(v, &Pair::n) == "{1, 2, 3}");
+    // Project the Pair::s.
+    assert (range_to_string(v, &Pair::s) == "{one, two, three}");
+    // Print using custom closure as a projection.
+    const auto custom_closure = [](Pair const& p) {
+        return std::to_string(p.n) + ':' + p.s;
+    };
+    assert (range_to_string(v, custom_closure) == "{1:one, 2:two, 3:three}");
+}
+}
+
+
+namespace ranges_shift {
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+    for (auto&& s : vec)
+        os << s;
+    return os;
+}
+
+std::string to_string(auto&& t) {
+    std::ostringstream oss{};
+    oss << t;
+    return std::move(oss).str();
+}
+
+static void demo()
+{
+    std::vector<int>         vi{ 1,   2,   3,   4,   5,   6,   7};
+    std::vector<std::string> vs{"A", "B", "C", "D", "E", "F", "G"};
+    assert(to_string(vi) == "1234567");
+    assert(to_string(vs) == "ABCDEFG");
+
+    // std::ranges::shift_left(b, 3);
+    // std::ranges::shift_left(c, 3);
+
+    //  std::ranges::shift_right(b, 2);
+    //  std::ranges::shift_right(c, 2);
+
+    // has no effect: n >= last - first
+    //  std::ranges::shift_left(b, 8);
+    //  std::ranges::shift_left(c, 8);
+
+    //  std::ranges::shift_left(a, -3); // UB
+    // std::cout << vi << " - " << vs << std::endl;
+}
+}
+
+
+namespace ranges_fold {
+static void demo() {
+    const std::vector v{1, 3, 7};
+
+    {
+        const int sum = std::ranges::fold_left(v, 0, std::plus<int>());
+        assert (sum == 11);
+        const int product = std::ranges::fold_left(v, 1, std::multiplies<int>());
+        assert (product == 21);
+    }
+
+    {
+        // Get the product of the std::pair::second of all pairs in the vector:
+        std::vector<std::pair<char, float>> data {{'A', 2.0f}, {'B', 3.0f}, {'C', 3.5f}};
+        const float product_second = std::ranges::fold_left(data | std::ranges::views::values, 2.0f, std::multiplies<>());
+        assert (product_second == 42.0f);
+    }
+
+    {
+        // Use a program, a function object (lambda-expression):
+        const auto program = [](std::string s, const int x) {
+            return std::move(s) + ':' + std::to_string(x);
+        };
+        const std::string str = std::ranges::fold_left(v, "A", program);
+        assert (str == "A:1:3:7");
+    }
+
+    {
+        using CD = std::complex<float>;
+        const std::vector<CD> nums = {{1.0f, 1.0f}, {2.0f, 0.0f}, {3.0f, 0.0f}};
+        const auto product = std::ranges::fold_left(nums, CD{7, 0}, std::multiplies{});
+        constexpr CD standard {42.0f, 42.0f};
+        assert(product == standard);
+    }
+}
+}
+
+
+
 void demo()
 {
     accumulate::demo();
@@ -1007,5 +1138,8 @@ void demo()
     views_zip_transform::demo();
     range_adaptor_closure::demo();
     ranges_to::demo();
+    std_identity::demo();
+    ranges_shift::demo();
+    ranges_fold::demo();
 }
 }

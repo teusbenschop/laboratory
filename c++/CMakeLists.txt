@@ -38,6 +38,5 @@ add_executable(cpp
 	performance.cpp
 	templates_explicit.cpp
 	design_patterns.cpp
-	cpp23.cpp
 
 )

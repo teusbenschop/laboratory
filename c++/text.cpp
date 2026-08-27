@@ -18,6 +18,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 #include <cassert>
+#include <filesystem>
 #include <format>
 #include <iomanip>
 #include <numbers>
@@ -445,6 +446,28 @@ static void demo()
 }
 
 
+namespace printing {
+static void demo() {
+
+    {
+        // Normally print to stdout, can print to other output stream too.
+        std::ostringstream oss;
+        std::print(oss, "{2} {1}{0}!", 23, "C++", "Hello");  // overload (1)
+        assert(oss.str() == "Hello C++23!");
+    }
+
+    {
+        const auto tmp{std::filesystem::temp_directory_path() / "test.txt"};
+        if (std::FILE* stream{std::fopen(tmp.c_str(), "w")})
+        {
+            std::println(stream, "File: {}", tmp.string()); // overload (2)
+            std::fclose(stream);
+        }
+    }
+}
+}
+
+
 void demo() {
     escape_sequences::demo();
     formatting_library::demo();
@@ -459,6 +482,7 @@ void demo() {
     user_defined_literals::demo();
     string_operator_square_brackets_versus_dot_at::demo();
     logging::demo();
+    printing::demo();
 }
 
 

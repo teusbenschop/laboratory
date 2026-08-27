@@ -498,56 +498,7 @@ static void demo()
 }
 
 
-namespace std_identify {
-// The std::identity is a standard function object introduced in C++20
-// that acts as the mathematical identity function,
-// meaning its function call operator returns its argument completely unchanged.
 
-struct Pair
-{
-    int n;
-    std::string s;
-    friend std::ostream& operator<<(std::ostream& os, const Pair& p) {
-        return os << '{' << p.n << ", " << p.s << '}';
-    }
-};
-
-// Can make projected (modified) elements of a range visible.
-template<std::ranges::input_range R, typename Projection = std::identity> //<- Notice the default projection.
-static std::string make_visible(std::string_view const rem, R&& range, Projection projection = {})
-{
-    std::ostringstream oss{};
-    oss << '{';
-    const auto func = [&oss, O = 0](const auto& o) mutable {
-        oss << (O++ ? ", " : "") << o;
-    };
-    std::ranges::for_each(range, func, projection);
-    oss << "}";
-    std::string result = std::move(oss).str();
-    return result;
-}
-
-
-static void demo()
-{
-    const auto v = {
-        Pair {.n = 1, .s = "one"},
-             {.n = 2, .s = "two"},
-             {.n = 3, .s = "three"}
-    };
-    // Make visible using std::identity as a projection.
-    assert (make_visible("Print : ", v) == "{{1, one}, {2, two}, {3, three}}");
-    // Project the Pair::n.
-    assert (make_visible("", v, &Pair::n) == "{1, 2, 3}");
-    // Project the Pair::s.
-    assert (make_visible("", v, &Pair::s) == "{one, two, three}");
-    // Print using custom closure as a projection.
-    const auto custom_closure = [](Pair const& p) {
-        return std::to_string(p.n) + ':' + p.s;
-    };
-    assert (make_visible("", v, custom_closure) == "{1:one, 2:two, 3:three}");
-}
-}
 
 
 void demo() {
@@ -564,6 +515,5 @@ void demo() {
     find_common_divisor_multiple::demo();
     mismatch::demo();
     ranges_find_last::demo();
-    std_identify::demo();
 }
 }
