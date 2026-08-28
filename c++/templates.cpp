@@ -232,25 +232,25 @@ namespace template_specialization {
 // Generic class template.
 template<typename T, typename U>
 struct Struct {
-    constexpr Struct( T t, U u) : m_t(t), m_u(u) {}
-    T m_t;
-    U m_u;
+    constexpr Struct(T t, U u) : t(t), u(u) {}
+    T t;
+    U u;
 };
 
 // Partial class template specialisation.
 template<typename T>
 struct Struct<T, int> {
-    constexpr Struct( T t, const int u) : m_t(t), m_u(u * 2) {}
-    T   m_t;
-    int m_u;
+    constexpr Struct( T t, const int u) : t(t), u(u * 2) {}
+    T t;
+    int u;
 };
 
 // Full class template specialisation.
 template<>
 struct Struct<std::string, float> {
-    constexpr Struct( std::string t, const float u) : m_t(std::move(t)), m_u(u * 3) {}
-    std::string m_t {};
-    float       m_u {};
+    constexpr Struct( std::string s, const float f) : s(std::move(s)), f(f * 3) {}
+    std::string s;
+    float f;
 };
 
 // Generic function template.
@@ -260,9 +260,9 @@ static std::pair<T,U> process(T t, U u)
     return {t, u};
 }
 
-// Partial function template specialisation.
+// Partial function template specialization.
 // template<typename T>
-// process<T, int>(T t, int u) { }
+// std::pair<T, int> process<T, int>(T t, int u) { }
 // error: function template partial specialization is not allowed
 
 // Solution: use function overloading as alternative.
@@ -272,7 +272,7 @@ static std::pair<T,int> process(T t, int u)
     return {++t, ++u};
 }
 
-// Full template function specialisation.
+// Full template function specialization.
 template <>
 std::pair<std::string, std::string> process<std::string, std::string>(std::string t, std::string u)
 {
@@ -283,16 +283,16 @@ std::pair<std::string, std::string> process<std::string, std::string>(std::strin
 static void demo()
 {
     // Generic class template.
-    constexpr Struct<int, unsigned int> storage1(10, 10);
-    assert(storage1.m_t == 10 and storage1.m_u == 10);
+    constexpr Struct<int, unsigned> storage1(10, 10);
+    assert(storage1.t == 10 and storage1.u == 10);
 
     // Partially specialized class template.
-    const Struct<std::string, int> storage("partial", 50);
-    assert(storage.m_t == "partial" and storage.m_u == 100);
+    const Struct<std::string, int> storage2("partial", 50);
+    assert(storage2.t == "partial" and storage2.u == 100);
 
     // Fully specialized class template.
     const Struct<std::string, float> storage3("full", 5.0f);
-    assert(storage3.m_t == "full" and storage3.m_u == 15.0f);
+    assert(storage3.s == "full" and storage3.f == 15.0f);
 
     // Generic function template.
     const auto result1 = process<unsigned, unsigned>(1u, 2u);
@@ -302,7 +302,7 @@ static void demo()
     const auto result2 = process<int>(5, 10);
     assert(result2.first == 6 and result2.second == 11);
 
-    // Fully specialised function template.
+    // Fully specialized function template.
     const auto result3 = process<std::string, std::string>("1", "2");
     assert(result3.first == "1t" and result3.second == "2u");
 }
@@ -356,15 +356,15 @@ public:
     // Constructor for a given temperature unit using a float.
     constexpr explicit Temperature(const decltype(m_value) value) noexcept : m_value(value) {};
 
-    // Function to get/set the value
+    // Function to get/set the value.
     [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; };
     constexpr void value(const decltype(m_value) value) noexcept { m_value = value; };
 
-    // Operator to get the value: Supports static cast.
+    // Call operator to get the value. Supports static cast.
     constexpr explicit operator decltype(m_value) () const noexcept { return m_value; };
 
     // Automatic comparison operators.
-    auto operator <=> (const Temperature&) const noexcept = default;
+    constexpr auto operator <=> (const Temperature&) const noexcept = default;
 
     // Copy constructor template to create this unit from another unit.
     template <temperature_unit UU>
@@ -377,21 +377,21 @@ public:
     }
 };
 
-constexpr Temperature<Celsius> celsius100 (100);
+constexpr Temperature<Celsius> celsius100 {100};
 static_assert(celsius100.value() == 100);
-constexpr Temperature<Kelvin> kelvin373 = celsius100;
+constexpr Temperature<Kelvin> kelvin373 {celsius100};
 static_assert(kelvin373.value() == 373.5);
 
-constexpr Temperature<Kelvin> kelvin100(100);
+constexpr Temperature<Kelvin> kelvin100 {100};
 static_assert(kelvin100.value() == 100);
-constexpr Temperature<Celsius> celsius173 = kelvin100;
-static_assert(celsius173.value() == -173.5);
+constexpr Temperature<Celsius> celsiusm173 {kelvin100};
+static_assert(celsiusm173.value() == -173.5);
 
-constexpr Temperature<Celsius> celsius150 (150);
+constexpr Temperature<Celsius> celsius150 {150};
 static_assert(celsius150.value() == 150);
-constexpr Temperature<Celsius> celsius2 = celsius150;
-static_assert(celsius2.value() == 150);
-static_assert(celsius150 == celsius2);
+constexpr Temperature<Celsius> celsius150_2 {celsius150};
+static_assert(celsius150_2.value() == 150);
+static_assert(celsius150 == celsius150_2);
 
 
 static void demo()
@@ -411,26 +411,28 @@ struct Kelvin;
 struct Celsius
 {
     float value {};
-    constexpr operator Kelvin() const;
+    constexpr operator Kelvin() const noexcept;
 };
 
 struct Kelvin
 {
     float value {};
-    constexpr operator Celsius() const;
+    constexpr operator Celsius() const noexcept;
 };
 
-constexpr Celsius::operator Kelvin() const { return Kelvin (value + 273.5f); }
-constexpr Kelvin::operator Celsius() const { return Celsius(value - 273.5f); }
+constexpr Celsius::operator Kelvin() const noexcept { return Kelvin (value + 273.5f); }
+constexpr Kelvin::operator Celsius() const noexcept { return Celsius(value - 273.5f); }
 
-static constexpr float get_kelvin  (const Kelvin  kelvin ) { return kelvin.value; }
+// Testing functions for automatic unit conversion.
+static constexpr float get_kelvin (const Kelvin kelvin) { return kelvin.value; }
 static constexpr float get_celsius (const Celsius celsius) { return celsius.value; }
 
-constexpr Kelvin _400kelvin {400};
-static_assert(get_kelvin(_400kelvin) == 400.0f);
-constexpr Celsius _100celsius {100};
-static_assert(get_kelvin(_100celsius) == 373.5f);
-static_assert(get_celsius(_400kelvin) == 126.5f);
+constexpr Kelvin kelvin400 {400};
+constexpr Celsius celsius100 {100};
+static_assert(get_kelvin(kelvin400) == 400.0f);
+static_assert(get_celsius(kelvin400) == 126.5f);
+static_assert(get_kelvin(celsius100) == 373.5f);
+static_assert(get_celsius(celsius100) == 100.0f);
 
 static void demo()
 {
@@ -438,8 +440,6 @@ static void demo()
 }
 
 namespace meta_programming_recursive_calculation {
-// What is template metaprogramming?
-// It means that the compiler, using templates, calculates values at compile time.
 // Here is an example of recursion to let the compiler calculate values.
 
 // A factorial of, say, 4 means: multiply all numbers from 4 down to 1.
@@ -468,6 +468,15 @@ static_assert(Factorial<4>::value == 24);
 static_assert(factorial(4) == 24);
 static_assert(Factorial<6>::value == 720);
 static_assert(factorial(6) == 720);
+
+// Convenience function to skip "::value":
+template <int n>
+consteval int factorial_v () {
+    return Factorial<n>::value;
+}
+static_assert(factorial_v<1>() == 1);
+static_assert(factorial_v<4>() == 24);
+
 
 
 // Another example of recursive template calls.
@@ -520,27 +529,28 @@ static void demo()
 
 
 namespace variadic_minimum {
-// Calculate minimum of values through variadic template.
+// Calculate minimum of values through variadic function templates.
 
-// Template for one variable, stops recursion.
-template <typename T>
-static T min (const T value)
+// Function template for one variable, stops recursion.
+template <typename Value>
+consteval Value min (const Value value)
 {
     return value;
 }
 
-// Template for recursion for more than one variable.
-template <typename T, typename ...Args>
-static T min (const T value, const Args... args)
+// Variadic function template for recursion for more than one variable.
+template <typename Value, typename ...Values>
+consteval Value min (const Value value, const Values... values)
 {
-    const T rest_min = min(args...);
+    Value rest_min = min(values...);
     return value < rest_min ? value : rest_min;
 }
 
+static_assert(min(2.4, 7.5) == 2.4);
+static_assert(min(2, 3, 4, 5, 6, 1) == 1);
+
 static void demo()
 {
-    assert(min(2.4, 7.5) == 2.4);
-    assert(min(2, 3, 4, 5, 6, 1) == 1);
 }
 }
 
@@ -551,23 +561,21 @@ template<typename... Types>
 struct Storage
 {
     std::tuple<Types...> elements;
-    explicit Storage(Types... args) : elements(args...) {}
+    explicit constexpr Storage(Types... args) : elements(args...) {}
 };
+
+constexpr Storage<> s0; // Types contains no arguments (this has no application).
+static_assert(std::tuple_size<decltype(s0.elements)>() == 0);
+
+constexpr Storage<int> s1(1); // Types contains one argument: int.
+static_assert(std::get<0>(s1.elements) == 1);
+
+constexpr Storage<int, float> s2(1, 1.0f); // Types contains two arguments: int and float.
+static_assert(std::get<0>(s2.elements) == 1);
+static_assert(std::get<1>(s2.elements) == 1.0f);
 
 static void demo()
 {
-    {
-        Storage<> s; // Types contains no arguments (this has no application).
-    }
-    {
-        const Storage<int> s(1); // Types contains one argument: int.
-        assert(std::get<0>(s.elements) == 1);
-    }
-    {
-        const Storage<int, float> s(1, 1.0f); // Types contains two arguments: int and float.
-        assert(std::get<0>(s.elements) == 1);
-        assert(std::get<1>(s.elements) == 1.0f);
-    }
 }
 }
 
@@ -613,7 +621,7 @@ constexpr int func3 (Args... args) {
 
     // Fill an array with integers.
     constexpr int size = sizeof...(args) + 2;
-    int arr1[size] = {1, args..., 2};
+    const int arr1[size] = {1, args..., 2};
 
     // Iterate over pack, take sum.
     const std::array<int, sizeof...(args)> arr2 {args...};
@@ -657,8 +665,8 @@ static void demo6() {
 
 // Pack expansion in lambda captures.
 template<typename... Args>
-constexpr int func7(Args... args) {
-    auto lambda = [args...] { // <- pack expansion.
+consteval int func7(Args... args) {
+    const auto lambda = [args...] { // <- pack expansion.
         return (args + ...);
     };
     return lambda();
