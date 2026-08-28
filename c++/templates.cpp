@@ -34,7 +34,7 @@ namespace templates {
 // Template programming:
 // Using templates as a placeholder mechanism to write functions or classes that work with any data type.
 
-// Template Metaprogramming (TMP):
+// Template metaprogramming:
 // Writing programs within the template system that the compiler executes during compilation.
 
 namespace default_type {
@@ -87,7 +87,7 @@ template <typename T>
 struct Struct
 {
     T a;
-    Struct(T a) : a(a) {}
+    explicit Struct(T a) : a(a) {}
 };
 
 static void demo()
@@ -110,15 +110,16 @@ static float func (const float f)
 static void demo()
 {
     assert (func<10>(1.0f) == 11.0f);
-    assert (func<0>(10.0f) == 10.0f);
+    assert (func<0>(20.0f) == 20.0f);
 }
 }
+
 
 namespace variable_template {
 
 // Basic variable template.
 template <typename T>
-constexpr T pi = 3.14f;
+constexpr T pi = 3.14;
 // Instantiate it.
 static_assert(pi<float> == 3.14f);
 static_assert(pi<int> == 3);
@@ -184,7 +185,7 @@ class Weight
     float m_value{};
 
 public:
-    constexpr Weight() noexcept = default;
+    constexpr Weight() noexcept = delete;
     // Constructor taking a float, so the weight is equal to the float passed.
     constexpr explicit Weight(const decltype(m_value) v) noexcept : m_value(v) { }
 
@@ -216,7 +217,9 @@ static_assert(weight_g.value() == 100000);
 constexpr Weight<kilograms> weight_kg = weight_10_g;
 static_assert(weight_kg.value() == 0.01f);
 
-static void demo() {}
+static void demo()
+{
+}
 }
 
 

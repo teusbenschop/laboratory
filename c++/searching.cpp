@@ -499,8 +499,6 @@ static void demo()
 
 
 
-
-
 void demo() {
     binary_search::demo();
     any_of_all_of_none_of::demo();

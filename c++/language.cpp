@@ -430,38 +430,44 @@ struct Struct
     int value;
 
     // Overload the "+" operator.
-    constexpr Struct operator+(const Struct& other) const
+    constexpr Struct operator+ (const Struct& other) const noexcept
     {
         return Struct(value + other.value);
     }
 
-    // Overload the function call "()" operator, this makes the struct a functor (or function object).
-    constexpr int operator()() const { return value; }
+    // Overload the function call operator, this makes the struct a functor (a function object).
+    constexpr decltype(value) operator()() const noexcept
+    {
+        return value;
+    }
 
     // Overload the += operator (similar -= , %=, and so on.
-    constexpr Struct& operator+=(const Struct& other) noexcept
-    {
+    constexpr Struct& operator+= (const Struct& other) noexcept {
         value += other.value;
         return *this;
     }
 
     // Implicit type conversion operator.
     // Enable static_cast.
-    explicit operator float() const { return static_cast<float>(value); }
+    explicit constexpr operator float() const noexcept
+    {
+        return static_cast<float>(value);
+    }
 };
 
 // Overload the "<<" operator.
-static std::ostream& operator<<(std::ostream& os, const Struct& s) noexcept
+static std::ostream& operator<< (std::ostream& os, const Struct& s) noexcept
 {
     os << s.value;
     return os;
 }
 
 // Overload the "==" operator.
-static constexpr inline bool operator==(const Struct& lhs, const Struct& rhs) noexcept
+static constexpr bool operator==(const Struct& lhs, const Struct& rhs) noexcept
 {
     return lhs.value == rhs.value;
 }
+
 
 static_assert(Struct(10) + Struct(20) == Struct(30));
 static_assert(Struct(15)() == 15);
@@ -476,6 +482,8 @@ static void demo()
     Struct s(10);
     s += Struct(5);
     assert(s == Struct(15));
+    // Same as above, but one line:
+    assert((Struct{10} += Struct(5)) == Struct(15));
 }
 }
 
@@ -1218,7 +1226,7 @@ static void demo()
 
 namespace keyword_const {
 
-struct S
+struct Struct
 {
     // Functions with different const qualifiers have different types so may overload each other.
     int& get() { return i1; }
@@ -1229,13 +1237,13 @@ struct S
 
 static void demo()
 {
-    S s1;
+    Struct s1;
     int i1 = s1.get(); // Calls the first.
     assert(i1 == 10);
     i1 = ++s1.get(); // Calls the first.
     assert(i1 == 11);
 
-    constexpr S s2;
+    constexpr Struct s2;
     const int i2 = s2.get(); // Calls the second.
     assert(i2 == 20);
 }
