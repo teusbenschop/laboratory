@@ -16,6 +16,7 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <cassert>
 #include "exceptions.h"
 #include <exception>
 #include <iostream>
@@ -23,6 +24,9 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <string>
 
 
+namespace variables::variant_visit {
+struct Derived;
+}
 
 namespace exceptions {
 
@@ -49,7 +53,7 @@ concept one_parameter_stream_writable = requires (std::ostream& os, const Arg& a
 };
 
 template <typename ...Args>
-concept stream_writable = (one_parameter_stream_writable<Args>&& ...);
+concept stream_writable = (one_parameter_stream_writable<Args> and ...);
 
 class Base : public std::exception
 {
@@ -67,6 +71,26 @@ public:
 
 struct Derived1 : Base { using Base::Base; };
 struct Derived2 : Base { using Base::Base; };
+struct ExtraDerived1 : Derived1 { using Derived1::Derived1; };
+
+static void demo_throw_param_pack()
+{
+    try
+    {
+        throw ExtraDerived1("a", 1, 1.0f);
+        assert(false);
+    }
+    catch (const Derived1& exception)
+    {
+        assert(true);
+    }
+    catch (const Base& exception)
+    {
+        assert(false);
+    }
+}
+
+
 
 
 // This template function gets passed an exception, throws it, and catches it.
@@ -105,6 +129,7 @@ void demo_exception_catch_hierarchy(const Exception& e)
 
 static void demo()
 {
+    demo_throw_param_pack();
     return;
     // One exception handling function to be used in several places.
     // It uses dynamic casting to handle the different exceptions.

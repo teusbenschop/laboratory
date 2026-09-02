@@ -28,6 +28,7 @@ namespace unions {
 
 static std::string indicator;
 
+namespace {
 struct StructWithConstructorAndDestructor {
     StructWithConstructorAndDestructor() {
         indicator = "construct";
@@ -37,6 +38,7 @@ struct StructWithConstructorAndDestructor {
     }
     int value {10};
 };
+}
 
 void demo()
 {
@@ -51,15 +53,15 @@ void demo()
         static_assert(sizeof(Union) == 4);
 
         // Initialize the first member, which is i.
-        Union bu {10};
-        assert(bu.i == 10);
+        Union u {10};
+        assert(u.i == 10);
         // Change the active member to the second, the f.
-        bu.f = 1.0f;
-        assert(bu.f == 1.0f);
+        u.f = 1.0f;
+        assert(u.f == 1.0f);
         // Reading from non-active member is undefined.
-        assert(bu.i != 10);
+        assert(u.i != 10);
         // Change the active member to the last, the c.
-        bu.c = 'a';
+        u.c = 'a';
     }
 
     {

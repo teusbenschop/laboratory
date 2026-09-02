@@ -37,7 +37,7 @@ namespace character_literals {
 // Consistent character literal encoding.
 // ReSharper disable once CppIdenticalOperandsInBinaryExpression
 static_assert('A' == '\x41');
-static_assert('A' == 0x41);
+static_assert('A' ==  0x41);
 }
 
 
@@ -51,7 +51,7 @@ static void demo() {
 
     // Delimited escape sequences.
     assert("\o{111}"  == std::string("I"));
-    assert("\x{A0}"   != std::string(""));
+    assert("\x{41}"   == std::string("A"));
     assert("\u{CAFE}" == std::string("쫾"));
 }
 }
@@ -75,24 +75,24 @@ static void demo()
     {
         // Format specifiers for fill and align.
         constexpr char c = 120;
-        assert(std::format("{:6}", 42)    == "    42");
-        assert(std::format("{:6}", 'x')   == "x     ");
+        assert(std::format("{:6}",    42) == "    42");
+        assert(std::format("{:6}",   'x') == "x     ");
         assert(std::format("{:_<6}", 'x') == "x_____");
         assert(std::format("{:_>6}", 'x') == "_____x");
         assert(std::format("{:_^6}", 'x') == "__x___");
-        assert(std::format("{:6d}", c)    == "   120");
+        assert(std::format("{:6d}",    c) == "   120");
         assert(std::format("{:6}", true)  == "true  ");
         // Format specifiers for sign and space.
         // space: Use a leading space for non-negative numbers.
         //        Use a minus sign for negative numbers.
-        double inf = std::numeric_limits<double>::infinity();
-        double nan = std::numeric_limits<double>::quiet_NaN();
-        assert(std::format("{0:},{0:+},{0:-},{0: }", 1)   == "1,+1,1, 1");
-        assert(std::format("{0:},{0:+},{0:-},{0: }", -1)  == "-1,-1,-1,-1");
+        constexpr double inf = std::numeric_limits<double>::infinity();
+        constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+        assert(std::format("{0:},{0:+},{0:-},{0: }",   1) == "1,+1,1, 1");
+        assert(std::format("{0:},{0:+},{0:-},{0: }",  -1) == "-1,-1,-1,-1");
         assert(std::format("{0:},{0:+},{0:-},{0: }", inf) == "inf,+inf,inf, inf");
         assert(std::format("{0:},{0:+},{0:-},{0: }", nan) == "nan,+nan,nan, nan");
         // Format specifiers for width and precision.
-        float pi = 3.14f;
+        constexpr float pi {3.14f};
         assert(std::format("{:10f}", pi)           == "  3.140000"); // width = 10
         assert(std::format("{:{}f}", pi, 10)       == "  3.140000"); // width = 10
         assert(std::format("{:.5f}", pi)           == "3.14000");    // precision = 5
@@ -125,12 +125,10 @@ static std::string func(const std::format_string<Args...> fmt, Args&&... args)
 
 static void demo()
 {
-    const std::string s1 = func("{}{} {}{}", "Hello", ',', "C++", -1 + 2 * 3 * 4);
+    const std::string s1 = func("{}{} {}{}", "Hello", ',', "C++", 23);
     assert (s1 == "Hello, C++23");
-    const std::string dynamic_format_string = "User [{1}] triggered event ID: {0}";
 
     const auto func = [](const std::string& dynamic_fmt, int id, std::string_view user) {
-        // std::format(dynamic_fmt, id, user) would fail to compile here
         return std::vformat(dynamic_fmt, std::make_format_args(id, user));
     };
     const std::string config_fmt = "User {1} logged in with id {0}";
@@ -163,10 +161,11 @@ static void demo()
         std::istringstream iss;
         iss.clear();
         iss.setstate(
-            std::ios_base::goodbit // no error
-            | std::ios_base::badbit // irrecoverable stream error
+              std::ios_base::goodbit // no error
+            | std::ios_base::badbit  // irrecoverable stream error
             | std::ios_base::failbit // formatting or extraction error
-            | std::ios_base::eofbit); // end-of-file reached.
+            | std::ios_base::eofbit  // end-of-file reached
+        );
     }
     // The std::istream_iterator and std::ostream_iterator are adapters
     // to treat input and output streams as ranges.
@@ -276,7 +275,7 @@ static void demo() {
     }
     // Get the separate words.
     {
-        auto iss = std::istringstream{"how \f was \n yesterday's \t weather?"};
+        std::istringstream iss {"how \f was \n yesterday's \t weather?"};
         auto&& strings = std::ranges::istream_view<std::string>{iss};
         const auto result = strings | std::ranges::to<std::vector<std::string>>();
         std::vector<std::string> standard = {"how", "was", "yesterday's", "weather?"};
@@ -295,8 +294,8 @@ static void template_print_format(std::ostringstream& oss, const char* format)
 }
 
 // The recursive variadic function.
-template <typename T, typename... Targs>
-static void template_print_format(std::ostringstream& oss, const char* format, T value, Targs... args)
+template <typename T, typename... Args>
+static void template_print_format(std::ostringstream& oss, const char* format, T value, Args... args)
 {
     for (; *format; ++format)
     {
@@ -313,20 +312,20 @@ static void template_print_format(std::ostringstream& oss, const char* format, T
 static void demo()
 {
     std::ostringstream oss;
-    template_print_format(oss, "% world % %", "Hello", "!", 123);
-    assert(oss.str() == "Hello world ! 123");
+    template_print_format(oss, "% world %", "Hello", 123);
+    assert(oss.str() == "Hello world 123");
 }
 }
 
 
 namespace string_literals {
-// Ordinary literal encoding
+// Ordinary literal encoding.
 const char* const cc1 = "abc";
 // UTF-8 string.
 const char8_t* const cc2 = u8"abc";
 // Raw string literal UTF-8.
 const char8_t* const cc3 = u8R"(abc)";
-// Adjacent string literal are concatenated by the compiler.
+// Adjacent string literals are concatenated by the compiler.
 
 // The std::string string literal.
 using namespace std::literals;
@@ -336,8 +335,8 @@ static_assert(std::is_same_v<decltype(hello), std::string>);
 static void demo()
 {
     // String literals may have embedded null characters but strlen fails on that.
-    const char* const cc4 = "abc\0abc";
-    static_assert(sizeof(cc4) == 8); // including \0 at the end.
+    constexpr auto cc4 = "abc\0abc";
+    static_assert(sizeof(cc4) == 8); // Including \0 at the end.
     assert(strlen(cc4) == 3);
 }
 }
@@ -378,10 +377,10 @@ Distance operator""_mi(long double val)
 static void demo_distance()
 {
     // Must have a decimal point to bind to the operator we defined.
-    Distance d{ 402.0_km }; // construct using kilometers
-    assert(d.get_kilometers() == 402.0);
+    Distance d1{ 402.0_km }; // Construct using kilometers.
+    assert(d1.get_kilometers() == 402.0);
 
-    Distance d2{ 402.0_mi }; // construct using same amount of miles
+    Distance d2{ 402.0_mi }; // Construct using same amount of miles.
     assert(d2.get_kilometers() > 646.955 and d2.get_kilometers() < 646.957);
 
     // Add distances constructed with different units.
@@ -392,9 +391,9 @@ static void demo_distance()
 }
 
 
-constexpr long double operator""_degrees_to_radians(long double degrees)
+static constexpr long double operator""_degrees_to_radians(const long double degrees)
 {
-    long double radians = degrees * std::numbers::pi_v<long double> / 180;
+    const long double radians = degrees * std::numbers::pi_v<long double> / 180;
     return radians;
 }
 
@@ -408,37 +407,16 @@ static void demo()
 
 
 namespace string_operator_square_brackets_versus_dot_at {
-
 // The string operator [] does not do bounds checking -> faster / unsafe.
 // The string operator at() does bounds checking -> slower / safe.
-constexpr unsigned size {100000};
-namespace { struct brackets{}; struct at{}; }
-
-template <typename T>
-static void speed_test()
-{
-    //scoped_timer::scoped_timer<std::chrono::microseconds> timer;
-    const std::string input ("1", size);
-    for (unsigned i = 0; i < size; ++i)
-    {
-        if constexpr (std::is_same_v<T, brackets>)
-            const char c = input[i];
-        if constexpr (std::is_same_v<T, at>)
-            const char c = input.at(i);
-    }
-}
-
 static void demo()
 {
-    speed_test<brackets>();
-    speed_test<at>();
-    std::string s;
 }
 }
 
 
 namespace logging {
-// The std::clog write to std::cerr and is buffered unlike std::cerr.
+// The std::clog writes to std::cerr and is buffered unlike std::cerr.
 // Example: std::clog << 1;
 static void demo()
 {

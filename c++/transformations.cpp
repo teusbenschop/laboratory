@@ -49,11 +49,11 @@ static void demo()
     const auto concat = std::accumulate(strings.cbegin(), strings.cend(), init);
     assert(concat == "initab");
 
-    const auto dash_fold = [](std::string a, int b)
+    const auto dash_fold = [](std::string a, const int b)
     {
         return std::move(a) + '-' + std::to_string(b);
     };
-    const std::string s = std::accumulate(std::next(integers.begin()), integers.end(),
+    const std::string s = std::accumulate(std::next(integers.cbegin()), integers.cend(),
                                     std::to_string(integers.at(0)), // start with first element
                                     dash_fold);
     assert(s == "1-2-3");
@@ -68,14 +68,14 @@ static void demo()
         constexpr auto values = std::array{1, 2, 3};
         std::vector<int> copy{};
         std::ranges::copy(values, std::back_inserter(copy));
-        assert(copy.size() == 3);
+        assert(copy.size() == values.size());
     }
     {
         constexpr auto values = std::array{1, 1, 2, 2, 3, 3, 2, 2, 1, 1};
         std::vector<int> unique_copy{};
         std::ranges::unique_copy(values, std::back_inserter(unique_copy));
         // Copies values skipping consecutive equal elements.
-        decltype(unique_copy) standard {1, 2, 3, 2, 1};
+        std::add_const_t<decltype(unique_copy)> standard {1, 2, 3, 2, 1};
         assert(unique_copy == standard);
     }
 }
@@ -96,8 +96,10 @@ static void demo()
     using namespace std::ranges::views;
     auto&& result = numbers | filter(even) | drop(1) | reverse;
     // The view contains: 8 6 4 2
-    for (const int i : result)
+    std::ranges::for_each(result, [](const int i)
+    {
         assert(i == 8 or i == 6 or i == 4 or i == 2);
+    });
 }
 }
 
@@ -106,12 +108,12 @@ namespace ranges_transformations {
 static void demo() {
     {
         // ranges::transform.
-        const auto input = std::vector{1, 2, 3, 4};
-        auto output = std::vector<int>(input.size());
-        auto square = [](auto&& i) -> int { return i * i; };
+        const std::vector input {1, 2, 3, 4};
+        std::vector<int> output(input.size());
+        const auto square = [](auto&& i) -> int { return i * i; };
         std::ranges::transform(input, output.begin(), square);
         // The output will be: 1 4 9 16
-        const auto standard = std::vector<int>{1, 4, 9, 16};
+        const std::vector standard {1, 4, 9, 16};
         assert(output == standard);
     }
     {
@@ -120,10 +122,9 @@ static void demo() {
         const auto square = [](auto i) { return i * i; };
         // Create a view, but do not yet evaluate this view.
         auto squared_view = std::ranges::views::transform(input, square);
-        // Iterate over the squared view, which invokes evaluation and so invokes the lambda.
-        int sum{0};
-        std::ranges::for_each(squared_view, [&sum](int i) {sum += i;});
         // The transformed output will be: 1 4 9 16 25 36 49 64 81 100
+        // Iterate over the squared view, which invokes evaluation and so invokes the lambda.
+        int sum = std::reduce(squared_view.begin(), squared_view.end());
         assert(sum == 385);
     }
 
@@ -141,7 +142,6 @@ static void demo() {
         std::ranges::shuffle(numbers, mtg);
 
         // The output is in random order, e.g. 2 4 3 5 1.
-        assert(not std::ranges::is_sorted(numbers ));
     }
 
     // Demo of drop_while.
@@ -156,17 +156,17 @@ static void demo() {
         assert(result == standard);
     }
 
-    // Demo of split and join.
+    // Demo of split.
     {
         // The input CSV data.
         auto csv = std::string{"10,11,12"};
         auto digits = csv | std::ranges::views::split(',');
         // Result:  [ [1, 0], [1, 1], [1, 2] ]
-        auto joined = digits | std::views::join;
-        // Result [ 1, 0, 1, 1, 1, 2 ]
-        auto result = joined | std::ranges::to<std::vector<char>>();
-        std::vector standard = {'1', '0', '1', '1', '1', '2'};
+        auto result = digits | std::ranges::to<std::vector<std::string>>(); // Support nested conversions.
+        decltype(result) standard = {"10", "11", "12"};
         assert(result == standard);
+        // This works because std::ranges::to recursively converts each element of the outer range
+        // (each char subrange) into the target container's value type (std::string).
     }
 
     // Demo of take.
@@ -193,9 +193,10 @@ static void demo() {
     // Demo of element<n>.
     {
         const std::vector<std::tuple<int, int>> vec { {  1, 2 }, {  3, 4 } };
-        auto&& range = vec | std::views::elements<0>;
-        for (const int i : range)
+        std::ranges::for_each(vec | std::views::elements<0>, [](const int i)
+        {
             assert(i == 1 or i == 3);
+        });
     }
 }
 }
@@ -254,7 +255,7 @@ static void demo()
         // and places them, sorted, in the range from first up to middle.
         // The remaining elements from middle to last are left in an unspecified, unsorted order.
         std::vector values {6, 3, 2, 7, 4, 1, 5};
-        std::ranges::partial_sort(values, values.begin() + 3);
+        std::ranges::partial_sort(values, values.begin() + values.size()/2);
         const auto standard = std::vector{1, 2, 3, 7, 6, 4, 5};
         assert(values == standard);
     }
@@ -341,7 +342,7 @@ static void demo()
         assert(result == 0);
     }
     {
-        constexpr std::size_t size = 2;
+        constexpr std::size_t size {2};
         char buf[size]{};
         const std::to_chars_result result = std::to_chars(buf, buf + size, 42);
         assert(result.ec == std::errc());
@@ -369,15 +370,13 @@ static T add_generic (const T a, const T b) { return a + b; };
 static auto add_lambda = [] (const auto a, const auto b) { return a + b; };
 
 template <typename... Ts>
-[[maybe_unused]] static std::ostream& operator<< (std::ostream& os, const std::tuple<Ts...>& tuple)
+static std::ostream& operator<< (std::ostream& os, const std::tuple<Ts...>& tuple)
 {
     std::apply(
         [&os] (const Ts&... args)
         {
-            os << "[";
             std::size_t n{0};
-            ((os << args << (++n != sizeof...(Ts) ? ", " : "")), ...);
-            os << "]";
+            (void(os << args << (++n != sizeof...(Ts) ? ", " : "")), ...);
         }, tuple
     );
     return os;
@@ -400,7 +399,7 @@ static void demo()
     {
         std::ostringstream oss;
         oss << std::tuple {123, "hello", 3.3f, 't'};
-        assert(oss.str() == "[123, hello, 3.3, t]");
+        assert(oss.str() == "123, hello, 3.3, t");
     }
 }
 }
@@ -411,14 +410,12 @@ static void demo()
 {
     struct Struct
     {
-        Struct(const int i, const float f, const char c) : i(i), f(f), c(c) {};
         int i{};
         float f{};
         char c{};
     };
-
     constexpr auto tuple = std::tuple<int, float, char>{1, 2.0f, 'c'};
-    const Struct strct = std::make_from_tuple<Struct>(std::move(tuple));
+    constexpr Struct strct = std::make_from_tuple<Struct>(std::move(tuple));
     assert(strct.i == 1);
     assert(strct.f == 2.0f);
     assert(strct.c == 'c');
@@ -436,7 +433,7 @@ static void demo()
         // is "excluded" from the calculation of the n-th output element.
         const std::vector data{1, 2, 3, 4};
         std::vector<int> out;
-        std::exclusive_scan(data.begin(), data.end(), std::back_inserter(out), 0);
+        std::exclusive_scan(data.cbegin(), data.cend(), std::back_inserter(out), 0);
         const std::vector standard {0, 1, 3, 6};
         assert(out == standard);
     }
@@ -445,7 +442,7 @@ static void demo()
         // The calculated n-th output "includes" the n-th input element.
         const std::vector data{1, 2, 3};
         std::vector<int> out;
-        std::inclusive_scan(data.begin(), data.end(), std::back_inserter(out));
+        std::inclusive_scan(data.cbegin(), data.cend(), std::back_inserter(out));
         const std::vector standard {1, 3, 6};
         assert(out == standard);
     }
@@ -462,8 +459,8 @@ static void demo()
 
 namespace reduce {
 
-// The std::reduce returns the generalized sum of "init" and the given range, over, by default, operator +,
-// or another operator.
+// The std::reduce returns the generalized sum of "init" and the given range,
+// over operator + by default, or over a passed operator.
 // Behaves like std::accumulate, except it may arbitrarily rearrange and regroup the elements.
 
 static void demo()
@@ -1108,6 +1105,20 @@ static void demo() {
 }
 
 
+namespace transform_two_inputs {
+constexpr std::array input1   {10, 20, 30};
+constexpr std::array input2   { 1,  2,  3};
+constexpr std::array standard {11, 22, 33};
+static void demo()
+{
+    std::array<int, 3> output{};
+    std::transform(input1.begin(), input1.end(), input2.begin(), output.begin(), std::plus{});
+    assert(output == standard);
+    std::ranges::transform(input1, input2, output.begin(), std::plus{});
+    assert(output == standard);
+}
+}
+
 
 void demo()
 {
@@ -1141,5 +1152,6 @@ void demo()
     std_identity::demo();
     ranges_shift::demo();
     ranges_fold::demo();
+    transform_two_inputs::demo();
 }
 }

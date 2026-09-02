@@ -1081,7 +1081,10 @@ static void demo()
 {
     constexpr unsigned char d[]
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc23-extensions"
 #embed "embed.txt"
+#pragma clang diagnostic pop
     };
     std::ranges::for_each(d, [](auto c)
     {

@@ -20,6 +20,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <iostream>
 #include <memory>
 #include <ostream>
+#include <type_traits>
 #include "classes.h"
 
 namespace classes {
@@ -444,6 +445,7 @@ static_assert(std::is_trivially_move_constructible_v<S1>);
 static_assert(std::is_move_assignable_v<S1>);
 static_assert(std::is_nothrow_move_assignable_v<S1>);
 static_assert(std::is_trivially_move_assignable_v<S1>);
+static_assert(std::is_trivial<S1>::value);
 
 
 static void demo()

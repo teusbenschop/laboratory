@@ -20,6 +20,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 namespace templates {
 
+// Template function definition.
 template <typename T>
 T func (T a, T b);
 

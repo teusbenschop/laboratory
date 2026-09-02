@@ -521,6 +521,7 @@ static constexpr Value sum (Value value, Values... values)
 static_assert(sum<int>(1) == 1);
 static_assert(sum<float>(1.0f, 2.0f) == 3.0f);
 static_assert(sum<unsigned>(1, 2, 3, 4) == 10);
+static_assert(sum<std::string>("a", "b") == "ab");
 
 static void demo()
 {
@@ -542,8 +543,8 @@ consteval Value min (const Value value)
 template <typename Value, typename ...Values>
 consteval Value min (const Value value, const Values... values)
 {
-    Value rest_min = min(values...);
-    return value < rest_min ? value : rest_min;
+    Value minimum_of_remainder = min(values...);
+    return value < minimum_of_remainder ? value : minimum_of_remainder;
 }
 
 static_assert(min(2.4, 7.5) == 2.4);
@@ -583,10 +584,10 @@ static void demo()
 namespace pack_expansion {
 
 template <typename ... Args>
-static constexpr void func1 (Args ... args) { }
+static consteval void func1 (Args ... args) { }
 
 template <typename ... Args>
-static constexpr bool func2 (Args ... args)
+static consteval bool func2 (Args ... args)
 {
     func1(&args...); // &args...   : a pack expansion.
                      // &args      : the pattern.
@@ -606,10 +607,10 @@ static_assert(func2(2, 3));
 // f(++args..., n); // Expands into f(++a1, ++a2, ++a3, n);
 
 // f(const_cast<const Args*>(&args)...); // Expands into:
-// f(const_cast<const A1*>(&a1), const_cast<const A2*>(&a2), const_cast<const A3*>(&a3))
+//    f(const_cast<const A1*>(&a1), const_cast<const A2*>(&a2), const_cast<const A3*>(&a3))
 
 // f(h(args...) + args...); // Expands into:
-// f(h(a1, a2, a3) + a1, h(a1, a2, a3) + a2, h(a1, a2, a3) + a3)
+//    f(h(a1, a2, a3) + a1, h(a1, a2, a3) + a2, h(a1, a2, a3) + a3)
 
 // Pack expansion in parentheses works the same as in function argument lists.
 // Class c(&args...);     // Expands into Class::Class(&a1, &a2, &a3)
@@ -655,12 +656,12 @@ static void demo6() {
 }
 
 // Pack expansion in base specifiers and member initializer lists.
-// template <class...Mixins>
-// class C : public Mixins...
-// {
-// public:
-// C (const Mixins&...mixins) : Mixins(mixins...) {}
-// };
+template <class...Mixins>
+class C : public Mixins...
+{
+public:
+C (const Mixins&...mixins) : Mixins(mixins)... {}
+};
 
 
 // Pack expansion in lambda captures.
@@ -694,23 +695,26 @@ struct Derived : Bases...
 
 
 // Argument pack indexing (C++26).
-consteval auto first_plus_last26(auto ... args) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++26-extensions"
+consteval auto first_plus_last_new(auto ... args) {
     return args...[0] + args...[sizeof...(args) - 1];
 }
+#pragma clang diagnostic pop
 // Pre-C++26 argument pack indexing.
-consteval auto first_plus_last20(auto ... args)
+consteval auto first_plus_last_old(auto ... args)
 {
     std::tuple<decltype(args)...> tuple {args...};
-    return std::get<0>(tuple) + std::get<sizeof...(args) - 1>(tuple);
+    return std::get<0>(tuple) + std::get<sizeof...(args)-1>(tuple);
 }
-static_assert(first_plus_last26(1,2,3) == 4);
-static_assert(first_plus_last20(1,2,3) == 4);
-static_assert(first_plus_last26(1,2) == 3);
-static_assert(first_plus_last20(1,2) == 3);
-static_assert(first_plus_last26(1) == 2);
-static_assert(first_plus_last20(1) == 2);
-static_assert(first_plus_last26(std::string("a")) == "aa");
-static_assert(first_plus_last20(std::string("a")) == "aa");
+static_assert(first_plus_last_new(1,2,3) == 4);
+static_assert(first_plus_last_old(1,2,3) == 4);
+static_assert(first_plus_last_new(1,2) == 3);
+static_assert(first_plus_last_old(1,2) == 3);
+static_assert(first_plus_last_new(1) == 2);
+static_assert(first_plus_last_old(1) == 2);
+static_assert(first_plus_last_new(std::string("a")) == "aa");
+static_assert(first_plus_last_old(std::string("a")) == "aa");
 
 
 static void demo()
@@ -724,7 +728,7 @@ static void demo()
 namespace fold_expressions {
 // Replace complex template recursion with elegant one-line syntax for variadic arguments.
 // A fold expression applies a binary operator to all elements of a parameter pack,
-// reducing them to a single value — without recursion.
+// reducing them to a single value, without using recursion.
 
 // Left and right fold.
 // Sample arguments: 1 2 3
@@ -736,7 +740,7 @@ namespace fold_expressions {
 // 2. Do 1 + result > final result.
 
 template <typename ... Args>
-static constexpr int sum(Args...args)
+static consteval int sum(Args...args)
 {
     return (args + ...);
 }
@@ -745,40 +749,40 @@ static_assert(sum(2, 3, 4) == 9);
 
 
 template <typename ... Args>
-static constexpr int unary_left_fold(Args&& ... args)
+static consteval int unary_left_fold_minus(Args&& ... args)
 {
     // (((arg1 - arg2) - ...) - argN)
     return (... - args); // Dots at left of operator.
 }
 // ((1 - 2) - 3)
-static_assert(unary_left_fold(1, 2, 3) == -4);
+static_assert(unary_left_fold_minus(1, 2, 3) == -4);
 
 template <typename ... Args>
-static constexpr int unary_right_fold(Args&& ... args)
+consteval int unary_right_fold_minus(Args&& ... args)
 {
     // (arg1 - (... - (argN-1 - argN)))
     return (args - ...); // Dots at right of operator.
 }
 // (1 - (2 - 3))
-static_assert(unary_right_fold(1, 2, 3) == 2);
+static_assert(unary_right_fold_minus(1, 2, 3) == 2);
 
 template <typename I, typename ... Args>
-constexpr int binary_left_fold(I init, Args&& ... args)
+consteval int binary_left_fold_minus(I init, Args&& ... args)
 {
     // ((((init - arg1) - arg2) - ...) - argN)
     return (init - ... - args);
 }
 // ((10 - 1) - 2) - 3
-static_assert(binary_left_fold(10, 1, 2, 3) == 4);
+static_assert(binary_left_fold_minus(10, 1, 2, 3) == 4);
 
 template <typename I, typename ... Args>
-static constexpr int binary_right_fold(I init, Args&& ... args)
+consteval int binary_right_fold_minus(I init, Args&& ... args)
 {
-    // (arg1 - (... - (argN−1 - (argN - I))))
+    // (arg1 - (... - (argN−1 - (argN - init))))
     return (args - ... - init);
 }
 // (1 - (2 - (3 - 10)))
-static_assert(binary_right_fold(10, 1, 2, 3) == -8);
+static_assert(binary_right_fold_minus(10, 1, 2, 3) == -8);
 
 // Folding over the comma operator.
 template <typename... Args>
@@ -802,29 +806,39 @@ static void demo()
 
 
 namespace template_template_arguments {
+// A template template argument enables
+// passing a class template itself as a template parameter into another template,
+// rather than passing a concrete instantiated type like int or std::vector<int>.
 
+// Standard template parameters passing values or types.
+// A template template parameter enables passing a type generator
+// (a template that hasn't been given its inner type parameters yet).
 
-template<typename T, template<typename,typename ...> typename C, typename... Args>
-static std::ostream& operator <<(std::ostream& os, const C<T,Args...>& objs)
+template<
+    typename T,
+    template<typename G, typename ...Gs> typename Container,
+    typename... Args
+>
+static std::string to_string(const Container<T,Args...>& objs)
 {
-    os << __PRETTY_FUNCTION__ << '\n';
+    // std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::ostringstream oss{};
+    int offset {0};
     for (auto const& obj : objs)
-        os << obj << ' ';
-    return os;
+        oss << (offset++ ? " " : "") << obj;
+    return std::move(oss).str();
 }
 
 static void demo()
 {
-    return;
-    std::vector<float> vf { 1.1, 2.2, 3.3, 4.4 };
-    std::cout << vf << '\n';
+    const std::vector<float> vf { 1.1, 2.2, 3.3, 4.4 };
+    assert(to_string(vf) == "1.1 2.2 3.3 4.4");
 
-    std::list<char> lc { 'a', 'b', 'c', 'd' };
-    std::cout << lc << '\n';
+    const std::list<char> lc { 'a', 'b', 'c', 'd' };
+    assert(to_string(lc) == "a b c d");
 
-    std::deque<int> di { 1, 2, 3, 4 };
-    std::cout << di << '\n';
-
+    const std::deque<int> di { 1, 2, 3, 4 };
+    assert(to_string(di) == "1 2 3 4");
 }
 }
 
@@ -862,10 +876,10 @@ static void demo()
 namespace typetrait_specialization_of_vector_v2 {
 
 template <typename T>
-struct is_specialization_of_vector : std::false_type {};
+struct is_specialization_of_vector : std::false_type{};
 
 template <typename T>
-struct is_specialization_of_vector<std::vector<T>> : std::true_type {};
+struct is_specialization_of_vector<std::vector<T>> : std::true_type{};
 
 template <typename T>
 concept is_specialization_of_vector_v = is_specialization_of_vector<T>::value;
@@ -876,10 +890,9 @@ static_assert(    is_specialization_of_vector_v<std::vector<std::list<int>>>);
 static_assert(not is_specialization_of_vector_v<std::list<int>>);
 static_assert(not is_specialization_of_vector_v<int>);
 
-const auto func = [](is_specialization_of_vector_v auto& t) {};
-
 static void demo()
 {
+    const auto func = [](is_specialization_of_vector_v auto& t){ };
     std::vector<int> v;
     func(v);
 }
@@ -931,11 +944,11 @@ namespace is_coroutine_handle {
 
 // Simple concept for whether some type is a coroutine handle.
 
-// A generic handle is std::coroutine_handle<void>
-// A task-specific handle could look like std::coroutine_handle<Promise>
+// A generic handle is std::coroutine_handle<void> .
+// A task-specific handle could look like std::coroutine_handle<Promise> .
 
 // The std::coroutine_handle<void> and std::coroutine_handle<Promise> are treated by the compiler
-// as completely different, unrelated types
+// as completely different, unrelated types.
 // Therefore a simple check like std::is_same won't work.
 // We need a way to tell the compiler: "Check if this type is a std::coroutine_handle wrapped around anything."
 
@@ -1018,14 +1031,15 @@ static std::pair pair3(1, 2.3f);
 template <typename T>
 struct Wrapper {
     T value;
-    Wrapper(T v) : value(v) {}
+    constexpr explicit Wrapper(T v) : value(v) {}
 };
 
 // Deduction guide forcing decay (converts array types to pointers)
 template <typename T>
 Wrapper(T) -> Wrapper<std::decay_t<T>>;
 
-static Wrapper w("hello"); // Deducts Wrapper<const char*> instead of Wrapper<const char[6]>
+constexpr Wrapper wrapper("hello"); // Deducts Wrapper<const char*> instead of Wrapper<const char[6]>
+static_assert(std::is_same_v<decltype(wrapper.value), const char*>);
 
 static void demo ()
 {
@@ -1060,4 +1074,3 @@ void demo()
     template_deduction_guides::demo();
 }
 }
-

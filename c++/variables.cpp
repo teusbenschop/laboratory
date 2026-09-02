@@ -40,93 +40,41 @@ namespace variables {
 namespace forward_like {
 
 // https://en.cppreference.com/w/cpp/utility/forward_like.html
-// Returns a reference to x which has similar properties to T&&.
 
-struct TypeTeller
-{
-    void operator()(this auto&& self)
-    {
-        using self_type = decltype(self);
-        using unref_self_type = std::remove_reference_t<self_type>;
-        if constexpr (std::is_lvalue_reference_v<self_type>)
-        {
-            if constexpr (std::is_const_v<unref_self_type>)
-                std::cout << "const lvalue" << std::endl;
-            else
-                std::cout << "mutable lvalue" << std::endl;
-        }
-        if constexpr (std::is_rvalue_reference_v<self_type>) {
-            if constexpr (std::is_const_v<unref_self_type>)
-                std::cout << "const rvalue" << std::endl;
-            else
-                std::cout << "mutable rvalue" << std::endl;
-        }
-    }
-};
+// The std::forward_like forwards an expression
+// with the exact same value category (constness and reference-ness)
+// as another specified type.
 
+// Useful in explicitly-deduced this functions (deduce this)
+// to preserve the caller's qualification on a member variable or derived expression.
 
-struct FarStates
-{
-    std::unique_ptr<TypeTeller> pointer;
-    std::optional<TypeTeller> optional;
-    std::vector<TypeTeller> container;
+struct Container {
+    std::string data = "data";
 
-    auto&& from_opt(this auto&& self)
-    {
-        return std::forward_like<decltype(self)>(self.optional.value());
-        // It is OK to use std::forward<decltype(self)>(self).opt.value(),
-        // because std::optional provides suitable accessors.
-    }
-
-    auto&& operator[](this auto&& self, std::size_t i)
-    {
-        return std::forward_like<decltype(self)>(self.container.at(i));
-        // It is not so good to use std::forward<decltype(self)>(self)[i], because
-        // containers do not provide rvalue subscript access, although they could.
-    }
-
-    auto&& from_ptr(this auto&& self)
-    {
-        if (not self.pointer)
-            throw std::bad_optional_access{};
-        return std::forward_like<decltype(self)>(*self.pointer);
-        // It is not good to use *std::forward<decltype(self)>(self).ptr, because
-        // std::unique_ptr<TypeTeller> always dereferences to a non-const lvalue.
+    // Deducted `this` member function.
+    template <typename Self>
+    decltype(auto) get_data(this Self&& self) {
+        // Forwards 'data' with the exact value category (lvalue, const lvalue, rvalue) of 'self'.
+        return std::forward_like<Self>(self.data);
     }
 };
 
 static void demo()
 {
-    return;
+    Container c;
+    const Container const_c;
 
-    FarStates my_state
-    {
-        .pointer{std::make_unique<TypeTeller>()},
-        .optional{std::in_place, TypeTeller{}},
-        .container{std::vector<TypeTeller>(1)},
-      };
+    // 1. Lvalue call -> returns 'std::string&'
+    c.get_data();
 
-    my_state.from_ptr()();
-    my_state.from_opt()();
-    my_state[0]();
+    // 2. Const lvalue call -> returns 'const std::string&'
+    const_c.get_data();
 
-    std::cout << std::endl;
+    // 3. Rvalue call -> returns 'std::string&&' (enables moving the inner data)
+    const std::string moved = std::move(c).get_data();
 
-    std::as_const(my_state).from_ptr()();
-    std::as_const(my_state).from_opt()();
-    std::as_const(my_state)[0]();
-
-    std::cout << std::endl;
-
-    std::move(my_state).from_ptr()();
-    std::move(my_state).from_opt()();
-    std::move(my_state)[0]();
-
-    std::cout << std::endl;
-
-    std::move(std::as_const(my_state)).from_ptr()();
-    std::move(std::as_const(my_state)).from_opt()();
-    std::move(std::as_const(my_state))[0]();
+    assert(moved == "data");
+    assert(c.get_data().empty());
 }
 }
 
@@ -169,7 +117,6 @@ constexpr std::pair<Foo, Foo> p2{std::piecewise_construct, tuple, tuple};
 static_assert(p2.first.construction == from_int_float);
 static_assert(p2.second.construction == from_int_float);
 
-
 static void demo()
 {
 }
@@ -185,7 +132,7 @@ namespace forward_as_tuple {
 static void demo()
 {
     // This returns a rvalue.
-    auto rvalue = [] -> int
+    auto rvalue = []
     {
         return 100;
     };
@@ -193,10 +140,8 @@ static void demo()
     // This is a lvalue.
     int lvalue = 100;
 
-    [[maybe_unused]] auto tuple = std::forward_as_tuple(lvalue, rvalue());
+    auto tuple = std::forward_as_tuple(lvalue, rvalue());
 
-    // A lvalue reference binds to a lvalue. Marked with one ampersand (&).
-    // A rvalue reference binds to a rvalue. Marked with two ampersands (&&).
     static_assert(std::is_same_v<decltype(tuple), std::tuple<int&, int&&>>);
     // Unlike a std::vector etc, a std::tuple can contain references,
     // because it does not do allocation, it is only syntactic sugar.
@@ -205,6 +150,7 @@ static void demo()
     assert(std::get<0>(tuple) == 100);
     std::get<0>(tuple) += 10;
     assert(std::get<0>(tuple) == 110);
+    assert(lvalue == 110);
 }
 }
 
@@ -214,11 +160,12 @@ static void demo()
 {
     // A decay-copy is a copy of a variable which has lost some properties.
     // How does auto(x) help?
-    // It is an easy way to make a copy of a variable.
+    // It is an easy way to make a decaycopy of a variable.
     // It clearly communicates that it makes a copy of a variable.
 
     const auto pop_front = [] (auto& container) {
         std::erase(container, auto(container.front())); // <- Make copy through auto(x)
+        // Equivalent to std::decay_t<decltype(x)>(x).
     };
 
     std::vector vector {1, 2, 3};
@@ -229,7 +176,6 @@ static void demo()
     assert (vector.size() == 1);
 }
 }
-
 
 
 namespace aggregate_initialization {
@@ -338,7 +284,7 @@ static_assert(std_ar1[2] == 3);
 // int a[] = {1, 2.0}; // narrowing conversion from double to int:
 // error in C++11, okay in C++03
 
-[[maybe_unused]] constexpr std::string ars[] = {
+constexpr std::string ars[] = {
     std::string("one"),       // copy-initialization
     "two",                    // conversion, then copy-initialization
     {'t', 'h', 'r', 'e', 'e'} // list-initialization
@@ -421,6 +367,7 @@ static void demo()
     assert (output == "base");
 }
 }
+
 
 namespace initialization {
 static void demo()

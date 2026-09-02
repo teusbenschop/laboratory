@@ -159,7 +159,9 @@ static_assert(iter1 == increasing.end());
 constexpr auto decreasing = {3, 2, 1};
 constexpr auto iter2 = std::ranges::adjacent_find(decreasing, is_less);
 static_assert(iter2 == decreasing.begin());
-static void demo() {}
+static void demo()
+{
+}
 }
 
 
