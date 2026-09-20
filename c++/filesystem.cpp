@@ -41,14 +41,14 @@ void demo()
 
     {
         std::filesystem::path path("/tmp/hi.txt");
-        assert(std::filesystem::exists (path) == false);
+        assert(not std::filesystem::exists (path));
     }
 
     std::filesystem::path path("/tmp");
     for (const auto& directory_entry : std::filesystem::directory_iterator{path})
     {
-        std::filesystem::path file = directory_entry.path();
-        assert(!file.empty());
+        const std::filesystem::path file = directory_entry.path();
+        assert(not file.empty());
     }
 
     try

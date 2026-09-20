@@ -16,12 +16,12 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "expected.h"
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include <expected>
 #include <string_view>
+#include "expected.h"
 
 namespace expected {
 // The class template std::expected provides a way to represent either of two values:
@@ -40,13 +40,17 @@ void demo()
         const char* begin = str.data();
         char* end;
         float number = std::strtof(begin, &end);
+        // The strtof expects a \0 , if the std::string_view points to data without the \0 ,
+        // the strtof may parse beyond the std::string_view's end iterator.
 
         if (begin == end)
             return std::unexpected(parse_error::invalid_input);
         if (std::isinf(number))
             return std::unexpected(parse_error::overflow);
 
+        // Does not modify the underlying data, but modifies its own pointers.
         str.remove_prefix(end - begin);
+
         return number;
     };
 
@@ -90,4 +94,3 @@ void demo()
     }
 }
 }
-

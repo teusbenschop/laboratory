@@ -24,10 +24,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <string>
 
 
-namespace variables::variant_visit {
-struct Derived;
-}
-
 namespace exceptions {
 
 
@@ -107,11 +103,11 @@ void demo_exception_catch_hierarchy(const Exception& e)
     }
     catch (const Derived1& exception)
     {
-        std::cout << "Catch Type1Exception" << std::endl;
+        std::cout << "Catch Derived1Exception" << std::endl;
     }
     catch (const Derived2& exception)
     {
-        std::cout << "Catch Type2Exception" << std::endl;
+        std::cout << "Catch Derived2Exception" << std::endl;
     }
     catch (const Base& exception)
     {
@@ -159,7 +155,7 @@ static void demo()
     }
     try
     {
-        std::cout << "Throw Type2Exception" << std::endl;
+        std::cout << "Throw Derived2Exception" << std::endl;
         throw Derived2("");
     }
     catch (const std::exception& e)
@@ -187,9 +183,9 @@ static void demo()
 
     // Throw different types of exceptions.
     // The template function uses the standard try ... catch idiom.
-    std::cout << "Throw Type1Exception" << std::endl;
+    std::cout << "Throw Derived1Exception" << std::endl;
     demo_exception_catch_hierarchy(Derived1());
-    std::cout << "Throw Type2Exception" << std::endl;
+    std::cout << "Throw Derived2Exception" << std::endl;
     demo_exception_catch_hierarchy(Derived2());
     std::cout << "Throw BaseException" << std::endl;
     demo_exception_catch_hierarchy(Base());
@@ -208,11 +204,10 @@ namespace uncaught_exceptions {
 struct Struct
 {
     char id = '?';
-    int ue = std::uncaught_exceptions();
 
     ~Struct()
     {
-        ue = std::uncaught_exceptions();
+        const int ue = std::uncaught_exceptions();
         std::cout << "Uncaught exceptions in id " << id << " : " << ue << std::endl;
         // Possible usage: If the destructor is called due to a thrown exception,
         // then the number of uncaught exceptions is larger than 0.

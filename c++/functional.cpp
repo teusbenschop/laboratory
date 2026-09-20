@@ -44,7 +44,7 @@ static void demo()
 
     auto lambda = [task = std::move(packaged_task)]() mutable { task(); };
 
-    //  std::function<void()> function = std::move(lambda); // Error
+    // std::function<void()> function = std::move(lambda); // Error
 
     // std::move_only_function<void()> function = std::move(lambda); // OK does not yet compile on macOS 15.4.1
 
@@ -56,31 +56,14 @@ static void demo()
 }
 
 
-namespace brackets_are_optional_for_lambdas {
-static void demo()
-{
-    std::string s {"s"};
-    auto with_brackets = [s1 = s] noexcept {
-        assert(s1 == "s");
-    };
-    with_brackets();
-
-    auto without_brackets = [s1 = s] {
-        assert(s1 == "s");
-    };
-    without_brackets();
-}
-}
-
-
 namespace lambda_capture {
 static void demo()
 {
     // Capture by value.
     {
         constexpr auto start = 7;
-        int v1 = start;
-        int v2{};
+        auto v1 = start;
+        auto v2 = int{};
         // Note that the following lambda, via the capture, copies the current v = 7 into the lambda.
         // Mark it mutable because it mutates the captured v.
         // Note that it captures v once, and stores it in the lambda function.
@@ -101,7 +84,7 @@ static void demo()
     // Capture by reference.
     {
         auto v = 7;
-        auto lambda = [&v]{ ++v; };
+        const auto lambda = [&v]{ ++v; };
         lambda();
         assert(v == 8);
         lambda();
@@ -135,7 +118,7 @@ namespace assign_lambda_with_and_without_capture_to_same_function_object {
 static void demo()
 {
     // Create an unassigned std::function object.
-    std::function<int(int)> func {nullptr};
+    std::function<int(int)> func {};
 
     // Assign a lambda without capture to the std::function object.
     func = [](const int v)
@@ -145,7 +128,7 @@ static void demo()
     assert(func(12) == 12);
 
     // Assign a lambda with capture to the same std::function object.
-    auto v42 = 42;
+    constexpr auto v42 = 42;
     func = [v42](const int v) noexcept
     {
         return v + v42;
@@ -158,7 +141,7 @@ static void demo()
 namespace stateless_lambda_function {
 // A stateless lambda function does not retain any data or memory from one execution to the next.
 constexpr auto stateless1 = [] { };
-// It is assignable.
+// It is copy constructable and assignable.
 constexpr auto stateless2 = stateless1;
 // Default-constructible (i.e. constructor without parameters, or with default parameters).
 static_assert(std::is_default_constructible_v<decltype(stateless1)>);
@@ -199,8 +182,8 @@ constexpr auto minus = [](const int a, const int b) -> int
     return a - b;
 };
 
-// The function template std::bind generates a forwarding call wrapper for f.
-// Calling this wrapper is equivalent to invoking f with some of its arguments bound to args.
+// The function template std::bind generates a forwarding call wrapper for func.
+// Calling this wrapper is equivalent to invoking func with some of its arguments bound to args.
 
 constexpr auto value1_minus_value2 = std::bind(minus, std::placeholders::_1, std::placeholders::_2);
 static_assert(value1_minus_value2(1, 2) == -1);
@@ -212,7 +195,6 @@ static void demo()
 {
     struct Struct
     {
-        // ReSharper disable once CppMemberFunctionMayBeStatic
         constexpr int minus(const int a, const int b)
         {
             return a - b;
@@ -257,12 +239,12 @@ namespace member_function {
 
 struct Struct
 {
-    [[nodiscard]] constexpr std::string get_greeting() noexcept
+    [[nodiscard]] constexpr std::string get_greeting() const noexcept
     {
         return "hello";
     }
 
-    [[nodiscard]] constexpr int get_number(const int i) noexcept
+    [[nodiscard]] constexpr int get_number(const int i) const noexcept
     {
         return i;
     }
@@ -273,12 +255,12 @@ struct Struct
     }
 
     template <typename... Args>
-    [[nodiscard]] int add_many1(Args&&... args) const
+    [[nodiscard]] int add_pack_template(Args&&... args) const
     {
         return data + (args + ...);
     }
 
-    [[nodiscard]] auto add_many2(auto&&... args) const
+    [[nodiscard]] auto add_pack_abbreviated(auto&&... args) const
     {
         return data + (args + ...);
     }
@@ -306,25 +288,25 @@ static void demo()
     assert(get_data(s_ptr) == 7);
     assert(add_xy(s_ptr, 1, 2) == 10);
 
-    constexpr auto add_many = std::mem_fn(&Struct::add_many1<short, int, long>);
+    constexpr auto add_many = std::mem_fn(&Struct::add_pack_template<short, int, long>);
     assert(add_many(s_ptr, 1, 2, 3) == 13);
 
-    constexpr auto add_them = std::mem_fn(&Struct::add_many2<short, int, float, double>);
+    constexpr auto add_them = std::mem_fn(&Struct::add_pack_abbreviated<short, int, float, double>);
     assert(add_them(s_ptr, 5, 7, 10.0f, 13.0) == 42);
 }
 }
 
 
 namespace demo_not_fn {
-// Inverts the result of fn.
+// Inverts the result of func.
 
-static constexpr bool free_fn_is_same (const int a, const int b)
+static constexpr bool func_is_same (const int a, const int b)
 {
     return a == b;
 }
-static_assert(free_fn_is_same(8, 8));
+static_assert(func_is_same(8, 8));
 
-constexpr auto free_fn_differs = std::not_fn(free_fn_is_same);
+constexpr auto free_fn_differs = std::not_fn(func_is_same);
 static_assert(free_fn_differs(8, 9));
 
 namespace {
@@ -480,7 +462,6 @@ static void demo()
 
 void demo() {
     move_only_function::demo();
-    brackets_are_optional_for_lambdas::demo();
     lambda_capture::demo();
     assign_lambda_with_and_without_capture_to_same_function_object::demo();
     stateless_lambda_function::demo();

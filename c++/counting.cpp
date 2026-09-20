@@ -40,21 +40,22 @@ void demo()
             std::string name;
             int id;
         };
-        const std::vector<Item> items{
-            {"Foo", 1},
-            {"Bar", 2},
-            {"Foo", 3}
-        };
+        constexpr auto items = std::to_array<Item>({
+            {.name = "Foo", .id = 1},
+            {.name = "Bar", .id = 2},
+            {.name = "Foo", .id = 3}
+        });
         // Count how many items have the name "Foo".
-        const long count = std::ranges::count(items, "Foo", &Item::name);
-        assert(count == 2);
+        constexpr long count = std::ranges::count(items, "Foo", &Item::name);
+        static_assert(count == 2);
     }
 
     {
-        const std::vector<std::pair<int, int>> pairs {{1,1}, {1,2}, {3,3} };
+        using pair_t = std::pair<int, int>;
+        constexpr auto pairs = std::to_array<pair_t>({{1,1}, {1,2}, {3,3}});
         // Count how many pairs have 1 as their first value.
-        const long count = std::ranges::count(pairs, 1, &std::pair<int,int>::first);
-        assert(count == 2);
+        constexpr long count = std::ranges::count(pairs, 1, &pair_t::first);
+        static_assert(count == 2);
     }
 }
 

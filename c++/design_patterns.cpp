@@ -225,7 +225,7 @@ namespace state {
 enum class state { lying, sitting, standing };
 
 // The "state machine": Something to change state.
-state state_machine(const state state, const int input)
+constexpr state state_machine(const state state, const int input)
 {
     switch (state) {
     case state::lying:
@@ -248,7 +248,8 @@ state state_machine(const state state, const int input)
 
 static void demo()
 {
-    assert(state_machine(state::sitting, 1) == state::standing);
+    static_assert(state_machine(state::sitting, 1) == state::standing);
+    static_assert(state_machine(state::sitting, -1) == state::lying);
 }
 }
 
@@ -265,8 +266,8 @@ class DoubleBuffer
     std::vector<int> read_buffer {1};
 public:
     void write(const int i) { write_buffer.push_back(i); }
-    int read(int& v) const { return read_buffer.at(v); }
-    void switch_buffer () { std::swap(write_buffer, read_buffer); } // Or switch pointers or references.
+    int read(const int& v) const { return read_buffer.at(v); }
+    void switch_buffer () { std::swap(write_buffer, read_buffer); } // Or switch pointers.
 };
 
 static void demo()
@@ -275,7 +276,7 @@ static void demo()
     DoubleBuffer double_buffer;
     double_buffer.write(1);
     // Display reads from buffer.
-    int pixel = 0;
+    const int pixel = 0;
     [[maybe_unused]] const int i = double_buffer.read(pixel);
     // On next frame: Switch the buffers.
     double_buffer.switch_buffer();
@@ -313,7 +314,7 @@ static void demo()
     };
 
     // Step 1: The main thread starts the timer thread.
-    std::jthread thread(timer);
+    const std::jthread thread(timer);
     // Step 2: The main thread will sleep for 350 milliseconds.
     std::this_thread::sleep_for(std::chrono::milliseconds(350));
     // Step 7: The jthread will go out of scope, this sends a stop request to the thread function.
@@ -325,7 +326,7 @@ namespace update_method {
 // Several encapsulated entities get updated once each cycle of the loop.
 struct Entity
 {
-    void update() {++state;}
+    constexpr void update() {++state;}
     int state{};
 };
 
@@ -396,13 +397,13 @@ namespace component {
 
 struct InputComponent
 {
-    int get_key() const {return key;}
+    constexpr int get_key() const {return key;}
     int key{};
 };
 
 struct OutputComponent
 {
-    void output(const int v) { value = v; }
+    constexpr void output(const int v) { value = v; }
     int value{};
 };
 class Umbrella
@@ -425,7 +426,7 @@ static void demo()
 
 
 namespace event_queue {
-// Decouple message sending and processing moments.
+// Decouple message sending and message processing.
 std::queue<int> message_queue;
 // 1. Single-cast queue.
 // 2. Broadcast queue (multiple listeners).

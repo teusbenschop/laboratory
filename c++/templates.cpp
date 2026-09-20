@@ -40,7 +40,7 @@ namespace templates {
 namespace default_type {
 
 template <typename T = int>
-static constexpr T sum(T a, T b) noexcept { return a + b; }
+static consteval T sum(T a, T b) noexcept { return a + b; }
 
 // Pass the type.
 static_assert(std::is_same_v<decltype(sum<unsigned>(1, 2)), unsigned>);
@@ -52,6 +52,7 @@ static void demo()
 {
 }
 }
+
 
 namespace simple_function_template {
 
@@ -76,10 +77,11 @@ static void demo()
     // Call template: Compiler instantiates template. This is implicit template instantiation.
     add(1,                2);
     add(1.0f,             2.0f);
-    add(std::string("a"), std::string("b"));
+    add(std::string("1"), std::string("2"));
     add(Struct(1),        Struct(2));
 }
 }
+
 
 namespace class_template {
 
@@ -99,18 +101,19 @@ static void demo()
 namespace non_type_template_parameter {
 // A template placeholder of a constant value, called a non-type parameter.
 
-template <int i>
-static float func (const float f)
+template <const int i>
+static consteval float func (const float f)
 {
     if constexpr (i == 10)
         return i + f;
     return f;
 }
 
+static_assert (func<10>(1.0f) == 11.0f);
+static_assert (func<0>(20.0f) == 20.0f);
+
 static void demo()
 {
-    assert (func<10>(1.0f) == 11.0f);
-    assert (func<0>(20.0f) == 20.0f);
 }
 }
 
@@ -122,7 +125,7 @@ template <typename T>
 constexpr T pi = 3.14;
 // Instantiate it.
 static_assert(pi<float> == 3.14f);
-static_assert(pi<int> == 3);
+static_assert(pi<int>   == 3    );
 
 // Variable template as class member. Must be static.
 struct S1 {
@@ -150,14 +153,15 @@ namespace class_with_template_methods {
 template <typename T>
 struct Struct
 {
-    T a;
-    Struct(T a) : a(a) {}
+    const T a;
+    explicit constexpr Struct(const T a) : a(a) {}
 };
+
+constexpr Struct<float> s (1.1f);
+static_assert(s.a == 1.1f);
 
 static void demo()
 {
-    Struct<float> s (1.1f);
-    assert(s.a == 1.1f);
 }
 }
 
@@ -375,6 +379,8 @@ public:
         // Step 2: Convert the temperature in Kelvin to the current class's temperature unit.
         m_value = U::convert_from_kelvin(kelvin);
     }
+
+
 };
 
 constexpr Temperature<Celsius> celsius100 {100};
@@ -794,6 +800,7 @@ static void comma_operator(std::ostream& os, std::vector<int>& v, Args&&... args
     // Can leave out "void" in both cases.
 }
 
+
 static void demo()
 {
     std::ostringstream oss {};
@@ -1047,6 +1054,48 @@ static void demo ()
 }
 
 
+namespace pointer_to_member {
+// Two types:
+// * Pointer to data member.
+// * Pointer to member function.
+// It doesn't point to a specific memory address the way a normal pointer does.
+// Instead, it stores an offset (conceptually) that describes which member of a class to access,
+// independent of any particular object.
+// Combine it with an actual object instance to get the real member.
+
+struct Struct
+{
+    int zero {0};
+    char c {'c'};
+    std::string func () const { std::string result; result += c; result += c; return result; }
+};
+
+template <typename Object, typename Member, typename Expected>
+static void assert_equals(const Object& object, Member Object::* member, const Expected& expected)
+{
+    assert(std::invoke(member, object) == expected);
+}
+
+static void demo()
+{
+    // Declare pointers to data members.
+    int Struct::* zero_ptr = &Struct::zero;
+    char Struct::* c_ptr = &Struct::c;
+    std::string (Struct::* func_ptr)() const = &Struct::func;
+
+    // Create object, call members normally and via template.
+    Struct object;
+    assert (object.*zero_ptr == 0);
+    assert_equals (object, zero_ptr, 0);
+    object.*zero_ptr = 10;
+    assert (object.*zero_ptr == 10);
+    assert ((object.*func_ptr)() == "cc");
+    assert (std::invoke(func_ptr, object) == "cc");
+    assert_equals(object, func_ptr, "cc");
+}
+}
+
+
 void demo()
 {
     default_type::demo();
@@ -1072,5 +1121,6 @@ void demo()
     is_coroutine_handle::demo();
     explicit_template_instantiation::demo();
     template_deduction_guides::demo();
+    pointer_to_member::demo();
 }
 }

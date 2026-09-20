@@ -27,7 +27,6 @@ Copyright (©) 2021-2026 Teus Benschop.
 
 
 namespace concepts {
-
 // https://en.cppreference.com/w/cpp/language/constraints
 // Class templates, function templates, and non-template functions
 // (typically members of class templates)
@@ -39,74 +38,7 @@ namespace concepts {
 // and becomes part of the interface of a template where it is used as a constraint.
 
 
-namespace unconstrained_errors {
-
-// An unconstrained template function.
-template <typename T>
-static constexpr auto plus(const T& a, const T& b)
-{
-    return a + b;
-}
-
-// Call the template with numbers: OK.
-static_assert(plus(1, 2) == 3);
-
-// Call the template with strings:
-// Oops, it works, but not as intended, it concatenates instead of taking the sum.
-// It would help if the passed types could be constrained.
-static_assert(plus(std::string("1"), std::string("2")) == "12");
-
-// Call the template with char pointers:
-// OK, it fails:
-// invalid operands of types 'const char*' and 'const char*' to binary 'operator+'
-//static_assert(unconstrained_plus("a", "b") == "?");
-
-static void demo()
-{
-}
-}
-
-
-namespace constraint_derived_from {
-
-// Three classes, two related, one unrelated, to demonstrate constraints.
-struct Base
-{
-    static constexpr int value{10};
-};
-
-struct Derived : Base
-{
-};
-
-struct Unrelated
-{
-    static constexpr int value{10};
-};
-
-template <typename T>
-// This template has a constraint to make sure the correct type is passed.
-// The template function requires that the parameter type is derived from the Base struct.
-    requires std::derived_from<T, Base>
-static constexpr int get_value(const T& object)
-{
-    return object.value;
-}
-
-static_assert(get_value(Base()) == 10); // This compiles.
-static_assert(get_value(Derived()) == 10); // This compiles.
-//static_assert(get_value(Unrelated()) == 10);
-// The above fails to compile due to the constraint:
-// error: no matching function for call to 'get_value' ... and so on, multiple diagnostic errors.
-
-static void demo()
-{
-}
-}
-
-
 namespace demonstrate_constraints {
-
 // Define a basic concept.
 template <typename T>
 concept floating_point = std::is_floating_point_v<T>;
@@ -134,7 +66,7 @@ static constexpr auto add_both_template(const T& a, const T& b)
 static_assert(add_both_template(10, 11) == 21);
 
 // Using concepts ("number") with abbreviated function templates.
-static constexpr number auto add_both_abbreviated(const number auto& a, const number auto& b)
+static constexpr number auto add_both_abbreviated(const number auto a, const number auto b)
 {
     return a + b;
 }
@@ -175,10 +107,11 @@ void constrained_func4(hashable auto a)
 
 // A concept that tests whether a struct has a static member function.
 template <typename T>
-concept has_static_method = requires {
+concept has_static_method = requires
+{
     { T::method_name() };
     // The compiler attempts to instantiate this call at compile-time.
-    // If the function isn't static (or doesn't exist), this fails.
+    // If the member function isn't static (or doesn't exist), this fails.
 };
 
 
@@ -228,19 +161,23 @@ static T generic_mod_overload(T v, T n)
 
 
 // Concept for equality and comparability.
-// The result (after ->) must be another concept.
+// The result (after ->) must be a type trait.
 template <typename T>
-concept equality_comparable = requires (T& a, T& b)
+concept equality_comparable = requires(T& a, T& b)
 {
     { a == b } -> std::convertible_to<bool>;
     { a != b } -> std::convertible_to<bool>;
 };
 static_assert(equality_comparable<std::string>);
-namespace { struct no_compare {}; }
+
+struct no_compare
+{
+};
+
 static_assert(not equality_comparable<no_compare>);
 
-template<typename T1, typename T2 = T1>
-concept equality_comparable_2_types = requires (T1& v1, T2& v2)
+template <typename T1, typename T2 = T1>
+concept equality_comparable_2_types = requires(T1& v1, T2& v2)
 {
     { v1 == v2 } -> std::convertible_to<bool>;
     { v1 != v2 } -> std::convertible_to<bool>;
@@ -250,9 +187,9 @@ concept equality_comparable_2_types = requires (T1& v1, T2& v2)
 static_assert(equality_comparable_2_types<unsigned, int>);
 
 
-// Concept for the element type from a range.
+// Getting the element type from a range.
 using range_value = std::ranges::range_value_t<std::vector<int>>;
-static_assert(std::is_same_v<int, range_value>);
+static_assert(std::is_same_v<range_value, int>);
 
 
 static void demo()
@@ -263,13 +200,17 @@ static void demo()
 
 namespace concept_constrains_function_return_type {
 
-template<typename T>
+template <typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
-static arithmetic auto func(const int i)
+static constexpr arithmetic auto func(const int i)
 {
     return i;
 }
+
+static_assert(std::is_same_v<decltype(func(0)), int>);
+using return_t = std::invoke_result_t<decltype(func), int>;
+static_assert(std::is_same_v<return_t, int>);
 
 static void demo()
 {
@@ -278,11 +219,19 @@ static void demo()
 
 
 namespace standard_concepts {
-
 namespace {
-struct Base{};
-struct Derived : Base {};
-struct Unrelated { int i{}; };
+struct Base
+{
+};
+
+struct Derived : Base
+{
+};
+
+struct Unrelated
+{
+    int i{};
+};
 }
 
 static_assert(std::same_as<Base, Base>);
@@ -317,8 +266,9 @@ struct input_or_output_iter
     using difference_type = std::ptrdiff_t;
     int operator*();
     input_or_output_iter& operator++();
-    void operator++(int) {++*this;}
+    void operator++(int) { ++*this; }
 };
+
 // The iterator must have:
 // 1. Dereferencing through operator*
 // 2. Incrementing through operator++
@@ -330,8 +280,9 @@ struct input_iter
     using value_type = int;
     int operator*() const;
     input_iter& operator++();
-    void operator++(int) {++*this;}
+    void operator++(int) { ++*this; }
 };
+
 // Same as above plus referenced value must be readable.
 static_assert(std::input_iterator<input_iter>);
 
@@ -343,6 +294,7 @@ struct minimum_range
     int* begin();
     int* end();
 };
+
 static_assert(std::ranges::range<minimum_range>);
 
 // Sized range knows its size in constant time.
@@ -361,8 +313,6 @@ static void demo()
 
 void demo()
 {
-    unconstrained_errors::demo();
-    constraint_derived_from::demo();
     demonstrate_constraints::demo();
     concept_constrains_function_return_type::demo();
     standard_concepts::demo();

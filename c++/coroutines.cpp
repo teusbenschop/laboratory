@@ -36,53 +36,55 @@ namespace coroutines {
 // * co_yield: suspend execution returning a value.
 // * co_return: complete execution returning a value.
 
+
 namespace counter_example {
 
 struct returner
 {
+    struct promise_type;
+    using handle_t = std::coroutine_handle<promise_type>;
+
     struct promise_type
     {
-        returner get_return_object() { return {}; }
-        std::suspend_never initial_suspend() { return {}; }
-        std::suspend_never final_suspend() noexcept { return {}; }
+        returner get_return_object() { return returner{handle_t::from_promise(*this)}; }
+        static std::suspend_never initial_suspend() { return {}; }
+        static std::suspend_always final_suspend() noexcept { return {}; }
         void unhandled_exception() { }
     };
+
+    handle_t handle;
+
+    void resume() const { handle.resume(); }
+    void destroy() const { handle.destroy(); }
 };
 
-struct awaiter
-{
-    std::coroutine_handle<>* m_handle;
-    bool await_ready() { return false; }
-    void await_suspend(std::coroutine_handle<> handle) { *m_handle = handle; }
-    void await_resume() { }
-};
 
 // This function runs forever. It increases and prints the value.
 // The variable i maintains its value even as control switches repeatedly
 // between this function and the function that invoked it.
-returner infinite_counter(std::coroutine_handle<>* handle) {
-    awaiter a{handle};
+returner infinite_counter() {
     int i {0};
     while (true)
     {
-        // Suspend the coroutine and returns control to the caller.
-        co_await a;
-        std::cout << "in coroutine " << ++i << std::endl;
+        // Suspend the coroutine and return control to the caller.
+        co_await std::suspend_always{};
+        //std::cout << "in coroutine " << ++i << std::endl;
     }
 }
 
+
 static void demo()
 {
-    std::coroutine_handle<> handle;
-    infinite_counter(&handle);
+    const returner ret = infinite_counter();
     for (int i = 0; i < 3; ++i)
     {
         //std::cout << "in main function" << std::endl;
-        //handle();
+        ret.resume();
     }
-    handle.destroy();
+    ret.destroy();
 }
 }
+
 
 namespace simple_generator {
 
@@ -124,7 +126,7 @@ public:
         }
     };
 
-    // The Generator class is what the caller interacts with
+    // The Generator class is what the caller interacts with.
     explicit Generator(std::coroutine_handle<promise_type> handle)
         : m_handle(handle) {}
 
@@ -156,7 +158,7 @@ public:
         return not m_handle.done();
     }
 
-    // Get the current yielded value
+    // Get the current yielded value.
     T value() const {
         return m_handle.promise().current_value;
     }
@@ -181,6 +183,7 @@ static void demo()
     }
 }
 }
+
 
 namespace simple_task {
 

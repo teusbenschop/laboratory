@@ -44,7 +44,7 @@ namespace containers {
 // O(log n) : logarithmic complexity, the number of operations grows much slower than input size.
 // O(n^2) : quadratic complexity, the number of operations is input size squared.
 // O(2^n) : exponential complexity, each extra input causes number of operations to double.
-// "amortized": runtime it may vary but on average the complexity is ...
+// "amortized": runtime may vary but on average the complexity is ...
 
 
 // The container adaptors:
@@ -81,10 +81,10 @@ static void demo()
         const auto standard = std::vector{4, 4, 4};
         assert(v1 == standard);
         // Vector constructor based on iterators.
-        const std::vector<int> v2 (v1.cbegin(), v1.cend());
+        const std::vector v2 (v1.cbegin(), v1.cend());
         assert(v2 == standard);
         // Vector copy constructor.
-        const std::vector<int> v3 = v1;
+        const std::vector v3 = v1;
         assert(v3 == standard);
     }
 
@@ -99,9 +99,9 @@ static void demo()
             int m_number;
         };
         std::vector<Class> v;
-        // This implicitly creates an instance of A.
+        // This implicitly creates an instance of Class.
         v.push_back(1);
-        // Mark the constructor of A "explicit", and the above won't compile.
+        // Mark the constructor of Class explicit and the above won't compile.
     }
 
     // Need to have sufficient class constructors when storing instances of the class in a std::vector.
@@ -121,24 +121,24 @@ static void demo()
                 std::cout << "default-constructor ";
             }
 
-            Class (const Class & source)
+            Class (const Class& other)
             {
-                m_number1 = source.m_number1;
-                m_number2 = source.m_number2;
+                m_number1 = other.m_number1;
+                m_number2 = other.m_number2;
                 std::cout << "copy-constructor ";
             }
 
-            Class& operator= (const Class & source)
+            Class& operator= (const Class& other)
             {
-                m_number1 = source.m_number1;
-                m_number2 = source.m_number2;
+                m_number1 = other.m_number1;
+                m_number2 = other.m_number2;
                 std::cout << "copy-assignment-operator ";
                 return *this;
             }
 
             ~Class()
             {
-                std::cout << "destructor " << std::endl;
+                std::cout << "destructor ";
             }
 
         private:
@@ -148,27 +148,37 @@ static void demo()
 
         const auto test_constructors = []
         {
-            std::vector <Class> v1 (1); // calls default constructor.
+            std::cout << "1: ";
+            std::vector <Class> v1(1); // calls default constructor.
             std::cout << std::endl;
 
+            std::cout << "2: ";
             v1.push_back (1); // calls normal constructor, then copy constructor, then copy constructor.
             std::cout << std::endl;
 
-            v1[0] = 10; // calls normal constructor, then assignment operator.
+            std::cout << "3: ";
+            v1[0] = 10; // calls normal constructor, then copy assignment operator.
             std::cout << std::endl;
 
-            v1.resize(1);
+            std::cout << "4: ";
+            v1.resize(1); // calls destructor.
+            std::cout << std::endl;
+
+            std::cout << "5: ";
             std::vector <Class> v2 (v1); // v1 has one element, calls copy constructor once.
             std::cout << std::endl;
 
+            std::cout << "6: ";
             // assignment operator - empty target.
-            std::vector< Class > v3;
+            std::vector<Class> v3;
             v3 = v1; // v1 has one element, calls copy constructor once.
             std::cout << std::endl;
 
+            std::cout << "7: ";
             //assignment - not empty target
             std::vector<Class> v4 (2); // calls default constructor twice.
             v4 = v1; // calls assignment operator once.
+            std::cout << std::endl;
         };
         //test_constructors();
 
@@ -319,14 +329,14 @@ namespace list {
 
 static void demo()
 {
-    std::list list1({ 1, 2, 3 });
-    std::list list2({ 5, 8, 6 });
-    list1.remove(2);
-    list2.remove(8);
-    list1.pop_back();
-    list2.pop_back();
-    list2.insert(list2.begin(), 7);
-    list2.pop_back();
+    std::list l1 ({ 1, 2, 3 });
+    std::list l2 ({ 5, 8, 6 });
+    l1.remove(2);
+    l2.remove(8);
+    l1.pop_back();
+    l2.pop_back();
+    l2.insert(l2.begin(), 7);
+    l2.pop_back();
     std::forward_list fl1 { 1, 2, 3 };
     std::erase(fl1, 2);
     // fl1.size() no member "size".
@@ -367,7 +377,7 @@ namespace maps {
 //    * std::pair< key,value>.
 // Search, insertion, deletion: On average O(1).
 // If load factor > 1.0, it does a rehash, which takes time.
-// If some hash keys collide, the bucket contains more data in a slow singly linked list.
+// If some hash keys collide, the bucket contains more data in a singly linked list.
 // That causes a worst-case complexity of O(n).
 
 static void demo()
@@ -393,7 +403,7 @@ namespace set {
 // set
 // A std::set is sorted, so can do binary search.
 // Store elements in self-balancing binary search tree.
-// Store element scattered on the heap. Elements never change location.
+// Store elements scattered over the heap. Elements never change location.
 // Each node:
 // * parent pointer.
 // * left child pointer.
@@ -560,7 +570,7 @@ static void demo()
     std::list l3 { 7, 8, 9 };
 
     l2.splice (l2.end (), l3);
-    assert(l2.size() == 6); // 1 2 3 4 5 6
+    assert(l2.size() == 6); // 4 5 6 7 8 9
     assert(l3.empty());
 
     // Moving one element - 6.
@@ -586,15 +596,15 @@ namespace removing {
 static void demo()
 {
     {
-        struct DeleteOdd
+        struct delete_odd
         {
-            bool operator() (const int value) const
+            constexpr bool operator() (const int value) const
             {
                 return (value % 2);
             }
         };
         std::list l {1, 2, 3};
-        l.remove_if (DeleteOdd());
+        l.remove_if (delete_odd());
         const std::list standard {2};
         assert(l == standard);
     }
@@ -609,7 +619,7 @@ static void demo()
     }
     {
         std::vector v {1, 2, 3};
-        for (auto iter = v.begin(); iter != v.end();  /* ++iter */)
+        for (auto iter = v.begin(); iter != v.end(); /* ++iter */)
         {
             // The ::erase returns iterator to element following the erased value.
             iter = v.erase(iter);
@@ -642,11 +652,11 @@ namespace merging {
 static void demo()
 {
     {
-        std::list list1 { 2, 3, 4 };
+        std::list list1 { 2, 3, 4, 5 };
         std::list list2 { 2, 3 };
         // Merging requires the list to be sorted.
         list1.merge (list2);
-        const std::list standard {2, 2, 3, 3, 4};
+        const std::list standard {2, 2, 3, 3, 4, 5};
         assert(list1 == standard);
         // Can also merge with a comparison predicate.
     }
@@ -677,9 +687,9 @@ namespace containing {
 static void demo()
 {
     constexpr auto word{"word"};
-    std::multiset<std::string> bag;
+    std::multiset<std::string> bag; // Could be std::set too.
     bag.insert(word);
-    assert(    bag.contains(word));
+    assert(bag.contains(word));
     assert(not bag.contains({}));
 }
 }
@@ -714,27 +724,27 @@ static void demo()
     };
 
     // An unordered set, with hash function to generate the key, and an equal operator.
-    std::unordered_set<Display, Hash, Equals> display_set{};
+    std::unordered_set<Display, Hash, Equals> displays{};
 
     // Insert three Displays into the set.
     // Check that the size is 3.
-    const Display display1{.id = 1, .message = "1"};
-    const Display display2{.id = 2, .message = "2"};
-    const Display display3{.id = 3, .message = "3"};
-    display_set.insert(display1);
-    display_set.insert(display2);
-    display_set.insert(display3);
-    assert(display_set.size() == 3);
+    constexpr Display display1{.id = 1, .message = "1"};
+    constexpr Display display2{.id = 2, .message = "2"};
+    constexpr Display display3{.id = 3, .message = "3"};
+    displays.insert(display1);
+    displays.insert(display2);
+    displays.insert(display3);
+    assert(displays.size() == 3);
 
     // Attempt to insert a Display that already exists in the set.
     // The hash function ensures that this does not get inserted into the set.
     // Check that the size remains 3.
-    display_set.insert(display3);
-    assert(display_set.size() == 3);
+    displays.insert(display3);
+    assert(displays.size() == 3);
 
     // Check that the find function works.
-    const auto iter1 = display_set.find(display1);
-    assert(iter1 != display_set.end());
+    const auto iter1 = displays.find(display1);
+    assert(iter1 != displays.end());
     assert(iter1->id == display1.id);
     assert(iter1->message == display1.message);
 }
@@ -742,7 +752,7 @@ static void demo()
 
 
 namespace stacks {
-void demo()
+static void demo()
 {
     // Initializing and constructing a stack.
     {
@@ -752,15 +762,15 @@ void demo()
         std::stack<int> s1;
 
         // Copy constructor.
-        std::stack s2 (s1);
+        [[maybe_unused]] std::stack s2 (s1);
 
-        // Initialization using predefined container.
+        // Initialization from another container.
         std::deque <int>d1 (a1, a1 + 5);
-        std::stack s3 (d1);
+        [[maybe_unused]] std::stack s3 (d1);
 
         // Using non-default storage.
-        std::stack <int, std::list<int>> s4;
-        std::stack <int, std::vector<int>>s5;
+        [[maybe_unused]] std::stack <int, std::list<int>> s4;
+        [[maybe_unused]] std::stack <int, std::vector<int>> s5;
 
         // Not allowed - iterator constructor
         // Not allowed - copy constructor source and target stack object
@@ -784,7 +794,6 @@ void demo()
 }
 
 
-
 namespace priority_queues {
 static void demo()
 {
@@ -792,21 +801,21 @@ static void demo()
     std::priority_queue <int> p1;
 
     // Copy constructor.
-    std::priority_queue<int> p2 (p1);
+    [[maybe_unused]] std::priority_queue<int> p2 (p1);
 
     // Initialization using iterators.
-    int array[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    constexpr int array[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     std::vector <int> v1 (array, array + 10);
-    std::priority_queue<int> q3 (v1.begin (), v1.end ());
+    [[maybe_unused]] std::priority_queue<int> q3 (v1.begin (), v1.end ());
 
     // Using non-default storage (standard it uses the vector).
-    std::priority_queue <int, std::deque<int>> p4;
+    [[maybe_unused]] std::priority_queue <int, std::deque<int>> p4;
 
     // Providing different comparator type: This causes the minimum value to be at the top.
-    std::priority_queue <int, std::vector<int>, std::greater<int>> p5;
+    [[maybe_unused]] std::priority_queue <int, std::vector<int>, std::greater<int>> p5;
 
     // The methods push / top / pop
-    // The highest values is at the top, regardless of the order of pushing the values.
+    // The highest value is at the top regardless of the order of pushing the values.
     p1.push(1);
     p1.push(2);
     p1.push(1);
@@ -835,7 +844,7 @@ static void demo()
         lambda_output.push_back(lambda_priority_queue.top());
         lambda_priority_queue.pop();
     }
-    std::vector<int> lambda_standard{10, 8, 9, 6, 7, 4, 5, 2, 3, 1};
+    std::vector lambda_standard{10, 8, 9, 6, 7, 4, 5, 2, 3, 1};
     assert(lambda_output == lambda_standard);
 }
 }
@@ -845,9 +854,9 @@ namespace span {
 // https://en.cppreference.com/w/cpp/container/span
 
 constexpr int container[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-constexpr auto fullspan = std::span{container};
-static_assert(fullspan.size() == 10);
-constexpr auto subspan = fullspan.subspan(3, 2);
+constexpr auto full_span = std::span{container};
+static_assert(full_span.size() == 10);
+constexpr auto subspan = full_span.subspan(3, 2);
 // Result: 3 4
 static_assert(subspan.size() == 2);
 
@@ -866,13 +875,13 @@ namespace mdspan {
 
 static void demo() {
 
-    std::vector v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    [[maybe_unused]] std::vector v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
     // View data as contiguous memory representing 2 rows of 6 integers each.
-    // auto ms2 = std::mdspan(v.data(), 2, 6);
+    // auto mds2 = std::mdspan(v.data(), 2, 6);
 
     // View the same data as a 3D array 2 x 3 x 2.
-    // auto ms3 = std::mdspan(v.data(), 2, 3, 2);
+    // auto mds3 = std::mdspan(v.data(), 2, 3, 2);
 
     // Write data using 2D view.
     // for (std::size_t i = 0; i != ms2.extent(0); i++)
@@ -894,11 +903,10 @@ static void demo() {
 namespace performance {
 static void demo()
 {
-    return;
     {
         std::vector<int> c;
         {
-            scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
+            //scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
             for (int i = 0; i < 1000'000; ++i)
                 c.push_back(i);
         }
@@ -909,7 +917,7 @@ static void demo()
     {
         std::deque<int> c;
         {
-            scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
+            //scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
             for (int i = 0; i < 1000'000; ++i)
                 c.push_back(i);
         }
@@ -917,7 +925,7 @@ static void demo()
     {
         std::list<int> c;
         {
-            scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
+            //scoped_timer::scoped_timer<std::chrono::milliseconds> timer;
             for (int i = 0; i < 1000'000; ++i)
                 c.push_back(i);
         }
@@ -940,7 +948,7 @@ static void demo()
     // Add 5 times 2 to the end of the container.
     std::fill_n(std::inserter(ms, ms.end()), 5, 2);
     {
-        std::multiset<int> standard{1, 2, 2, 2, 2, 2, 2, 3};
+        const std::multiset<int> standard{1, 2, 2, 2, 2, 2, 2, 3};
         assert(ms == standard);
     }
 
@@ -960,7 +968,7 @@ static void demo()
 
 namespace extraction {
 // Unlink a node from the container and provide a handle that owns it.
-void demo()
+static void demo()
 {
     using map = std::map<int, std::string>;
 
@@ -970,20 +978,20 @@ void demo()
     auto node_handle = container.extract(1);
     node_handle.key() = 4;
 
-    map standard2 {{2, "2"}, {3, "3"}};
+    const map standard2 {{2, "2"}, {3, "3"}};
     assert(container == standard2);
 
     // Insert the updated node handle back.
     container.insert(std::move(node_handle));
 
-    map standard3 {{2, "2"}, {3, "3"}, {4, "1"}};
+    const map standard3 {{2, "2"}, {3, "3"}, {4, "1"}};
     assert(container == standard3);
 }
 }
 
 
 namespace map_try_emplace {
-void demo()
+static void demo()
 {
     std::map<int,int> map{};
     {
@@ -1010,30 +1018,27 @@ namespace map_insert_or_assign {
 // Returns iterator and boolean.
 // Bool = true if inserted, and false if assigned.
 // Iter points to element inserted or updated.
-void demo()
+static void demo()
 {
-    std::map<int,int> map{};
-    {
-        auto [iter, inserted] = map.insert_or_assign(1,1);
-        assert(iter == map.cbegin());
-        assert(inserted);
-        assert(iter->second == 1);
-    }
-    {
-        auto [iter, inserted] = map.insert_or_assign(1,2);
-        assert(iter == map.cbegin());
-        assert(not inserted);
-        assert(iter->second == 2);
-    }
+    std::map<int,int> map1{};
+
+    const auto [iter1, inserted1] = map1.insert_or_assign(1,1);
+    assert(iter1 == map1.cbegin());
+    assert(inserted1);
+    assert(iter1->second == 1);
+
+    auto [iter2, inserted2] = map1.insert_or_assign(1,2);
+    assert(iter2 == map1.cbegin());
+    assert(not inserted2);
+    assert(iter2->second == 2);
+
     // Method .insert / .insert_or_assign has better performance than operator []
-    {
-        std::map<int,int> map;
-        // Default construct element.
-        assert(map[0] == 0);
-        // First default construct the element, then copies the new value into it.
-        // So wastes a constructed object.
-        map[1] = 1;
-    }
+    std::map<int,int> map2;
+    // Default construct element.
+    assert(map2[0] == 0);
+    // First default construct the element, then copies the new value into it.
+    // So wastes a constructed object.
+    map2[1] = 1;
 }
 }
 
@@ -1041,7 +1046,7 @@ void demo()
 namespace non_member_size_empty_data {
 static void demo()
 {
-    std::vector<int> v {1, 2, 3};
+    const std::vector v {1, 2, 3};
     assert(std::size(v) == 3);
     assert(not std::empty(v));
     assert(std::data(v) == v.data());
@@ -1059,6 +1064,7 @@ static void demo()
     const std::valarray<int> output = va2 - va1 + 10;
     const std::valarray<int> standard {13, 13, 13};
     const std::valarray<bool> mask = (output == standard);
+    assert(mask.size() == va1.size());
     assert(std::ranges::all_of(mask, [](auto b) { return b; }));
     // Other operations on valarray: .min / .max / .sum / .apply / etc.
 }

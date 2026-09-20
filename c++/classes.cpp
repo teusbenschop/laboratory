@@ -601,7 +601,7 @@ static void demo()
         struct S
         {
             S (char c, int i) {}
-            S (int i) : S('c', i) {}
+            S (const int i) : S('c', i) {}
             // S(int) delegates to S(char, int).
         };
     }
@@ -624,7 +624,7 @@ static void demo()
 namespace inheritance {
 
 struct Base {
-    explicit Base() = default;
+    Base() = default;
 
     // User-defined copy constructors and copy assignment operators should copy all members.
     Base& operator=(const Base& rhs) {
@@ -642,7 +642,7 @@ struct Base {
 };
 
 struct Derived : Base {
-    explicit Derived() = default;
+    Derived() = default;
 
     // Derived copy constructors and copy assignment operators should copy all members so call base copy equivalent.
     Derived& operator=(const Derived& rhs) {
@@ -679,10 +679,9 @@ struct Derived : Base {
 static void demo()
 {
     {
-        auto* d = new Derived;
-        d->simple_virtual_function();
-        d->pure_virtual_function();
-        delete d;
+        Derived derived;
+        derived.simple_virtual_function();
+        derived.pure_virtual_function();
     }
     {
         Derived d1;

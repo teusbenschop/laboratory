@@ -38,6 +38,7 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include "mathematics.h"
 #include "modules.h"
 #include "performance.h"
+#include "scratch.h"
 #include "searching.h"
 #include "shared_mutex.h"
 #include "templates.h"
@@ -79,6 +80,7 @@ int main()
     mathematics::demo();
     performance::demo();
     design_patterns::demo();
+    scratch::demo();
     return EXIT_SUCCESS;
 }
 

@@ -164,5 +164,10 @@ void demo()
         // const std::chrono::time_zone est {"Europe/Copenhagen"};
         // std::chrono::zoned_time ztp2 {&est, tp }
     }
+    {
+        using namespace std::literals;
+        //auto test = 2024y/March/last;
+        // Last day of the month.
+    }
 }
 }

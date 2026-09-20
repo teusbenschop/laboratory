@@ -16,7 +16,6 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "concurrency.h"
 #include <atomic>
 #include <barrier>
 #include <cassert>
@@ -26,10 +25,10 @@ Copyright (©) 2021-2026 Teus Benschop.
 #include <iostream>
 #include <list>
 #include <mutex>
-#include <random>
+#include <queue>
 #include <semaphore>
 #include <thread>
-#include <queue>
+#include "concurrency.h"
 
 namespace concurrency {
 
@@ -40,38 +39,21 @@ namespace atomic_wait {
 // It unblocks the thread if the atomic wait gets another value than the old value passed.
 static void demo()
 {
-    constexpr int task_count {16};
-    std::atomic all_tasks_complete{false};
-    std::atomic<unsigned> completion_count{};
-    std::future<void> futures[task_count];
-    std::atomic outstanding_task_count{task_count};
+    std::atomic task_complete{false};
 
-    // Spawn several tasks that do some work, then update the global state.
-    std::ranges::for_each(futures, [&](std::future<void>& future)
+    [[maybe_unused]] std::future<void> future = std::async([&]
     {
-        future = std::async([&]
-        {
-            // This sleep represents doing real work.
-            using namespace std::literals;
-            std::this_thread::sleep_for(50ms);
+        // This sleep represents doing real work.
+        using namespace std::literals;
+        std::this_thread::sleep_for(50ms);
 
-            // Update global state.
-            ++completion_count;
-            --outstanding_task_count;
-
-            // When the task count gets zero, notify the waiter (the main thread in this case).
-            if (not outstanding_task_count)
-            {
-                all_tasks_complete = true;
-                all_tasks_complete.notify_one();
-            }
-        });
+        // Notify the waiter (the main thread in this case).
+        task_complete = true;
+        task_complete.notify_one();
     });
 
     // Wait here till the atomic variable gets notified and has a value different from false.
-    all_tasks_complete.wait(false);
-
-    assert(completion_count == task_count);
+    task_complete.wait(false);
 }
 }
 
@@ -138,7 +120,7 @@ static void demo()
 
 
 namespace timed_mutex {
-// If a normal mutex cannot be obtained, this would lead to a deadlock.
+// A normal mutex that cannot be obtained leads to a deadlock.
 // A timed mutex will help here.
 // If a lock is requested on a timed mutex, a timeout can be passed too.
 // If the lock cannot be obtained in time, it falls in a timeout, not in a deadlock.
@@ -147,7 +129,7 @@ static std::timed_mutex timed_mutex;
 
 static void demo()
 {
-    // Attempt to get first lock on timed mutex.
+    // Get first lock on timed mutex.
     const std::unique_lock lock1(timed_mutex, std::chrono::milliseconds(10));
     // Attempt to get the second lock on the same timed mutex.
     const std::unique_lock lock2(timed_mutex, std::chrono::milliseconds(10));
