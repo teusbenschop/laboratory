@@ -16,14 +16,12 @@ Copyright (©) 2021-2026 Teus Benschop.
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <list>
-#include <type_traits>
-#include <vector>
 #include "scratch.h"
 
 namespace scratch {
 
 void demo()
 {
+
 }
 }

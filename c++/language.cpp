@@ -1649,6 +1649,43 @@ static void demo()
 }
 
 
+namespace ref_qualified_member_functions {
+
+namespace {
+class Task {
+public:
+    explicit Task(std::string name) : m_name(std::move(name)) {}
+
+    // This overload is selected when called on an lvalue.
+    // The object lives on, so don't steal from it.
+    std::string execute() const & {
+        return "lvalue overload " + m_name;
+    }
+
+    // This overload is selected when called on an rvalue.
+    // The object is about to die, so it might be safe to move its resources out.
+    std::string execute() && {
+        const std::string stolen = std::move(m_name);  // Steal the data.
+        return "rvalue overload " + stolen;
+    }
+
+private:
+    std::string m_name;
+};
+}
+
+static Task make_task() { return Task("rvalue"); }
+
+static void demo()
+{
+    Task t("lvalue");
+    assert (t.execute() == "lvalue overload lvalue");
+    assert (make_task().execute() == "rvalue overload rvalue");
+    assert (std::move(t).execute() == "rvalue overload lvalue");
+}
+}
+
+
 void demo() {
     alignment::demo();
     alias_declarations_in_init_statements::demo();
@@ -1688,6 +1725,7 @@ void demo() {
     unreachable_and_fallthrough::demo();
     monadic_operations_on_optional::demo();
     monadic_operations_on_expected::demo();
+    ref_qualified_member_functions::demo();
 }
 
 }

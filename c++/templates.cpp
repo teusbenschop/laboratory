@@ -169,8 +169,8 @@ static void demo()
 
 namespace automatic_weight_unit_conversion {
 // Strong types for weights.
-// The class automatically converts to the desired unit when it gets passed to a function by value
-// The various copy constructors do the conversion.
+// The class automatically converts to the desired unit when it gets passed to a function by value.
+// The various constructors do the conversion.
 // For example if a function expects a weight in grams,
 // and the code passes a weight in kilograms,
 // then the compiler automatically converts the passed unit to the expected unit.
@@ -193,7 +193,8 @@ public:
     // Constructor taking a float, so the weight is equal to the float passed.
     constexpr explicit Weight(const decltype(m_value) v) noexcept : m_value(v) { }
 
-    // This copy constructor is a template, the compiler generates multiple constructors:
+    // This copy constructor, rather "converting constructor", is a template.
+    // The compiler generates multiple constructors:
     // 1. Create a kilogram from a gram.
     // 2. Create a kilogram from a kilogram.
     // 3. Create a gram from a kilogram.
@@ -201,24 +202,28 @@ public:
     template <weight_unit UU>
     constexpr Weight(const Weight<UU>& other) noexcept
     {
-        if constexpr (std::is_same_v<U, UU>)
-            m_value = other.value();
-        else
-            m_value = other.value() * UU::factor2grams / U::factor2grams;
+        m_value = other.value() * UU::factor2grams / U::factor2grams;
     }
+    // A constructor template is never a copy constructor even if the signature looks like.
+    // The compiler still generates implicit copy constructors for Weight<U>.
 
     [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; }
     [[nodiscard]] explicit constexpr operator decltype(m_value)() const noexcept { return m_value; } // Support static cast.
 };
 
 
-constexpr auto weight_100_kg = Weight<kilograms>(100);
-constexpr auto weight_10_g = Weight<grams>(10);
+// Copy initialization: T x = expr.
+constexpr auto weight_100_kg_ci = Weight<kilograms>(100);
+constexpr auto weight_10_g_ci = Weight<grams>(10);
 
-constexpr Weight<grams> weight_g = weight_100_kg;
+// Direct initialization: T x (expr).
+constexpr auto weight_100_kg_di (Weight<kilograms>(100));
+constexpr auto weight_10_g_di (Weight<grams>(10));
+
+constexpr Weight<grams> weight_g = weight_100_kg_ci;
 static_assert(weight_g.value() == 100000);
 
-constexpr Weight<kilograms> weight_kg = weight_10_g;
+constexpr Weight<kilograms> weight_kg = weight_10_g_ci;
 static_assert(weight_kg.value() == 0.01f);
 
 static void demo()
@@ -315,7 +320,7 @@ static void demo()
 
 namespace automatic_temperature_unit_conversion {
 
-// Write a template that automatically converts temperatures between different units.
+// Template that automatically converts temperatures between different units.
 // Kelvin = degrees Celsius + 273.5
 // Degrees Celsius = Kelvin - 273.5
 
@@ -331,6 +336,7 @@ struct Kelvin
         return value;
     }
 };
+
 struct Celsius
 {
     // Calculators to go from degrees Celsius to Kelvin and vice versa.
@@ -352,26 +358,21 @@ template <temperature_unit U>
 class Temperature
 {
     float m_value;
+
 public:
 
-    // Copy constructor from same temperature unit should be OK default.
-    constexpr Temperature(const Temperature&) = default;
+    // Default constructor.
+    constexpr Temperature() noexcept = default;
+
+    // Copy constructor from same temperature unit.
+    constexpr Temperature(const Temperature&) noexcept = default;
 
     // Constructor for a given temperature unit using a float.
     constexpr explicit Temperature(const decltype(m_value) value) noexcept : m_value(value) {};
 
-    // Function to get/set the value.
-    [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; };
-    constexpr void value(const decltype(m_value) value) noexcept { m_value = value; };
-
-    // Call operator to get the value. Supports static cast.
-    constexpr explicit operator decltype(m_value) () const noexcept { return m_value; };
-
-    // Automatic comparison operators.
-    constexpr auto operator <=> (const Temperature&) const noexcept = default;
-
-    // Copy constructor template to create this unit from another unit.
+    // Converting constructor template to create this unit from another unit.
     template <temperature_unit UU>
+    // ReSharper disable once CppNonExplicitConvertingConstructor
     constexpr Temperature(const Temperature<UU>& temperature) noexcept
     {
         // Step 1: Convert the incoming temperature to Kelvin.
@@ -380,8 +381,61 @@ public:
         m_value = U::convert_from_kelvin(kelvin);
     }
 
+    // Functions to get/set the value.
+    [[nodiscard]] constexpr decltype(m_value) value() const noexcept { return m_value; };
+    constexpr void value(const decltype(m_value) value) noexcept { m_value = value; };
 
+    // Call operator to get the value. Supports static cast.
+    constexpr explicit operator decltype(m_value) () const noexcept { return m_value; };
+
+    // Automatic comparison operators for the same unit.
+    constexpr std::partial_ordering operator <=> (const Temperature&) const noexcept = default;
+
+    // Comparison across different units — exact match, no implicit conversion needed,
+    // so it wins over the ambiguous conversion-based candidates above.
+    template <temperature_unit UU>
+    constexpr std::partial_ordering operator<=>(const Temperature<UU>& other) const noexcept
+    {
+        return m_value <=> U::convert_from_kelvin(UU::convert_to_kelvin(other.value()));
+    }
+
+    template <temperature_unit UU>
+    constexpr bool operator==(const Temperature<UU>& other) const noexcept
+    {
+        return m_value == U::convert_from_kelvin(UU::convert_to_kelvin(other.value()));
+    }
+
+    // Allow for basic arithmetic operations.
+    constexpr Temperature& operator+=(const decltype(m_value) value) noexcept { m_value += value; return *this; }
+    constexpr Temperature& operator-=(const decltype(m_value) value) noexcept { m_value -= value; return *this; }
+    constexpr Temperature& operator*=(const decltype(m_value) v) noexcept { m_value *= v; return *this; }
+    constexpr Temperature& operator/=(const decltype(m_value) v) noexcept { m_value /= v; return *this; }
 };
+
+template<temperature_unit U>
+static constexpr Temperature<U> operator+(Temperature<U> l, const float r) noexcept { return l += r; }
+
+template<temperature_unit U>
+static constexpr Temperature<U> operator-(Temperature<U> l, const float r) noexcept { return l -= r; }
+
+template<temperature_unit U>
+static constexpr Temperature<U> operator*(Temperature<U> l, const float r) noexcept { return l *= r; }
+
+template<temperature_unit U>
+static constexpr Temperature<U> operator/(Temperature<U> l, const float r) noexcept { return l /= r; }
+
+// The output operator
+template <temperature_unit T>
+static std::ostream& operator << (std::ostream& os, const Temperature<T>& t)
+{
+    os << t.value();
+    if (std::is_same_v<T, Kelvin>)
+        os << "K";
+    if (std::is_same_v<T, Celsius>)
+        os << "°C";
+    return os;
+}
+
 
 constexpr Temperature<Celsius> celsius100 {100};
 static_assert(celsius100.value() == 100);
@@ -398,6 +452,18 @@ static_assert(celsius150.value() == 150);
 constexpr Temperature<Celsius> celsius150_2 {celsius150};
 static_assert(celsius150_2.value() == 150);
 static_assert(celsius150 == celsius150_2);
+
+static_assert(Temperature<Kelvin>(100) == Temperature<Kelvin>(100));
+
+// Without converting comparator template, there is ambiguity to the compiler:
+// Convert the Celsius operand to Temperature<Kelvin> and call Temperature<Kelvin>'s defaulted <=>.
+// Convert the Kelvin operand to Temperature<Celsius> and call Temperature<Celsius>'s defaulted <=>.
+// Both require exactly one user-defined conversion, so neither is a better match than the other — hence "ambiguous".
+// Fix: add a cross-unit comparison that's an exact match (no conversion needed), so it beats both conversion-based candidates.
+static_assert(Temperature<Kelvin>(373.5f) == Temperature<Celsius>(100));
+
+// Check if the true temperature value is converted when doing simple arithmetic.
+static_assert(Temperature<Celsius>(100) + 1.0f == Temperature<Celsius>(101));
 
 
 static void demo()
@@ -416,13 +482,13 @@ struct Kelvin;
 
 struct Celsius
 {
-    float value {};
+    const float value;
     constexpr operator Kelvin() const noexcept;
 };
 
 struct Kelvin
 {
-    float value {};
+    const float value;
     constexpr operator Celsius() const noexcept;
 };
 

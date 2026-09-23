@@ -179,7 +179,6 @@ static void demo()
         return a / b;
     };
 
-    // ReSharper disable once CppTemplateArgumentsCanBeDeduced
     std::packaged_task<int(int,int)> task (task_divide);
     std::future future = task.get_future();
     std::thread thread(std::move(task), 45, 5);
